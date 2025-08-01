@@ -195,7 +195,7 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
         ws.column_dimensions[column_letter].width = max(max_length, header_length) + 1
     ws.page_setup.orientation = ws.ORIENTATION_PORTRAIT; ws.page_setup.fitToPage = True; ws.page_setup.fitToWidth = 1; ws.page_setup.fitToHeight = 1
     ws.page_setup.horizontalCentered = True; ws.page_setup.verticalCentered = True
-    ws.page_setup.top = 0.5; ws.page_setup.left = 0.25; ws.page_setup.right = 0.25; ws.page_setup.bottom = 0.5
+    ws.page_setup.top = 0.25; ws.page_setup.left = 0.25; ws.page_setup.right = 0.25; ws.page_setup.bottom = 0.25
     
     # --- ফাইল সেভ করার পরিবর্তে মেমোরি থেকে রিটার্ন করা ---
     file_stream = BytesIO()
