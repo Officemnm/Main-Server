@@ -1,0 +1,7 @@
+requests
+openpyxl
+beautifulsoup4
+lxml
+Pillow
+Flask
+gunicorn
