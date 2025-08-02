@@ -225,7 +225,7 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
         header_length = len(str(ws.cell(row=TABLE_START_ROW, column=i).value) or "")
         
         # অতিরিক্ত প্যাডিং বাড়ানো হয়েছে যাতে বোল্ড টেক্সট কেটে না যায়
-        ws.column_dimensions[column_letter].width = max(max_length, header_length) + 6
+        ws.column_dimensions[column_letter].width = max(max_length, header_length) + 4.5
     
     # --- পেজ সেটআপ ---
     ws.page_setup.orientation = ws.ORIENTATION_PORTRAIT; ws.page_setup.fitToPage = True; ws.page_setup.fitToWidth = 1; ws.page_setup.fitToHeight = 1
@@ -341,6 +341,7 @@ def generate_report():
 
 if __name__ == '__main__':
     app.run(debug=True)
+
 
 
 
