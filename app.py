@@ -191,8 +191,8 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
         padded_img.paste(original_img, (600, 0))
         padded_image_io = BytesIO(); padded_img.save(padded_image_io, format='PNG')
         img = Image(padded_image_io); aspect_ratio = padded_img.height / padded_img.width
-        img.width = 60; img.height = int(img.width * aspect_ratio)
-        ws.row_dimensions[image_row].height = img.height * 0.75; ws.add_image(img, f'A{image_row}')
+        img.width = 70; img.height = int(img.width * aspect_ratio)
+        ws.row_dimensions[image_row].height = img.height * 0.90; ws.add_image(img, f'A{image_row}')
     except Exception as e:
         print(f"ছবি যোগ করার সময় ত্রুটি: {e}")
 
@@ -211,7 +211,7 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
                 cell.font = new_font
     
     # --- কলামের প্রস্থ ঠিক করা ---
-    ws.column_dimensions['A'].width = 20
+    ws.column_dimensions['A'].width = 22
     ws.column_dimensions['B'].width = 6
     
     for i in range(2, NUM_COLUMNS + 1): 
@@ -225,7 +225,7 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
         header_length = len(str(ws.cell(row=TABLE_START_ROW, column=i).value) or "")
         
         # অতিরিক্ত প্যাডিং বাড়ানো হয়েছে যাতে বোল্ড টেক্সট কেটে না যায়
-        ws.column_dimensions[column_letter].width = max(max_length, header_length) + 7
+        ws.column_dimensions[column_letter].width = max(max_length, header_length) + 9
     
     # --- পেজ সেটআপ ---
     ws.page_setup.orientation = ws.ORIENTATION_PORTRAIT; ws.page_setup.fitToPage = True; ws.page_setup.fitToWidth = 1; ws.page_setup.fitToHeight = 1
@@ -291,7 +291,7 @@ def generate_report():
         return render_template_string(HTML_TEMPLATE)
 
     # ERP তে লগইন করা
-    active_session = get_authenticated_session("Clothing-cutting", "479356")
+    active_session = get_authenticated_session("Clothing-cutting", "489356")
     if not active_session:
         flash("Login failed! Check credentials.")
         return render_template_string(HTML_TEMPLATE)
@@ -341,6 +341,7 @@ def generate_report():
 
 if __name__ == '__main__':
     app.run(debug=True)
+
 
 
 
