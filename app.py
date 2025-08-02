@@ -187,8 +187,8 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
         direct_image_url = 'https://i.ibb.co/v6bp0jQW/rockybilly-regular.webp'
         image_response = requests.get(direct_image_url); image_response.raise_for_status()
         original_img = PILImage.open(BytesIO(image_response.content))
-        padded_img = PILImage.new('RGBA', (original_img.width + 600, original_img.height), (0, 0, 0, 0))
-        padded_img.paste(original_img, (600, 0))
+        padded_img = PILImage.new('RGBA', (original_img.width + 400, original_img.height), (0, 0, 0, 0))
+        padded_img.paste(original_img, (400, 0))
         padded_image_io = BytesIO(); padded_img.save(padded_image_io, format='PNG')
         img = Image(padded_image_io); aspect_ratio = padded_img.height / padded_img.width
         img.width = 120; img.height = int(img.width * aspect_ratio)
@@ -339,6 +339,7 @@ def generate_report():
 
 if __name__ == '__main__':
     app.run(debug=True)
+
 
 
 
