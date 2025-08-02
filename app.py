@@ -116,8 +116,8 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
     NUM_COLUMNS, TABLE_START_ROW = 9, 8
     
     # --- প্রধান দুটি হেডার ---
-    ws.merge_cells(start_row=1, start_column=1, end_row=1, end_column=NUM_COLUMNS); ws['A1'].value = "COTTON CLOTHING BD LTD"; ws['A1'].font = Font(size=20, bold=True); ws['A1'].alignment = center_align
-    ws.merge_cells(start_row=2, start_column=1, end_row=2, end_column=NUM_COLUMNS); ws['A2'].value = "CLOSING REPORT [ INPUT SECTION ]"; ws['A2'].font = Font(size=14, bold=False); ws['A2'].alignment = center_align
+    ws.merge_cells(start_row=1, start_column=1, end_row=1, end_column=NUM_COLUMNS); ws['A1'].value = "COTTON CLOTHING BD LTD"; ws['A1'].font = Font(size=25, bold=True); ws['A1'].alignment = center_align
+    ws.merge_cells(start_row=2, start_column=1, end_row=2, end_column=NUM_COLUMNS); ws['A2'].value = "CLOSING REPORT [ INPUT SECTION ]"; ws['A2'].font = Font(size=18, bold=False); ws['A2'].alignment = center_align
     ws.row_dimensions[3].height = 6
 
     # --- সাব-হেডারসমূহ ---
@@ -207,7 +207,7 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
         for cell in row:
             if cell.font:
                 existing_font = cell.font
-                new_font = Font(name=existing_font.name, size=13, bold=existing_font.bold, italic=existing_font.italic, vertAlign=existing_font.vertAlign, underline=existing_font.underline, strike=existing_font.strike, color=existing_font.color)
+                new_font = Font(name=existing_font.name, size=15, bold=existing_font.bold, italic=existing_font.italic, vertAlign=existing_font.vertAlign, underline=existing_font.underline, strike=existing_font.strike, color=existing_font.color)
                 cell.font = new_font
     
     # --- কলামের প্রস্থ ঠিক করা ---
@@ -341,6 +341,7 @@ def generate_report():
 
 if __name__ == '__main__':
     app.run(debug=True)
+
 
 
 
