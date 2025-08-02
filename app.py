@@ -201,7 +201,7 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
     ws.merge_cells(start_row=signature_row, start_column=1, end_row=signature_row, end_column=NUM_COLUMNS)
     titles = ["Prepared By", "Input Incharge", "Cutting Incharge", "IE & Planning", "Sewing Manager", "Cutting Manager"]
     signature_cell = ws.cell(row=signature_row, column=1)
-    signature_cell.value = "                   ".join(titles)
+    signature_cell.value = "                  ".join(titles)
     signature_cell.font = Font(bold=True, size=15) # ফন্ট সাইজ ১৪ করা হয়েছে
     signature_cell.alignment = Alignment(horizontal='center', vertical='center')
 
@@ -339,6 +339,7 @@ def generate_report():
 
 if __name__ == '__main__':
     app.run(debug=True)
+
 
 
 
