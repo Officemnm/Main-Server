@@ -212,7 +212,7 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
     
     # --- কলামের প্রস্থ ঠিক করা ---
     ws.column_dimensions['A'].width = 18
-    ws.column_dimensions['B'].width = 7
+    ws.column_dimensions['B'].width = 6
     
     for i in range(2, NUM_COLUMNS + 1): 
         column_letter = get_column_letter(i)
@@ -341,6 +341,7 @@ def generate_report():
 
 if __name__ == '__main__':
     app.run(debug=True)
+
 
 
 
