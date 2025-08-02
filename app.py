@@ -191,7 +191,7 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
         padded_img.paste(original_img, (400, 0))
         padded_image_io = BytesIO(); padded_img.save(padded_image_io, format='PNG')
         img = Image(padded_image_io); aspect_ratio = padded_img.height / padded_img.width
-        img.width = 120; img.height = int(img.width * aspect_ratio)
+        img.width = 95; img.height = int(img.width * aspect_ratio)
         ws.row_dimensions[image_row].height = img.height * 0.90; ws.add_image(img, f'A{image_row}')
     except Exception as e:
         print(f"ছবি যোগ করার সময় ত্রুটি: {e}")
@@ -339,6 +339,7 @@ def generate_report():
 
 if __name__ == '__main__':
     app.run(debug=True)
+
 
 
 
