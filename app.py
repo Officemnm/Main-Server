@@ -116,8 +116,8 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
     NUM_COLUMNS, TABLE_START_ROW = 9, 8
     
     # --- প্রধান দুটি হেডার ---
-    ws.merge_cells(start_row=1, start_column=1, end_row=1, end_column=NUM_COLUMNS); ws['A1'].value = "COTTON CLOTHING BD LTD"; ws['A1'].font = Font(size=25, bold=True); ws['A1'].alignment = center_align
-    ws.merge_cells(start_row=2, start_column=1, end_row=2, end_column=NUM_COLUMNS); ws['A2'].value = "CLOSING REPORT [ INPUT SECTION ]"; ws['A2'].font = Font(size=18, bold=False); ws['A2'].alignment = center_align
+    ws.merge_cells(start_row=1, start_column=1, end_row=1, end_column=NUM_COLUMNS); ws['A1'].value = "COTTON CLOTHING BD LTD"; ws['A1'].font = Font(size=32, bold=True); ws['A1'].alignment = center_align
+    ws.merge_cells(start_row=2, start_column=1, end_row=2, end_column=NUM_COLUMNS); ws['A2'].value = "CLOSING REPORT [ INPUT SECTION ]"; ws['A2'].font = Font(size=24, bold=False); ws['A2'].alignment = center_align
     ws.row_dimensions[3].height = 6
 
     # --- সাব-হেডারসমূহ ---
@@ -191,7 +191,7 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
         padded_img.paste(original_img, (600, 0))
         padded_image_io = BytesIO(); padded_img.save(padded_image_io, format='PNG')
         img = Image(padded_image_io); aspect_ratio = padded_img.height / padded_img.width
-        img.width = 70; img.height = int(img.width * aspect_ratio)
+        img.width = 90; img.height = int(img.width * aspect_ratio)
         ws.row_dimensions[image_row].height = img.height * 0.90; ws.add_image(img, f'A{image_row}')
     except Exception as e:
         print(f"ছবি যোগ করার সময় ত্রুটি: {e}")
@@ -212,7 +212,7 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
     
     # --- কলামের প্রস্থ ঠিক করা ---
     ws.column_dimensions['A'].width = 22
-    ws.column_dimensions['B'].width = 6
+    ws.column_dimensions['B'].width = 4
     
     for i in range(2, NUM_COLUMNS + 1): 
         column_letter = get_column_letter(i)
@@ -225,12 +225,12 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
         header_length = len(str(ws.cell(row=TABLE_START_ROW, column=i).value) or "")
         
         # অতিরিক্ত প্যাডিং বাড়ানো হয়েছে যাতে বোল্ড টেক্সট কেটে না যায়
-        ws.column_dimensions[column_letter].width = max(max_length, header_length) + 9
+        ws.column_dimensions[column_letter].width = max(max_length, header_length) + 10
     
     # --- পেজ সেটআপ ---
     ws.page_setup.orientation = ws.ORIENTATION_PORTRAIT; ws.page_setup.fitToPage = True; ws.page_setup.fitToWidth = 1; ws.page_setup.fitToHeight = 1
     ws.page_setup.horizontalCentered = True; ws.page_setup.verticalCentered = True
-    ws.page_setup.top = 0.25; ws.page_setup.left = 0.25; ws.page_setup.right = 0.25; ws.page_setup.bottom = 0.25
+    ws.page_setup.top = 0; ws.page_setup.left = 0.25; ws.page_setup.right = 0.25; ws.page_setup.bottom = 0
     
     # --- ফাইল সেভ করার পরিবর্তে মেমোরি থেকে রিটার্ন করা ---
     file_stream = BytesIO()
@@ -341,6 +341,7 @@ def generate_report():
 
 if __name__ == '__main__':
     app.run(debug=True)
+
 
 
 
