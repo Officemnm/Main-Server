@@ -207,11 +207,11 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
         for cell in row:
             if cell.font:
                 existing_font = cell.font
-                new_font = Font(name=existing_font.name, size=15, bold=existing_font.bold, italic=existing_font.italic, vertAlign=existing_font.vertAlign, underline=existing_font.underline, strike=existing_font.strike, color=existing_font.color)
+                new_font = Font(name=existing_font.name, size=16.5, bold=existing_font.bold, italic=existing_font.italic, vertAlign=existing_font.vertAlign, underline=existing_font.underline, strike=existing_font.strike, color=existing_font.color)
                 cell.font = new_font
     
     # --- কলামের প্রস্থ ঠিক করা ---
-    ws.column_dimensions['A'].width = 18
+    ws.column_dimensions['A'].width = 20
     ws.column_dimensions['B'].width = 6
     
     for i in range(2, NUM_COLUMNS + 1): 
@@ -225,7 +225,7 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
         header_length = len(str(ws.cell(row=TABLE_START_ROW, column=i).value) or "")
         
         # অতিরিক্ত প্যাডিং বাড়ানো হয়েছে যাতে বোল্ড টেক্সট কেটে না যায়
-        ws.column_dimensions[column_letter].width = max(max_length, header_length) + 4.5
+        ws.column_dimensions[column_letter].width = max(max_length, header_length) + 7
     
     # --- পেজ সেটআপ ---
     ws.page_setup.orientation = ws.ORIENTATION_PORTRAIT; ws.page_setup.fitToPage = True; ws.page_setup.fitToWidth = 1; ws.page_setup.fitToHeight = 1
@@ -341,6 +341,7 @@ def generate_report():
 
 if __name__ == '__main__':
     app.run(debug=True)
+
 
 
 
