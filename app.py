@@ -199,7 +199,7 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
     # --- স্বাক্ষর সেকশন ---
     signature_row = image_row + 1; ws.merge_cells(start_row=signature_row, start_column=1, end_row=signature_row, end_column=NUM_COLUMNS)
     titles = ["Prepared By", "Input Incharge", "Cutting Incharge", "IE & Planning", "Sewing Manager", "Cutting Manager"]
-    signature_cell = ws.cell(row=signature_row, column=1); signature_cell.value = "                     ".join(titles); signature_cell.font = bold_font; signature_cell.alignment = Alignment(horizontal='center', vertical='center')
+    signature_cell = ws.cell(row=signature_row, column=1); signature_cell.value = "                      ".join(titles); signature_cell.font = bold_font; signature_cell.alignment = Alignment(horizontal='center', vertical='center')
 
     # --- ফন্ট সাইজ ১৩ করা ---
     last_data_row = current_row - 2
@@ -212,6 +212,7 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
     
     # --- কলামের প্রস্থ ঠিক করা ---
     ws.column_dimensions['A'].width = 18
+    ws.column_dimensions['B'].width = 7
     
     for i in range(2, NUM_COLUMNS + 1): 
         column_letter = get_column_letter(i)
@@ -224,7 +225,7 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
         header_length = len(str(ws.cell(row=TABLE_START_ROW, column=i).value) or "")
         
         # অতিরিক্ত প্যাডিং বাড়ানো হয়েছে যাতে বোল্ড টেক্সট কেটে না যায়
-        ws.column_dimensions[column_letter].width = max(max_length, header_length) + 4
+        ws.column_dimensions[column_letter].width = max(max_length, header_length) + 6
     
     # --- পেজ সেটআপ ---
     ws.page_setup.orientation = ws.ORIENTATION_PORTRAIT; ws.page_setup.fitToPage = True; ws.page_setup.fitToWidth = 1; ws.page_setup.fitToHeight = 1
@@ -340,5 +341,6 @@ def generate_report():
 
 if __name__ == '__main__':
     app.run(debug=True)
+
 
 
