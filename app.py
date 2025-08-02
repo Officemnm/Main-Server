@@ -8,28 +8,28 @@ from io import BytesIO
 from openpyxl.drawing.image import Image
 from PIL import Image as PILImage
 
-# --- Flask লাইব্রেরি ইম্পোর্ট ---
-from flask import Flask, request, render_template_string, send_file, flash
+# --- Flask লাইব্রেরি ইম্পোর্ট (session, redirect, url_for যোগ করা হয়েছে) ---
+from flask import Flask, request, render_template_string, send_file, flash, session, redirect, url_for
 
 app = Flask(__name__)
-app.secret_key = 'a-secret-key-for-flash-messages' # যেকোনো কী দিতে পারেন
+app.secret_key = 'a-very-secret-key-for-sessions' # সেশনের জন্য একটি সিক্রেট কী আবশ্যক
 
 # ==============================================================================
-# ফাংশন ১: ERP সিস্টেমে লগইন করার ফাংশন
+# ফাংশন ১: ERP সিস্টেমে লগইন করার ফাংশন (অপরিবর্তিত)
 # ==============================================================================
 def get_authenticated_session(username, password):
     login_url = 'http://103.231.177.24:8022/erp/login.php'
     login_payload = {'txt_userid': username, 'txt_password': password, 'submit': 'Login'}
-    session = requests.Session()
-    session.headers.update({
+    session_req = requests.Session()
+    session_req.headers.update({
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
     })
     try:
         print("লগইন করার চেষ্টা করা হচ্ছে...")
-        response = session.post(login_url, data=login_payload, timeout=20)
+        response = session_req.post(login_url, data=login_payload, timeout=20)
         if "dashboard.php" in response.url or "Invalid" not in response.text:
             print("✅ লগইন সফল হয়েছে!")
-            return session
+            return session_req
         else:
             print("❌ লগইন ব্যর্থ হয়েছে।")
             return None
@@ -38,7 +38,7 @@ def get_authenticated_session(username, password):
         return None
 
 # ==============================================================================
-# ফাংশন ২: HTML থেকে ডেটা পার্স করার ফাংশন
+# ফাংশন ২: HTML থেকে ডেটা পার্স করার ফাংশন (অপরিবর্তিত)
 # ==============================================================================
 def parse_report_data(html_content):
     all_report_data = []
@@ -93,7 +93,7 @@ def parse_report_data(html_content):
         return None
 
 # ==============================================================================
-# ফাংশন ৩: ফরম্যাটেড এক্সেল রিপোর্ট তৈরির ফাংশন
+# ফাংশন ৩: ফরম্যাটেড এক্সেল রিপোর্ট তৈরির ফাংশন (অপরিবর্তিত)
 # ==============================================================================
 def create_formatted_excel_report(report_data, internal_ref_no=""):
     if not report_data: return None
@@ -196,7 +196,7 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
     except Exception as e:
         print(f"ছবি যোগ করার সময় ত্রুটি: {e}")
 
-    # --- স্বাক্ষর সেকশন (ফন্ট সাইজ পরিবর্তন করা হয়েছে) ---
+    # --- স্বাক্ষর সেকশন ---
     signature_row = image_row + 1
     ws.merge_cells(start_row=signature_row, start_column=1, end_row=signature_row, end_column=NUM_COLUMNS)
     titles = ["Prepared By", "Input Incharge", "Cutting Incharge", "IE & Planning", "Sewing Manager", "Cutting Manager"]
@@ -214,7 +214,7 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
                 new_font = Font(name=existing_font.name, size=16.5, bold=existing_font.bold, italic=existing_font.italic, vertAlign=existing_font.vertAlign, underline=existing_font.underline, strike=existing_font.strike, color=existing_font.color)
                 cell.font = new_font
    
-    # --- কলামের প্রস্থ ঠিক করা ---
+    # --- কলামের প্রস্থ ---
     ws.column_dimensions['A'].width = 23
     ws.column_dimensions['B'].width = 6.5
     ws.column_dimensions['C'].width = 20
@@ -225,17 +225,13 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
     ws.column_dimensions['H'].width = 23
     ws.column_dimensions['I'].width = 18
    
-    # --- পেজ সেটআপ (আপনার ছবির মতো করে পরিবর্তন করা হয়েছে) ---
+    # --- পেজ সেটআপ ---
     ws.page_setup.orientation = ws.ORIENTATION_PORTRAIT
     ws.page_setup.fitToPage = True
     ws.page_setup.fitToWidth = 1
-    ws.page_setup.fitToHeight = 1 
-    
-    # Horizontally = True, Vertically = False
+    ws.page_setup.fitToHeight = 0 
     ws.page_setup.horizontalCentered = True
     ws.page_setup.verticalCentered = False 
-
-    # ছবির মতো করে মার্জিন সেট করা হয়েছে (মান ইঞ্চিতে)
     ws.page_setup.left = 0.25
     ws.page_setup.right = 0.25
     ws.page_setup.top = 0.45
@@ -243,7 +239,7 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
     ws.page_setup.header = 0
     ws.page_setup.footer = 0
    
-    # --- ফাইল সেভ করার পরিবর্তে মেমোরি থেকে রিটার্ন করা ---
+    # --- ফাইল সেভ ---
     file_stream = BytesIO()
     wb.save(file_stream)
     file_stream.seek(0)
@@ -251,11 +247,46 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
     return file_stream
 
 # ==============================================================================
-# Flask ওয়েব অ্যাপ্লিকেশনের অংশ
+# Flask ওয়েব অ্যাপ্লিকেশনের অংশ (পাসওয়ার্ডসহ আপডেট করা হয়েছে)
 # ==============================================================================
 
-# --- ওয়েবপেজের জন্য HTML টেমপ্লেট ---
-HTML_TEMPLATE = """
+# --- নতুন: পাসওয়ার্ড পেজের জন্য HTML টেমপ্লেট ---
+LOGIN_TEMPLATE = """
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Login - Report Generator</title>
+    <style>
+        body { font-family: sans-serif; background: #f4f4f9; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .container { background: white; padding: 2rem; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); text-align: center; width: 300px; }
+        h1 { color: #333; font-size: 1.5rem; margin-bottom: 1.5rem;}
+        input[type="password"] { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+        button { width: 100%; background: #007bff; color: white; padding: 10px 20px; border: none; border-radius: 4px; margin-top: 1.5rem; cursor: pointer; font-size: 1rem; }
+        button:hover { background: #0056b3; }
+        .flash { padding: 1rem; margin-top: 1rem; border-radius: 4px; background-color: #f8d7da; color: #721c24; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Enter Password</h1>
+        <form action="/login" method="post">
+            <input type="password" id="password" name="password" required>
+            <button type="submit">Login</button>
+        </form>
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                <div class="flash">{{ messages[0] }}</div>
+            {% endif %}
+        {% endwith %}
+    </div>
+</body>
+</html>
+"""
+
+# --- নতুন: রিপোর্ট জেনারেটর পেজের জন্য HTML টেমপ্লেট ---
+REPORT_GENERATOR_TEMPLATE = """
 <!doctype html>
 <html lang="en">
 <head>
@@ -264,12 +295,14 @@ HTML_TEMPLATE = """
     <title>Closing Report Generator</title>
     <style>
         body { font-family: sans-serif; background: #f4f4f9; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-        .container { background: white; padding: 2rem; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); text-align: center; }
+        .container { background: white; padding: 2rem; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); text-align: center; width: 400px; }
         h1 { color: #333; }
-        input[type="text"] { width: 100%; padding: 10px; margin-top: 1rem; border: 1px solid #ccc; border-radius: 4px; }
-        button { background: #007bff; color: white; padding: 10px 20px; border: none; border-radius: 4px; margin-top: 1.5rem; cursor: pointer; font-size: 1rem; }
+        input[type="text"] { width: 100%; padding: 10px; margin-top: 1rem; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+        button { width: 100%; background: #007bff; color: white; padding: 10px 20px; border: none; border-radius: 4px; margin-top: 1.5rem; cursor: pointer; font-size: 1rem; }
         button:hover { background: #0056b3; }
-        .flash { padding: 1rem; margin-top: 1rem; border-radius: 4px; background-color: #f8d7da; color: #721c24; }
+        .flash { padding: 1rem; margin-top: 1rem; border-radius: 4px; background-color: #e2e3e5; color: #41464b; }
+        a.logout { display: block; margin-top: 1.5rem; color: #6c757d; text-decoration: none; }
+        a.logout:hover { text-decoration: underline; }
     </style>
 </head>
 <body>
@@ -285,34 +318,61 @@ HTML_TEMPLATE = """
                 <div class="flash">{{ messages[0] }}</div>
             {% endif %}
         {% endwith %}
+        <a href="/logout" class="logout">Logout</a>
     </div>
 </body>
 </html>
 """
 
+# --- আপডেট করা Flask রুট ---
+
 @app.route('/')
 def index():
-    return render_template_string(HTML_TEMPLATE)
+    # যদি সেশনে লগইন করা না থাকে, তাহলে পাসওয়ার্ড পেজ দেখাবে
+    if not session.get('logged_in'):
+        return render_template_string(LOGIN_TEMPLATE)
+    # লগইন করা থাকলে রিপোর্ট জেনারেটর পেজ দেখাবে
+    else:
+        return render_template_string(REPORT_GENERATOR_TEMPLATE)
+
+@app.route('/login', methods=['POST'])
+def login():
+    # পাসওয়ার্ড '92675' হলে সেশন সেট করা হবে
+    if request.form.get('password') == '92675':
+        session['logged_in'] = True
+    else:
+        flash('ভুল পাসওয়ার্ড! আবার চেষ্টা করুন।')
+    return redirect(url_for('index'))
+
+@app.route('/logout')
+def logout():
+    session.pop('logged_in', None) # সেশন থেকে লগইন তথ্য মুছে ফেলা
+    flash('আপনি সফলভাবে লগ আউট করেছেন।')
+    return redirect(url_for('index'))
 
 @app.route('/generate-report', methods=['POST'])
 def generate_report():
+    # রিপোর্ট জেনারেট করার আগে লগইন করা আছে কিনা তা চেক করা
+    if not session.get('logged_in'):
+        flash('রিপোর্ট তৈরি করতে অনুগ্রহ করে প্রথমে লগইন করুন।')
+        return redirect(url_for('index'))
+
     internal_ref_no = request.form['ref_no']
     if not internal_ref_no:
         flash("Internal Ref No is required!")
-        return render_template_string(HTML_TEMPLATE)
+        return redirect(url_for('index'))
 
     # ERP তে লগইন করা
     active_session = get_authenticated_session("Clothing-cutting", "489356")
     if not active_session:
-        flash("Login failed! Check credentials.")
-        return render_template_string(HTML_TEMPLATE)
+        flash("ERP Login failed! Check credentials.")
+        return redirect(url_for('index'))
 
     # রিপোর্ট খোঁজা
     report_url = 'http://103.231.177.24:8022/erp/prod_planning/reports/requires/cutting_lay_production_report_controller.php'
     payload_template = {'action': 'report_generate', 'cbo_wo_company_name': '2', 'cbo_location_name': '2', 'cbo_floor_id': '0', 'cbo_buyer_name': '0', 'txt_internal_ref_no': internal_ref_no, 'reportType': '3'}
     found_data = None
    
-    # এখানে 2025 সাল ব্যবহার করা হয়েছে
     for year in ['2025', '2024']:
         for company_id in range(1, 6):
             payload = payload_template.copy()
@@ -330,12 +390,12 @@ def generate_report():
            
     if not found_data:
         flash(f"No data found for Ref No: {internal_ref_no}")
-        return render_template_string(HTML_TEMPLATE)
+        return redirect(url_for('index'))
 
     report_data = parse_report_data(found_data)
     if not report_data:
         flash(f"Failed to parse data for Ref No: {internal_ref_no}")
-        return render_template_string(HTML_TEMPLATE)
+        return redirect(url_for('index'))
 
     # এক্সেল ফাইল তৈরি ও পাঠানো
     excel_file_stream = create_formatted_excel_report(report_data, internal_ref_no)
@@ -348,8 +408,7 @@ def generate_report():
         )
     else:
         flash("Could not generate the Excel file.")
-        return render_template_string(HTML_TEMPLATE)
+        return redirect(url_for('index'))
 
 if __name__ == '__main__':
     app.run(debug=True)
-
