@@ -291,7 +291,7 @@ def generate_report():
         return render_template_string(HTML_TEMPLATE)
 
     # ERP তে লগইন করা
-    active_session = get_authenticated_session("Clothing-cutting", "489356")
+    active_session = get_authenticated_session("Clothing-cutting", "479356")
     if not active_session:
         flash("Login failed! Check credentials.")
         return render_template_string(HTML_TEMPLATE)
@@ -341,6 +341,7 @@ def generate_report():
 
 if __name__ == '__main__':
     app.run(debug=True)
+
 
 
 
