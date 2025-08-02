@@ -15,10 +15,9 @@ app = Flask(__name__)
 app.secret_key = 'a-secret-key-for-flash-messages' # যেকোনো কী দিতে পারেন
 
 # ==============================================================================
-# আপনার আগের ফাংশনগুলো এখানে কপি করুন (get_authenticated_session, parse_report_data)
+# ফাংশন ১: ERP সিস্টেমে লগইন করার ফাংশন
 # ==============================================================================
 def get_authenticated_session(username, password):
-    # আপনার আগের সম্পূর্ণ কোড...
     login_url = 'http://103.231.177.24:8022/erp/login.php'
     login_payload = {'txt_userid': username, 'txt_password': password, 'submit': 'Login'}
     session = requests.Session()
@@ -38,8 +37,10 @@ def get_authenticated_session(username, password):
         print(f"লগইন করার সময় একটি ত্রুটি ঘটেছে: {e}")
         return None
 
+# ==============================================================================
+# ফাংশন ২: HTML থেকে ডেটা পার্স করার ফাংশন
+# ==============================================================================
 def parse_report_data(html_content):
-    # আপনার আগের সম্পূর্ণ কোড...
     all_report_data = []
     try:
         soup = BeautifulSoup(html_content, 'lxml')
@@ -92,7 +93,7 @@ def parse_report_data(html_content):
         return None
 
 # ==============================================================================
-# ফাংশন ৩: পরিবর্তিত এক্সেল তৈরির ফাংশন
+# ফাংশন ৩: ফরম্যাটেড এক্সেল রিপোর্ট তৈরির ফাংশন
 # ==============================================================================
 def create_formatted_excel_report(report_data, internal_ref_no=""):
     if not report_data: return None
@@ -114,7 +115,7 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
 
     NUM_COLUMNS, TABLE_START_ROW = 9, 8
     
-    # --- প্রধান দুটি হেডার (এদের ফন্ট সাইজ অপরিবর্তিত থাকবে) ---
+    # --- প্রধান দুটি হেডার ---
     ws.merge_cells(start_row=1, start_column=1, end_row=1, end_column=NUM_COLUMNS); ws['A1'].value = "COTTON CLOTHING BD LTD"; ws['A1'].font = Font(size=20, bold=True); ws['A1'].alignment = center_align
     ws.merge_cells(start_row=2, start_column=1, end_row=2, end_column=NUM_COLUMNS); ws['A2'].value = "CLOSING REPORT [ INPUT SECTION ]"; ws['A2'].font = Font(size=14, bold=False); ws['A2'].alignment = center_align
     ws.row_dimensions[3].height = 6
@@ -195,37 +196,23 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
     except Exception as e:
         print(f"ছবি যোগ করার সময় ত্রুটি: {e}")
 
-    # --- স্বাক্ষর সেকশন (এর ফন্ট সাইজ অপরিবর্তিত থাকবে) ---
+    # --- স্বাক্ষর সেকশন ---
     signature_row = image_row + 1; ws.merge_cells(start_row=signature_row, start_column=1, end_row=signature_row, end_column=NUM_COLUMNS)
     titles = ["Prepared By", "Input Incharge", "Cutting Incharge", "IE & Planning", "Sewing Manager", "Cutting Manager"]
     signature_cell = ws.cell(row=signature_row, column=1); signature_cell.value = "          ".join(titles); signature_cell.font = bold_font; signature_cell.alignment = Alignment(horizontal='distributed', vertical='center')
 
-    # <<< পরিবর্তন শুরু: ফন্ট সাইজ ১৩ করা >>>
-    # সাব-হেডার এবং ডেটা টেবিলের সমস্ত সেলের ফন্ট সাইজ ১৩ করা হচ্ছে।
-    # এটি প্রতিটি সেলের বর্তমান ফন্ট স্টাইল (যেমন: বোল্ড) বজায় রেখে শুধুমাত্র সাইজ পরিবর্তন করবে।
-    # এই লুপটি ৪নং রো থেকে শুরু হয়ে টেবিলের শেষ পর্যন্ত চলবে।
-    last_data_row = current_row - 2 # ছবির আগের শেষ ডেটা সারি
+    # --- ফন্ট সাইজ ১৩ করা ---
+    last_data_row = current_row - 2
     for row in ws.iter_rows(min_row=4, max_row=last_data_row):
         for cell in row:
             if cell.font:
-                # বিদ্যমান ফন্ট সেটিংস (বোল্ড, ইটালিক ইত্যাদি) বজায় রেখে শুধু সাইজ পরিবর্তন করা হচ্ছে
                 existing_font = cell.font
-                new_font = Font(name=existing_font.name,
-                                size=13,
-                                bold=existing_font.bold,
-                                italic=existing_font.italic,
-                                vertAlign=existing_font.vertAlign,
-                                underline=existing_font.underline,
-                                strike=existing_font.strike,
-                                color=existing_font.color)
+                new_font = Font(name=existing_font.name, size=13, bold=existing_font.bold, italic=existing_font.italic, vertAlign=existing_font.vertAlign, underline=existing_font.underline, strike=existing_font.strike, color=existing_font.color)
                 cell.font = new_font
-    # <<< পরিবর্তন শেষ >>>
-
-    # <<< পরিবর্তন শুরু: কলামের প্রস্থ ঠিক করা >>>
-    # কালার কলামের প্রস্থ স্থির রাখা হয়েছে
+    
+    # --- কলামের প্রস্থ ঠিক করা ---
     ws.column_dimensions['A'].width = 16
     
-    # কলাম 'B' থেকে শুরু করে বাকি সব কলামের প্রস্থ টেক্সট অনুযায়ী স্বয়ংক্রিয়ভাবে সেট করা হচ্ছে
     for i in range(2, NUM_COLUMNS + 1): 
         column_letter = get_column_letter(i)
         max_length = 0
@@ -234,10 +221,10 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
             if cell_value:
                 max_length = max(max_length, len(str(cell_value)))
         
-        # টেবিল হেডারের দৈর্ঘ্যও বিবেচনায় আনা হচ্ছে
         header_length = len(str(ws.cell(row=TABLE_START_ROW, column=i).value) or "")
-        ws.column_dimensions[column_letter].width = max(max_length, header_length) + 2 # অতিরিক্ত প্যাডিং
-    # <<< পরিবর্তন শেষ >>>
+        
+        # অতিরিক্ত প্যাডিং বাড়ানো হয়েছে যাতে বোল্ড টেক্সট কেটে না যায়
+        ws.column_dimensions[column_letter].width = max(max_length, header_length) + 4
     
     # --- পেজ সেটআপ ---
     ws.page_setup.orientation = ws.ORIENTATION_PORTRAIT; ws.page_setup.fitToPage = True; ws.page_setup.fitToWidth = 1; ws.page_setup.fitToHeight = 1
@@ -250,6 +237,10 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
     file_stream.seek(0)
     print(f"✅ রিপোর্ট সফলভাবে মেমোরিতে তৈরি হয়েছে।")
     return file_stream
+
+# ==============================================================================
+# Flask ওয়েব অ্যাপ্লিকেশনের অংশ
+# ==============================================================================
 
 # --- ওয়েবপেজের জন্য HTML টেমপ্লেট ---
 HTML_TEMPLATE = """
@@ -309,6 +300,7 @@ def generate_report():
     payload_template = {'action': 'report_generate', 'cbo_wo_company_name': '2', 'cbo_location_name': '2', 'cbo_floor_id': '0', 'cbo_buyer_name': '0', 'txt_internal_ref_no': internal_ref_no, 'reportType': '3'}
     found_data = None
     
+    # এখানে 2025 সাল ব্যবহার করা হয়েছে, কারণ বর্তমান তারিখ 29শে জুলাই, 2025
     for year in ['2025', '2024']:
         for company_id in range(1, 6):
             payload = payload_template.copy()
@@ -346,6 +338,5 @@ def generate_report():
         flash("Could not generate the Excel file.")
         return render_template_string(HTML_TEMPLATE)
 
-# if __name__ == '__main__':
-#     app.run(debug=True)
-
+if __name__ == '__main__':
+    app.run(debug=True)
