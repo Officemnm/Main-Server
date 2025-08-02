@@ -216,7 +216,7 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
    
     # --- কলামের প্রস্থ ---
     ws.column_dimensions['A'].width = 23
-    ws.column_dimensions['B'].width = 7.5
+    ws.column_dimensions['B'].width = 8.5
     ws.column_dimensions['C'].width = 20
     ws.column_dimensions['D'].width = 17
     ws.column_dimensions['E'].width = 17
@@ -229,7 +229,7 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
     ws.page_setup.orientation = ws.ORIENTATION_PORTRAIT
     ws.page_setup.fitToPage = True
     ws.page_setup.fitToWidth = 1
-    ws.page_setup.fitToHeight = 0 
+    ws.page_setup.fitToHeight = 1 
     ws.page_setup.horizontalCentered = True
     ws.page_setup.verticalCentered = False 
     ws.page_setup.left = 0.25
@@ -412,4 +412,5 @@ def generate_report():
 
 if __name__ == '__main__':
     app.run(debug=True)
+
 
