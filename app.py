@@ -191,7 +191,7 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
         padded_img.paste(original_img, (600, 0))
         padded_image_io = BytesIO(); padded_img.save(padded_image_io, format='PNG')
         img = Image(padded_image_io); aspect_ratio = padded_img.height / padded_img.width
-        img.width = 90; img.height = int(img.width * aspect_ratio)
+        img.width = 150; img.height = int(img.width * aspect_ratio)
         ws.row_dimensions[image_row].height = img.height * 0.90; ws.add_image(img, f'A{image_row}')
     except Exception as e:
         print(f"ছবি যোগ করার সময় ত্রুটি: {e}")
@@ -201,7 +201,7 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
     ws.merge_cells(start_row=signature_row, start_column=1, end_row=signature_row, end_column=NUM_COLUMNS)
     titles = ["Prepared By", "Input Incharge", "Cutting Incharge", "IE & Planning", "Sewing Manager", "Cutting Manager"]
     signature_cell = ws.cell(row=signature_row, column=1)
-    signature_cell.value = "                    ".join(titles)
+    signature_cell.value = "                 ".join(titles)
     signature_cell.font = Font(bold=True, size=14) # ফন্ট সাইজ ১৪ করা হয়েছে
     signature_cell.alignment = Alignment(horizontal='center', vertical='center')
 
@@ -215,9 +215,9 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
                 cell.font = new_font
     
     # --- কলামের প্রস্থ ঠিক করা (আপনার অনুরোধ অনুযায়ী পরিবর্তন করা হয়েছে) ---
-    ws.column_dimensions['A'].width = 23
+    ws.column_dimensions['A'].width = 24
     ws.column_dimensions['B'].width = 8
-    ws.column_dimensions['C'].width = 19
+    ws.column_dimensions['C'].width = 20
     ws.column_dimensions['D'].width = 18
     ws.column_dimensions['E'].width = 18
     ws.column_dimensions['F'].width = 16
@@ -339,4 +339,5 @@ def generate_report():
 
 if __name__ == '__main__':
     app.run(debug=True)
+
 
