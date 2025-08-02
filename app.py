@@ -95,11 +95,12 @@ def parse_report_data(html_content):
 # ফাংশন ৩: পরিবর্তিত এক্সেল তৈরির ফাংশন
 # ==============================================================================
 def create_formatted_excel_report(report_data, internal_ref_no=""):
-    # আপনার আগের সম্পূর্ণ কোড...
     if not report_data: return None
     wb = openpyxl.Workbook()
     ws = wb.active
     ws.title = "Closing Report"
+    
+    # --- স্টাইলসমূহ ---
     bold_font = Font(bold=True)
     center_align = Alignment(horizontal='center', vertical='center')
     left_align = Alignment(horizontal='left', vertical='center')
@@ -110,10 +111,15 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
     light_red_fill = PatternFill(start_color="FFFFCDD2", end_color="FFFFCDD2", fill_type="solid")
     light_blue_fill = PatternFill(start_color="FFDDEBF7", end_color="FFDDEBF7", fill_type="solid")
     light_green_fill = PatternFill(start_color="FFE2F0D9", end_color="FFE2F0D9", fill_type="solid")
+
     NUM_COLUMNS, TABLE_START_ROW = 9, 8
+    
+    # --- প্রধান দুটি হেডার (এদের ফন্ট সাইজ অপরিবর্তিত থাকবে) ---
     ws.merge_cells(start_row=1, start_column=1, end_row=1, end_column=NUM_COLUMNS); ws['A1'].value = "COTTON CLOTHING BD LTD"; ws['A1'].font = Font(size=20, bold=True); ws['A1'].alignment = center_align
     ws.merge_cells(start_row=2, start_column=1, end_row=2, end_column=NUM_COLUMNS); ws['A2'].value = "CLOSING REPORT [ INPUT SECTION ]"; ws['A2'].font = Font(size=14, bold=False); ws['A2'].alignment = center_align
     ws.row_dimensions[3].height = 6
+
+    # --- সাব-হেডারসমূহ ---
     formatted_ref_no = internal_ref_no.upper(); current_date = datetime.now().strftime("%d/%m/%Y")
     left_sub_headers = {'A4': 'BUYER', 'B4': report_data[0].get('buyer', ''), 'A5': 'IR/IB NO', 'B5': formatted_ref_no, 'A6': 'STYLE NO', 'B6': report_data[0].get('style', '')}
     for cell_ref, value in left_sub_headers.items():
@@ -124,7 +130,10 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
         cell = ws[cell_ref]; cell.value = value; cell.font = bold_font; cell.alignment = left_align; cell.border = thin_border
     for row in range(4, 7):
         for col in range(3, 8): ws.cell(row=row, column=col).border = thin_border
+        
     current_row = TABLE_START_ROW
+    
+    # --- ডেটা টেবিল তৈরি ---
     for block in report_data:
         table_headers = ["COLOUR NAME", "SIZE", "ORDER QTY 3%", "ACTUAL QTY", "CUTTING QC", "INPUT QTY", "BALANCE", "SHORT/PLUS QTY", "Percentage %"]
         for col_idx, header in enumerate(table_headers, 1):
@@ -169,7 +178,10 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
             cell = ws.cell(row=current_row, column=col_idx)
             if not cell.value: cell.fill = light_brown_fill; cell.border = medium_border
         current_row += 2
+        
     image_row = current_row + 1
+    
+    # --- ছবি যোগ করার অংশ ---
     try:
         direct_image_url = 'https://i.ibb.co/v6bp0jQW/rockybilly-regular.webp'
         image_response = requests.get(direct_image_url); image_response.raise_for_status()
@@ -182,17 +194,52 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
         ws.row_dimensions[image_row].height = img.height * 0.75; ws.add_image(img, f'A{image_row}')
     except Exception as e:
         print(f"ছবি যোগ করার সময় ত্রুটি: {e}")
+
+    # --- স্বাক্ষর সেকশন (এর ফন্ট সাইজ অপরিবর্তিত থাকবে) ---
     signature_row = image_row + 1; ws.merge_cells(start_row=signature_row, start_column=1, end_row=signature_row, end_column=NUM_COLUMNS)
     titles = ["Prepared By", "Input Incharge", "Cutting Incharge", "IE & Planning", "Sewing Manager", "Cutting Manager"]
     signature_cell = ws.cell(row=signature_row, column=1); signature_cell.value = "          ".join(titles); signature_cell.font = bold_font; signature_cell.alignment = Alignment(horizontal='distributed', vertical='center')
-    ws.column_dimensions['A'].width = 16; ws.column_dimensions['B'].width = 7
-    for i in range(3, NUM_COLUMNS + 1):
-        column_letter = get_column_letter(i); max_length = 0
+
+    # <<< পরিবর্তন শুরু: ফন্ট সাইজ ১৩ করা >>>
+    # সাব-হেডার এবং ডেটা টেবিলের সমস্ত সেলের ফন্ট সাইজ ১৩ করা হচ্ছে।
+    # এটি প্রতিটি সেলের বর্তমান ফন্ট স্টাইল (যেমন: বোল্ড) বজায় রেখে শুধুমাত্র সাইজ পরিবর্তন করবে।
+    # এই লুপটি ৪নং রো থেকে শুরু হয়ে টেবিলের শেষ পর্যন্ত চলবে।
+    last_data_row = current_row - 2 # ছবির আগের শেষ ডেটা সারি
+    for row in ws.iter_rows(min_row=4, max_row=last_data_row):
+        for cell in row:
+            if cell.font:
+                # বিদ্যমান ফন্ট সেটিংস (বোল্ড, ইটালিক ইত্যাদি) বজায় রেখে শুধু সাইজ পরিবর্তন করা হচ্ছে
+                existing_font = cell.font
+                new_font = Font(name=existing_font.name,
+                                size=13,
+                                bold=existing_font.bold,
+                                italic=existing_font.italic,
+                                vertAlign=existing_font.vertAlign,
+                                underline=existing_font.underline,
+                                strike=existing_font.strike,
+                                color=existing_font.color)
+                cell.font = new_font
+    # <<< পরিবর্তন শেষ >>>
+
+    # <<< পরিবর্তন শুরু: কলামের প্রস্থ ঠিক করা >>>
+    # কালার কলামের প্রস্থ স্থির রাখা হয়েছে
+    ws.column_dimensions['A'].width = 16
+    
+    # কলাম 'B' থেকে শুরু করে বাকি সব কলামের প্রস্থ টেক্সট অনুযায়ী স্বয়ংক্রিয়ভাবে সেট করা হচ্ছে
+    for i in range(2, NUM_COLUMNS + 1): 
+        column_letter = get_column_letter(i)
+        max_length = 0
         for row_idx in range(TABLE_START_ROW, ws.max_row + 1):
             cell_value = ws.cell(row=row_idx, column=i).value
-            if cell_value: max_length = max(max_length, len(str(cell_value)))
+            if cell_value:
+                max_length = max(max_length, len(str(cell_value)))
+        
+        # টেবিল হেডারের দৈর্ঘ্যও বিবেচনায় আনা হচ্ছে
         header_length = len(str(ws.cell(row=TABLE_START_ROW, column=i).value) or "")
-        ws.column_dimensions[column_letter].width = max(max_length, header_length) + 1
+        ws.column_dimensions[column_letter].width = max(max_length, header_length) + 2 # অতিরিক্ত প্যাডিং
+    # <<< পরিবর্তন শেষ >>>
+    
+    # --- পেজ সেটআপ ---
     ws.page_setup.orientation = ws.ORIENTATION_PORTRAIT; ws.page_setup.fitToPage = True; ws.page_setup.fitToWidth = 1; ws.page_setup.fitToHeight = 1
     ws.page_setup.horizontalCentered = True; ws.page_setup.verticalCentered = True
     ws.page_setup.top = 0.25; ws.page_setup.left = 0.25; ws.page_setup.right = 0.25; ws.page_setup.bottom = 0.25
@@ -298,4 +345,7 @@ def generate_report():
     else:
         flash("Could not generate the Excel file.")
         return render_template_string(HTML_TEMPLATE)
+
+# if __name__ == '__main__':
+#     app.run(debug=True)
 
