@@ -187,7 +187,7 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
         direct_image_url = 'https://i.ibb.co/v6bp0jQW/rockybilly-regular.webp'
         image_response = requests.get(direct_image_url); image_response.raise_for_status()
         original_img = PILImage.open(BytesIO(image_response.content))
-        padded_img = PILImage.new('RGBA', (original_img.width + 400, original_img.height), (0, 0, 0, 0))
+        padded_img = PILImage.new('RGBA', (original_img.width + 900, original_img.height), (0, 0, 0, 0))
         padded_img.paste(original_img, (400, 0))
         padded_image_io = BytesIO(); padded_img.save(padded_image_io, format='PNG')
         img = Image(padded_image_io); aspect_ratio = padded_img.height / padded_img.width
@@ -199,7 +199,7 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
     # --- স্বাক্ষর সেকশন ---
     signature_row = image_row + 1; ws.merge_cells(start_row=signature_row, start_column=1, end_row=signature_row, end_column=NUM_COLUMNS)
     titles = ["Prepared By", "Input Incharge", "Cutting Incharge", "IE & Planning", "Sewing Manager", "Cutting Manager"]
-    signature_cell = ws.cell(row=signature_row, column=1); signature_cell.value = "                     ".join(titles); signature_cell.font = bold_font; signature_cell.alignment = Alignment(horizontal='center', vertical='center')
+    signature_cell = ws.cell(row=signature_row, column=1); signature_cell.value = "                          ".join(titles); signature_cell.font = bold_font; signature_cell.alignment = Alignment(horizontal='center', vertical='center')
 
     # --- ফন্ট সাইজ ১৩ করা ---
     last_data_row = current_row - 2
@@ -227,7 +227,7 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
         ws.column_dimensions[column_letter].width = max(max_length, header_length) + 5
     
     # --- পেজ সেটআপ ---
-    ws.page_setup.orientation = ws.ORIENTATION_PORTRAIT; ws.page_setup.fitToPage = True; ws.page_setup.fitToWidth = 0.25; ws.page_setup.fitToHeight = 0.25
+    ws.page_setup.orientation = ws.ORIENTATION_PORTRAIT; ws.page_setup.fitToPage = True; ws.page_setup.fitToWidth = 1; ws.page_setup.fitToHeight = 1
     ws.page_setup.horizontalCentered = True; ws.page_setup.verticalCentered = True
     ws.page_setup.top = 0.0; ws.page_setup.left = 0.25; ws.page_setup.right = 0.25; ws.page_setup.bottom = 0.0
     
@@ -340,6 +340,7 @@ def generate_report():
 
 if __name__ == '__main__':
     app.run(debug=True)
+
 
 
 
