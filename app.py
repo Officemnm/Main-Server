@@ -229,7 +229,7 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
     # --- পেজ সেটআপ ---
     ws.page_setup.orientation = ws.ORIENTATION_PORTRAIT; ws.page_setup.fitToPage = True; ws.page_setup.fitToWidth = 0.25; ws.page_setup.fitToHeight = 0.25
     ws.page_setup.horizontalCentered = True; ws.page_setup.verticalCentered = True
-    ws.page_setup.top = 0.25; ws.page_setup.left = 0.25; ws.page_setup.right = 0.25; ws.page_setup.bottom = 0.25
+    ws.page_setup.top = 0.0; ws.page_setup.left = 0.25; ws.page_setup.right = 0.25; ws.page_setup.bottom = 0.0
     
     # --- ফাইল সেভ করার পরিবর্তে মেমোরি থেকে রিটার্ন করা ---
     file_stream = BytesIO()
@@ -340,4 +340,5 @@ def generate_report():
 
 if __name__ == '__main__':
     app.run(debug=True)
+
 
