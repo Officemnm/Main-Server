@@ -196,10 +196,14 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
     except Exception as e:
         print(f"ছবি যোগ করার সময় ত্রুটি: {e}")
 
-    # --- স্বাক্ষর সেকশন ---
-    signature_row = image_row + 1; ws.merge_cells(start_row=signature_row, start_column=1, end_row=signature_row, end_column=NUM_COLUMNS)
+    # --- স্বাক্ষর সেকশন (ফন্ট সাইজ পরিবর্তন করা হয়েছে) ---
+    signature_row = image_row + 1
+    ws.merge_cells(start_row=signature_row, start_column=1, end_row=signature_row, end_column=NUM_COLUMNS)
     titles = ["Prepared By", "Input Incharge", "Cutting Incharge", "IE & Planning", "Sewing Manager", "Cutting Manager"]
-    signature_cell = ws.cell(row=signature_row, column=1); signature_cell.value = "                        ".join(titles); signature_cell.font = bold_font; signature_cell.alignment = Alignment(horizontal='center', vertical='center')
+    signature_cell = ws.cell(row=signature_row, column=1)
+    signature_cell.value = "                        ".join(titles)
+    signature_cell.font = Font(bold=True, size=14) # ফন্ট সাইজ ১৪ করা হয়েছে
+    signature_cell.alignment = Alignment(horizontal='center', vertical='center')
 
     # --- ফন্ট সাইজ ১৩ করা ---
     last_data_row = current_row - 2
@@ -210,22 +214,16 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
                 new_font = Font(name=existing_font.name, size=16.5, bold=existing_font.bold, italic=existing_font.italic, vertAlign=existing_font.vertAlign, underline=existing_font.underline, strike=existing_font.strike, color=existing_font.color)
                 cell.font = new_font
     
-    # --- কলামের প্রস্থ ঠিক করা ---
-    ws.column_dimensions['A'].width = 22
-    ws.column_dimensions['B'].width = 4
-    
-    for i in range(2, NUM_COLUMNS + 1): 
-        column_letter = get_column_letter(i)
-        max_length = 0
-        for row_idx in range(TABLE_START_ROW, ws.max_row + 1):
-            cell_value = ws.cell(row=row_idx, column=i).value
-            if cell_value:
-                max_length = max(max_length, len(str(cell_value)))
-        
-        header_length = len(str(ws.cell(row=TABLE_START_ROW, column=i).value) or "")
-        
-        # অতিরিক্ত প্যাডিং বাড়ানো হয়েছে যাতে বোল্ড টেক্সট কেটে না যায়
-        ws.column_dimensions[column_letter].width = max(max_length, header_length) + 10
+    # --- কলামের প্রস্থ ঠিক করা (আপনার অনুরোধ অনুযায়ী পরিবর্তন করা হয়েছে) ---
+    ws.column_dimensions['A'].width = 21
+    ws.column_dimensions['B'].width = 8
+    ws.column_dimensions['C'].width = 20
+    ws.column_dimensions['D'].width = 18
+    ws.column_dimensions['E'].width = 17
+    ws.column_dimensions['F'].width = 16
+    ws.column_dimensions['G'].width = 15
+    ws.column_dimensions['H'].width = 23
+    ws.column_dimensions['I'].width = 18
     
     # --- পেজ সেটআপ ---
     ws.page_setup.orientation = ws.ORIENTATION_PORTRAIT; ws.page_setup.fitToPage = True; ws.page_setup.fitToWidth = 1; ws.page_setup.fitToHeight = 1
@@ -301,7 +299,7 @@ def generate_report():
     payload_template = {'action': 'report_generate', 'cbo_wo_company_name': '2', 'cbo_location_name': '2', 'cbo_floor_id': '0', 'cbo_buyer_name': '0', 'txt_internal_ref_no': internal_ref_no, 'reportType': '3'}
     found_data = None
     
-    # এখানে 2025 সাল ব্যবহার করা হয়েছে, কারণ বর্তমান তারিখ 29শে জুলাই, 2025
+    # এখানে 2025 সাল ব্যবহার করা হয়েছে, কারণ বর্তমান তারিখ 2রা আগস্ট, 2025
     for year in ['2025', '2024']:
         for company_id in range(1, 6):
             payload = payload_template.copy()
@@ -341,15 +339,3 @@ def generate_report():
 
 if __name__ == '__main__':
     app.run(debug=True)
-
-
-
-
-
-
-
-
-
-
-
-
