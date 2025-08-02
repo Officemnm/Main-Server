@@ -229,7 +229,7 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
     ws.page_setup.orientation = ws.ORIENTATION_PORTRAIT
     ws.page_setup.fitToPage = True
     ws.page_setup.fitToWidth = 1
-    ws.page_setup.fitToHeight = 0 
+    ws.page_setup.fitToHeight = 1 
     
     # Horizontally = True, Vertically = False
     ws.page_setup.horizontalCentered = True
@@ -352,3 +352,4 @@ def generate_report():
 
 if __name__ == '__main__':
     app.run(debug=True)
+
