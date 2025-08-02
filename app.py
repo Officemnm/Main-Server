@@ -201,7 +201,7 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
     ws.merge_cells(start_row=signature_row, start_column=1, end_row=signature_row, end_column=NUM_COLUMNS)
     titles = ["Prepared By", "Input Incharge", "Cutting Incharge", "IE & Planning", "Sewing Manager", "Cutting Manager"]
     signature_cell = ws.cell(row=signature_row, column=1)
-    signature_cell.value = "                        ".join(titles)
+    signature_cell.value = "                    ".join(titles)
     signature_cell.font = Font(bold=True, size=14) # ফন্ট সাইজ ১৪ করা হয়েছে
     signature_cell.alignment = Alignment(horizontal='center', vertical='center')
 
@@ -215,15 +215,15 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
                 cell.font = new_font
     
     # --- কলামের প্রস্থ ঠিক করা (আপনার অনুরোধ অনুযায়ী পরিবর্তন করা হয়েছে) ---
-    ws.column_dimensions['A'].width = 21
+    ws.column_dimensions['A'].width = 23
     ws.column_dimensions['B'].width = 8
-    ws.column_dimensions['C'].width = 20
+    ws.column_dimensions['C'].width = 19
     ws.column_dimensions['D'].width = 18
-    ws.column_dimensions['E'].width = 17
+    ws.column_dimensions['E'].width = 18
     ws.column_dimensions['F'].width = 16
     ws.column_dimensions['G'].width = 15
-    ws.column_dimensions['H'].width = 23
-    ws.column_dimensions['I'].width = 18
+    ws.column_dimensions['H'].width = 24
+    ws.column_dimensions['I'].width = 19
     
     # --- পেজ সেটআপ ---
     ws.page_setup.orientation = ws.ORIENTATION_PORTRAIT; ws.page_setup.fitToPage = True; ws.page_setup.fitToWidth = 1; ws.page_setup.fitToHeight = 1
@@ -339,3 +339,4 @@ def generate_report():
 
 if __name__ == '__main__':
     app.run(debug=True)
+
