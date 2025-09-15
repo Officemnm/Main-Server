@@ -79,6 +79,7 @@ def parse_report_data(html_content):
                     elif "cutting qc" in sub_lower and "balance" not in sub_lower:
                         cutting_qc_data = [cell.get_text(strip=True) for cell in cells[3:len(headers)+3]]
             if gmts_qty_data:
+                # এই সেকশনটি এখন আর এক্সেল তৈরির জন্য সরাসরি ব্যবহৃত হবে না, তবে ডেটা পার্সিংয়ের জন্য রাখা হলো
                 plus_3_percent_data = []
                 for value in gmts_qty_data:
                     try:
@@ -93,7 +94,7 @@ def parse_report_data(html_content):
         return None
 
 # ==============================================================================
-# ফাংশন ৩: ফরম্যাটেড এক্সেল রিপোর্ট তৈরির ফাংশন (অপরিবর্তিত)
+# ফাংশন ৩: ফরম্যাটেড এক্সেল রিপোর্ট তৈরির ফাংশন (সম্পূর্ণরূপে সূত্র সহ আপডেট করা হয়েছে)
 # ==============================================================================
 def create_formatted_excel_report(report_data, internal_ref_no=""):
     if not report_data: return None
@@ -142,39 +143,71 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
         current_row += 1
         start_merge_row = current_row
         full_color_name = block.get('color', 'N/A')
-        total_input_qty, total_order_qty_3_percent, total_actual_qty, total_short_plus_qty, total_cutting_qc, total_balance = 0, 0, 0, 0, 0, 0
+
         for i, size in enumerate(block['headers']):
             color_to_write = full_color_name if i == 0 else ""
             actual_qty = int(block['gmts_qty'][i].replace(',', '') or 0)
-            three_percent_qty = int(block['plus_3_percent'][i].replace(',', '') or 0)
             input_qty = int(block['sewing_input'][i].replace(',', '') or 0) if i < len(block['sewing_input']) else 0
             cutting_qc_val = int(block.get('cutting_qc', [])[i].replace(',', '') or 0) if i < len(block.get('cutting_qc', [])) else 0
-            balance_val, short_plus_qty = cutting_qc_val - input_qty, input_qty - three_percent_qty
-            percentage_val = (short_plus_qty / three_percent_qty) * 100 if three_percent_qty != 0 else 0.0
-            percentage_str = f"{percentage_val:.2f}%"
-            total_input_qty += input_qty; total_order_qty_3_percent += three_percent_qty; total_actual_qty += actual_qty; total_short_plus_qty += short_plus_qty; total_cutting_qc += cutting_qc_val; total_balance += balance_val
-            row_data = [color_to_write, size, three_percent_qty, actual_qty, cutting_qc_val, input_qty, balance_val, short_plus_qty, percentage_str]
-            for col_idx, value in enumerate(row_data, 1):
-                cell = ws.cell(row=current_row, column=col_idx, value=value)
+            
+            # ডেটা এবং সূত্র লেখা
+            ws.cell(row=current_row, column=1, value=color_to_write)
+            ws.cell(row=current_row, column=2, value=size)
+            ws.cell(row=current_row, column=4, value=actual_qty)
+            ws.cell(row=current_row, column=5, value=cutting_qc_val)
+            ws.cell(row=current_row, column=6, value=input_qty)
+            
+            # সম্পূর্ণভাবে সূত্র ব্যবহার করে সেল পূরণ
+            ws.cell(row=current_row, column=3, value=f"=ROUND(D{current_row}*1.03, 0)")      # ORDER QTY 3%
+            ws.cell(row=current_row, column=7, value=f"=E{current_row}-F{current_row}")      # BALANCE
+            ws.cell(row=current_row, column=8, value=f"=F{current_row}-C{current_row}")      # SHORT/PLUS QTY
+            ws.cell(row=current_row, column=9, value=f'=IF(C{current_row}<>0, H{current_row}/C{current_row}, 0)') # Percentage %
+            
+            # স্টাইল প্রয়োগ
+            for col_idx in range(1, NUM_COLUMNS + 1):
+                cell = ws.cell(row=current_row, column=col_idx)
                 cell.border = medium_border if col_idx == 2 else thin_border
                 cell.alignment = center_align
                 if col_idx in [1, 2, 3, 6, 9]: cell.font = bold_font
                 if col_idx == 3: cell.fill = light_blue_fill
                 elif col_idx == 6: cell.fill = light_green_fill
-                if col_idx == 9 and percentage_val <= -3: cell.fill = light_red_fill
+                
+                if col_idx == 9:
+                    cell.number_format = '0.00%' # সঠিক পার্সেন্টেজ ফরম্যাট
             current_row += 1
+            
         end_merge_row = current_row - 1
         if start_merge_row <= end_merge_row:
             ws.merge_cells(start_row=start_merge_row, start_column=1, end_row=end_merge_row, end_column=1)
             merged_cell = ws.cell(row=start_merge_row, column=1)
             merged_cell.alignment = color_align
             if not merged_cell.font.bold: merged_cell.font = bold_font
-        total_percentage_str = f"{(total_short_plus_qty / total_order_qty_3_percent) * 100:.2f}%" if total_order_qty_3_percent != 0 else "0.00%"
+
+        # মোট হিসাবের জন্য সূত্র
+        total_row_str = str(current_row)
         ws.merge_cells(start_row=current_row, start_column=1, end_row=current_row, end_column=2)
-        totals = {"A": "TOTAL", "C": total_order_qty_3_percent, "D": total_actual_qty, "E": total_cutting_qc, "F": total_input_qty, "G": total_balance, "H": total_short_plus_qty, "I": total_percentage_str}
-        for col_letter, value in totals.items():
+        
+        totals_formulas = {
+            "A": "TOTAL",
+            "C": f"=SUM(C{start_merge_row}:C{end_merge_row})",
+            "D": f"=SUM(D{start_merge_row}:D{end_merge_row})",
+            "E": f"=SUM(E{start_merge_row}:E{end_merge_row})",
+            "F": f"=SUM(F{start_merge_row}:F{end_merge_row})",
+            "G": f"=SUM(G{start_merge_row}:G{end_merge_row})",
+            "H": f"=SUM(H{start_merge_row}:H{end_merge_row})",
+            "I": f"=IF(C{total_row_str}<>0, H{total_row_str}/C{total_row_str}, 0)"
+        }
+        
+        for col_letter, value_or_formula in totals_formulas.items():
             cell = ws[f"{col_letter}{current_row}"]
-            cell.value = value; cell.font = bold_font; cell.border = medium_border; cell.alignment = center_align; cell.fill = light_brown_fill
+            cell.value = value_or_formula
+            cell.font = bold_font
+            cell.border = medium_border
+            cell.alignment = center_align
+            cell.fill = light_brown_fill
+            if col_letter == 'I':
+                cell.number_format = '0.00%'
+                
         for col_idx in range(2, NUM_COLUMNS + 1):
             cell = ws.cell(row=current_row, column=col_idx)
             if not cell.value: cell.fill = light_brown_fill; cell.border = medium_border
@@ -247,7 +280,7 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
     return file_stream
 
 # ==============================================================================
-# Flask ওয়েব অ্যাপ্লিকেশনের অংশ (পাসওয়ার্ডসহ আপডেট করা হয়েছে)
+# Flask ওয়েব অ্যাপ্লিকেশনের অংশ (অপরিবর্তিত)
 # ==============================================================================
 
 # --- নতুন: পাসওয়ার্ড পেজের জন্য HTML টেমপ্লেট ---
@@ -412,5 +445,3 @@ def generate_report():
 
 if __name__ == '__main__':
     app.run(debug=True)
-
-
