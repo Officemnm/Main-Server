@@ -436,7 +436,7 @@ def generate_report():
         return send_file(
             excel_file_stream,
             as_attachment=True,
-            download_name=f"Closing_Report_{internal_ref_no.replace('/', '_')}.xlsx",
+            download_name=f"Closing-Report-{internal_ref_no.replace('/', '/')}.xlsx",
             mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
         )
     else:
@@ -445,3 +445,4 @@ def generate_report():
 
 if __name__ == '__main__':
     app.run(debug=True)
+
