@@ -26,7 +26,7 @@ def get_authenticated_session(username, password):
     })
     try:
         print("লগইন করার চেষ্টা করা হচ্ছে...")
-        response = session_req.post(login_url, data=login_payload, timeout=20)
+        response = session_req.post(login_url, data=login_payload, timeout=200)
         if "dashboard.php" in response.url or "Invalid" not in response.text:
             print("✅ লগইন সফল হয়েছে!")
             return session_req
@@ -412,7 +412,7 @@ def generate_report():
             payload['cbo_year_selection'] = year
             payload['cbo_company_name'] = str(company_id)
             try:
-                response = active_session.post(report_url, data=payload, timeout=30)
+                response = active_session.post(report_url, data=payload, timeout=300)
                 if response.status_code == 200 and "Data not Found" not in response.text:
                     found_data = response.text
                     break
@@ -445,5 +445,6 @@ def generate_report():
 
 if __name__ == '__main__':
     app.run(debug=True)
+
 
 
