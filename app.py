@@ -407,10 +407,8 @@ def generate_report():
     found_data = None
    
     for year in ['2025', '2024']:
-        for company_id in range(1, 6):
             payload = payload_template.copy()
             payload['cbo_year_selection'] = year
-            payload['cbo_company_name'] = str(company_id)
             try:
                 response = active_session.post(report_url, data=payload, timeout=3000)
                 if response.status_code == 200 and "Data not Found" not in response.text:
@@ -445,6 +443,7 @@ def generate_report():
 
 if __name__ == '__main__':
     app.run(debug=True)
+
 
 
 
