@@ -370,8 +370,8 @@ def index():
 
 @app.route('/login', methods=['POST'])
 def login():
-    # পাসওয়ার্ড '92675' হলে সেশন সেট করা হবে
-    if request.form.get('password') == '92675':
+    # পাসওয়ার্ড '4276' হলে সেশন সেট করা হবে
+    if request.form.get('password') == '4276':
         session['logged_in'] = True
     else:
         flash('ভুল পাসওয়ার্ড! আবার চেষ্টা করুন।')
@@ -445,6 +445,7 @@ def generate_report():
 
 if __name__ == '__main__':
     app.run(debug=True)
+
 
 
 
