@@ -2,20 +2,23 @@ import requests
 import openpyxl
 from openpyxl.styles import Font, Alignment, Border, Side, PatternFill
 from bs4 import BeautifulSoup
-from datetime import datetime
+from datetime import datetime, timedelta
 from io import BytesIO
 from openpyxl.drawing.image import Image
 from PIL import Image as PILImage
 import time
 
 # --- Flask লাইব্রেরি ইম্পোর্ট ---
-from flask import Flask, request, render_template_string, send_file, flash, session, redirect, url_for
+from flask import Flask, request, render_template_string, send_file, flash, session, redirect, url_for, make_response
 
 app = Flask(__name__)
 app.secret_key = 'super-secret-secure-key-bd' 
 
+# --- ২ মিনিটের সেশন টাইমআউট কনফিগারেশন ---
+app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=2)
+
 # ==============================================================================
-# ফাংশন ১: ERP সিস্টেমে লগইন করার ফাংশন
+# ফাংশন ১: ERP সিস্টেমে লগইন করার ফাংশন (অপরিবর্তিত)
 # ==============================================================================
 def get_authenticated_session(username, password):
     login_url = 'http://180.92.235.190:8022/erp/login.php'
@@ -25,7 +28,6 @@ def get_authenticated_session(username, password):
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
     })
     try:
-        # 5 Minute Timeout (300 Seconds)
         response = session_req.post(login_url, data=login_payload, timeout=300)
         if "dashboard.php" in response.url or "Invalid" not in response.text:
             return session_req
@@ -36,7 +38,7 @@ def get_authenticated_session(username, password):
         return None
 
 # ==============================================================================
-# ফাংশন ২: HTML থেকে ডেটা পার্স করার ফাংশন
+# ফাংশন ২: HTML পার্সার (অপরিবর্তিত)
 # ==============================================================================
 def parse_report_data(html_content):
     all_report_data = []
@@ -88,7 +90,7 @@ def parse_report_data(html_content):
         return None
 
 # ==============================================================================
-# ফাংশন ৩: ফরম্যাটেড এক্সেল রিপোর্ট তৈরির ফাংশন
+# ফাংশন ৩: এক্সেল জেনারেটর (অপরিবর্তিত)
 # ==============================================================================
 def create_formatted_excel_report(report_data, internal_ref_no=""):
     if not report_data: return None
@@ -96,10 +98,10 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
     ws = wb.active
     ws.title = "Closing Report"
    
+    # Styles
     bold_font = Font(bold=True)
     title_font = Font(size=32, bold=True, color="7B261A") 
     white_bold_font = Font(size=16.5, bold=True, color="FFFFFF")
-    
     center_align = Alignment(horizontal='center', vertical='center')
     left_align = Alignment(horizontal='left', vertical='center')
     color_align = Alignment(horizontal='center', vertical='center', wrap_text=True)
@@ -259,7 +261,7 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
         img.height = int(img.width * aspect_ratio)
         ws.row_dimensions[image_row].height = img.height * 0.90
         ws.add_image(img, f'A{image_row}')
-    except Exception as e:
+    except Exception:
         pass
 
     signature_row = image_row + 1
@@ -309,7 +311,7 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
     return file_stream
 
 # ==============================================================================
-# CSS & HTML Templates
+# CSS & HTML Templates (আপডেট করা হয়েছে)
 # ==============================================================================
 COMMON_STYLES = """
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
@@ -381,10 +383,9 @@ COMMON_STYLES = """
             color: #fff;
             transition: all 0.3s ease;
             outline: none;
-            appearance: none; /* For Select Dropdown arrow */
+            appearance: none;
         }
         
-        /* Dropdown specific styles */
         select {
             cursor: pointer;
             background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23FFFFFF%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");
@@ -392,10 +393,7 @@ COMMON_STYLES = """
             background-position: right 15px top 50%;
             background-size: 12px auto;
         }
-        select option {
-            background-color: #2c3e50; /* Background for dropdown items */
-            color: white;
-        }
+        select option { background-color: #2c3e50; color: white; }
 
         input::placeholder { color: rgba(255, 255, 255, 0.6); }
         input:focus, select:focus {
@@ -444,12 +442,9 @@ COMMON_STYLES = """
             border-radius: 20px;
             transition: 0.3s;
         }
-        a.logout:hover {
-            background: rgba(255,255,255,0.2);
-            color: white;
-        }
+        a.logout:hover { background: rgba(255,255,255,0.2); color: white; }
 
-        /* --- LOADER CSS --- */
+        /* --- LOADER & SUCCESS CSS --- */
         #loading-overlay {
             display: none;
             position: fixed;
@@ -465,30 +460,35 @@ COMMON_STYLES = """
         }
         
         .spinner {
-            width: 60px;
-            height: 60px;
+            width: 60px; height: 60px;
             border: 5px solid rgba(255, 255, 255, 0.2);
             border-top: 5px solid #a29bfe;
             border-radius: 50%;
             animation: spin 1s linear infinite;
             margin-bottom: 20px;
         }
-        
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        #loading-text {
-            font-size: 18px;
-            font-weight: 500;
-            letter-spacing: 1px;
+        .success-icon {
+            font-size: 60px; color: #2ecc71; display: none; margin-bottom: 10px;
+            animation: popIn 0.5s ease;
         }
+        @keyframes popIn { from { transform: scale(0); } to { transform: scale(1); } }
 
-        /* Error State for Loader */
+        #loading-text { font-size: 18px; font-weight: 500; letter-spacing: 1px; text-align: center; }
+
+        /* Error State */
         .loader-error .spinner { border-top-color: #e74c3c; animation: none; }
         .loader-error #loading-text { color: #e74c3c; font-weight: 700; }
+        
+        /* Success State */
+        .loader-success .spinner { display: none; }
+        .loader-success .success-icon { display: block; }
+        .loader-success #loading-text { color: #2ecc71; font-weight: 600; }
     </style>
 """
 
-# --- লগইন পেজের টেমপ্লেট (আপডেট করা হয়েছে) ---
+# --- লগইন পেজের টেমপ্লেট ---
 LOGIN_TEMPLATE = f"""
 <!doctype html>
 <html lang="en">
@@ -526,7 +526,7 @@ LOGIN_TEMPLATE = f"""
 </html>
 """
 
-# --- ড্যাশবোর্ড পেজের টেমপ্লেট (আপডেট করা হয়েছে - লোডিং স্ক্রিন সহ) ---
+# --- ড্যাশবোর্ড পেজ (আপডেট করা হয়েছে: অটো লগআউট + ডাউনলোড ডিটেকশন) ---
 REPORT_GENERATOR_TEMPLATE = f"""
 <!doctype html>
 <html lang="en">
@@ -539,16 +539,18 @@ REPORT_GENERATOR_TEMPLATE = f"""
 <body>
     <div id="loading-overlay">
         <div class="spinner"></div>
+        <div class="success-icon">✅</div>
         <div id="loading-text">Processing data... Please wait</div>
     </div>
 
     <div class="glass-card">
         <h1>Generator Hub</h1>
         <p class="subtitle">Create Closing Reports Instantly</p>
-        <form action="/generate-report" method="post" onsubmit="showLoading()">
+        <form action="/generate-report" method="post" id="reportForm" onsubmit="startDownloadProcess()">
             <div class="input-group">
                 <label for="ref_no">Internal Reference No</label>
                 <input type="text" id="ref_no" name="ref_no" placeholder="e.g. DFL/24/..." required>
+                <input type="hidden" name="download_token" id="download_token">
             </div>
             <button type="submit">Generate Excel Report</button>
         </form>
@@ -561,33 +563,81 @@ REPORT_GENERATOR_TEMPLATE = f"""
     </div>
 
     <script>
-        function showLoading() {{
+        // === Auto Logout Logic (2 Minutes) ===
+        let timeout;
+        function resetTimer() {{
+            clearTimeout(timeout);
+            // 120,000 ms = 2 minutes
+            timeout = setTimeout(function() {{
+                alert("Session expired due to inactivity.");
+                window.location.href = "/logout";
+            }}, 120000);
+        }}
+        
+        // Event listeners for user activity
+        document.onmousemove = resetTimer;
+        document.onkeypress = resetTimer;
+        document.onload = resetTimer;
+        resetTimer(); // Start timer on load
+
+        // === File Download Detection Logic ===
+        function getCookie(name) {{
+            let parts = document.cookie.split(name + "=");
+            if (parts.length == 2) return parts.pop().split(";").shift();
+            return null;
+        }}
+
+        function startDownloadProcess() {{
             const overlay = document.getElementById('loading-overlay');
             const loadingText = document.getElementById('loading-text');
             const spinner = document.querySelector('.spinner');
+            const successIcon = document.querySelector('.success-icon');
+            const tokenInput = document.getElementById('download_token');
             
-            // Show overlay
+            // 1. Generate unique token
+            const token = new Date().getTime();
+            tokenInput.value = token;
+
+            // 2. Show Loader
             overlay.style.display = 'flex';
-            
-            // Reset states
-            overlay.classList.remove('loader-error');
+            overlay.className = ''; // Reset classes
             loadingText.innerHTML = "Processing data...<br><span style='font-size:12px; opacity:0.8'>Downloading will start automatically</span>";
             spinner.style.display = 'block';
+            successIcon.style.display = 'none';
 
-            // 5 Minute Timer (300,000 ms)
-            setTimeout(function() {{
-                overlay.classList.add('loader-error');
-                spinner.style.display = 'none'; // Hide spinner
-                loadingText.innerHTML = "Server Problem<br><span style='font-size:12px'>Request timed out (5 mins exceeded).</span><br><a href='/' style='color:white; margin-top:10px; display:inline-block; border:1px solid white; padding:5px 10px; text-decoration:none; border-radius:4px;'>Reload</a>";
-            }}, 300000);
+            // 3. Check for Cookie periodically
+            let attempts = 0;
+            const downloadTimer = setInterval(function() {{
+                const cookieValue = getCookie("download_token");
+                
+                // If cookie matches our token -> Download Started/Finished
+                if (cookieValue == token) {{
+                    clearInterval(downloadTimer);
+                    
+                    // Show Success Message
+                    overlay.classList.add('loader-success');
+                    loadingText.innerHTML = "Successful Download Complete!";
+                    
+                    // Remove overlay after 2 seconds
+                    setTimeout(() => {{
+                        overlay.style.opacity = '0';
+                        setTimeout(() => {{
+                            overlay.style.display = 'none';
+                            overlay.style.opacity = '1';
+                        }}, 500);
+                    }}, 2000);
+                }}
+                
+                attempts++;
+                // 300 attempts * 1s = 300s (5 mins timeout handling in JS)
+                if (attempts > 300) {{
+                    clearInterval(downloadTimer);
+                    overlay.classList.add('loader-error');
+                    spinner.style.display = 'none';
+                    loadingText.innerHTML = "Server Timeout<br><span style='font-size:12px'>Please try again later.</span><br><a href='/' style='color:white; border:1px solid white; padding:5px; border-radius:4px; margin-top:5px; display:inline-block;'>Reload</a>";
+                }}
+            }}, 1000);
         }}
-        
-        // Optional: Hide loader if user comes back using browser back button
-        window.onpageshow = function(event) {{
-            if (event.persisted) {{
-                document.getElementById('loading-overlay').style.display = 'none';
-            }}
-        }};
     </script>
 </body>
 </html>
@@ -607,11 +657,11 @@ def login():
     username = request.form.get('username')
     password = request.form.get('password')
 
-    # Credential Logic
     user_1 = (username == 'KobirAhmed' and password == '11223')
     user_2 = (username == 'Admin' and password == '@Nijhum@12')
 
     if user_1 or user_2:
+        session.permanent = True # সেশন টাইমআউট সক্রিয় করার জন্য
         session['logged_in'] = True
         session['user'] = username
     else:
@@ -621,47 +671,44 @@ def login():
 
 @app.route('/logout')
 def logout():
-    session.pop('logged_in', None)
-    session.pop('user', None)
-    flash('Session terminated securely.')
+    session.clear()
+    flash('Session terminated.')
     return redirect(url_for('index'))
 
 @app.route('/generate-report', methods=['POST'])
 def generate_report():
     if not session.get('logged_in'):
-        flash('Unauthorized access. Please login.')
+        flash('Unauthorized access.')
         return redirect(url_for('index'))
 
     internal_ref_no = request.form['ref_no']
+    download_token = request.form.get('download_token') # ক্লায়েন্ট থেকে টোকেন নেওয়া
+
     if not internal_ref_no:
         flash("Ref No required.")
         return redirect(url_for('index'))
 
-    # Note: Timeout logic handled in get_authenticated_session function
     active_session = get_authenticated_session("input2.clothing-cutting", "123456")
-    
     if not active_session:
-        flash("ERP Connection Failed or Timed Out.")
+        flash("ERP Connection Failed.")
         return redirect(url_for('index'))
 
     report_url = 'http://180.92.235.190:8022/erp/prod_planning/reports/requires/cutting_lay_production_report_controller.php'
     payload_template = {'action': 'report_generate', 'cbo_wo_company_name': '2', 'cbo_location_name': '2', 'cbo_floor_id': '0', 'cbo_buyer_name': '0', 'txt_internal_ref_no': internal_ref_no, 'reportType': '3'}
     found_data = None
    
-    # Data Fetching Logic
     for year in ['2025', '2024']:
         for company_id in range(1, 6):
             payload = payload_template.copy()
             payload['cbo_year_selection'] = year
             payload['cbo_company_name'] = str(company_id)
             try:
-                # 5 min timeout for report fetching
                 response = active_session.post(report_url, data=payload, timeout=300)
                 if response.status_code == 200 and "Data not Found" not in response.text:
                     found_data = response.text
                     break
             except requests.exceptions.RequestException:
-                continue # Try next combination
+                continue
         if found_data:
             break
            
@@ -675,13 +722,21 @@ def generate_report():
         return redirect(url_for('index'))
 
     excel_file_stream = create_formatted_excel_report(report_data, internal_ref_no)
+    
     if excel_file_stream:
-        return send_file(
+        # ফাইল রেসপন্স তৈরি করা
+        response = make_response(send_file(
             excel_file_stream,
             as_attachment=True,
             download_name=f"Closing-Report-{internal_ref_no.replace('/', '_')}.xlsx",
             mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-        )
+        ))
+        
+        # কুকি সেট করা যাতে ক্লায়েন্ট বুঝতে পারে ডাউনলোড হয়েছে
+        if download_token:
+            response.set_cookie('download_token', download_token, max_age=60, path='/')
+            
+        return response
     else:
         flash("Excel generation failed.")
         return redirect(url_for('index'))
