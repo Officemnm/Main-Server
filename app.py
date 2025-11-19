@@ -319,7 +319,7 @@ COMMON_STYLES = """
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
         body {
             background-color: #2c3e50; 
-            background-image: url('https://images.unsplash.com/photo-1497864149936-d7163d3d3a20?q=80&w=2070&auto=format&fit=crop');
+            background-image: url('https://i.ibb.co.com/v64Lz1gj/Picsart-25-11-19-15-49-43-423.jpg');
             background-repeat: no-repeat;
             background-position: center center;
             background-attachment: fixed;
@@ -544,12 +544,12 @@ REPORT_GENERATOR_TEMPLATE = f"""
     </div>
 
     <div class="glass-card">
-        <h1>Generator Hub</h1>
+        <h1>(©) Mehedi Hasan</h1>
         <p class="subtitle">Create Closing Reports Instantly</p>
         <form action="/generate-report" method="post" id="reportForm" onsubmit="startDownloadProcess()">
             <div class="input-group">
                 <label for="ref_no">Internal Reference No</label>
-                <input type="text" id="ref_no" name="ref_no" placeholder="e.g. DFL/24/..." required>
+                <input type="text" id="ref_no" name="ref_no" placeholder="Booking-123/456.." required>
                 <input type="hidden" name="download_token" id="download_token">
             </div>
             <button type="submit">Generate Excel Report</button>
@@ -743,3 +743,4 @@ def generate_report():
 
 if __name__ == '__main__':
     app.run(debug=True)
+
