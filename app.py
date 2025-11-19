@@ -105,10 +105,10 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
     bold_font = Font(bold=True)
     
     # ১. টাইটেলের জন্য লাল ফন্ট
-    title_font = Font(size=32, bold=True, color="FF0000") 
+    title_font = Font(size=32, bold=True, color="7b261a") 
     
     # ২. IR/IB ভ্যালুর জন্য সাদা ফন্ট
-    white_bold_font = Font(bold=True, color="FFFFFF")
+    white_bold_font = Font(size=16.5, bold=True, color="FFFFFF")
     
     center_align = Alignment(horizontal='center', vertical='center')
     left_align = Alignment(horizontal='left', vertical='center')
@@ -118,7 +118,7 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
     
     # --- কালার ডিফাইন করা ---
     ir_ib_fill = PatternFill(start_color="7b261a", end_color="7b261a", fill_type="solid") # Yellow
-    header_row_fill = PatternFill(start_color="FCE4D6", end_color="FCE4D6", fill_type="solid") # Light Orange
+    header_row_fill = PatternFill(start_color="de7465", end_color="de7465", fill_type="solid") # Light Orange
     
     # অন্যান্য কলামের কালার
     light_brown_fill = PatternFill(start_color="de7465", end_color="de7465", fill_type="solid") # Total Row (Data parts)
@@ -135,7 +135,7 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
 
     ws.merge_cells(start_row=2, start_column=1, end_row=2, end_column=NUM_COLUMNS)
     ws['A2'].value = "CLOSING REPORT [ INPUT SECTION ]"
-    ws['A2'].font = Font(size=24, bold=False)
+    ws['A2'].font = Font(size=18, bold=true)
     ws['A2'].alignment = center_align
     ws.row_dimensions[3].height = 6
 
@@ -481,4 +481,5 @@ def generate_report():
 
 if __name__ == '__main__':
     app.run(debug=True)
+
 
