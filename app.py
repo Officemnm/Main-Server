@@ -117,13 +117,13 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
     medium_border = Border(left=Side(style='medium'), right=Side(style='medium'), top=Side(style='medium'), bottom=Side(style='medium'))
     
     # --- কালার ডিফাইন করা ---
-    ir_ib_fill = PatternFill(start_color="FFFF00", end_color="FFFF00", fill_type="solid") # Yellow
+    ir_ib_fill = PatternFill(start_color="7b261a", end_color="7b261a", fill_type="solid") # Yellow
     header_row_fill = PatternFill(start_color="FCE4D6", end_color="FCE4D6", fill_type="solid") # Light Orange
     
     # অন্যান্য কলামের কালার
-    light_brown_fill = PatternFill(start_color="FFFFE082", end_color="FFFFE082", fill_type="solid") # Total Row (Data parts)
-    light_blue_fill = PatternFill(start_color="FFDDEBF7", end_color="FFDDEBF7", fill_type="solid") # Order Qty & Empty Parts
-    light_green_fill = PatternFill(start_color="FFE2F0D9", end_color="FFE2F0D9", fill_type="solid") # Input Qty
+    light_brown_fill = PatternFill(start_color="de7465", end_color="de7465", fill_type="solid") # Total Row (Data parts)
+    light_blue_fill = PatternFill(start_color="b9c2df", end_color="b9c2df", fill_type="solid") # Order Qty & Empty Parts
+    light_green_fill = PatternFill(start_color="c4d09d", end_color="c4d09d", fill_type="solid") # Input Qty
 
     NUM_COLUMNS, TABLE_START_ROW = 9, 8
    
@@ -481,3 +481,4 @@ def generate_report():
 
 if __name__ == '__main__':
     app.run(debug=True)
+
