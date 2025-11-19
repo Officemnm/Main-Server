@@ -135,7 +135,7 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
 
     ws.merge_cells(start_row=2, start_column=1, end_row=2, end_column=NUM_COLUMNS)
     ws['A2'].value = "CLOSING REPORT [ INPUT SECTION ]"
-    ws['A2'].font = Font(size=18, bold=true)
+    ws['A2'].font = Font(size=18, bold=True)
     ws['A2'].alignment = center_align
     ws.row_dimensions[3].height = 6
 
@@ -481,5 +481,6 @@ def generate_report():
 
 if __name__ == '__main__':
     app.run(debug=True)
+
 
 
