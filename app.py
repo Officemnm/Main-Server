@@ -125,7 +125,7 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
     light_green_fill = PatternFill(start_color="C4D09D", end_color="C4D09D", fill_type="solid") # Input Qty (Column 6)
     
     # --- ড্রাক গ্রিন (Dark Green) ফিল ---
-    dark_green_fill = PatternFill(start_color="006400", end_color="006400", fill_type="solid") 
+    dark_green_fill = PatternFill(start_color="f1f2e8", end_color="f1f2e8", fill_type="solid") 
 
     NUM_COLUMNS, TABLE_START_ROW = 9, 8
    
@@ -137,7 +137,7 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
 
     ws.merge_cells(start_row=2, start_column=1, end_row=2, end_column=NUM_COLUMNS)
     ws['A2'].value = "CLOSING REPORT [ INPUT SECTION ]"
-    ws['A2'].font = Font(size=18, bold=True) 
+    ws['A2'].font = Font(size=15, bold=True) 
     ws['A2'].alignment = center_align
     ws.row_dimensions[3].height = 6
 
@@ -509,3 +509,4 @@ def generate_report():
 
 if __name__ == '__main__':
     app.run(debug=True)
+
