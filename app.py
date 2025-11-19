@@ -349,7 +349,7 @@ COMMON_STYLES = """
         /* Glassmorphism Card Style */
         .glass-card {
             background: rgba(255, 255, 255, 0.15); /* স্বচ্ছ সাদা ব্যাকগ্রাউন্ড */
-            backdrop-filter: blur(12px); /* ব্লার ইফেক্ট */
+            backdrop-filter: blur(10px); /* ব্লার ইফেক্ট */
             -webkit-backdrop-filter: blur(12px);
             border: 1px solid rgba(255, 255, 255, 0.2); /* হালকা বর্ডার */
             padding: 45px 40px;
@@ -496,12 +496,12 @@ REPORT_GENERATOR_TEMPLATE = f"""
 </head>
 <body>
     <div class="glass-card">
-        <h1>Generator Hub</h1>
+        <h1>Generate Input Closhing</h1>
         <p class="subtitle">Create Closing Reports Instantly</p>
         <form action="/generate-report" method="post">
             <div class="input-group">
                 <label for="ref_no">Internal Reference No</label>
-                <input type="text" id="ref_no" name="ref_no" placeholder="e.g. DFL/24/..." required>
+                <input type="text" id="ref_no" name="ref_no" placeholder="123/456..." required>
             </div>
             <button type="submit">Generate Excel Report</button>
         </form>
@@ -597,4 +597,5 @@ def generate_report():
 
 if __name__ == '__main__':
     app.run(debug=True)
+
 
