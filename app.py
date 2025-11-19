@@ -325,7 +325,7 @@ COMMON_STYLES = """
             /* ইমেজের লোডিং সময়ে ডিফল্ট কালার */
             background-color: #2c3e50; 
             /* আপনার ইমেজ লিংক */
-            background-image: url('https://images.unsplash.com/photo-1497864149936-d7163d3d3a20?q=80&w=2070&auto=format&fit=crop');
+            background-image: url('https://i.ibb.co.com/v64Lz1gj/Picsart-25-11-19-15-49-43-423.jpg');
             background-repeat: no-repeat;
             background-position: center center;
             background-attachment: fixed;
@@ -597,3 +597,4 @@ def generate_report():
 
 if __name__ == '__main__':
     app.run(debug=True)
+
