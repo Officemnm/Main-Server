@@ -8,11 +8,11 @@ from io import BytesIO
 from openpyxl.drawing.image import Image
 from PIL import Image as PILImage
 
-# --- Flask লাইব্রেরি ইম্পোর্ট (session, redirect, url_for যোগ করা হয়েছে) ---
+# --- Flask লাইব্রেরি ইম্পোর্ট ---
 from flask import Flask, request, render_template_string, send_file, flash, session, redirect, url_for
 
 app = Flask(__name__)
-app.secret_key = 'a-very-secret-key-for-sessions' # সেশনের জন্য একটি সিক্রেট কী আবশ্যক
+app.secret_key = 'a-very-secret-key-for-sessions' 
 
 # ==============================================================================
 # ফাংশন ১: ERP সিস্টেমে লগইন করার ফাংশন (অপরিবর্তিত)
@@ -79,7 +79,6 @@ def parse_report_data(html_content):
                     elif "cutting qc" in sub_lower and "balance" not in sub_lower:
                         cutting_qc_data = [cell.get_text(strip=True) for cell in cells[3:len(headers)+3]]
             if gmts_qty_data:
-                # এই সেকশনটি এখন আর এক্সেল তৈরির জন্য সরাসরি ব্যবহৃত হবে না, তবে ডেটা পার্সিংয়ের জন্য রাখা হলো
                 plus_3_percent_data = []
                 for value in gmts_qty_data:
                     try:
@@ -94,7 +93,7 @@ def parse_report_data(html_content):
         return None
 
 # ==============================================================================
-# ফাংশন ৩: ফরম্যাটেড এক্সেল রিপোর্ট তৈরির ফাংশন (সম্পূর্ণরূপে সূত্র সহ আপডেট করা হয়েছে)
+# ফাংশন ৩: ফরম্যাটেড এক্সেল রিপোর্ট তৈরির ফাংশন (কালার এবং ব্যাকগ্রাউন্ড আপডেট করা হয়েছে)
 # ==============================================================================
 def create_formatted_excel_report(report_data, internal_ref_no=""):
     if not report_data: return None
@@ -102,30 +101,59 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
     ws = wb.active
     ws.title = "Closing Report"
    
-    # --- স্টাইলসমূহ ---
+    # --- স্টাইল এবং কালার প্যালেট ---
     bold_font = Font(bold=True)
+    
+    # ১. টাইটেলের জন্য লাল ফন্ট (RED TEXT)
+    title_font = Font(size=32, bold=True, color="FF0000") 
+    
     center_align = Alignment(horizontal='center', vertical='center')
     left_align = Alignment(horizontal='left', vertical='center')
     color_align = Alignment(horizontal='center', vertical='center', wrap_text=True)
     thin_border = Border(left=Side(style='thin'), right=Side(style='thin'), top=Side(style='thin'), bottom=Side(style='thin'))
     medium_border = Border(left=Side(style='medium'), right=Side(style='medium'), top=Side(style='medium'), bottom=Side(style='medium'))
-    light_brown_fill = PatternFill(start_color="FFF5E8D1", end_color="FFF5E8D1", fill_type="solid")
-    light_red_fill = PatternFill(start_color="FFFFCDD2", end_color="FFFFCDD2", fill_type="solid")
-    light_blue_fill = PatternFill(start_color="FFDDEBF7", end_color="FFDDEBF7", fill_type="solid")
-    light_green_fill = PatternFill(start_color="FFE2F0D9", end_color="FFE2F0D9", fill_type="solid")
+    
+    # --- কালার ডিফাইন করা ---
+    # ২. IR/IB Value এর জন্য (Yellow)
+    ir_ib_fill = PatternFill(start_color="FFFF00", end_color="FFFF00", fill_type="solid")
+    
+    # ৩. টেবিল হেডার রো (Colorname, Size...) এর জন্য (Light Orange)
+    header_row_fill = PatternFill(start_color="FCE4D6", end_color="FCE4D6", fill_type="solid")
+    
+    # ৪. সম্পূর্ণ শীটের ব্যাকগ্রাউন্ড (Global Background - Light Blue)
+    global_bg_fill = PatternFill(start_color="E0F7FA", end_color="E0F7FA", fill_type="solid")
+
+    # অন্যান্য কলামের কালার (আগের মতোই আছে)
+    light_brown_fill = PatternFill(start_color="FFFFE082", end_color="FFFFE082", fill_type="solid") # Total Row
+    light_red_fill = PatternFill(start_color="FFFF9999", end_color="FFFF9999", fill_type="solid") # Balance
+    light_yellow_fill = PatternFill(start_color="FFFFFF99", end_color="FFFFFF99", fill_type="solid") # Percentage
+    light_blue_fill = PatternFill(start_color="FFDDEBF7", end_color="FFDDEBF7", fill_type="solid") # Order Qty
+    light_green_fill = PatternFill(start_color="FFE2F0D9", end_color="FFE2F0D9", fill_type="solid") # Input Qty
 
     NUM_COLUMNS, TABLE_START_ROW = 9, 8
    
     # --- প্রধান দুটি হেডার ---
-    ws.merge_cells(start_row=1, start_column=1, end_row=1, end_column=NUM_COLUMNS); ws['A1'].value = "COTTON CLOTHING BD LTD"; ws['A1'].font = Font(size=32, bold=True); ws['A1'].alignment = center_align
-    ws.merge_cells(start_row=2, start_column=1, end_row=2, end_column=NUM_COLUMNS); ws['A2'].value = "CLOSING REPORT [ INPUT SECTION ]"; ws['A2'].font = Font(size=24, bold=False); ws['A2'].alignment = center_align
+    ws.merge_cells(start_row=1, start_column=1, end_row=1, end_column=NUM_COLUMNS)
+    ws['A1'].value = "COTTON CLOTHING BD LTD"
+    ws['A1'].font = title_font # ১. টাইটেল কালার লাল প্রয়োগ করা হলো
+    ws['A1'].alignment = center_align
+
+    ws.merge_cells(start_row=2, start_column=1, end_row=2, end_column=NUM_COLUMNS)
+    ws['A2'].value = "CLOSING REPORT [ INPUT SECTION ]"
+    ws['A2'].font = Font(size=24, bold=False)
+    ws['A2'].alignment = center_align
     ws.row_dimensions[3].height = 6
 
     # --- সাব-হেডারসমূহ ---
     formatted_ref_no = internal_ref_no.upper(); current_date = datetime.now().strftime("%d/%m/%Y")
     left_sub_headers = {'A4': 'BUYER', 'B4': report_data[0].get('buyer', ''), 'A5': 'IR/IB NO', 'B5': formatted_ref_no, 'A6': 'STYLE NO', 'B6': report_data[0].get('style', '')}
+    
     for cell_ref, value in left_sub_headers.items():
         cell = ws[cell_ref]; cell.value = value; cell.font = bold_font; cell.alignment = left_align; cell.border = thin_border
+        # ২. IR/IB Value সেলে হলুদ কালার প্রয়োগ
+        if cell_ref == 'B5':
+            cell.fill = ir_ib_fill
+
     ws.merge_cells('B4:G4'); ws.merge_cells('B5:G5'); ws.merge_cells('B6:G6')
     right_sub_headers = {'H4': 'CLOSING DATE', 'I4': current_date, 'H5': 'SHIPMENT', 'I5': 'ALL', 'H6': 'PO NO', 'I6': 'ALL'}
     for cell_ref, value in right_sub_headers.items():
@@ -139,7 +167,13 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
     for block in report_data:
         table_headers = ["COLOUR NAME", "SIZE", "ORDER QTY 3%", "ACTUAL QTY", "CUTTING QC", "INPUT QTY", "BALANCE", "SHORT/PLUS QTY", "Percentage %"]
         for col_idx, header in enumerate(table_headers, 1):
-            cell = ws.cell(row=current_row, column=col_idx, value=header); cell.font = bold_font; cell.alignment = center_align; cell.border = medium_border
+            cell = ws.cell(row=current_row, column=col_idx, value=header)
+            cell.font = bold_font
+            cell.alignment = center_align
+            cell.border = medium_border
+            # ৩. হেডার রো-তে নতুন কালার প্রয়োগ
+            cell.fill = header_row_fill 
+
         current_row += 1
         start_merge_row = current_row
         full_color_name = block.get('color', 'N/A')
@@ -157,23 +191,26 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
             ws.cell(row=current_row, column=5, value=cutting_qc_val)
             ws.cell(row=current_row, column=6, value=input_qty)
             
-            # সম্পূর্ণভাবে সূত্র ব্যবহার করে সেল পূরণ
-            ws.cell(row=current_row, column=3, value=f"=ROUND(D{current_row}*1.03, 0)")      # ORDER QTY 3%
-            ws.cell(row=current_row, column=7, value=f"=E{current_row}-F{current_row}")      # BALANCE
-            ws.cell(row=current_row, column=8, value=f"=F{current_row}-C{current_row}")      # SHORT/PLUS QTY
-            ws.cell(row=current_row, column=9, value=f'=IF(C{current_row}<>0, H{current_row}/C{current_row}, 0)') # Percentage %
+            # সূত্র
+            ws.cell(row=current_row, column=3, value=f"=ROUND(D{current_row}*1.03, 0)")      
+            ws.cell(row=current_row, column=7, value=f"=E{current_row}-F{current_row}")      
+            ws.cell(row=current_row, column=8, value=f"=F{current_row}-C{current_row}")      
+            ws.cell(row=current_row, column=9, value=f'=IF(C{current_row}<>0, H{current_row}/C{current_row}, 0)') 
             
-            # স্টাইল প্রয়োগ
+            # স্টাইল এবং কলাম কালার
             for col_idx in range(1, NUM_COLUMNS + 1):
                 cell = ws.cell(row=current_row, column=col_idx)
                 cell.border = medium_border if col_idx == 2 else thin_border
                 cell.alignment = center_align
                 if col_idx in [1, 2, 3, 6, 9]: cell.font = bold_font
-                if col_idx == 3: cell.fill = light_blue_fill
-                elif col_idx == 6: cell.fill = light_green_fill
+                
+                if col_idx == 3: cell.fill = light_blue_fill      
+                elif col_idx == 6: cell.fill = light_green_fill   
+                elif col_idx == 7: cell.fill = light_red_fill     
+                elif col_idx == 9: cell.fill = light_yellow_fill  
                 
                 if col_idx == 9:
-                    cell.number_format = '0.00%' # সঠিক পার্সেন্টেজ ফরম্যাট
+                    cell.number_format = '0.00%' 
             current_row += 1
             
         end_merge_row = current_row - 1
@@ -183,7 +220,7 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
             merged_cell.alignment = color_align
             if not merged_cell.font.bold: merged_cell.font = bold_font
 
-        # মোট হিসাবের জন্য সূত্র
+        # মোট হিসাব (Total Row)
         total_row_str = str(current_row)
         ws.merge_cells(start_row=current_row, start_column=1, end_row=current_row, end_column=2)
         
@@ -204,7 +241,7 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
             cell.font = bold_font
             cell.border = medium_border
             cell.alignment = center_align
-            cell.fill = light_brown_fill
+            cell.fill = light_brown_fill 
             if col_letter == 'I':
                 cell.number_format = '0.00%'
                 
@@ -238,14 +275,26 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
     signature_cell.font = Font(bold=True, size=15)
     signature_cell.alignment = Alignment(horizontal='center', vertical='center')
 
+    # ৪. সম্পূর্ণ শীটের বাকি অংশে হালকা নীল ব্যাকগ্রাউন্ড সেট করা (Global Background)
+    # আমরা এখন চেক করব কোন সেলগুলোতে কোনো কালার নেই, সেগুলোতে হালকা নীল কালার দেব
+    max_row_to_color = signature_row + 5 # সিগনেচারের নিচেও কিছুটা কালার থাকবে
+    for row in range(1, max_row_to_color + 1):
+        for col in range(1, NUM_COLUMNS + 1):
+            cell = ws.cell(row=row, column=col)
+            # যদি সেলের ফিল টাইপ 'None' হয় অথবা ডিফল্ট হয়, তাহলে গ্লোবাল ব্যাকগ্রাউন্ড সেট করব
+            if cell.fill.fill_type is None or cell.fill.start_color.index == '00000000':
+                cell.fill = global_bg_fill
+
     # --- ডেটা টেবিলের ফন্ট সাইজ ---
     last_data_row = current_row - 2
     for row in ws.iter_rows(min_row=4, max_row=last_data_row):
         for cell in row:
             if cell.font:
                 existing_font = cell.font
-                new_font = Font(name=existing_font.name, size=16.5, bold=existing_font.bold, italic=existing_font.italic, vertAlign=existing_font.vertAlign, underline=existing_font.underline, strike=existing_font.strike, color=existing_font.color)
-                cell.font = new_font
+                # টাইটেল রো (row 1) এর ফন্ট কালার আমরা আগেই সেট করেছি, তাই সেটা বাদ দিয়ে বাকিগুলো আপডেট করব
+                if cell.row != 1:
+                    new_font = Font(name=existing_font.name, size=16.5, bold=existing_font.bold, italic=existing_font.italic, vertAlign=existing_font.vertAlign, underline=existing_font.underline, strike=existing_font.strike, color=existing_font.color)
+                    cell.font = new_font
    
     # --- কলামের প্রস্থ ---
     ws.column_dimensions['A'].width = 23
@@ -283,7 +332,7 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
 # Flask ওয়েব অ্যাপ্লিকেশনের অংশ (অপরিবর্তিত)
 # ==============================================================================
 
-# --- নতুন: পাসওয়ার্ড পেজের জন্য HTML টেমপ্লেট ---
+# --- পাসওয়ার্ড পেজের জন্য HTML টেমপ্লেট ---
 LOGIN_TEMPLATE = """
 <!doctype html>
 <html lang="en">
@@ -318,7 +367,7 @@ LOGIN_TEMPLATE = """
 </html>
 """
 
-# --- নতুন: রিপোর্ট জেনারেটর পেজের জন্য HTML টেমপ্লেট ---
+# --- রিপোর্ট জেনারেটর পেজের জন্য HTML টেমপ্লেট ---
 REPORT_GENERATOR_TEMPLATE = """
 <!doctype html>
 <html lang="en">
@@ -357,20 +406,17 @@ REPORT_GENERATOR_TEMPLATE = """
 </html>
 """
 
-# --- আপডেট করা Flask রুট ---
+# --- Flask রুট ---
 
 @app.route('/')
 def index():
-    # যদি সেশনে লগইন করা না থাকে, তাহলে পাসওয়ার্ড পেজ দেখাবে
     if not session.get('logged_in'):
         return render_template_string(LOGIN_TEMPLATE)
-    # লগইন করা থাকলে রিপোর্ট জেনারেটর পেজ দেখাবে
     else:
         return render_template_string(REPORT_GENERATOR_TEMPLATE)
 
 @app.route('/login', methods=['POST'])
 def login():
-    # পাসওয়ার্ড '4276' হলে সেশন সেট করা হবে
     if request.form.get('password') == '4276':
         session['logged_in'] = True
     else:
@@ -379,13 +425,12 @@ def login():
 
 @app.route('/logout')
 def logout():
-    session.pop('logged_in', None) # সেশন থেকে লগইন তথ্য মুছে ফেলা
+    session.pop('logged_in', None)
     flash('আপনি সফলভাবে লগ আউট করেছেন।')
     return redirect(url_for('index'))
 
 @app.route('/generate-report', methods=['POST'])
 def generate_report():
-    # রিপোর্ট জেনারেট করার আগে লগইন করা আছে কিনা তা চেক করা
     if not session.get('logged_in'):
         flash('রিপোর্ট তৈরি করতে অনুগ্রহ করে প্রথমে লগইন করুন।')
         return redirect(url_for('index'))
@@ -395,13 +440,11 @@ def generate_report():
         flash("Internal Ref No is required!")
         return redirect(url_for('index'))
 
-    # ERP তে লগইন করা
     active_session = get_authenticated_session("input2.clothing-cutting", "123456")
     if not active_session:
         flash("ERP Login failed! Check credentials.")
         return redirect(url_for('index'))
 
-    # রিপোর্ট খোঁজা
     report_url = 'http://103.231.177.24:8022/erp/prod_planning/reports/requires/cutting_lay_production_report_controller.php'
     payload_template = {'action': 'report_generate', 'cbo_wo_company_name': '2', 'cbo_location_name': '2', 'cbo_floor_id': '0', 'cbo_buyer_name': '0', 'txt_internal_ref_no': internal_ref_no, 'reportType': '3'}
     found_data = None
@@ -430,7 +473,6 @@ def generate_report():
         flash(f"Failed to parse data for Ref No: {internal_ref_no}")
         return redirect(url_for('index'))
 
-    # এক্সেল ফাইল তৈরি ও পাঠানো
     excel_file_stream = create_formatted_excel_report(report_data, internal_ref_no)
     if excel_file_stream:
         return send_file(
@@ -445,8 +487,3 @@ def generate_report():
 
 if __name__ == '__main__':
     app.run(debug=True)
-
-
-
-
-
