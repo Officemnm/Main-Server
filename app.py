@@ -365,7 +365,7 @@ LOGIN_TEMPLATE = """
             /* ========================================================== */
             /* নিচের লাইনে '...' এর জায়গায় আপনার ইমেজের লিংক বসান */
             /* ========================================================== */
-            background: url('https://ibb.co.com/PvG1Cx36') no-repeat center center fixed;
+            background: url('https://i.ibb.co.com/v64Lz1gj/Picsart-25-11-19-15-49-43-423.jpg') no-repeat center center fixed;
             background-size: cover;
             height: 100vh;
             display: flex;
@@ -601,4 +601,5 @@ def generate_report():
 
 if __name__ == '__main__':
     app.run(debug=True)
+
 
