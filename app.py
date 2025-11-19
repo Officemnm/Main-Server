@@ -102,11 +102,7 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
    
     # --- স্টাইল এবং কালার প্যালেট ---
     bold_font = Font(bold=True)
-    
-    # ১. টাইটেলের জন্য লাল ফন্ট
     title_font = Font(size=32, bold=True, color="7B261A") 
-    
-    # ২. IR/IB ভ্যালুর জন্য সাদা ফন্ট
     white_bold_font = Font(size=16.5, bold=True, color="FFFFFF")
     
     center_align = Alignment(horizontal='center', vertical='center')
@@ -115,21 +111,15 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
     thin_border = Border(left=Side(style='thin'), right=Side(style='thin'), top=Side(style='thin'), bottom=Side(style='thin'))
     medium_border = Border(left=Side(style='medium'), right=Side(style='medium'), top=Side(style='medium'), bottom=Side(style='medium'))
     
-    # --- কালার ডিফাইন করা ---
-    ir_ib_fill = PatternFill(start_color="7B261A", end_color="7B261A", fill_type="solid") # Dark Red for IR/IB
-    header_row_fill = PatternFill(start_color="DE7465", end_color="DE7465", fill_type="solid") # Light Orange
-    
-    # অন্যান্য কলামের কালার
-    light_brown_fill = PatternFill(start_color="DE7465", end_color="DE7465", fill_type="solid") # Total Row
-    light_blue_fill = PatternFill(start_color="B9C2DF", end_color="B9C2DF", fill_type="solid") # Order Qty (Column 3)
-    light_green_fill = PatternFill(start_color="C4D09D", end_color="C4D09D", fill_type="solid") # Input Qty (Column 6)
-    
-    # --- ড্রাক গ্রিন (Dark Green) ফিল ---
+    ir_ib_fill = PatternFill(start_color="7B261A", end_color="7B261A", fill_type="solid") 
+    header_row_fill = PatternFill(start_color="DE7465", end_color="DE7465", fill_type="solid") 
+    light_brown_fill = PatternFill(start_color="DE7465", end_color="DE7465", fill_type="solid") 
+    light_blue_fill = PatternFill(start_color="B9C2DF", end_color="B9C2DF", fill_type="solid") 
+    light_green_fill = PatternFill(start_color="C4D09D", end_color="C4D09D", fill_type="solid") 
     dark_green_fill = PatternFill(start_color="f1f2e8", end_color="f1f2e8", fill_type="solid") 
 
     NUM_COLUMNS, TABLE_START_ROW = 9, 8
    
-    # --- প্রধান দুটি হেডার ---
     ws.merge_cells(start_row=1, start_column=1, end_row=1, end_column=NUM_COLUMNS)
     ws['A1'].value = "COTTON CLOTHING BD LTD"
     ws['A1'].font = title_font 
@@ -141,7 +131,6 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
     ws['A2'].alignment = center_align
     ws.row_dimensions[3].height = 6
 
-    # --- সাব-হেডারসমূহ (Buyer, Date, Shipment etc.) ---
     formatted_ref_no = internal_ref_no.upper()
     current_date = datetime.now().strftime("%d/%m/%Y")
     left_sub_headers = {'A4': 'BUYER', 'B4': report_data[0].get('buyer', ''), 'A5': 'IR/IB NO', 'B5': formatted_ref_no, 'A6': 'STYLE NO', 'B6': report_data[0].get('style', '')}
@@ -152,13 +141,11 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
         cell.font = bold_font
         cell.alignment = left_align
         cell.border = thin_border
-        
-        # IR/IB Value (B5) লাল, বাকি সব Dark Green
         if cell_ref == 'B5':
             cell.fill = ir_ib_fill      
             cell.font = white_bold_font 
         else:
-            cell.fill = dark_green_fill # বাকিগুলোতে Dark Green প্রয়োগ
+            cell.fill = dark_green_fill 
 
     ws.merge_cells('B4:G4'); ws.merge_cells('B5:G5'); ws.merge_cells('B6:G6')
     
@@ -169,7 +156,7 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
         cell.font = bold_font
         cell.alignment = left_align
         cell.border = thin_border
-        cell.fill = dark_green_fill # ডান পাশের সবগুলোতে Dark Green প্রয়োগ
+        cell.fill = dark_green_fill 
 
     for row in range(4, 7):
         for col in range(3, 8): 
@@ -179,7 +166,6 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
        
     current_row = TABLE_START_ROW
    
-    # --- ডেটা টেবিল তৈরি ---
     for block in report_data:
         table_headers = ["COLOUR NAME", "SIZE", "ORDER QTY 3%", "ACTUAL QTY", "CUTTING QC", "INPUT QTY", "BALANCE", "SHORT/PLUS QTY", "Percentage %"]
         for col_idx, header in enumerate(table_headers, 1):
@@ -199,33 +185,26 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
             input_qty = int(block['sewing_input'][i].replace(',', '') or 0) if i < len(block['sewing_input']) else 0
             cutting_qc_val = int(block.get('cutting_qc', [])[i].replace(',', '') or 0) if i < len(block.get('cutting_qc', [])) else 0
             
-            # ডেটা এবং সূত্র লেখা
             ws.cell(row=current_row, column=1, value=color_to_write)
             ws.cell(row=current_row, column=2, value=size)
             ws.cell(row=current_row, column=4, value=actual_qty)
             ws.cell(row=current_row, column=5, value=cutting_qc_val)
             ws.cell(row=current_row, column=6, value=input_qty)
             
-            # সূত্র
             ws.cell(row=current_row, column=3, value=f"=ROUND(D{current_row}*1.03, 0)")      
             ws.cell(row=current_row, column=7, value=f"=E{current_row}-F{current_row}")      
             ws.cell(row=current_row, column=8, value=f"=F{current_row}-C{current_row}")      
             ws.cell(row=current_row, column=9, value=f'=IF(C{current_row}<>0, H{current_row}/C{current_row}, 0)') 
             
-            # স্টাইল এবং কলাম কালার
             for col_idx in range(1, NUM_COLUMNS + 1):
                 cell = ws.cell(row=current_row, column=col_idx)
                 cell.border = medium_border if col_idx == 2 else thin_border
                 cell.alignment = center_align
                 if col_idx in [1, 2, 3, 6, 9]: cell.font = bold_font
                 
-                # কালার লজিক
-                if col_idx == 3: 
-                    cell.fill = light_blue_fill      
-                elif col_idx == 6: 
-                    cell.fill = light_green_fill   
-                else:
-                    cell.fill = dark_green_fill # বাকি সব Dark Green
+                if col_idx == 3: cell.fill = light_blue_fill      
+                elif col_idx == 6: cell.fill = light_green_fill   
+                else: cell.fill = dark_green_fill 
 
                 if col_idx == 9:
                     cell.number_format = '0.00%' 
@@ -238,7 +217,6 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
             merged_cell.alignment = color_align
             if not merged_cell.font.bold: merged_cell.font = bold_font
 
-        # মোট হিসাব (Total Row)
         total_row_str = str(current_row)
         ws.merge_cells(start_row=current_row, start_column=1, end_row=current_row, end_column=2)
         
@@ -263,7 +241,6 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
             if col_letter == 'I':
                 cell.number_format = '0.00%'
         
-        # টেবিলের ফাঁকা অংশগুলোর কালার চেঞ্জ (Dark Green)
         for col_idx in range(2, NUM_COLUMNS + 1):
             cell = ws.cell(row=current_row, column=col_idx)
             if not cell.value: 
@@ -273,7 +250,6 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
        
     image_row = current_row + 1
    
-    # --- ছবি যোগ করার অংশ ---
     try:
         direct_image_url = 'https://i.ibb.co/v6bp0jQW/rockybilly-regular.webp'
         image_response = requests.get(direct_image_url)
@@ -292,7 +268,6 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
     except Exception as e:
         print(f"ছবি যোগ করার সময় ত্রুটি: {e}")
 
-    # --- স্বাক্ষর সেকশন ---
     signature_row = image_row + 1
     ws.merge_cells(start_row=signature_row, start_column=1, end_row=signature_row, end_column=NUM_COLUMNS)
     titles = ["Prepared By", "Input Incharge", "Cutting Incharge", "IE & Planning", "Sewing Manager", "Cutting Manager"]
@@ -301,20 +276,16 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
     signature_cell.font = Font(bold=True, size=15)
     signature_cell.alignment = Alignment(horizontal='center', vertical='center')
 
-    # --- ডেটা টেবিলের ফন্ট সাইজ ---
     last_data_row = current_row - 2
     for row in ws.iter_rows(min_row=4, max_row=last_data_row):
         for cell in row:
-            if cell.coordinate == 'B5':
-                continue
-            
+            if cell.coordinate == 'B5': continue
             if cell.font:
                 existing_font = cell.font
                 if cell.row != 1: 
                     new_font = Font(name=existing_font.name, size=16.5, bold=existing_font.bold, italic=existing_font.italic, vertAlign=existing_font.vertAlign, underline=existing_font.underline, strike=existing_font.strike, color=existing_font.color)
                     cell.font = new_font
    
-    # --- কলামের প্রস্থ ---
     ws.column_dimensions['A'].width = 23
     ws.column_dimensions['B'].width = 8.5
     ws.column_dimensions['C'].width = 20
@@ -325,7 +296,6 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
     ws.column_dimensions['H'].width = 23
     ws.column_dimensions['I'].width = 18
    
-    # --- পেজ সেটআপ ---
     ws.page_setup.orientation = ws.ORIENTATION_PORTRAIT
     ws.page_setup.fitToPage = True
     ws.page_setup.fitToWidth = 1
@@ -339,182 +309,208 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
     ws.page_setup.header = 0
     ws.page_setup.footer = 0
    
-    # --- ফাইল সেভ ---
     file_stream = BytesIO()
     wb.save(file_stream)
     file_stream.seek(0)
-    print(f"✅ রিপোর্ট সফলভাবে মেমোরিতে তৈরি হয়েছে।")
     return file_stream
 
 # ==============================================================================
-# Flask ওয়েব অ্যাপ্লিকেশনের অংশ 
+# CSS Styles: Glassmorphism & Professional UI
 # ==============================================================================
-
-# --- নতুন আধুনিক ডিজাইন: পাসওয়ার্ড পেজের জন্য HTML টেমপ্লেট ---
-LOGIN_TEMPLATE = """
-<!doctype html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Security Check - Report System</title>
+COMMON_STYLES = """
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
         body {
-            /* ========================================================== */
-            /* নিচের লাইনে '...' এর জায়গায় আপনার ইমেজের লিংক বসান */
-            /* ========================================================== */
-            background: url('https://i.ibb.co.com/v64Lz1gj/Picsart-25-11-19-15-49-43-423.jpg') no-repeat center center fixed;
+            /* ইমেজের লোডিং সময়ে ডিফল্ট কালার */
+            background-color: #2c3e50; 
+            /* আপনার ইমেজ লিংক */
+            background-image: url('https://images.unsplash.com/photo-1497864149936-d7163d3d3a20?q=80&w=2070&auto=format&fit=crop');
+            background-repeat: no-repeat;
+            background-position: center center;
+            background-attachment: fixed;
             background-size: cover;
+            
             height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
             overflow: hidden;
         }
-        /* ব্যাকগ্রাউন্ড ইমেজ যদি খুব উজ্জ্বল হয়, তাহলে নিচের ওভারলে ব্যবহার করতে পারেন */
+        /* ব্যাকগ্রাউন্ড ওভারলে (ইমেজ যাতে বেশি ফোকাস না করে) */
         body::before {
             content: "";
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.4); /* 40% অন্ধকার শেড */
+            background: rgba(0, 0, 0, 0.2);
             z-index: -1;
         }
 
-        .login-container {
-            background: rgba(255, 255, 255, 0.95);
+        /* Glassmorphism Card Style */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.15); /* স্বচ্ছ সাদা ব্যাকগ্রাউন্ড */
+            backdrop-filter: blur(12px); /* ব্লার ইফেক্ট */
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.2); /* হালকা বর্ডার */
             padding: 45px 40px;
-            border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.25); /* শ্যাডো একটু গাঢ় করা হয়েছে */
+            border-radius: 16px;
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
             width: 100%;
-            max-width: 420px;
+            max-width: 400px;
             text-align: center;
-            animation: fadeIn 0.8s ease-out;
-            backdrop-filter: blur(10px); /* গ্লাস ইফেক্ট */
+            color: white;
+            
+            /* Transformation Animation */
+            opacity: 0;
+            transform: translateY(30px) scale(0.95);
+            animation: floatIn 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
         }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+        @keyframes floatIn {
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
         
-        h1 { color: #2d3436; font-size: 28px; font-weight: 600; margin-bottom: 8px; }
-        p.subtitle { color: #636e72; font-size: 14px; margin-bottom: 35px; }
+        h1 { color: #ffffff; font-size: 26px; font-weight: 600; margin-bottom: 8px; text-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+        p.subtitle { color: #e0e0e0; font-size: 13px; margin-bottom: 30px; font-weight: 300; }
         
-        .input-group { text-align: left; margin-bottom: 25px; position: relative; }
+        .input-group { text-align: left; margin-bottom: 20px; }
         .input-group label {
             display: block;
-            font-size: 13px;
-            color: #6c5ce7;
-            font-weight: 600;
+            font-size: 12px;
+            color: #ffffff;
+            font-weight: 500;
             margin-bottom: 8px;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+            letter-spacing: 1px;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.3);
         }
         
-        input[type="password"] {
+        input[type="password"], input[type="text"] {
             width: 100%;
-            padding: 14px 18px;
-            background: #f8f9fa;
-            border: 2px solid #dfe6e9;
-            border-radius: 12px;
-            font-size: 16px;
-            color: #2d3436;
+            padding: 12px 15px;
+            background: rgba(255, 255, 255, 0.2); /* ইনপুটের ব্যাকগ্রাউন্ড ট্রান্সপারেন্ট */
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 8px;
+            font-size: 15px;
+            color: #fff;
             transition: all 0.3s ease;
             outline: none;
         }
-        input[type="password"]:focus {
-            background: #fff;
-            border-color: #6c5ce7;
-            box-shadow: 0 0 0 4px rgba(108, 92, 231, 0.1);
+        input::placeholder { color: rgba(255, 255, 255, 0.6); }
+        input:focus {
+            background: rgba(255, 255, 255, 0.3);
+            border-color: #ffffff;
+            box-shadow: 0 0 10px rgba(255,255,255,0.2);
         }
         
         button {
             width: 100%;
-            padding: 16px;
-            background: linear-gradient(to right, #6c5ce7, #a29bfe);
+            padding: 14px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             border: none;
-            border-radius: 12px;
-            font-size: 16px;
+            border-radius: 8px;
+            font-size: 15px;
             font-weight: 600;
             cursor: pointer;
             transition: transform 0.2s, box-shadow 0.2s;
+            margin-top: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
         }
         button:hover {
             transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(108, 92, 231, 0.3);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
         }
-        button:active { transform: translateY(0); }
         
         .flash {
-            margin-top: 20px;
-            padding: 12px;
-            border-radius: 10px;
-            background-color: #ff7675;
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 8px;
+            background: rgba(231, 76, 60, 0.8);
+            backdrop-filter: blur(4px);
             color: white;
-            font-size: 14px;
-            font-weight: 500;
-            animation: shake 0.5s;
+            font-size: 13px;
         }
-        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
         
-        .footer-text { margin-top: 25px; font-size: 12px; color: #b2bec3; }
+        a.logout {
+            display: inline-block;
+            margin-top: 20px;
+            color: rgba(255,255,255,0.7);
+            text-decoration: none;
+            font-size: 13px;
+            padding: 5px 10px;
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 20px;
+            transition: 0.3s;
+        }
+        a.logout:hover {
+            background: rgba(255,255,255,0.2);
+            color: white;
+        }
     </style>
-</head>
-<body>
-    <div class="login-container">
-        <h1>Welcome Back</h1>
-        <p class="subtitle">Please enter your secure access code</p>
-        <form action="/login" method="post">
-            <div class="input-group">
-                <label for="password">Access Code</label>
-                <input type="password" id="password" name="password" placeholder="••••••" required autofocus>
-            </div>
-            <button type="submit">Access System</button>
-        </form>
-        {% with messages = get_flashed_messages() %}
-            {% if messages %}
-                <div class="flash">{{ messages[0] }}</div>
-            {% endif %}
-        {% endwith %}
-        <div class="footer-text">ERP Reporting Tool v1.0</div>
-    </div>
-</body>
-</html>
 """
 
-# --- রিপোর্ট জেনারেটর পেজের জন্য HTML টেমপ্লেট (অপরিবর্তিত) ---
-REPORT_GENERATOR_TEMPLATE = """
+# --- লগইন পেজের টেমপ্লেট ---
+LOGIN_TEMPLATE = f"""
 <!doctype html>
 <html lang="en">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Closing Report Generator</title>
-    <style>
-        body { font-family: sans-serif; background: #f4f4f9; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-        .container { background: white; padding: 2rem; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); text-align: center; width: 400px; }
-        h1 { color: #333; }
-        input[type="text"] { width: 100%; padding: 10px; margin-top: 1rem; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
-        button { width: 100%; background: #007bff; color: white; padding: 10px 20px; border: none; border-radius: 4px; margin-top: 1.5rem; cursor: pointer; font-size: 1rem; }
-        button:hover { background: #0056b3; }
-        .flash { padding: 1rem; margin-top: 1rem; border-radius: 4px; background-color: #e2e3e5; color: #41464b; }
-        a.logout { display: block; margin-top: 1.5rem; color: #6c757d; text-decoration: none; }
-        a.logout:hover { text-decoration: underline; }
-    </style>
+    <title>Security Check</title>
+    {COMMON_STYLES}
 </head>
 <body>
-    <div class="container">
-        <h1>Closing Report Generator</h1>
-        <form action="/generate-report" method="post">
-            <label for="ref_no">Enter Internal Ref No:</label>
-            <input type="text" id="ref_no" name="ref_no" required>
-            <button type="submit">Generate Report</button>
+    <div class="glass-card">
+        <h1>System Access</h1>
+        <p class="subtitle">Secure Gateway for ERP Reports</p>
+        <form action="/login" method="post">
+            <div class="input-group">
+                <label for="password">Authentication Key</label>
+                <input type="password" id="password" name="password" placeholder="Enter Passcode" required autofocus>
+            </div>
+            <button type="submit">Verify & Enter</button>
         </form>
-        {% with messages = get_flashed_messages() %}
-            {% if messages %}
-                <div class="flash">{{ messages[0] }}</div>
-            {% endif %}
-        {% endwith %}
-        <a href="/logout" class="logout">Logout</a>
+        {{% with messages = get_flashed_messages() %}}
+            {{% if messages %}}
+                <div class="flash">{{{{ messages[0] }}}}</div>
+            {{% endif %}}
+        {{% endwith %}}
+    </div>
+</body>
+</html>
+"""
+
+# --- ড্যাশবোর্ড / রিপোর্ট জেনারেটর পেজের টেমপ্লেট ---
+REPORT_GENERATOR_TEMPLATE = f"""
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Dashboard - Report Generator</title>
+    {COMMON_STYLES}
+</head>
+<body>
+    <div class="glass-card">
+        <h1>Generator Hub</h1>
+        <p class="subtitle">Create Closing Reports Instantly</p>
+        <form action="/generate-report" method="post">
+            <div class="input-group">
+                <label for="ref_no">Internal Reference No</label>
+                <input type="text" id="ref_no" name="ref_no" placeholder="e.g. DFL/24/..." required>
+            </div>
+            <button type="submit">Generate Excel Report</button>
+        </form>
+        {{% with messages = get_flashed_messages() %}}
+            {{% if messages %}}
+                <div class="flash">{{{{ messages[0] }}}}</div>
+            {{% endif %}}
+        {{% endwith %}}
+        <a href="/logout" class="logout">Exit Session</a>
     </div>
 </body>
 </html>
@@ -534,29 +530,29 @@ def login():
     if request.form.get('password') == '4276':
         session['logged_in'] = True
     else:
-        flash('ভুল পাসওয়ার্ড! আবার চেষ্টা করুন।')
+        flash('Incorrect Access Key provided.')
     return redirect(url_for('index'))
 
 @app.route('/logout')
 def logout():
     session.pop('logged_in', None)
-    flash('আপনি সফলভাবে লগ আউট করেছেন।')
+    flash('Session terminated securely.')
     return redirect(url_for('index'))
 
 @app.route('/generate-report', methods=['POST'])
 def generate_report():
     if not session.get('logged_in'):
-        flash('রিপোর্ট তৈরি করতে অনুগ্রহ করে প্রথমে লগইন করুন।')
+        flash('Unauthorized access. Please login.')
         return redirect(url_for('index'))
 
     internal_ref_no = request.form['ref_no']
     if not internal_ref_no:
-        flash("Internal Ref No is required!")
+        flash("Ref No required.")
         return redirect(url_for('index'))
 
     active_session = get_authenticated_session("input2.clothing-cutting", "123456")
     if not active_session:
-        flash("ERP Login failed! Check credentials.")
+        flash("ERP Connection Failed.")
         return redirect(url_for('index'))
 
     report_url = 'http://180.92.235.190:8022/erp/prod_planning/reports/requires/cutting_lay_production_report_controller.php'
@@ -574,17 +570,17 @@ def generate_report():
                     found_data = response.text
                     break
             except requests.exceptions.RequestException as e:
-                print(f"একটি ত্রুটি ঘটেছে: {e}")
+                print(f"Error: {e}")
         if found_data:
             break
            
     if not found_data:
-        flash(f"No data found for Ref No: {internal_ref_no}")
+        flash(f"No data found for: {internal_ref_no}")
         return redirect(url_for('index'))
 
     report_data = parse_report_data(found_data)
     if not report_data:
-        flash(f"Failed to parse data for Ref No: {internal_ref_no}")
+        flash(f"Data parsing error for: {internal_ref_no}")
         return redirect(url_for('index'))
 
     excel_file_stream = create_formatted_excel_report(report_data, internal_ref_no)
@@ -596,10 +592,8 @@ def generate_report():
             mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
         )
     else:
-        flash("Could not generate the Excel file.")
+        flash("Excel generation failed.")
         return redirect(url_for('index'))
 
 if __name__ == '__main__':
     app.run(debug=True)
-
-
