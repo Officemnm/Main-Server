@@ -17,7 +17,7 @@ app.secret_key = 'a-very-secret-key-for-sessions'
 # ফাংশন ১: ERP সিস্টেমে লগইন করার ফাংশন
 # ==============================================================================
 def get_authenticated_session(username, password):
-    login_url = 'http://103.231.177.24:8022/erp/login.php'
+    login_url = 'http://180.92.235.190:8022/erp/login.php'
     login_payload = {'txt_userid': username, 'txt_password': password, 'submit': 'Login'}
     session_req = requests.Session()
     session_req.headers.update({
@@ -467,7 +467,7 @@ def generate_report():
         flash("ERP Login failed! Check credentials.")
         return redirect(url_for('index'))
 
-    report_url = 'http://103.231.177.24:8022/erp/prod_planning/reports/requires/cutting_lay_production_report_controller.php'
+    report_url = 'http://180.92.235.190:8022/erp/prod_planning/reports/requires/cutting_lay_production_report_controller.php'
     payload_template = {'action': 'report_generate', 'cbo_wo_company_name': '2', 'cbo_location_name': '2', 'cbo_floor_id': '0', 'cbo_buyer_name': '0', 'txt_internal_ref_no': internal_ref_no, 'reportType': '3'}
     found_data = None
    
@@ -509,4 +509,5 @@ def generate_report():
 
 if __name__ == '__main__':
     app.run(debug=True)
+
 
