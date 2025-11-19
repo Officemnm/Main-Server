@@ -175,10 +175,6 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
         for col in range(3, 8): 
             cell = ws.cell(row=row, column=col)
             cell.border = thin_border
-            # মার্জ করা সেলের পেছনের অংশ বা খালি অংশেও Dark Green প্রয়োগ
-            # (B5 এর পেছনের অংশ লাল হবে কারণ এটি আগেই মার্জ এবং কালার করা হয়েছে, বাকিরা গ্রিন হবে)
-            # তবে যেহেতু B4, B5, B6 এর Fill আগেই সেট করা, তাই এখানকার লজিক দরকার নেই
-            # কিন্তু সেফটির জন্য চেক করা যেতে পারে
             pass 
        
     current_row = TABLE_START_ROW
@@ -354,42 +350,124 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
 # Flask ওয়েব অ্যাপ্লিকেশনের অংশ 
 # ==============================================================================
 
-# --- পাসওয়ার্ড পেজের জন্য HTML টেমপ্লেট ---
+# --- নতুন আধুনিক ডিজাইন: পাসওয়ার্ড পেজের জন্য HTML টেমপ্লেট ---
 LOGIN_TEMPLATE = """
 <!doctype html>
 <html lang="en">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Login - Report Generator</title>
+    <title>Security Check - Report System</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
     <style>
-        body { font-family: sans-serif; background: #f4f4f9; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-        .container { background: white; padding: 2rem; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); text-align: center; width: 300px; }
-        h1 { color: #333; font-size: 1.5rem; margin-bottom: 1.5rem;}
-        input[type="password"] { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
-        button { width: 100%; background: #007bff; color: white; padding: 10px 20px; border: none; border-radius: 4px; margin-top: 1.5rem; cursor: pointer; font-size: 1rem; }
-        button:hover { background: #0056b3; }
-        .flash { padding: 1rem; margin-top: 1rem; border-radius: 4px; background-color: #f8d7da; color: #721c24; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+        .login-container {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 45px 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+            width: 100%;
+            max-width: 420px;
+            text-align: center;
+            animation: fadeIn 0.8s ease-out;
+        }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        
+        h1 { color: #2d3436; font-size: 28px; font-weight: 600; margin-bottom: 8px; }
+        p.subtitle { color: #636e72; font-size: 14px; margin-bottom: 35px; }
+        
+        .input-group { text-align: left; margin-bottom: 25px; position: relative; }
+        .input-group label {
+            display: block;
+            font-size: 13px;
+            color: #6c5ce7;
+            font-weight: 600;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        input[type="password"] {
+            width: 100%;
+            padding: 14px 18px;
+            background: #f8f9fa;
+            border: 2px solid #dfe6e9;
+            border-radius: 12px;
+            font-size: 16px;
+            color: #2d3436;
+            transition: all 0.3s ease;
+            outline: none;
+        }
+        input[type="password"]:focus {
+            background: #fff;
+            border-color: #6c5ce7;
+            box-shadow: 0 0 0 4px rgba(108, 92, 231, 0.1);
+        }
+        
+        button {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(to right, #6c5ce7, #a29bfe);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(108, 92, 231, 0.3);
+        }
+        button:active { transform: translateY(0); }
+        
+        .flash {
+            margin-top: 20px;
+            padding: 12px;
+            border-radius: 10px;
+            background-color: #ff7675;
+            color: white;
+            font-size: 14px;
+            font-weight: 500;
+            animation: shake 0.5s;
+        }
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
+        
+        .footer-text { margin-top: 25px; font-size: 12px; color: #b2bec3; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Enter Password</h1>
+    <div class="login-container">
+        <h1>Welcome Back</h1>
+        <p class="subtitle">Please enter your secure access code</p>
         <form action="/login" method="post">
-            <input type="password" id="password" name="password" required>
-            <button type="submit">Login</button>
+            <div class="input-group">
+                <label for="password">Access Code</label>
+                <input type="password" id="password" name="password" placeholder="••••••" required autofocus>
+            </div>
+            <button type="submit">Access System</button>
         </form>
         {% with messages = get_flashed_messages() %}
             {% if messages %}
                 <div class="flash">{{ messages[0] }}</div>
             {% endif %}
         {% endwith %}
+        <div class="footer-text">ERP Reporting Tool v1.0</div>
     </div>
 </body>
 </html>
 """
 
-# --- রিপোর্ট জেনারেটর পেজের জন্য HTML টেমপ্লেট ---
+# --- রিপোর্ট জেনারেটর পেজের জন্য HTML টেমপ্লেট (অপরিবর্তিত) ---
 REPORT_GENERATOR_TEMPLATE = """
 <!doctype html>
 <html lang="en">
@@ -509,4 +587,3 @@ def generate_report():
 
 if __name__ == '__main__':
     app.run(debug=True)
-
