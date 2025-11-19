@@ -124,8 +124,11 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
     light_blue_fill = PatternFill(start_color="B9C2DF", end_color="B9C2DF", fill_type="solid") # Order Qty (Column 3)
     light_green_fill = PatternFill(start_color="C4D09D", end_color="C4D09D", fill_type="solid") # Input Qty (Column 6)
     
-    # --- ড্রাক গ্রিন (Dark Green) ফিল ---
+    # ড্রাক গ্রিন (Dark Green) ফিল - সাধারণ ব্যাকগ্রাউন্ডের জন্য
     dark_green_fill = PatternFill(start_color="f1f2e8", end_color="f1f2e8", fill_type="solid") 
+    
+    # --- নতুন: সতর্কতা কালার (Warning Color - Red) ---
+    warning_fill = PatternFill(start_color="FF0000", end_color="FF0000", fill_type="solid")
 
     NUM_COLUMNS, TABLE_START_ROW = 9, 8
    
@@ -153,12 +156,11 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
         cell.alignment = left_align
         cell.border = thin_border
         
-        # IR/IB Value (B5) লাল, বাকি সব Dark Green
         if cell_ref == 'B5':
             cell.fill = ir_ib_fill      
             cell.font = white_bold_font 
         else:
-            cell.fill = dark_green_fill # বাকিগুলোতে Dark Green প্রয়োগ
+            cell.fill = dark_green_fill 
 
     ws.merge_cells('B4:G4'); ws.merge_cells('B5:G5'); ws.merge_cells('B6:G6')
     
@@ -169,17 +171,12 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
         cell.font = bold_font
         cell.alignment = left_align
         cell.border = thin_border
-        cell.fill = dark_green_fill # ডান পাশের সবগুলোতে Dark Green প্রয়োগ
+        cell.fill = dark_green_fill 
 
     for row in range(4, 7):
         for col in range(3, 8): 
             cell = ws.cell(row=row, column=col)
             cell.border = thin_border
-            # মার্জ করা সেলের পেছনের অংশ বা খালি অংশেও Dark Green প্রয়োগ
-            # (B5 এর পেছনের অংশ লাল হবে কারণ এটি আগেই মার্জ এবং কালার করা হয়েছে, বাকিরা গ্রিন হবে)
-            # তবে যেহেতু B4, B5, B6 এর Fill আগেই সেট করা, তাই এখানকার লজিক দরকার নেই
-            # কিন্তু সেফটির জন্য চেক করা যেতে পারে
-            pass 
        
     current_row = TABLE_START_ROW
    
@@ -203,6 +200,13 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
             input_qty = int(block['sewing_input'][i].replace(',', '') or 0) if i < len(block['sewing_input']) else 0
             cutting_qc_val = int(block.get('cutting_qc', [])[i].replace(',', '') or 0) if i < len(block.get('cutting_qc', [])) else 0
             
+            # --- কালার লজিকের জন্য পাইথনেই ক্যালকুলেশন করা হচ্ছে ---
+            order_qty_3_percent = round(actual_qty * 1.03)
+            short_plus_val = input_qty - order_qty_3_percent # Short/Plus Value
+            percentage_val = 0
+            if order_qty_3_percent != 0:
+                percentage_val = short_plus_val / order_qty_3_percent
+            
             # ডেটা এবং সূত্র লেখা
             ws.cell(row=current_row, column=1, value=color_to_write)
             ws.cell(row=current_row, column=2, value=size)
@@ -223,16 +227,26 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
                 cell.alignment = center_align
                 if col_idx in [1, 2, 3, 6, 9]: cell.font = bold_font
                 
-                # কালার লজিক
+                # ডিফল্ট কালার সেট করা
                 if col_idx == 3: 
                     cell.fill = light_blue_fill      
                 elif col_idx == 6: 
                     cell.fill = light_green_fill   
                 else:
-                    cell.fill = dark_green_fill # বাকি সব Dark Green
+                    cell.fill = dark_green_fill # ডিফল্ট হিসেবে বাকি সব Dark Green
 
+                # --- নতুন: সতর্কতা কালার লজিক ওভাররাইড (Warning Logic Override) ---
+                
+                # ১. Short/Plus Qty (Column 8) যদি মাইনাস হয়
+                if col_idx == 8 and short_plus_val < 0:
+                    cell.fill = warning_fill
+                
+                # ২. Percentage (Column 9) যদি -1.5% এর চেয়ে নিচে হয় (-0.015)
                 if col_idx == 9:
-                    cell.number_format = '0.00%' 
+                    cell.number_format = '0.00%'
+                    if percentage_val < -0.015:
+                        cell.fill = warning_fill
+
             current_row += 1
             
         end_merge_row = current_row - 1
@@ -267,7 +281,7 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
             if col_letter == 'I':
                 cell.number_format = '0.00%'
         
-        # টেবিলের ফাঁকা অংশগুলোর কালার চেঞ্জ (Dark Green)
+        # টেবিলের ফাঁকা অংশগুলোর কালার (Dark Green)
         for col_idx in range(2, NUM_COLUMNS + 1):
             cell = ws.cell(row=current_row, column=col_idx)
             if not cell.value: 
@@ -329,17 +343,20 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
     ws.column_dimensions['H'].width = 23
     ws.column_dimensions['I'].width = 18
    
-    # --- পেজ সেটআপ ---
+    # --- পেজ সেটআপ এবং মার্জিন (এখানে আপডেট করা হয়েছে) ---
     ws.page_setup.orientation = ws.ORIENTATION_PORTRAIT
     ws.page_setup.fitToPage = True
     ws.page_setup.fitToWidth = 1
     ws.page_setup.fitToHeight = 1 
     ws.page_setup.horizontalCentered = True
     ws.page_setup.verticalCentered = False 
-    ws.page_setup.left = 0.25
-    ws.page_setup.right = 0.25
-    ws.page_setup.top = 0.45
-    ws.page_setup.bottom = 0.45
+    
+    # নতুন মার্জিন সেটিংস
+    ws.page_setup.top = 0.50     # Top Margin
+    ws.page_setup.bottom = 0.50  # Bottom Margin
+    ws.page_setup.left = 0.25    # Left Margin
+    ws.page_setup.right = 0.25   # Right Margin
+    
     ws.page_setup.header = 0
     ws.page_setup.footer = 0
    
@@ -509,5 +526,3 @@ def generate_report():
 
 if __name__ == '__main__':
     app.run(debug=True)
-
-
