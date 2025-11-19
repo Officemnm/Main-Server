@@ -6,12 +6,13 @@ from datetime import datetime
 from io import BytesIO
 from openpyxl.drawing.image import Image
 from PIL import Image as PILImage
+import time
 
 # --- Flask লাইব্রেরি ইম্পোর্ট ---
 from flask import Flask, request, render_template_string, send_file, flash, session, redirect, url_for
 
 app = Flask(__name__)
-app.secret_key = 'a-very-secret-key-for-sessions' 
+app.secret_key = 'super-secret-secure-key-bd' 
 
 # ==============================================================================
 # ফাংশন ১: ERP সিস্টেমে লগইন করার ফাংশন
@@ -24,16 +25,14 @@ def get_authenticated_session(username, password):
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
     })
     try:
-        print("লগইন করার চেষ্টা করা হচ্ছে...")
-        response = session_req.post(login_url, data=login_payload, timeout=2000)
+        # 5 Minute Timeout (300 Seconds)
+        response = session_req.post(login_url, data=login_payload, timeout=300)
         if "dashboard.php" in response.url or "Invalid" not in response.text:
-            print("✅ লগইন সফল হয়েছে!")
             return session_req
         else:
-            print("❌ লগইন ব্যর্থ হয়েছে।")
             return None
     except requests.exceptions.RequestException as e:
-        print(f"লগইন করার সময় একটি ত্রুটি ঘটেছে: {e}")
+        print(f"Connection Error: {e}")
         return None
 
 # ==============================================================================
@@ -44,9 +43,7 @@ def parse_report_data(html_content):
     try:
         soup = BeautifulSoup(html_content, 'lxml')
         header_row = soup.select_one('thead tr:nth-of-type(2)')
-        if not header_row:
-            print("ত্রুটি: রিপোর্টের টেবিল হেডার খুঁজে পাওয়া যায়নি।")
-            return None
+        if not header_row: return None
         all_th = header_row.find_all('th')
         headers = [th.get_text(strip=True) for th in all_th if 'total' not in th.get_text(strip=True).lower()]
         data_rows = soup.select('div#scroll_body table tbody tr')
@@ -88,7 +85,6 @@ def parse_report_data(html_content):
                 all_report_data.append({'style': style, 'buyer': buyer_name, 'color': color, 'headers': headers, 'gmts_qty': gmts_qty_data, 'plus_3_percent': plus_3_percent_data, 'sewing_input': sewing_input_data if sewing_input_data else [], 'cutting_qc': cutting_qc_data if cutting_qc_data else []})
         return all_report_data
     except Exception as e:
-        print(f"ডেটা পার্স করার সময় ত্রুটি হয়েছে: {e}")
         return None
 
 # ==============================================================================
@@ -100,7 +96,6 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
     ws = wb.active
     ws.title = "Closing Report"
    
-    # --- স্টাইল এবং কালার প্যালেট ---
     bold_font = Font(bold=True)
     title_font = Font(size=32, bold=True, color="7B261A") 
     white_bold_font = Font(size=16.5, bold=True, color="FFFFFF")
@@ -162,7 +157,6 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
         for col in range(3, 8): 
             cell = ws.cell(row=row, column=col)
             cell.border = thin_border
-            pass 
        
     current_row = TABLE_START_ROW
    
@@ -266,7 +260,7 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
         ws.row_dimensions[image_row].height = img.height * 0.90
         ws.add_image(img, f'A{image_row}')
     except Exception as e:
-        print(f"ছবি যোগ করার সময় ত্রুটি: {e}")
+        pass
 
     signature_row = image_row + 1
     ws.merge_cells(start_row=signature_row, start_column=1, end_row=signature_row, end_column=NUM_COLUMNS)
@@ -315,29 +309,25 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
     return file_stream
 
 # ==============================================================================
-# CSS Styles: Glassmorphism & Professional UI
+# CSS & HTML Templates
 # ==============================================================================
 COMMON_STYLES = """
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
         body {
-            /* ইমেজের লোডিং সময়ে ডিফল্ট কালার */
             background-color: #2c3e50; 
-            /* আপনার ইমেজ লিংক */
-            background-image: url('https://i.ibb.co.com/v64Lz1gj/Picsart-25-11-19-15-49-43-423.jpg');
+            background-image: url('https://images.unsplash.com/photo-1497864149936-d7163d3d3a20?q=80&w=2070&auto=format&fit=crop');
             background-repeat: no-repeat;
             background-position: center center;
             background-attachment: fixed;
             background-size: cover;
-            
             height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
             overflow: hidden;
         }
-        /* ব্যাকগ্রাউন্ড ওভারলে (ইমেজ যাতে বেশি ফোকাস না করে) */
         body::before {
             content: "";
             position: absolute;
@@ -346,12 +336,11 @@ COMMON_STYLES = """
             z-index: -1;
         }
 
-        /* Glassmorphism Card Style */
         .glass-card {
-            background: rgba(255, 255, 255, 0.15); /* স্বচ্ছ সাদা ব্যাকগ্রাউন্ড */
-            backdrop-filter: blur(10px); /* ব্লার ইফেক্ট */
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.2); /* হালকা বর্ডার */
+            border: 1px solid rgba(255, 255, 255, 0.2);
             padding: 45px 40px;
             border-radius: 16px;
             box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
@@ -359,18 +348,12 @@ COMMON_STYLES = """
             max-width: 400px;
             text-align: center;
             color: white;
-            
-            /* Transformation Animation */
-            opacity: 0;
-            transform: translateY(30px) scale(0.95);
             animation: floatIn 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
         }
 
         @keyframes floatIn {
-            to {
-                opacity: 1;
-                transform: translateY(0) scale(1);
-            }
+            from { opacity: 0; transform: translateY(30px) scale(0.95); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
         }
         
         h1 { color: #ffffff; font-size: 26px; font-weight: 600; margin-bottom: 8px; text-shadow: 0 2px 4px rgba(0,0,0,0.2); }
@@ -388,19 +371,34 @@ COMMON_STYLES = """
             text-shadow: 0 1px 2px rgba(0,0,0,0.3);
         }
         
-        input[type="password"], input[type="text"] {
+        input[type="password"], input[type="text"], select {
             width: 100%;
             padding: 12px 15px;
-            background: rgba(255, 255, 255, 0.2); /* ইনপুটের ব্যাকগ্রাউন্ড ট্রান্সপারেন্ট */
+            background: rgba(255, 255, 255, 0.2);
             border: 1px solid rgba(255, 255, 255, 0.3);
             border-radius: 8px;
             font-size: 15px;
             color: #fff;
             transition: all 0.3s ease;
             outline: none;
+            appearance: none; /* For Select Dropdown arrow */
         }
+        
+        /* Dropdown specific styles */
+        select {
+            cursor: pointer;
+            background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23FFFFFF%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");
+            background-repeat: no-repeat;
+            background-position: right 15px top 50%;
+            background-size: 12px auto;
+        }
+        select option {
+            background-color: #2c3e50; /* Background for dropdown items */
+            color: white;
+        }
+
         input::placeholder { color: rgba(255, 255, 255, 0.6); }
-        input:focus {
+        input:focus, select:focus {
             background: rgba(255, 255, 255, 0.3);
             border-color: #ffffff;
             box-shadow: 0 0 10px rgba(255,255,255,0.2);
@@ -450,10 +448,47 @@ COMMON_STYLES = """
             background: rgba(255,255,255,0.2);
             color: white;
         }
+
+        /* --- LOADER CSS --- */
+        #loading-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(8px);
+            z-index: 9999;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            transition: opacity 0.3s ease;
+        }
+        
+        .spinner {
+            width: 60px;
+            height: 60px;
+            border: 5px solid rgba(255, 255, 255, 0.2);
+            border-top: 5px solid #a29bfe;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+        
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        #loading-text {
+            font-size: 18px;
+            font-weight: 500;
+            letter-spacing: 1px;
+        }
+
+        /* Error State for Loader */
+        .loader-error .spinner { border-top-color: #e74c3c; animation: none; }
+        .loader-error #loading-text { color: #e74c3c; font-weight: 700; }
     </style>
 """
 
-# --- লগইন পেজের টেমপ্লেট ---
+# --- লগইন পেজের টেমপ্লেট (আপডেট করা হয়েছে) ---
 LOGIN_TEMPLATE = f"""
 <!doctype html>
 <html lang="en">
@@ -469,8 +504,15 @@ LOGIN_TEMPLATE = f"""
         <p class="subtitle">Secure Gateway for ERP Reports</p>
         <form action="/login" method="post">
             <div class="input-group">
-                <label for="password">Authentication Key</label>
-                <input type="password" id="password" name="password" placeholder="Enter Passcode" required autofocus>
+                <label for="username">Select User</label>
+                <select id="username" name="username" required>
+                    <option value="KobirAhmed">KobirAhmed</option>
+                    <option value="Admin">Admin</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label for="password">Authentication PIN</label>
+                <input type="password" id="password" name="password" placeholder="Enter Password" required>
             </div>
             <button type="submit">Verify & Enter</button>
         </form>
@@ -484,7 +526,7 @@ LOGIN_TEMPLATE = f"""
 </html>
 """
 
-# --- ড্যাশবোর্ড / রিপোর্ট জেনারেটর পেজের টেমপ্লেট ---
+# --- ড্যাশবোর্ড পেজের টেমপ্লেট (আপডেট করা হয়েছে - লোডিং স্ক্রিন সহ) ---
 REPORT_GENERATOR_TEMPLATE = f"""
 <!doctype html>
 <html lang="en">
@@ -495,13 +537,18 @@ REPORT_GENERATOR_TEMPLATE = f"""
     {COMMON_STYLES}
 </head>
 <body>
+    <div id="loading-overlay">
+        <div class="spinner"></div>
+        <div id="loading-text">Processing data... Please wait</div>
+    </div>
+
     <div class="glass-card">
-        <h1>Generate Input Closhing</h1>
+        <h1>Generator Hub</h1>
         <p class="subtitle">Create Closing Reports Instantly</p>
-        <form action="/generate-report" method="post">
+        <form action="/generate-report" method="post" onsubmit="showLoading()">
             <div class="input-group">
                 <label for="ref_no">Internal Reference No</label>
-                <input type="text" id="ref_no" name="ref_no" placeholder="123/456..." required>
+                <input type="text" id="ref_no" name="ref_no" placeholder="e.g. DFL/24/..." required>
             </div>
             <button type="submit">Generate Excel Report</button>
         </form>
@@ -512,6 +559,36 @@ REPORT_GENERATOR_TEMPLATE = f"""
         {{% endwith %}}
         <a href="/logout" class="logout">Exit Session</a>
     </div>
+
+    <script>
+        function showLoading() {{
+            const overlay = document.getElementById('loading-overlay');
+            const loadingText = document.getElementById('loading-text');
+            const spinner = document.querySelector('.spinner');
+            
+            // Show overlay
+            overlay.style.display = 'flex';
+            
+            // Reset states
+            overlay.classList.remove('loader-error');
+            loadingText.innerHTML = "Processing data...<br><span style='font-size:12px; opacity:0.8'>Downloading will start automatically</span>";
+            spinner.style.display = 'block';
+
+            // 5 Minute Timer (300,000 ms)
+            setTimeout(function() {{
+                overlay.classList.add('loader-error');
+                spinner.style.display = 'none'; // Hide spinner
+                loadingText.innerHTML = "Server Problem<br><span style='font-size:12px'>Request timed out (5 mins exceeded).</span><br><a href='/' style='color:white; margin-top:10px; display:inline-block; border:1px solid white; padding:5px 10px; text-decoration:none; border-radius:4px;'>Reload</a>";
+            }}, 300000);
+        }}
+        
+        // Optional: Hide loader if user comes back using browser back button
+        window.onpageshow = function(event) {{
+            if (event.persisted) {{
+                document.getElementById('loading-overlay').style.display = 'none';
+            }}
+        }};
+    </script>
 </body>
 </html>
 """
@@ -527,15 +604,25 @@ def index():
 
 @app.route('/login', methods=['POST'])
 def login():
-    if request.form.get('password') == '4276':
+    username = request.form.get('username')
+    password = request.form.get('password')
+
+    # Credential Logic
+    user_1 = (username == 'KobirAhmed' and password == '11223')
+    user_2 = (username == 'Admin' and password == '@Nijhum@12')
+
+    if user_1 or user_2:
         session['logged_in'] = True
+        session['user'] = username
     else:
-        flash('Incorrect Access Key provided.')
+        flash('Incorrect Username or Password.')
+    
     return redirect(url_for('index'))
 
 @app.route('/logout')
 def logout():
     session.pop('logged_in', None)
+    session.pop('user', None)
     flash('Session terminated securely.')
     return redirect(url_for('index'))
 
@@ -550,27 +637,31 @@ def generate_report():
         flash("Ref No required.")
         return redirect(url_for('index'))
 
+    # Note: Timeout logic handled in get_authenticated_session function
     active_session = get_authenticated_session("input2.clothing-cutting", "123456")
+    
     if not active_session:
-        flash("ERP Connection Failed.")
+        flash("ERP Connection Failed or Timed Out.")
         return redirect(url_for('index'))
 
     report_url = 'http://180.92.235.190:8022/erp/prod_planning/reports/requires/cutting_lay_production_report_controller.php'
     payload_template = {'action': 'report_generate', 'cbo_wo_company_name': '2', 'cbo_location_name': '2', 'cbo_floor_id': '0', 'cbo_buyer_name': '0', 'txt_internal_ref_no': internal_ref_no, 'reportType': '3'}
     found_data = None
    
+    # Data Fetching Logic
     for year in ['2025', '2024']:
         for company_id in range(1, 6):
             payload = payload_template.copy()
             payload['cbo_year_selection'] = year
             payload['cbo_company_name'] = str(company_id)
             try:
-                response = active_session.post(report_url, data=payload, timeout=3000)
+                # 5 min timeout for report fetching
+                response = active_session.post(report_url, data=payload, timeout=300)
                 if response.status_code == 200 and "Data not Found" not in response.text:
                     found_data = response.text
                     break
-            except requests.exceptions.RequestException as e:
-                print(f"Error: {e}")
+            except requests.exceptions.RequestException:
+                continue # Try next combination
         if found_data:
             break
            
@@ -597,5 +688,3 @@ def generate_report():
 
 if __name__ == '__main__':
     app.run(debug=True)
-
-
