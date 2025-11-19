@@ -362,22 +362,36 @@ LOGIN_TEMPLATE = """
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
         body {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            /* ========================================================== */
+            /* নিচের লাইনে '...' এর জায়গায় আপনার ইমেজের লিংক বসান */
+            /* ========================================================== */
+            background: url('https://images.unsplash.com/photo-1497864149936-d7163d3d3a20?q=80&w=2070&auto=format&fit=crop') no-repeat center center fixed;
+            background-size: cover;
             height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
             overflow: hidden;
         }
+        /* ব্যাকগ্রাউন্ড ইমেজ যদি খুব উজ্জ্বল হয়, তাহলে নিচের ওভারলে ব্যবহার করতে পারেন */
+        body::before {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.4); /* 40% অন্ধকার শেড */
+            z-index: -1;
+        }
+
         .login-container {
             background: rgba(255, 255, 255, 0.95);
             padding: 45px 40px;
             border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.25); /* শ্যাডো একটু গাঢ় করা হয়েছে */
             width: 100%;
             max-width: 420px;
             text-align: center;
             animation: fadeIn 0.8s ease-out;
+            backdrop-filter: blur(10px); /* গ্লাস ইফেক্ট */
         }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
         
