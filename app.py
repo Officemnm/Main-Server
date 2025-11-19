@@ -17,7 +17,7 @@ app.secret_key = 'a-very-secret-key-for-sessions'
 # ফাংশন ১: ERP সিস্টেমে লগইন করার ফাংশন
 # ==============================================================================
 def get_authenticated_session(username, password):
-    login_url = 'http://180.92.235.190:8022/erp/login.php'
+    login_url = 'http://103.231.177.24:8022/erp/login.php'
     login_payload = {'txt_userid': username, 'txt_password': password, 'submit': 'Login'}
     session_req = requests.Session()
     session_req.headers.update({
@@ -117,15 +117,14 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
     
     # --- কালার ডিফাইন করা ---
     ir_ib_fill = PatternFill(start_color="7B261A", end_color="7B261A", fill_type="solid") # Dark Red for IR/IB
-    header_row_fill = PatternFill(start_color="DE7465", end_color="DE7465", fill_type="solid") # Light Orange/Salmon
+    header_row_fill = PatternFill(start_color="DE7465", end_color="DE7465", fill_type="solid") # Light Orange
     
     # অন্যান্য কলামের কালার
     light_brown_fill = PatternFill(start_color="DE7465", end_color="DE7465", fill_type="solid") # Total Row
     light_blue_fill = PatternFill(start_color="B9C2DF", end_color="B9C2DF", fill_type="solid") # Order Qty (Column 3)
     light_green_fill = PatternFill(start_color="C4D09D", end_color="C4D09D", fill_type="solid") # Input Qty (Column 6)
     
-    # --- নতুন: ড্রাক গ্রিন (Dark Green) ফিল ---
-    # অন্য কোনো কালার না থাকলে এটি বসবে
+    # --- ড্রাক গ্রিন (Dark Green) ফিল ---
     dark_green_fill = PatternFill(start_color="006400", end_color="006400", fill_type="solid") 
 
     NUM_COLUMNS, TABLE_START_ROW = 9, 8
@@ -138,14 +137,11 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
 
     ws.merge_cells(start_row=2, start_column=1, end_row=2, end_column=NUM_COLUMNS)
     ws['A2'].value = "CLOSING REPORT [ INPUT SECTION ]"
-    
-    # --- এখানে আগের ভুলটি (bold=true) ঠিক করা হয়েছে ---
     ws['A2'].font = Font(size=18, bold=True) 
-    
     ws['A2'].alignment = center_align
     ws.row_dimensions[3].height = 6
 
-    # --- সাব-হেডারসমূহ ---
+    # --- সাব-হেডারসমূহ (Buyer, Date, Shipment etc.) ---
     formatted_ref_no = internal_ref_no.upper()
     current_date = datetime.now().strftime("%d/%m/%Y")
     left_sub_headers = {'A4': 'BUYER', 'B4': report_data[0].get('buyer', ''), 'A5': 'IR/IB NO', 'B5': formatted_ref_no, 'A6': 'STYLE NO', 'B6': report_data[0].get('style', '')}
@@ -157,12 +153,15 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
         cell.alignment = left_align
         cell.border = thin_border
         
-        # IR/IB Value সেলে ব্যাকগ্রাউন্ড এবং সাদা ফন্ট প্রয়োগ
+        # IR/IB Value (B5) লাল, বাকি সব Dark Green
         if cell_ref == 'B5':
             cell.fill = ir_ib_fill      
             cell.font = white_bold_font 
+        else:
+            cell.fill = dark_green_fill # বাকিগুলোতে Dark Green প্রয়োগ
 
     ws.merge_cells('B4:G4'); ws.merge_cells('B5:G5'); ws.merge_cells('B6:G6')
+    
     right_sub_headers = {'H4': 'CLOSING DATE', 'I4': current_date, 'H5': 'SHIPMENT', 'I5': 'ALL', 'H6': 'PO NO', 'I6': 'ALL'}
     for cell_ref, value in right_sub_headers.items():
         cell = ws[cell_ref]
@@ -170,8 +169,17 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
         cell.font = bold_font
         cell.alignment = left_align
         cell.border = thin_border
+        cell.fill = dark_green_fill # ডান পাশের সবগুলোতে Dark Green প্রয়োগ
+
     for row in range(4, 7):
-        for col in range(3, 8): ws.cell(row=row, column=col).border = thin_border
+        for col in range(3, 8): 
+            cell = ws.cell(row=row, column=col)
+            cell.border = thin_border
+            # মার্জ করা সেলের পেছনের অংশ বা খালি অংশেও Dark Green প্রয়োগ
+            # (B5 এর পেছনের অংশ লাল হবে কারণ এটি আগেই মার্জ এবং কালার করা হয়েছে, বাকিরা গ্রিন হবে)
+            # তবে যেহেতু B4, B5, B6 এর Fill আগেই সেট করা, তাই এখানকার লজিক দরকার নেই
+            # কিন্তু সেফটির জন্য চেক করা যেতে পারে
+            pass 
        
     current_row = TABLE_START_ROW
    
@@ -215,18 +223,13 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
                 cell.alignment = center_align
                 if col_idx in [1, 2, 3, 6, 9]: cell.font = bold_font
                 
-                # কালার লজিক:
-                # কলাম ৩ (Order Qty) = হালকা নীল
-                # কলাম ৬ (Input Qty) = হালকা সবুজ
-                # বাকি সব (অন্য কালার নেই) = ড্রাক গ্রিন (Dark Green)
-                
+                # কালার লজিক
                 if col_idx == 3: 
                     cell.fill = light_blue_fill      
                 elif col_idx == 6: 
                     cell.fill = light_green_fill   
                 else:
-                    # বাকি সব কলামে ড্রাক গ্রিন
-                    cell.fill = dark_green_fill
+                    cell.fill = dark_green_fill # বাকি সব Dark Green
 
                 if col_idx == 9:
                     cell.number_format = '0.00%' 
@@ -264,10 +267,9 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
             if col_letter == 'I':
                 cell.number_format = '0.00%'
         
-        # টেবিলের ফাঁকা অংশগুলোর কালার চেঞ্জ (আগে হালকা নীল ছিল, এখন ড্রাক গ্রিন)
+        # টেবিলের ফাঁকা অংশগুলোর কালার চেঞ্জ (Dark Green)
         for col_idx in range(2, NUM_COLUMNS + 1):
             cell = ws.cell(row=current_row, column=col_idx)
-            # যদি সেলে কোনো ভ্যালু না থাকে
             if not cell.value: 
                 cell.fill = dark_green_fill 
                 cell.border = medium_border
@@ -299,7 +301,7 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
     ws.merge_cells(start_row=signature_row, start_column=1, end_row=signature_row, end_column=NUM_COLUMNS)
     titles = ["Prepared By", "Input Incharge", "Cutting Incharge", "IE & Planning", "Sewing Manager", "Cutting Manager"]
     signature_cell = ws.cell(row=signature_row, column=1)
-    signature_cell.value = " ".join(titles)
+    signature_cell.value = "                 ".join(titles)
     signature_cell.font = Font(bold=True, size=15)
     signature_cell.alignment = Alignment(horizontal='center', vertical='center')
 
@@ -307,13 +309,12 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
     last_data_row = current_row - 2
     for row in ws.iter_rows(min_row=4, max_row=last_data_row):
         for cell in row:
-            # B5 (IR/IB Value) বাদে অন্য সব সেলের ফন্ট আপডেট করা হবে
             if cell.coordinate == 'B5':
                 continue
             
             if cell.font:
                 existing_font = cell.font
-                if cell.row != 1: # টাইটেল রো বাদ দিয়ে
+                if cell.row != 1: 
                     new_font = Font(name=existing_font.name, size=16.5, bold=existing_font.bold, italic=existing_font.italic, vertAlign=existing_font.vertAlign, underline=existing_font.underline, strike=existing_font.strike, color=existing_font.color)
                     cell.font = new_font
    
@@ -466,7 +467,7 @@ def generate_report():
         flash("ERP Login failed! Check credentials.")
         return redirect(url_for('index'))
 
-    report_url = 'http://180.92.235.190:8022/erp/prod_planning/reports/requires/cutting_lay_production_report_controller.php'
+    report_url = 'http://103.231.177.24:8022/erp/prod_planning/reports/requires/cutting_lay_production_report_controller.php'
     payload_template = {'action': 'report_generate', 'cbo_wo_company_name': '2', 'cbo_location_name': '2', 'cbo_floor_id': '0', 'cbo_buyer_name': '0', 'txt_internal_ref_no': internal_ref_no, 'reportType': '3'}
     found_data = None
    
@@ -508,4 +509,3 @@ def generate_report():
 
 if __name__ == '__main__':
     app.run(debug=True)
-
