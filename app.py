@@ -7,6 +7,8 @@ from io import BytesIO
 from openpyxl.drawing.image import Image
 from PIL import Image as PILImage
 import time
+import json
+import os
 
 # --- Flask লাইব্রেরি ইম্পোর্ট ---
 from flask import Flask, request, render_template_string, send_file, flash, session, redirect, url_for, make_response
@@ -18,7 +20,58 @@ app.secret_key = 'super-secret-secure-key-bd'
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=2)
 
 # ==============================================================================
-# ফাংশন ১: ERP সিস্টেমে লগইন করার ফাংশন (অপরিবর্তিত)
+# হেল্পার ফাংশন: পরিসংখ্যান বা স্ট্যাটাস ম্যানেজমেন্ট (JSON ফাইল দিয়ে)
+# ==============================================================================
+STATS_FILE = 'stats.json'
+
+def load_stats():
+    if not os.path.exists(STATS_FILE):
+        return {"downloads": [], "last_booking": "None"}
+    try:
+        with open(STATS_FILE, 'r') as f:
+            return json.load(f)
+    except:
+        return {"downloads": [], "last_booking": "None"}
+
+def save_stats(data):
+    with open(STATS_FILE, 'w') as f:
+        json.dump(data, f)
+
+def update_stats(ref_no):
+    data = load_stats()
+    # বর্তমান সময় সেভ করা
+    current_time = datetime.now().isoformat()
+    data['downloads'].append({"ref": ref_no, "time": current_time})
+    data['last_booking'] = ref_no
+    save_stats(data)
+
+def get_dashboard_summary():
+    data = load_stats()
+    downloads = data.get('downloads', [])
+    last_booking = data.get('last_booking', 'N/A')
+    
+    now = datetime.now()
+    today_str = now.strftime('%Y-%m-%d')
+    month_str = now.strftime('%Y-%m')
+    
+    today_count = 0
+    month_count = 0
+    
+    for d in downloads:
+        dt = datetime.fromisoformat(d['time'])
+        if dt.strftime('%Y-%m-%d') == today_str:
+            today_count += 1
+        if dt.strftime('%Y-%m') == month_str:
+            month_count += 1
+            
+    return {
+        "today": today_count,
+        "month": month_count,
+        "last_booking": last_booking
+    }
+
+# ==============================================================================
+# ফাংশন ১: ERP সিস্টেমে লগইন করার ফাংশন
 # ==============================================================================
 def get_authenticated_session(username, password):
     login_url = 'http://180.92.235.190:8022/erp/login.php'
@@ -315,6 +368,7 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
 # ==============================================================================
 COMMON_STYLES = """
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
         body {
@@ -325,19 +379,17 @@ COMMON_STYLES = """
             background-attachment: fixed;
             background-size: cover;
             height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            overflow: hidden;
+            overflow: hidden; /* Prevent body scroll for admin layout */
         }
         body::before {
             content: "";
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.2);
+            background: rgba(0, 0, 0, 0.4); /* Darker overlay for better contrast */
             z-index: -1;
         }
-
+        
+        /* --- Shared Classes --- */
         .glass-card {
             background: rgba(255, 255, 255, 0.15);
             backdrop-filter: blur(12px);
@@ -346,11 +398,22 @@ COMMON_STYLES = """
             padding: 45px 40px;
             border-radius: 16px;
             box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+            color: white;
+            animation: floatIn 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+        }
+
+        /* Login & User Dashboard specific centering */
+        .center-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+            width: 100%;
+        }
+        .center-container .glass-card {
             width: 100%;
             max-width: 400px;
             text-align: center;
-            color: white;
-            animation: floatIn 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
         }
 
         @keyframes floatIn {
@@ -485,10 +548,134 @@ COMMON_STYLES = """
         .loader-success .spinner { display: none; }
         .loader-success .success-icon { display: block; }
         .loader-success #loading-text { color: #2ecc71; font-weight: 600; }
+
+        /* =========================================
+           ADMIN DASHBOARD SPECIFIC CSS
+           ========================================= */
+        .admin-container {
+            display: flex;
+            width: 100%;
+            height: 100vh;
+        }
+        
+        /* Sidebar */
+        .admin-sidebar {
+            width: 280px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(15px);
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            flex-direction: column;
+            padding: 25px;
+        }
+        
+        .sidebar-header {
+            margin-bottom: 40px;
+            text-align: center;
+        }
+        .sidebar-header h2 { color: white; font-size: 22px; font-weight: 600; }
+        .sidebar-header p { color: #a29bfe; font-size: 12px; letter-spacing: 1px; }
+
+        .nav-menu { list-style: none; }
+        .nav-item { margin-bottom: 15px; }
+        
+        .nav-link {
+            display: flex;
+            align-items: center;
+            padding: 12px 15px;
+            color: rgba(255, 255, 255, 0.7);
+            text-decoration: none;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+            font-size: 14px;
+            cursor: pointer;
+        }
+        
+        .nav-link i { margin-right: 12px; width: 20px; text-align: center; }
+        .nav-link:hover, .nav-link.active {
+            background: linear-gradient(90deg, rgba(108, 92, 231, 0.8) 0%, rgba(118, 75, 162, 0.8) 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            transform: translateX(5px);
+        }
+
+        .admin-footer {
+            margin-top: auto;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding-top: 20px;
+        }
+
+        /* Main Content */
+        .admin-content {
+            flex: 1;
+            padding: 30px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 20px;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            transition: transform 0.3s;
+        }
+        .stat-card:hover { transform: translateY(-5px); background: rgba(255, 255, 255, 0.15); }
+        
+        .stat-icon {
+            width: 50px; height: 50px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            color: #fff;
+            margin-right: 15px;
+        }
+        .stat-info h3 { font-size: 24px; color: white; margin-bottom: 5px; }
+        .stat-info p { font-size: 13px; color: #dcdcdc; }
+
+        .bg-purple { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .bg-orange { background: linear-gradient(135deg, #ff9966 0%, #ff5e62 100%); }
+        .bg-green { background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); }
+
+        /* Content Area */
+        .work-area {
+            flex: 1;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 20px;
+            padding: 30px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            position: relative;
+        }
+        
+        /* Sweet Alert Style Customization */
+        .swal-overlay { background-color: rgba(0, 0, 0, 0.6); }
+        .swal-modal {
+            background-color: #2d3436;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .swal-title { color: white; }
+        .swal-text { color: #b2bec3; }
     </style>
 """
 
-# --- লগইন পেজের টেমপ্লেট ---
+# --- লগইন পেজের টেমপ্লেট (অপরিবর্তিত) ---
 LOGIN_TEMPLATE = f"""
 <!doctype html>
 <html lang="en">
@@ -499,41 +686,43 @@ LOGIN_TEMPLATE = f"""
     {COMMON_STYLES}
 </head>
 <body>
-    <div class="glass-card">
-        <h1>System Access</h1>
-        <p class="subtitle">Secure Gateway for ERP Reports</p>
-        <form action="/login" method="post">
-            <div class="input-group">
-                <label for="username">Select User</label>
-                <select id="username" name="username" required>
-                    <option value="KobirAhmed">KobirAhmed</option>
-                    <option value="Admin">Admin</option>
-                </select>
-            </div>
-            <div class="input-group">
-                <label for="password">Authentication PIN</label>
-                <input type="password" id="password" name="password" placeholder="Enter Password" required>
-            </div>
-            <button type="submit">Verify & Enter</button>
-        </form>
-        {{% with messages = get_flashed_messages() %}}
-            {{% if messages %}}
-                <div class="flash">{{{{ messages[0] }}}}</div>
-            {{% endif %}}
-        {{% endwith %}}
+    <div class="center-container">
+        <div class="glass-card">
+            <h1>System Access</h1>
+            <p class="subtitle">Secure Gateway for ERP Reports</p>
+            <form action="/login" method="post">
+                <div class="input-group">
+                    <label for="username">Select User</label>
+                    <select id="username" name="username" required>
+                        <option value="KobirAhmed">KobirAhmed</option>
+                        <option value="Admin">Admin</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label for="password">Authentication PIN</label>
+                    <input type="password" id="password" name="password" placeholder="Enter Password" required>
+                </div>
+                <button type="submit">Verify & Enter</button>
+            </form>
+            {{% with messages = get_flashed_messages() %}}
+                {{% if messages %}}
+                    <div class="flash">{{{{ messages[0] }}}}</div>
+                {{% endif %}}
+            {{% endwith %}}
+        </div>
     </div>
 </body>
 </html>
 """
 
-# --- ড্যাশবোর্ড পেজ (আপডেট করা হয়েছে: অটো লগআউট + ডাউনলোড ডিটেকশন) ---
-REPORT_GENERATOR_TEMPLATE = f"""
+# --- ইউজার ড্যাশবোর্ড (KobirAhmed) ---
+USER_DASHBOARD_TEMPLATE = f"""
 <!doctype html>
 <html lang="en">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Dashboard - Report Generator</title>
+    <title>Dashboard - User</title>
     {COMMON_STYLES}
 </head>
 <body>
@@ -543,99 +732,204 @@ REPORT_GENERATOR_TEMPLATE = f"""
         <div id="loading-text">Processing data... Please wait</div>
     </div>
 
-    <div class="glass-card">
-        <h1>(©) Mehedi Hasan</h1>
-        <p class="subtitle">Create Closing Reports Instantly</p>
-        <form action="/generate-report" method="post" id="reportForm" onsubmit="startDownloadProcess()">
-            <div class="input-group">
-                <label for="ref_no">Internal Reference No</label>
-                <input type="text" id="ref_no" name="ref_no" placeholder="Booking-123/456.." required>
-                <input type="hidden" name="download_token" id="download_token">
-            </div>
-            <button type="submit">Generate Excel Report</button>
-        </form>
-        {{% with messages = get_flashed_messages() %}}
-            {{% if messages %}}
-                <div class="flash">{{{{ messages[0] }}}}</div>
-            {{% endif %}}
-        {{% endwith %}}
-        <a href="/logout" class="logout">Exit Session</a>
+    <div class="center-container">
+        <div class="glass-card">
+            <h1>(©) Mehedi Hasan</h1>
+            <p class="subtitle">Create Closing Reports Instantly</p>
+            <form action="/generate-report" method="post" id="reportForm" onsubmit="startDownloadProcess()">
+                <div class="input-group">
+                    <label for="ref_no">Internal Reference No</label>
+                    <input type="text" id="ref_no" name="ref_no" placeholder="Booking-123/456.." required>
+                    <input type="hidden" name="download_token" id="download_token">
+                </div>
+                <button type="submit">Generate Excel Report</button>
+            </form>
+            {{% with messages = get_flashed_messages() %}}
+                {{% if messages %}}
+                    <div class="flash">{{{{ messages[0] }}}}</div>
+                {{% endif %}}
+            {{% endwith %}}
+            <a href="/logout" class="logout">Exit Session</a>
+        </div>
     </div>
 
     <script>
-        // === Auto Logout Logic (2 Minutes) ===
+        // Auto Logout & Cookie scripts same as before
         let timeout;
-        function resetTimer() {{
-            clearTimeout(timeout);
-            // 120,000 ms = 2 minutes
-            timeout = setTimeout(function() {{
-                alert("Session expired due to inactivity.");
-                window.location.href = "/logout";
-            }}, 120000);
-        }}
-        
-        // Event listeners for user activity
-        document.onmousemove = resetTimer;
-        document.onkeypress = resetTimer;
-        document.onload = resetTimer;
-        resetTimer(); // Start timer on load
+        function resetTimer() {{ clearTimeout(timeout); timeout = setTimeout(function() {{ alert("Session expired due to inactivity."); window.location.href = "/logout"; }}, 120000); }}
+        document.onmousemove = resetTimer; document.onkeypress = resetTimer; document.onload = resetTimer; resetTimer();
 
-        // === File Download Detection Logic ===
-        function getCookie(name) {{
-            let parts = document.cookie.split(name + "=");
-            if (parts.length == 2) return parts.pop().split(";").shift();
-            return null;
-        }}
-
+        function getCookie(name) {{ let parts = document.cookie.split(name + "="); if (parts.length == 2) return parts.pop().split(";").shift(); return null; }}
         function startDownloadProcess() {{
-            const overlay = document.getElementById('loading-overlay');
-            const loadingText = document.getElementById('loading-text');
-            const spinner = document.querySelector('.spinner');
-            const successIcon = document.querySelector('.success-icon');
-            const tokenInput = document.getElementById('download_token');
-            
-            // 1. Generate unique token
-            const token = new Date().getTime();
-            tokenInput.value = token;
-
-            // 2. Show Loader
-            overlay.style.display = 'flex';
-            overlay.className = ''; // Reset classes
-            loadingText.innerHTML = "Processing data...<br><span style='font-size:12px; opacity:0.8'>Downloading will start automatically</span>";
-            spinner.style.display = 'block';
-            successIcon.style.display = 'none';
-
-            // 3. Check for Cookie periodically
+            const overlay = document.getElementById('loading-overlay'); const loadingText = document.getElementById('loading-text'); const spinner = document.querySelector('.spinner'); const successIcon = document.querySelector('.success-icon'); const tokenInput = document.getElementById('download_token');
+            const token = new Date().getTime(); tokenInput.value = token;
+            overlay.style.display = 'flex'; overlay.className = ''; loadingText.innerHTML = "Processing data...<br><span style='font-size:12px; opacity:0.8'>Downloading will start automatically</span>"; spinner.style.display = 'block'; successIcon.style.display = 'none';
             let attempts = 0;
             const downloadTimer = setInterval(function() {{
                 const cookieValue = getCookie("download_token");
-                
-                // If cookie matches our token -> Download Started/Finished
                 if (cookieValue == token) {{
                     clearInterval(downloadTimer);
+                    overlay.classList.add('loader-success'); loadingText.innerHTML = "Successful Download Complete!";
+                    setTimeout(() => {{ overlay.style.opacity = '0'; setTimeout(() => {{ overlay.style.display = 'none'; overlay.style.opacity = '1'; }}, 500); }}, 2000);
+                }}
+                attempts++; if (attempts > 300) {{ clearInterval(downloadTimer); overlay.classList.add('loader-error'); spinner.style.display = 'none'; loadingText.innerHTML = "Server Timeout<br><span style='font-size:12px'>Please try again later.</span><br><a href='/' style='color:white; border:1px solid white; padding:5px; border-radius:4px; margin-top:5px; display:inline-block;'>Reload</a>"; }}
+            }}, 1000);
+        }}
+    </script>
+</body>
+</html>
+"""
+
+# --- অ্যাডমিন ড্যাশবোর্ড (Admin) ---
+ADMIN_DASHBOARD_TEMPLATE = f"""
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Admin Console</title>
+    {COMMON_STYLES}
+    <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+</head>
+<body>
+    <div id="loading-overlay">
+        <div class="spinner"></div>
+        <div class="success-icon">✅</div>
+        <div id="loading-text">Processing data... Please wait</div>
+    </div>
+
+    <div class="admin-container">
+        <div class="admin-sidebar">
+            <div class="sidebar-header">
+                <h2>Admin Panel</h2>
+                <p>SUPER ADMIN ACCESS</p>
+            </div>
+            
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a class="nav-link active" onclick="showSection('closing', this)">
+                        <i class="fas fa-file-export"></i> Closing Report
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" onclick="showComingSoon('Input & Output Report')">
+                        <i class="fas fa-exchange-alt"></i> Input & Output Report
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" onclick="showComingSoon('Cutting Plan Sheet')">
+                        <i class="fas fa-cut"></i> Cutting Plan Sheet
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" onclick="showComingSoon('Production Analysis')">
+                        <i class="fas fa-chart-line"></i> Production Analysis
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" onclick="showComingSoon('Efficiency Tracker')">
+                        <i class="fas fa-tachometer-alt"></i> Efficiency Tracker
+                    </a>
+                </li>
+            </ul>
+            
+            <div class="admin-footer">
+                <a href="/logout" class="nav-link" style="color: #ff7675;">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </a>
+            </div>
+        </div>
+
+        <div class="admin-content">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon bg-purple"><i class="fas fa-calendar-day"></i></div>
+                    <div class="stat-info">
+                        <h3>{{{{ stats.today }}}}</h3>
+                        <p>Today's Downloads</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon bg-orange"><i class="fas fa-calendar-alt"></i></div>
+                    <div class="stat-info">
+                        <h3>{{{{ stats.month }}}}</h3>
+                        <p>Monthly Downloads</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon bg-green"><i class="fas fa-history"></i></div>
+                    <div class="stat-info">
+                        <h3 style="font-size: 16px; word-break: break-all;">{{{{ stats.last_booking }}}}</h3>
+                        <p>Last Generated Booking</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="work-area" id="work-area">
+                <div id="closing-section" style="width: 100%; max-width: 500px;">
+                    <div class="glass-card" style="background: rgba(255,255,255,0.05); box-shadow: none; border: none;">
+                        <h2 style="margin-bottom: 20px; font-weight: 500;"><i class="fas fa-file-export"></i> Generate Closing Report</h2>
+                        <form action="/generate-report" method="post" onsubmit="startDownloadProcess()">
+                            <div class="input-group">
+                                <label for="ref_no">Internal Reference No</label>
+                                <input type="text" id="ref_no" name="ref_no" placeholder="Enter Ref No (e.g. DFL/24/..)" required>
+                                <input type="hidden" name="download_token" id="download_token">
+                            </div>
+                            <button type="submit">Generate Report</button>
+                        </form>
+                        {{% with messages = get_flashed_messages() %}}
+                            {{% if messages %}}
+                                <div class="flash" style="margin-top: 15px;">{{{{ messages[0] }}}}</div>
+                            {{% endif %}}
+                        {{% endwith %}}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- Coming Soon Alert ---
+        function showComingSoon(featureName) {{
+            swal({{
+                title: "Feature Coming Soon!",
+                text: "The '" + featureName + "' module will be launched very soon. Stay tuned!",
+                icon: "info",
+                button: "Got it!",
+                className: "swal-dark"
+            }});
+        }}
+
+        // --- Section Toggle Logic (Visual only since others are disabled) ---
+        function showSection(sectionId, element) {{
+            // Reset active class
+            document.querySelectorAll('.nav-link').forEach(el => el.classList.remove('active'));
+            element.classList.add('active');
+        }}
+
+        // --- Standard Scripts (Logout, Download) ---
+        let timeout;
+        function resetTimer() {{ clearTimeout(timeout); timeout = setTimeout(function() {{ alert("Session expired."); window.location.href = "/logout"; }}, 120000); }}
+        document.onmousemove = resetTimer; document.onkeypress = resetTimer; document.onload = resetTimer; resetTimer();
+
+        function getCookie(name) {{ let parts = document.cookie.split(name + "="); if (parts.length == 2) return parts.pop().split(";").shift(); return null; }}
+        function startDownloadProcess() {{
+            const overlay = document.getElementById('loading-overlay'); const loadingText = document.getElementById('loading-text'); const spinner = document.querySelector('.spinner'); const successIcon = document.querySelector('.success-icon'); const tokenInput = document.getElementById('download_token');
+            const token = new Date().getTime(); tokenInput.value = token;
+            overlay.style.display = 'flex'; overlay.className = ''; loadingText.innerHTML = "Processing data...<br><span style='font-size:12px; opacity:0.8'>Downloading will start automatically</span>"; spinner.style.display = 'block'; successIcon.style.display = 'none';
+            let attempts = 0;
+            const downloadTimer = setInterval(function() {{
+                const cookieValue = getCookie("download_token");
+                if (cookieValue == token) {{
+                    clearInterval(downloadTimer);
+                    overlay.classList.add('loader-success'); loadingText.innerHTML = "Successful Download Complete!";
                     
-                    // Show Success Message
-                    overlay.classList.add('loader-success');
-                    loadingText.innerHTML = "Successful Download Complete!";
-                    
-                    // Remove overlay after 2 seconds
-                    setTimeout(() => {{
-                        overlay.style.opacity = '0';
-                        setTimeout(() => {{
-                            overlay.style.display = 'none';
-                            overlay.style.opacity = '1';
-                        }}, 500);
+                    // Reload page to update stats after successful download
+                    setTimeout(() => {{ 
+                        window.location.reload(); 
                     }}, 2000);
                 }}
-                
-                attempts++;
-                // 300 attempts * 1s = 300s (5 mins timeout handling in JS)
-                if (attempts > 300) {{
-                    clearInterval(downloadTimer);
-                    overlay.classList.add('loader-error');
-                    spinner.style.display = 'none';
-                    loadingText.innerHTML = "Server Timeout<br><span style='font-size:12px'>Please try again later.</span><br><a href='/' style='color:white; border:1px solid white; padding:5px; border-radius:4px; margin-top:5px; display:inline-block;'>Reload</a>";
-                }}
+                attempts++; if (attempts > 300) {{ clearInterval(downloadTimer); overlay.classList.add('loader-error'); spinner.style.display = 'none'; loadingText.innerHTML = "Server Timeout"; }}
             }}, 1000);
         }}
     </script>
@@ -650,7 +944,12 @@ def index():
     if not session.get('logged_in'):
         return render_template_string(LOGIN_TEMPLATE)
     else:
-        return render_template_string(REPORT_GENERATOR_TEMPLATE)
+        # Check who is logged in
+        if session.get('user') == 'Admin':
+            stats = get_dashboard_summary()
+            return render_template_string(ADMIN_DASHBOARD_TEMPLATE, stats=stats)
+        else:
+            return render_template_string(USER_DASHBOARD_TEMPLATE)
 
 @app.route('/login', methods=['POST'])
 def login():
@@ -661,7 +960,7 @@ def login():
     user_2 = (username == 'Admin' and password == '@Nijhum@12')
 
     if user_1 or user_2:
-        session.permanent = True # সেশন টাইমআউট সক্রিয় করার জন্য
+        session.permanent = True
         session['logged_in'] = True
         session['user'] = username
     else:
@@ -682,7 +981,7 @@ def generate_report():
         return redirect(url_for('index'))
 
     internal_ref_no = request.form['ref_no']
-    download_token = request.form.get('download_token') # ক্লায়েন্ট থেকে টোকেন নেওয়া
+    download_token = request.form.get('download_token')
 
     if not internal_ref_no:
         flash("Ref No required.")
@@ -724,7 +1023,9 @@ def generate_report():
     excel_file_stream = create_formatted_excel_report(report_data, internal_ref_no)
     
     if excel_file_stream:
-        # ফাইল রেসপন্স তৈরি করা
+        # সফল ডাউনলোড হলে Stats আপডেট হবে
+        update_stats(internal_ref_no)
+
         response = make_response(send_file(
             excel_file_stream,
             as_attachment=True,
@@ -732,7 +1033,6 @@ def generate_report():
             mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
         ))
         
-        # কুকি সেট করা যাতে ক্লায়েন্ট বুঝতে পারে ডাউনলোড হয়েছে
         if download_token:
             response.set_cookie('download_token', download_token, max_age=60, path='/')
             
@@ -743,5 +1043,3 @@ def generate_report():
 
 if __name__ == '__main__':
     app.run(debug=True)
-
-
