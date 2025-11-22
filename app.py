@@ -38,7 +38,7 @@ def get_authenticated_session(username, password):
         return None
 
 # ==============================================================================
-# ফাংশন ২: HTML পার্সার (অপরিবর্তিত)
+# ফাংশন ২: HTML পার্সার
 # ==============================================================================
 def parse_report_data(html_content):
     all_report_data = []
@@ -90,7 +90,7 @@ def parse_report_data(html_content):
         return None
 
 # ==============================================================================
-# ফাংশন ৩: এক্সেল জেনারেটর (অপরিবর্তিত)
+# ফাংশন ৩: এক্সেল জেনারেটর 
 # ==============================================================================
 def create_formatted_excel_report(report_data, internal_ref_no=""):
     if not report_data: return None
@@ -495,7 +495,7 @@ LOGIN_TEMPLATE = f"""
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Security Check</title>
+    <title>MEHEDI HASAN</title>
     {COMMON_STYLES}
 </head>
 <body>
@@ -743,4 +743,5 @@ def generate_report():
 
 if __name__ == '__main__':
     app.run(debug=True)
+
 
