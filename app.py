@@ -734,7 +734,7 @@ USER_DASHBOARD_TEMPLATE = f"""
 
     <div class="center-container">
         <div class="glass-card">
-            <h1>(©) Mehedi Hasan</h1>
+            <h1>© Mehedi Hasan</h1>
             <p class="subtitle">Create Closing Reports Instantly</p>
             <form action="/generate-report" method="post" id="reportForm" onsubmit="startDownloadProcess()">
                 <div class="input-group">
@@ -1043,3 +1043,4 @@ def generate_report():
 
 if __name__ == '__main__':
     app.run(debug=True)
+
