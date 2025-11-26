@@ -4,6 +4,8 @@ from openpyxl.styles import Font, Alignment, Border, Side, PatternFill
 from bs4 import BeautifulSoup
 from datetime import datetime, timedelta
 from io import BytesIO
+from openpyxl.drawing.image import Image
+from PIL import Image as PILImage
 import time
 import json
 import os
@@ -29,7 +31,7 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=2)
 
 # ==============================================================================
-# ডেটা ম্যানেজমেন্ট (JSON Files)
+# ডেটা ম্যানেজমেন্ট (JSON Files) - User & Stats
 # ==============================================================================
 STATS_FILE = 'stats.json'
 USERS_FILE = 'users.json'
@@ -86,10 +88,8 @@ def save_users(data):
     with open(USERS_FILE, 'w') as f: json.dump(data, f, indent=4)
 
 # ==============================================================================
-# Helper Logic (PO Parser & Closing Report)
+# লজিক ১: PO Sheet Parser Functions
 # ==============================================================================
-# (লজিকগুলো অপরিবর্তিত রাখা হয়েছে কোড ছোট রাখার জন্য, কিন্তু ফাংশনালিটি সব আছে)
-
 def is_potential_size(header):
     h = header.strip().upper()
     if h in ["COLO", "SIZE", "TOTAL", "QUANTITY", "PRICE", "AMOUNT", "CURRENCY", "ORDER NO", "P.O NO"]: return False
@@ -181,151 +181,303 @@ def extract_data_dynamic(file_path):
     except Exception as e: print(e)
     return extracted_data, metadata
 
-def get_erp_session(username, password):
-    s = requests.Session()
-    s.headers.update({'User-Agent': 'Mozilla/5.0'})
+# ==============================================================================
+# লজিক ২: CLOSING REPORT (ORIGINAL LOGIC - UNTOUCHED)
+# ==============================================================================
+def get_authenticated_session(username, password):
+    login_url = 'http://180.92.235.190:8022/erp/login.php'
+    login_payload = {'txt_userid': username, 'txt_password': password, 'submit': 'Login'}
+    session_req = requests.Session()
+    session_req.headers.update({
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+    })
     try:
-        r = s.post('http://180.92.235.190:8022/erp/login.php', data={'txt_userid': username, 'txt_password': password, 'submit': 'Login'}, timeout=30)
-        return s if "dashboard.php" in r.url or "Invalid" not in r.text else None
-    except: return None
+        response = session_req.post(login_url, data=login_payload, timeout=300)
+        if "dashboard.php" in response.url or "Invalid" not in response.text:
+            return session_req
+        else:
+            return None
+    except requests.exceptions.RequestException as e:
+        print(f"Connection Error: {e}")
+        return None
 
-def parse_erp_html(html):
-    data = []
+def parse_report_data(html_content):
+    all_report_data = []
     try:
-        soup = BeautifulSoup(html, 'lxml')
+        soup = BeautifulSoup(html_content, 'lxml')
         header_row = soup.select_one('thead tr:nth-of-type(2)')
         if not header_row: return None
-        headers = [th.get_text(strip=True) for th in header_row.find_all('th') if 'total' not in th.get_text(strip=True).lower()]
-        
-        current_block = []
+        all_th = header_row.find_all('th')
+        headers = [th.get_text(strip=True) for th in all_th if 'total' not in th.get_text(strip=True).lower()]
+        data_rows = soup.select('div#scroll_body table tbody tr')
         item_blocks = []
-        for row in soup.select('div#scroll_body table tbody tr'):
+        current_block = []
+        for row in data_rows:
             if row.get('bgcolor') == '#cddcdc':
                 if current_block: item_blocks.append(current_block)
                 current_block = []
-            else: current_block.append(row)
+            else:
+                current_block.append(row)
         if current_block: item_blocks.append(current_block)
-
         for block in item_blocks:
-            style, color, buyer = "N/A", "N/A", "N/A"
-            gmts, sew, cut = None, None, None
+            style, color, buyer_name, gmts_qty_data, sewing_input_data, cutting_qc_data = "N/A", "N/A", "N/A", None, None, None
             for row in block:
                 cells = row.find_all('td')
                 if len(cells) > 2:
-                    main, sub = cells[0].get_text(strip=True).lower(), cells[2].get_text(strip=True).lower()
-                    if main == "style": style = cells[1].get_text(strip=True)
-                    elif main == "color & gmts. item": color = cells[1].get_text(strip=True)
-                    elif "buyer" in main: buyer = cells[1].get_text(strip=True)
-                    
-                    if sub == "gmts. color /country qty": gmts = [c.get_text(strip=True) for c in cells[3:len(headers)+3]]
-                    if "sewing input" in main: sew = [c.get_text(strip=True) for c in cells[1:len(headers)+1]]
-                    elif "sewing input" in sub: sew = [c.get_text(strip=True) for c in cells[3:len(headers)+3]]
-                    if "cutting qc" in main and "balance" not in main: cut = [c.get_text(strip=True) for c in cells[1:len(headers)+1]]
-                    elif "cutting qc" in sub and "balance" not in sub: cut = [c.get_text(strip=True) for c in cells[3:len(headers)+3]]
-            
-            if gmts:
-                p3 = []
-                for v in gmts:
-                    try: p3.append(str(round(int(v.replace(',', '')) * 1.03)))
-                    except: p3.append(v)
-                data.append({'style': style, 'buyer': buyer, 'color': color, 'headers': headers, 'gmts_qty': gmts, 'plus_3_percent': p3, 'sewing_input': sew or [], 'cutting_qc': cut or []})
-        return data
-    except: return None
+                    criteria_main = cells[0].get_text(strip=True)
+                    criteria_sub = cells[2].get_text(strip=True)
+                    main_lower, sub_lower = criteria_main.lower(), criteria_sub.lower()
+                    if main_lower == "style": style = cells[1].get_text(strip=True)
+                    elif main_lower == "color & gmts. item": color = cells[1].get_text(strip=True)
+                    elif "buyer" in main_lower: buyer_name = cells[1].get_text(strip=True)
+                    if sub_lower == "gmts. color /country qty": gmts_qty_data = [cell.get_text(strip=True) for cell in cells[3:len(headers)+3]]
+                    if "sewing input" in main_lower: sewing_input_data = [cell.get_text(strip=True) for cell in cells[1:len(headers)+1]]
+                    elif "sewing input" in sub_lower: sewing_input_data = [cell.get_text(strip=True) for cell in cells[3:len(headers)+3]]
+                    if "cutting qc" in main_lower and "balance" not in main_lower:
+                        cutting_qc_data = [cell.get_text(strip=True) for cell in cells[1:len(headers)+1]]
+                    elif "cutting qc" in sub_lower and "balance" not in sub_lower:
+                        cutting_qc_data = [cell.get_text(strip=True) for cell in cells[3:len(headers)+3]]
+            if gmts_qty_data:
+                plus_3_percent_data = []
+                for value in gmts_qty_data:
+                    try:
+                        new_qty = round(int(value.replace(',', '')) * 1.03)
+                        plus_3_percent_data.append(str(new_qty))
+                    except (ValueError, TypeError):
+                        plus_3_percent_data.append(value)
+                all_report_data.append({'style': style, 'buyer': buyer_name, 'color': color, 'headers': headers, 'gmts_qty': gmts_qty_data, 'plus_3_percent': plus_3_percent_data, 'sewing_input': sewing_input_data if sewing_input_data else [], 'cutting_qc': cutting_qc_data if cutting_qc_data else []})
+        return all_report_data
+    except Exception as e:
+        return None
 
-def create_excel(data, ref_no):
+# --- অরিজিনাল ক্লোজিং রিপোর্ট ফাংশন (কোনো পরিবর্তন ছাড়া) ---
+def create_formatted_excel_report(report_data, internal_ref_no=""):
+    if not report_data: return None
     wb = openpyxl.Workbook()
     ws = wb.active
     ws.title = "Closing Report"
+   
+    # --- স্টাইল এবং কালার প্যালেট ---
+    bold_font = Font(bold=True)
+    title_font = Font(size=32, bold=True, color="7B261A") 
+    white_bold_font = Font(size=16.5, bold=True, color="FFFFFF")
+    center_align = Alignment(horizontal='center', vertical='center')
+    left_align = Alignment(horizontal='left', vertical='center')
+    color_align = Alignment(horizontal='center', vertical='center', wrap_text=True)
+    thin_border = Border(left=Side(style='thin'), right=Side(style='thin'), top=Side(style='thin'), bottom=Side(style='thin'))
+    medium_border = Border(left=Side(style='medium'), right=Side(style='medium'), top=Side(style='medium'), bottom=Side(style='medium'))
     
-    # Fonts & Styles
-    bf, tf, wbf = Font(bold=True), Font(size=32, bold=True, color="7B261A"), Font(size=16.5, bold=True, color="FFFFFF")
-    ca, la = Alignment(horizontal='center', vertical='center'), Alignment(horizontal='left', vertical='center')
-    bd = Border(left=Side(style='thin'), right=Side(style='thin'), top=Side(style='thin'), bottom=Side(style='thin'))
-    mbd = Border(left=Side(style='medium'), right=Side(style='medium'), top=Side(style='medium'), bottom=Side(style='medium'))
-    # Fills
-    ir_fill = PatternFill(start_color="7B261A", end_color="7B261A", fill_type="solid")
-    head_fill = PatternFill(start_color="DE7465", end_color="DE7465", fill_type="solid")
-    lb_fill = PatternFill(start_color="B9C2DF", end_color="B9C2DF", fill_type="solid")
-    lg_fill = PatternFill(start_color="C4D09D", end_color="C4D09D", fill_type="solid")
-    dg_fill = PatternFill(start_color="f1f2e8", end_color="f1f2e8", fill_type="solid")
+    ir_ib_fill = PatternFill(start_color="7B261A", end_color="7B261A", fill_type="solid") # Dark Red for IR/IB
+    header_row_fill = PatternFill(start_color="DE7465", end_color="DE7465", fill_type="solid") # Light Orange
+    light_brown_fill = PatternFill(start_color="DE7465", end_color="DE7465", fill_type="solid") # Total Row
+    light_blue_fill = PatternFill(start_color="B9C2DF", end_color="B9C2DF", fill_type="solid") # Order Qty (Column 3)
+    light_green_fill = PatternFill(start_color="C4D09D", end_color="C4D09D", fill_type="solid") # Input Qty (Column 6)
+    dark_green_fill = PatternFill(start_color="f1f2e8", end_color="f1f2e8", fill_type="solid") 
 
-    ws.merge_cells('A1:I1'); ws['A1'].value = "COTTON CLOTHING BD LTD"; ws['A1'].font = tf; ws['A1'].alignment = ca
-    ws.merge_cells('A2:I2'); ws['A2'].value = "CLOSING REPORT [ INPUT SECTION ]"; ws['A2'].font = Font(size=15, bold=True); ws['A2'].alignment = ca
+    NUM_COLUMNS, TABLE_START_ROW = 9, 8
+   
+    # --- প্রধান দুটি হেডার ---
+    ws.merge_cells(start_row=1, start_column=1, end_row=1, end_column=NUM_COLUMNS)
+    ws['A1'].value = "COTTON CLOTHING BD LTD"
+    ws['A1'].font = title_font 
+    ws['A1'].alignment = center_align
+
+    ws.merge_cells(start_row=2, start_column=1, end_row=2, end_column=NUM_COLUMNS)
+    ws['A2'].value = "CLOSING REPORT [ INPUT SECTION ]"
+    ws['A2'].font = Font(size=15, bold=True) 
+    ws['A2'].alignment = center_align
+    ws.row_dimensions[3].height = 6
+
+    # --- সাব-হেডারসমূহ ---
+    formatted_ref_no = internal_ref_no.upper()
+    current_date = datetime.now().strftime("%d/%m/%Y")
+    left_sub_headers = {'A4': 'BUYER', 'B4': report_data[0].get('buyer', ''), 'A5': 'IR/IB NO', 'B5': formatted_ref_no, 'A6': 'STYLE NO', 'B6': report_data[0].get('style', '')}
     
-    meta = {'A4': 'BUYER', 'B4': data[0].get('buyer', ''), 'A5': 'IR/IB NO', 'B5': ref_no.upper(), 'A6': 'STYLE NO', 'B6': data[0].get('style', '')}
-    for k, v in meta.items():
-        ws[k].value = v; ws[k].font = bf; ws[k].border = bd; ws[k].alignment = la
-        if k == 'B5': ws[k].fill, ws[k].font = ir_fill, wbf
-        else: ws[k].fill = dg_fill
-    
+    for cell_ref, value in left_sub_headers.items():
+        cell = ws[cell_ref]
+        cell.value = value
+        cell.font = bold_font
+        cell.alignment = left_align
+        cell.border = thin_border
+        if cell_ref == 'B5':
+            cell.fill = ir_ib_fill      
+            cell.font = white_bold_font 
+        else:
+            cell.fill = dark_green_fill 
+
     ws.merge_cells('B4:G4'); ws.merge_cells('B5:G5'); ws.merge_cells('B6:G6')
-    dt = datetime.now().strftime("%d/%m/%Y")
-    right_meta = {'H4': 'CLOSING DATE', 'I4': dt, 'H5': 'SHIPMENT', 'I5': 'ALL', 'H6': 'PO NO', 'I6': 'ALL'}
-    for k, v in right_meta.items():
-        ws[k].value = v; ws[k].font = bf; ws[k].border = bd; ws[k].fill = dg_fill
+    
+    right_sub_headers = {'H4': 'CLOSING DATE', 'I4': current_date, 'H5': 'SHIPMENT', 'I5': 'ALL', 'H6': 'PO NO', 'I6': 'ALL'}
+    for cell_ref, value in right_sub_headers.items():
+        cell = ws[cell_ref]
+        cell.value = value
+        cell.font = bold_font
+        cell.alignment = left_align
+        cell.border = thin_border
+        cell.fill = dark_green_fill 
 
-    cr = 8
-    for block in data:
-        th = ["COLOUR NAME", "SIZE", "ORDER QTY 3%", "ACTUAL QTY", "CUTTING QC", "INPUT QTY", "BALANCE", "SHORT/PLUS QTY", "Percentage %"]
-        for i, h in enumerate(th, 1):
-            c = ws.cell(cr, i, h); c.font = bf; c.alignment = ca; c.border = mbd; c.fill = head_fill
-        cr += 1
-        start_row = cr
-        
+    for row in range(4, 7):
+        for col in range(3, 8): 
+            cell = ws.cell(row=row, column=col)
+            cell.border = thin_border
+       
+    current_row = TABLE_START_ROW
+   
+    # --- ডেটা টেবিল তৈরি ---
+    for block in report_data:
+        table_headers = ["COLOUR NAME", "SIZE", "ORDER QTY 3%", "ACTUAL QTY", "CUTTING QC", "INPUT QTY", "BALANCE", "SHORT/PLUS QTY", "Percentage %"]
+        for col_idx, header in enumerate(table_headers, 1):
+            cell = ws.cell(row=current_row, column=col_idx, value=header)
+            cell.font = bold_font
+            cell.alignment = center_align
+            cell.border = medium_border
+            cell.fill = header_row_fill 
+
+        current_row += 1
+        start_merge_row = current_row
+        full_color_name = block.get('color', 'N/A')
+
         for i, size in enumerate(block['headers']):
-            ws.cell(cr, 1, block['color'] if i==0 else "").alignment = ca
-            ws.cell(cr, 2, size).alignment = ca
-            aq = int(block['gmts_qty'][i].replace(',','') or 0)
-            iq = int(block['sewing_input'][i].replace(',','') or 0) if i < len(block['sewing_input']) else 0
-            cq = int(block.get('cutting_qc',[])[i].replace(',','') or 0) if i < len(block.get('cutting_qc',[])) else 0
+            color_to_write = full_color_name if i == 0 else ""
+            actual_qty = int(block['gmts_qty'][i].replace(',', '') or 0)
+            input_qty = int(block['sewing_input'][i].replace(',', '') or 0) if i < len(block['sewing_input']) else 0
+            cutting_qc_val = int(block.get('cutting_qc', [])[i].replace(',', '') or 0) if i < len(block.get('cutting_qc', [])) else 0
             
-            ws.cell(cr, 4, aq); ws.cell(cr, 5, cq); ws.cell(cr, 6, iq)
-            ws.cell(cr, 3, value=f"=ROUND(D{cr}*1.03, 0)")
-            ws.cell(cr, 7, value=f"=E{cr}-F{cr}")
-            ws.cell(cr, 8, value=f"=F{cr}-C{cr}")
-            ws.cell(cr, 9, value=f'=IF(C{cr}<>0, H{cr}/C{cr}, 0)')
+            ws.cell(row=current_row, column=1, value=color_to_write)
+            ws.cell(row=current_row, column=2, value=size)
+            ws.cell(row=current_row, column=4, value=actual_qty)
+            ws.cell(row=current_row, column=5, value=cutting_qc_val)
+            ws.cell(row=current_row, column=6, value=input_qty)
+            
+            # --- ফর্মুলা (অপরিবর্তিত) ---
+            ws.cell(row=current_row, column=3, value=f"=ROUND(D{current_row}*1.03, 0)")      
+            ws.cell(row=current_row, column=7, value=f"=E{current_row}-F{current_row}")      
+            ws.cell(row=current_row, column=8, value=f"=F{current_row}-C{current_row}")      
+            ws.cell(row=current_row, column=9, value=f'=IF(C{current_row}<>0, H{current_row}/C{current_row}, 0)') 
+            
+            for col_idx in range(1, NUM_COLUMNS + 1):
+                cell = ws.cell(row=current_row, column=col_idx)
+                cell.border = medium_border if col_idx == 2 else thin_border
+                cell.alignment = center_align
+                if col_idx in [1, 2, 3, 6, 9]: cell.font = bold_font
+                
+                if col_idx == 3: cell.fill = light_blue_fill      
+                elif col_idx == 6: cell.fill = light_green_fill   
+                else: cell.fill = dark_green_fill 
 
-            for c in range(1, 10):
-                cell = ws.cell(cr, c); cell.border = mbd if c==2 else bd; cell.alignment = ca
-                if c in [1,2,3,6,9]: cell.font = bf
-                if c==3: cell.fill = lb_fill
-                elif c==6: cell.fill = lg_fill
-                else: cell.fill = dg_fill
-                if c==9: cell.number_format = '0.00%'
-            cr += 1
+                if col_idx == 9:
+                    cell.number_format = '0.00%' 
+            current_row += 1
+            
+        end_merge_row = current_row - 1
+        if start_merge_row <= end_merge_row:
+            ws.merge_cells(start_row=start_merge_row, start_column=1, end_row=end_merge_row, end_column=1)
+            merged_cell = ws.cell(row=start_merge_row, column=1)
+            merged_cell.alignment = color_align
+            if not merged_cell.font.bold: merged_cell.font = bold_font
+
+        # --- টোটাল হিসাব (Total Row) ---
+        total_row_str = str(current_row)
+        ws.merge_cells(start_row=current_row, start_column=1, end_row=current_row, end_column=2)
         
-        ws.merge_cells(start_row=start_row, start_column=1, end_row=cr-1, end_column=1)
-        ws.merge_cells(start_row=cr, start_column=1, end_row=cr, end_column=2)
-        ws.cell(cr, 1, "TOTAL").font = bf
-        cols = "CDEFGHI"
-        for idx, col in enumerate(cols, 3):
-            f = f"=IF(C{cr}<>0, H{cr}/C{cr}, 0)" if col == 'I' else f"=SUM({col}{start_row}:{col}{cr-1})"
-            cell = ws.cell(cr, idx, value=f)
-            cell.font = bf; cell.fill = head_fill; cell.border = mbd; cell.alignment = ca
-            if col == 'I': cell.number_format = '0.00%'
-        cr += 2
-
-    # Signature & Image
+        totals_formulas = {
+            "A": "TOTAL",
+            "C": f"=SUM(C{start_merge_row}:C{end_merge_row})",
+            "D": f"=SUM(D{start_merge_row}:D{end_merge_row})",
+            "E": f"=SUM(E{start_merge_row}:E{end_merge_row})",
+            "F": f"=SUM(F{start_merge_row}:F{end_merge_row})",
+            "G": f"=SUM(G{start_merge_row}:G{end_merge_row})",
+            "H": f"=SUM(H{start_merge_row}:H{end_merge_row})",
+            "I": f"=IF(C{total_row_str}<>0, H{total_row_str}/C{total_row_str}, 0)"
+        }
+        
+        for col_letter, value_or_formula in totals_formulas.items():
+            cell = ws[f"{col_letter}{current_row}"]
+            cell.value = value_or_formula
+            cell.font = bold_font
+            cell.border = medium_border
+            cell.alignment = center_align
+            cell.fill = light_brown_fill 
+            if col_letter == 'I':
+                cell.number_format = '0.00%'
+        
+        for col_idx in range(2, NUM_COLUMNS + 1):
+            cell = ws.cell(row=current_row, column=col_idx)
+            if not cell.value: 
+                cell.fill = dark_green_fill 
+                cell.border = medium_border
+        current_row += 2
+       
+    image_row = current_row + 1
+   
+    # --- ছবি যোগ করার অংশ ---
     try:
-        r = requests.get('https://i.ibb.co/v6bp0jQW/rockybilly-regular.webp')
-        img = Image(BytesIO(r.content))
-        img.width, img.height = 95, 25
-        ws.add_image(img, f'A{cr}')
-    except: pass
-    
-    cr += 1
-    ws.merge_cells(start_row=cr, start_column=1, end_row=cr, end_column=9)
-    ws.cell(cr, 1, "Prepared By                 Input Incharge                 Cutting Incharge                 IE & Planning                 Sewing Manager                 Cutting Manager").font = Font(bold=True, size=15)
-    
-    # Layout
-    for col in ['A','C','H']: ws.column_dimensions[col].width = 23
-    ws.column_dimensions['B'].width = 8.5
-    ws.page_setup.fitToPage = True
+        direct_image_url = 'https://i.ibb.co/v6bp0jQW/rockybilly-regular.webp'
+        image_response = requests.get(direct_image_url)
+        image_response.raise_for_status()
+        original_img = PILImage.open(BytesIO(image_response.content))
+        padded_img = PILImage.new('RGBA', (original_img.width + 400, original_img.height), (0, 0, 0, 0))
+        padded_img.paste(original_img, (400, 0))
+        padded_image_io = BytesIO()
+        padded_img.save(padded_image_io, format='PNG')
+        img = Image(padded_image_io)
+        aspect_ratio = padded_img.height / padded_img.width
+        img.width = 95
+        img.height = int(img.width * aspect_ratio)
+        ws.row_dimensions[image_row].height = img.height * 0.90
+        ws.add_image(img, f'A{image_row}')
+    except Exception as e:
+        print(f"ছবি যোগ করার সময় ত্রুটি: {e}")
 
-    bio = BytesIO()
-    wb.save(bio)
-    bio.seek(0)
-    return bio
+    # --- স্বাক্ষর সেকশন ---
+    signature_row = image_row + 1
+    ws.merge_cells(start_row=signature_row, start_column=1, end_row=signature_row, end_column=NUM_COLUMNS)
+    titles = ["Prepared By", "Input Incharge", "Cutting Incharge", "IE & Planning", "Sewing Manager", "Cutting Manager"]
+    signature_cell = ws.cell(row=signature_row, column=1)
+    signature_cell.value = "                 ".join(titles)
+    signature_cell.font = Font(bold=True, size=15)
+    signature_cell.alignment = Alignment(horizontal='center', vertical='center')
+
+    # --- ফন্ট সাইজ ---
+    last_data_row = current_row - 2
+    for row in ws.iter_rows(min_row=4, max_row=last_data_row):
+        for cell in row:
+            if cell.coordinate == 'B5': continue
+            if cell.font:
+                existing_font = cell.font
+                if cell.row != 1: 
+                    new_font = Font(name=existing_font.name, size=16.5, bold=existing_font.bold, italic=existing_font.italic, vertAlign=existing_font.vertAlign, underline=existing_font.underline, strike=existing_font.strike, color=existing_font.color)
+                    cell.font = new_font
+   
+    # --- কলামের প্রস্থ ---
+    ws.column_dimensions['A'].width = 23
+    ws.column_dimensions['B'].width = 8.5
+    ws.column_dimensions['C'].width = 20
+    ws.column_dimensions['D'].width = 17
+    ws.column_dimensions['E'].width = 17
+    ws.column_dimensions['F'].width = 15
+    ws.column_dimensions['G'].width = 13.5
+    ws.column_dimensions['H'].width = 23
+    ws.column_dimensions['I'].width = 18
+   
+    # --- পেজ সেটআপ ---
+    ws.page_setup.orientation = ws.ORIENTATION_PORTRAIT
+    ws.page_setup.fitToPage = True
+    ws.page_setup.fitToWidth = 1
+    ws.page_setup.fitToHeight = 1 
+    ws.page_setup.horizontalCentered = True
+    ws.page_setup.verticalCentered = False 
+    ws.page_setup.left = 0.25
+    ws.page_setup.right = 0.25
+    ws.page_setup.top = 0.45
+    ws.page_setup.bottom = 0.45
+    ws.page_setup.header = 0
+    ws.page_setup.footer = 0
+   
+    file_stream = BytesIO()
+    wb.save(file_stream)
+    file_stream.seek(0)
+    return file_stream
 
 # ==============================================================================
 # CSS & TEMPLATES
@@ -404,7 +556,6 @@ LOGIN_HTML = f"""
 </html>
 """
 
-# PO Sheet Template (Print Friendly) - kept strictly separate from admin CSS
 PO_TEMPLATE = """<!DOCTYPE html><html lang="en"><head><title>PO Report</title><link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"><style>body{background:#f8f9fa;font-family:sans-serif}.container{max-width:1200px}.company-header{text-align:center;border-bottom:2px solid #000;margin-bottom:20px}.company-name{font-size:2.2rem;font-weight:800;color:#2c3e50}.table th{background:#2c3e50;color:white;text-align:center}.table td{text-align:center;font-weight:bold}@media print{.no-print{display:none}.table th{background:#2c3e50!important;color:white!important;-webkit-print-color-adjust:exact}}</style></head><body><div class="container mt-4"><div class="d-flex justify-content-between no-print mb-3"><a href="/" class="btn btn-secondary">Back</a><button onclick="window.print()" class="btn btn-primary">Print</button></div><div class="company-header"><div class="company-name">Cotton Clothing BD Limited</div><h4>Purchase Order Summary</h4></div>{% if message %}<div class="alert alert-warning">{{ message }}</div>{% endif %}{% if tables %}<div class="row mb-3 border p-2"><div class="col-md-6"><strong>Buyer:</strong> {{ meta.buyer }}<br><strong>Style:</strong> {{ meta.style }}</div><div class="col-md-6 text-end"><h3>Total: {{ grand_total }}</h3></div></div>{% for item in tables %}<div class="card mb-3"><div class="card-header bg-light"><strong>COLOR: {{ item.color }}</strong></div><div class="card-body p-0">{{ item.table | safe }}</div></div>{% endfor %}{% endif %}</div></body></html>"""
 
 ADMIN_DASHBOARD = f"""
@@ -685,10 +836,9 @@ def generate_report():
         flash("Permission Denied"); return redirect('/')
 
     ref = request.form.get('ref_no')
-    s = get_erp_session("input2.clothing-cutting", "123456")
+    s = get_authenticated_session("input2.clothing-cutting", "123456")
     if not s: flash("ERP Connection Failed"); return redirect('/')
 
-    # Fetch logic simplified for brevity but fully functional
     url = 'http://180.92.235.190:8022/erp/prod_planning/reports/requires/cutting_lay_production_report_controller.php'
     payload = {'action': 'report_generate', 'cbo_wo_company_name': '2', 'txt_internal_ref_no': ref, 'reportType': '3'}
     
@@ -703,10 +853,10 @@ def generate_report():
         if html: break
     
     if not html: flash("No Data Found"); return redirect('/')
-    data = parse_erp_html(html)
+    data = parse_report_data(html)
     if not data: flash("Parsing Error"); return redirect('/')
     
-    excel = create_excel(data, ref)
+    excel = create_formatted_excel_report(data, ref)
     update_stats(ref)
     return send_file(excel, as_attachment=True, download_name=f"Closing_{ref.replace('/','_')}.xlsx")
 
@@ -738,7 +888,7 @@ def generate_po_report():
     # Process DataFrame
     df = pd.DataFrame(all_data)
     df['Color'] = df['Color'].str.strip()
-    df = df[df['Color']!=""]
+    df = df[df['Color'] != ""]
     tables = []
     grand_total = 0
     
