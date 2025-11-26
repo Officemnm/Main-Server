@@ -16,12 +16,12 @@ import shutil
 import numpy as np
 
 # --- Flask লাইব্রেরি ইম্পোর্ট ---
-from flask import Flask, request, render_template_string, send_file, flash, session, redirect, url_for, make_response
+from flask import Flask, request, render_template_string, send_file, flash, session, redirect, url_for, make_response, jsonify
 
 app = Flask(__name__)
 app.secret_key = 'super-secret-secure-key-bd' 
 
-# কনফিগারেশন
+# কনফিগারেশন (PO ফাইলের জন্য)
 UPLOAD_FOLDER = 'uploads'
 if not os.path.exists(UPLOAD_FOLDER):
     os.makedirs(UPLOAD_FOLDER)
@@ -31,64 +31,89 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=2)
 
 # ==============================================================================
-# ডেটা ম্যানেজমেন্ট (JSON Files) - User & Stats
+# হেল্পার ফাংশন: পরিসংখ্যান (JSON)
 # ==============================================================================
 STATS_FILE = 'stats.json'
 USERS_FILE = 'users.json'
 
-# --- Stats Management ---
+# --- ইউজার ম্যানেজমেন্ট ফাংশন ---
+def load_users():
+    # ডিফল্ট ইউজার যদি ফাইল না থাকে
+    default_users = {
+        "Admin": {
+            "password": "@Nijhum@12", 
+            "role": "admin", 
+            "permissions": ["closing", "po_sheet", "user_manage"]
+        },
+        "KobirAhmed": {
+            "password": "11223", 
+            "role": "user", 
+            "permissions": ["closing"]
+        }
+    }
+    
+    if not os.path.exists(USERS_FILE):
+        with open(USERS_FILE, 'w') as f:
+            json.dump(default_users, f, indent=4)
+        return default_users
+    
+    try:
+        with open(USERS_FILE, 'r') as f:
+            return json.load(f)
+    except:
+        return default_users
+
+def save_users(users_data):
+    with open(USERS_FILE, 'w') as f:
+        json.dump(users_data, f, indent=4)
+
 def load_stats():
     if not os.path.exists(STATS_FILE):
         return {"downloads": [], "last_booking": "None"}
     try:
-        with open(STATS_FILE, 'r') as f: return json.load(f)
-    except: return {"downloads": [], "last_booking": "None"}
+        with open(STATS_FILE, 'r') as f:
+            return json.load(f)
+    except:
+        return {"downloads": [], "last_booking": "None"}
 
 def save_stats(data):
-    with open(STATS_FILE, 'w') as f: json.dump(data, f)
+    with open(STATS_FILE, 'w') as f:
+        json.dump(data, f)
 
 def update_stats(ref_no):
     data = load_stats()
-    data['downloads'].append({"ref": ref_no, "time": datetime.now().isoformat()})
+    current_time = datetime.now().isoformat()
+    data['downloads'].append({"ref": ref_no, "time": current_time})
     data['last_booking'] = ref_no
     save_stats(data)
 
 def get_dashboard_summary():
     data = load_stats()
     downloads = data.get('downloads', [])
+    last_booking = data.get('last_booking', 'N/A')
+    
     now = datetime.now()
-    today_str, month_str = now.strftime('%Y-%m-%d'), now.strftime('%Y-%m')
-    today_count = sum(1 for d in downloads if datetime.fromisoformat(d['time']).strftime('%Y-%m-%d') == today_str)
-    month_count = sum(1 for d in downloads if datetime.fromisoformat(d['time']).strftime('%Y-%m') == month_str)
-    return {"today": today_count, "month": month_count, "last_booking": data.get('last_booking', 'N/A')}
-
-# --- User Management System ---
-DEFAULT_USERS = {
-    "Admin": {
-        "password": "@Nijhum@12",
-        "role": "admin",
-        "permissions": ["closing", "po", "input", "cutting", "production", "efficiency", "user_manage"]
-    },
-    "KobirAhmed": {
-        "password": "11223",
-        "role": "user",
-        "permissions": ["closing"]
+    today_str = now.strftime('%Y-%m-%d')
+    month_str = now.strftime('%Y-%m')
+    
+    today_count = 0
+    month_count = 0
+    
+    for d in downloads:
+        dt = datetime.fromisoformat(d['time'])
+        if dt.strftime('%Y-%m-%d') == today_str:
+            today_count += 1
+        if dt.strftime('%Y-%m') == month_str:
+            month_count += 1
+            
+    return {
+        "today": today_count,
+        "month": month_count,
+        "last_booking": last_booking
     }
-}
-
-def load_users():
-    if not os.path.exists(USERS_FILE):
-        save_users(DEFAULT_USERS)
-        return DEFAULT_USERS
-    try:
-        with open(USERS_FILE, 'r') as f: return json.load(f)
-    except: return DEFAULT_USERS
-
-def save_users(data):
-    with open(USERS_FILE, 'w') as f: json.dump(data, f, indent=4)
 
 # ==============================================================================
-# লজিক ১: PO Sheet Parser Functions (আপনার দেওয়া কোড হুবহু)
+# লজিক পার্ট: PURCHASE ORDER SHEET PARSER (আপনার দেওয়া কোড)
 # ==============================================================================
 def is_potential_size(header):
     h = header.strip().upper()
@@ -249,7 +274,7 @@ def extract_data_dynamic(file_path):
     return extracted_data, metadata
 
 # ==============================================================================
-# লজিক ২: CLOSING REPORT (ERP Login & Parsing) - হুবহু আপনার আগের কোড
+# লজিক পার্ট: CLOSING REPORT (আপনার আগের কোড)
 # ==============================================================================
 def get_authenticated_session(username, password):
     login_url = 'http://180.92.235.190:8022/erp/login.php'
@@ -259,7 +284,6 @@ def get_authenticated_session(username, password):
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
     })
     try:
-        # 5 Minute Timeout (300 Seconds)
         response = session_req.post(login_url, data=login_payload, timeout=300)
         if "dashboard.php" in response.url or "Invalid" not in response.text:
             return session_req
@@ -318,16 +342,13 @@ def parse_report_data(html_content):
     except Exception as e:
         return None
 
-# ==============================================================================
-# ফাংশন ৩: ফরম্যাটেড এক্সেল রিপোর্ট (হুবহু আপনার দেওয়া কোড)
-# ==============================================================================
 def create_formatted_excel_report(report_data, internal_ref_no=""):
     if not report_data: return None
     wb = openpyxl.Workbook()
     ws = wb.active
     ws.title = "Closing Report"
    
-    # --- স্টাইল এবং কালার প্যালেট ---
+    # Styles
     bold_font = Font(bold=True)
     title_font = Font(size=32, bold=True, color="7B261A") 
     white_bold_font = Font(size=16.5, bold=True, color="FFFFFF")
@@ -540,7 +561,7 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
     return file_stream
 
 # ==============================================================================
-# CSS & TEMPLATES
+# CSS & HTML Templates
 # ==============================================================================
 COMMON_STYLES = """
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
@@ -550,47 +571,165 @@ COMMON_STYLES = """
         body {
             background-color: #2c3e50; 
             background-image: url('https://i.ibb.co.com/v64Lz1gj/Picsart-25-11-19-15-49-43-423.jpg');
-            background-repeat: no-repeat; background-position: center; background-attachment: fixed; background-size: cover;
-            height: 100vh; overflow: hidden; color: white;
+            background-repeat: no-repeat;
+            background-position: center center;
+            background-attachment: fixed;
+            background-size: cover;
+            height: 100vh;
+            overflow: hidden; 
         }
-        body::before { content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); z-index: -1; }
+        body::before {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.4);
+            z-index: -1;
+        }
         
+        /* Glass Card */
         .glass-card {
-            background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(15px);
-            border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 16px;
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3); padding: 40px; color: white;
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 45px 40px;
+            border-radius: 16px;
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+            color: white;
+            animation: floatIn 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+        }
+
+        .center-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+            width: 100%;
+        }
+        .center-container .glass-card {
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+
+        @keyframes floatIn {
+            from { opacity: 0; transform: translateY(30px) scale(0.95); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
         }
         
-        input, select, button { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.3); background: rgba(255,255,255,0.1); color: white; margin-bottom: 15px; outline: none; }
-        input:focus, select:focus { background: rgba(255,255,255,0.2); border-color: white; }
-        select option { background: #2c3e50; }
-        button { background: linear-gradient(135deg, #667eea, #764ba2); border: none; font-weight: 600; cursor: pointer; transition: 0.3s; }
-        button:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
-        .danger-btn { background: linear-gradient(135deg, #ff7675, #d63031); }
-
-        .admin-container { display: flex; height: 100vh; }
-        .sidebar { width: 280px; background: rgba(0,0,0,0.3); backdrop-filter: blur(10px); padding: 25px; display: flex; flex-direction: column; border-right: 1px solid rgba(255,255,255,0.1); }
-        .nav-item { padding: 12px; cursor: pointer; color: rgba(255,255,255,0.7); transition: 0.3s; border-radius: 8px; margin-bottom: 5px; display: flex; align-items: center; text-decoration: none; }
-        .nav-item:hover, .nav-item.active { background: rgba(255,255,255,0.1); color: white; }
-        .nav-item i { margin-right: 10px; width: 20px; text-align: center; }
+        h1 { color: #ffffff; font-size: 26px; font-weight: 600; margin-bottom: 8px; text-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+        p.subtitle { color: #e0e0e0; font-size: 13px; margin-bottom: 30px; font-weight: 300; }
         
-        .content { flex: 1; padding: 30px; overflow-y: auto; }
-        .section { display: none; animation: fadeIn 0.5s; }
-        .section.active { display: block; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
-        .user-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        .user-table th, .user-table td { padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.1); text-align: left; }
-        .user-table th { background: rgba(255,255,255,0.1); }
+        .input-group { text-align: left; margin-bottom: 20px; }
+        .input-group label {
+            display: block;
+            font-size: 12px;
+            color: #ffffff;
+            font-weight: 500;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+        }
         
-        .checkbox-group { display: flex; gap: 15px; flex-wrap: wrap; margin-bottom: 15px; }
-        .checkbox-item { display: flex; align-items: center; gap: 5px; font-size: 14px; background: rgba(255,255,255,0.1); padding: 5px 10px; border-radius: 20px; cursor: pointer; }
-        .checkbox-item input { width: auto; margin: 0; }
+        input[type="password"], input[type="text"], input[type="file"], select {
+            width: 100%;
+            padding: 12px 15px;
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 8px;
+            font-size: 15px;
+            color: #fff;
+            transition: all 0.3s ease;
+            outline: none;
+            appearance: none;
+        }
+        input[type="file"] {
+            padding: 10px;
+        }
+        
+        select {
+            cursor: pointer;
+            background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23FFFFFF%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");
+            background-repeat: no-repeat;
+            background-position: right 15px top 50%;
+            background-size: 12px auto;
+        }
+        select option { background-color: #2c3e50; color: white; }
+
+        input::placeholder { color: rgba(255, 255, 255, 0.6); }
+        input:focus, select:focus {
+            background: rgba(255, 255, 255, 0.3);
+            border-color: #ffffff;
+            box-shadow: 0 0 10px rgba(255,255,255,0.2);
+        }
+        
+        button {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-top: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        }
+        
+        .flash {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 8px;
+            background: rgba(231, 76, 60, 0.8);
+            backdrop-filter: blur(4px);
+            color: white;
+            font-size: 13px;
+        }
+        
+        a.logout {
+            display: inline-block;
+            margin-top: 20px;
+            color: rgba(255,255,255,0.7);
+            text-decoration: none;
+            font-size: 13px;
+            padding: 5px 10px;
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 20px;
+            transition: 0.3s;
+        }
+        a.logout:hover { background: rgba(255,255,255,0.2); color: white; }
 
         /* Loader */
-        #loading-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 9999; justify-content: center; align-items: center; flex-direction: column; }
-        .spinner { width: 50px; height: 50px; border: 5px solid rgba(255,255,255,0.3); border-top-color: #a29bfe; border-radius: 50%; animation: spin 1s linear infinite; }
-        @keyframes spin { to { transform: rotate(360deg); } }
+        #loading-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(8px);
+            z-index: 9999;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            transition: opacity 0.3s ease;
+        }
+        
+        .spinner {
+            width: 60px; height: 60px;
+            border: 5px solid rgba(255, 255, 255, 0.2);
+            border-top: 5px solid #a29bfe;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         .success-icon { font-size: 60px; color: #2ecc71; display: none; margin-bottom: 10px; animation: popIn 0.5s ease; }
         @keyframes popIn { from { transform: scale(0); } to { transform: scale(1); } }
         #loading-text { font-size: 18px; font-weight: 500; letter-spacing: 1px; text-align: center; }
@@ -601,49 +740,200 @@ COMMON_STYLES = """
         .loader-success #loading-text { color: #2ecc71; font-weight: 600; }
 
         /* Admin Dashboard CSS */
-        .admin-sidebar { width: 280px; background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(15px); border-right: 1px solid rgba(255, 255, 255, 0.1); display: flex; flex-direction: column; padding: 25px; }
+        .admin-container { display: flex; width: 100%; height: 100vh; }
+        .admin-sidebar {
+            width: 280px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(15px);
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex; flex-direction: column; padding: 25px;
+        }
         .sidebar-header { margin-bottom: 40px; text-align: center; }
         .sidebar-header h2 { color: white; font-size: 22px; font-weight: 600; }
         .sidebar-header p { color: #a29bfe; font-size: 12px; letter-spacing: 1px; }
+
         .nav-menu { list-style: none; }
         .nav-item { margin-bottom: 15px; }
-        .nav-link { display: flex; align-items: center; padding: 12px 15px; color: rgba(255, 255, 255, 0.7); text-decoration: none; border-radius: 10px; transition: all 0.3s ease; font-size: 14px; cursor: pointer; }
+        .nav-link {
+            display: flex; align-items: center; padding: 12px 15px;
+            color: rgba(255, 255, 255, 0.7); text-decoration: none; border-radius: 10px;
+            transition: all 0.3s ease; font-size: 14px; cursor: pointer;
+        }
         .nav-link i { margin-right: 12px; width: 20px; text-align: center; }
-        .nav-link:hover, .nav-link.active { background: linear-gradient(90deg, rgba(108, 92, 231, 0.8) 0%, rgba(118, 75, 162, 0.8) 100%); color: white; box-shadow: 0 4px 15px rgba(0,0,0,0.2); transform: translateX(5px); }
+        .nav-link:hover, .nav-link.active {
+            background: linear-gradient(90deg, rgba(108, 92, 231, 0.8) 0%, rgba(118, 75, 162, 0.8) 100%);
+            color: white; box-shadow: 0 4px 15px rgba(0,0,0,0.2); transform: translateX(5px);
+        }
+
         .admin-footer { margin-top: auto; border-top: 1px solid rgba(255, 255, 255, 0.1); padding-top: 20px; }
         .admin-content { flex: 1; padding: 30px; overflow-y: auto; display: flex; flex-direction: column; }
         .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 30px; }
-        .stat-card { background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.2); padding: 20px; border-radius: 15px; display: flex; align-items: center; transition: transform 0.3s; }
+        .stat-card {
+            background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2); padding: 20px; border-radius: 15px;
+            display: flex; align-items: center; transition: transform 0.3s;
+        }
         .stat-card:hover { transform: translateY(-5px); background: rgba(255, 255, 255, 0.15); }
         .stat-icon { width: 50px; height: 50px; border-radius: 12px; background: rgba(255, 255, 255, 0.1); display: flex; align-items: center; justify-content: center; font-size: 20px; color: #fff; margin-right: 15px; }
         .stat-info h3 { font-size: 24px; color: white; margin-bottom: 5px; }
         .stat-info p { font-size: 13px; color: #dcdcdc; }
+
         .bg-purple { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
         .bg-orange { background: linear-gradient(135deg, #ff9966 0%, #ff5e62 100%); }
         .bg-green { background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); }
+
         .work-area { flex: 1; background: rgba(0, 0, 0, 0.2); border-radius: 20px; padding: 30px; display: flex; justify-content: center; align-items: flex-start; position: relative; }
         .swal-overlay { background-color: rgba(0, 0, 0, 0.6); }
         .swal-modal { background-color: #2d3436; border: 1px solid rgba(255,255,255,0.1); }
         .swal-title { color: white; }
         .swal-text { color: #b2bec3; }
+        
+        /* Table Styles for User Management */
+        .user-table { width: 100%; border-collapse: collapse; color: white; margin-top: 20px; }
+        .user-table th, .user-table td { padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.1); text-align: left; }
+        .user-table th { background: rgba(255,255,255,0.1); font-weight: 600; }
+        .user-btn { padding: 5px 10px; border-radius: 5px; border: none; font-size: 12px; cursor: pointer; color: white; margin-right: 5px; display: inline-block; width: auto; margin-top: 0; }
+        .btn-edit { background: #f39c12; }
+        .btn-delete { background: #e74c3c; }
+        
+        /* Permissions Checkboxes */
+        .perm-group { display: flex; gap: 10px; margin-top: 5px; }
+        .perm-item { display: flex; align-items: center; font-size: 13px; color: white; }
+        .perm-item input { width: auto; margin-right: 5px; }
     </style>
 """
 
-LOGIN_HTML = f"""
+# --- Report HTML Template for PO Sheet (Print Friendly) ---
+PO_REPORT_TEMPLATE = """
 <!DOCTYPE html>
 <html lang="en">
-<head><title>MEHEDI HASAN</title>{COMMON_STYLES}</head>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PO Report - Cotton Clothing BD</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background-color: #f8f9fa; padding: 30px 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .container { max-width: 1200px; }
+        .company-header { text-align: center; margin-bottom: 20px; border-bottom: 2px solid #000; padding-bottom: 10px; }
+        .company-name { font-size: 2.2rem; font-weight: 800; color: #2c3e50; text-transform: uppercase; letter-spacing: 1px; line-height: 1; }
+        .report-title { font-size: 1.1rem; color: #555; font-weight: 600; text-transform: uppercase; margin-top: 5px; }
+        .date-section { font-size: 1.2rem; font-weight: 800; color: #000; margin-top: 5px; }
+        .info-container { display: flex; justify-content: space-between; margin-bottom: 15px; gap: 15px; }
+        .info-box { background: white; border: 1px solid #ddd; border-left: 5px solid #2c3e50; padding: 10px 15px; border-radius: 5px; flex: 2; box-shadow: 0 2px 5px rgba(0,0,0,0.05); display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .total-box { background: #2c3e50; color: white; padding: 10px 15px; border-radius: 5px; width: 240px; text-align: right; display: flex; flex-direction: column; justify-content: center; box-shadow: 0 4px 10px rgba(44, 62, 80, 0.3); }
+        .info-item { margin-bottom: 6px; font-size: 1.3rem; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .info-label { font-weight: 800; color: #444; width: 90px; display: inline-block; }
+        .info-value { font-weight: 800; color: #000; }
+        .total-label { font-size: 1.1rem; opacity: 0.9; text-transform: uppercase; letter-spacing: 1px; font-weight: 700; }
+        .total-value { font-size: 2.5rem; font-weight: 800; line-height: 1.1; }
+        .table-card { background: white; border-radius: 0; margin-bottom: 20px; overflow: hidden; border: 1px solid #dee2e6; }
+        .color-header { background-color: #e9ecef; color: #2c3e50; padding: 10px 12px; font-size: 1.5rem; font-weight: 900; border-bottom: 1px solid #dee2e6; text-transform: uppercase; }
+        .table { margin-bottom: 0; width: 100%; border-collapse: collapse; }
+        .table th { background-color: #2c3e50; color: white; font-weight: 900; font-size: 1.2rem; text-align: center; border: 1px solid #34495e; padding: 8px 4px; vertical-align: middle; }
+        .table td { text-align: center; vertical-align: middle; border: 1px solid #dee2e6; padding: 6px 3px; color: #000; font-weight: 800; font-size: 1.15rem; }
+        .table-striped tbody tr:nth-of-type(odd) { background-color: #f8f9fa; }
+        .order-col { font-weight: 900 !important; text-align: center !important; background-color: #fdfdfd; white-space: nowrap; width: 1%; }
+        .total-col { font-weight: 900; background-color: #e8f6f3 !important; color: #16a085; border-left: 2px solid #1abc9c !important; }
+        .total-col-header { background-color: #e8f6f3 !important; color: #000 !important; font-weight: 900 !important; border: 1px solid #34495e !important; }
+        .table-striped tbody tr.summary-row, .table-striped tbody tr.summary-row td { background-color: #d1ecff !important; --bs-table-accent-bg: #d1ecff !important; color: #000 !important; font-weight: 900 !important; border-top: 2px solid #aaa !important; font-size: 1.2rem !important; }
+        .summary-label { text-align: right !important; padding-right: 15px !important; color: #000 !important; }
+        .action-bar { margin-bottom: 20px; display: flex; justify-content: flex-end; gap: 10px; }
+        .btn-print { background-color: #2c3e50; color: white; border-radius: 50px; padding: 8px 30px; font-weight: 600; }
+        .footer-credit { text-align: center; margin-top: 30px; margin-bottom: 20px; font-size: 0.8rem; color: #2c3e50; padding-top: 10px; border-top: 1px solid #ddd; }
+        @media print {
+            @page { margin: 5mm; size: portrait; }
+            body { background-color: white; padding: 0; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; color-adjust: exact !important; }
+            .container { max-width: 100% !important; width: 100% !important; padding: 0; margin: 0; }
+            .no-print { display: none !important; }
+            .company-header { border-bottom: 2px solid #000; margin-bottom: 5px; padding-bottom: 5px; }
+            .company-name { font-size: 1.8rem; } 
+            .info-container { margin-bottom: 10px; }
+            .info-box { border: 1px solid #000 !important; border-left: 5px solid #000 !important; padding: 5px 10px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+            .total-box { border: 2px solid #000 !important; background: white !important; color: black !important; padding: 5px 10px; }
+            .info-item { font-size: 13pt !important; font-weight: 800 !important; }
+            .table th, .table td { border: 1px solid #000 !important; padding: 2px !important; font-size: 13pt !important; font-weight: 800 !important; }
+            .table-striped tbody tr.summary-row td { background-color: #d1ecff !important; box-shadow: inset 0 0 0 9999px #d1ecff !important; color: #000 !important; font-weight: 900 !important; }
+            .color-header { background-color: #f1f1f1 !important; border: 1px solid #000 !important; font-size: 1.4rem !important; font-weight: 900 !important; padding: 5px; margin-top: 10px; box-shadow: inset 0 0 0 9999px #f1f1f1 !important; }
+            .total-col-header { background-color: #e8f6f3 !important; box-shadow: inset 0 0 0 9999px #e8f6f3 !important; color: #000 !important; }
+            .table-card { border: none; margin-bottom: 10px; break-inside: avoid; }
+            .footer-credit { display: block !important; color: black; border-top: 1px solid #000; margin-top: 10px; font-size: 8pt !important; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="action-bar no-print">
+            <a href="/" class="btn btn-outline-secondary rounded-pill px-4">Back to Dashboard</a>
+            <button onclick="window.print()" class="btn btn-print">🖨️ Print Report</button>
+        </div>
+        <div class="company-header">
+            <div class="company-name">Cotton Clothing BD Limited</div>
+            <div class="report-title">Purchase Order Summary</div>
+            <div class="date-section">Date: <span id="date"></span></div>
+        </div>
+        {% if message %}
+            <div class="alert alert-warning text-center no-print">{{ message }}</div>
+        {% endif %}
+        {% if tables %}
+            <div class="info-container">
+                <div class="info-box">
+                    <div>
+                        <div class="info-item"><span class="info-label">Buyer:</span> <span class="info-value">{{ meta.buyer }}</span></div>
+                        <div class="info-item"><span class="info-label">Booking:</span> <span class="info-value">{{ meta.booking }}</span></div>
+                        <div class="info-item"><span class="info-label">Style:</span> <span class="info-value">{{ meta.style }}</span></div>
+                    </div>
+                    <div>
+                        <div class="info-item"><span class="info-label">Season:</span> <span class="info-value">{{ meta.season }}</span></div>
+                        <div class="info-item"><span class="info-label">Dept:</span> <span class="info-value">{{ meta.dept }}</span></div>
+                        <div class="info-item"><span class="info-label">Item:</span> <span class="info-value">{{ meta.item }}</span></div>
+                    </div>
+                </div>
+                <div class="total-box">
+                    <div class="total-label">Grand Total</div>
+                    <div class="total-value">{{ grand_total }}</div>
+                    <small>Pieces</small>
+                </div>
+            </div>
+            {% for item in tables %}
+                <div class="table-card">
+                    <div class="color-header">COLOR: {{ item.color }}</div>
+                    <div class="table-responsive">{{ item.table | safe }}</div>
+                </div>
+            {% endfor %}
+            <div class="footer-credit">Report Created By <strong>Mehedi Hasan</strong></div>
+        {% endif %}
+    </div>
+    <script>
+        const dateObj = new Date();
+        const day = String(dateObj.getDate()).padStart(2, '0');
+        const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+        const year = dateObj.getFullYear();
+        document.getElementById('date').innerText = `${day}-${month}-${year}`;
+    </script>
+</body>
+</html>
+"""
+
+# --- LOGIN TEMPLATE (আপডেট করা হয়েছে: ডায়নামিক ইউজার লোডিং এর জন্য) ---
+LOGIN_TEMPLATE = f"""
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>MEHEDI HASAN</title>
+    {COMMON_STYLES}
+</head>
 <body>
     <div class="center-container">
-        <div class="glass-card" style="width: 400px; text-align: center;">
-            <h2 style="margin-bottom: 20px;">System Login</h2>
+        <div class="glass-card">
+            <h1>System Access</h1>
+            <p class="subtitle">Secure Gateway for ERP Reports</p>
             <form action="/login" method="post">
                 <div class="input-group">
-                    <label for="username">Select User</label>
-                    <select id="username" name="username" required>
-                        <option value="KobirAhmed">KobirAhmed</option>
-                        <option value="Admin">Admin</option>
-                    </select>
+                    <label for="username">Username</label>
+                    <input type="text" id="username" name="username" placeholder="Enter Username" required>
                 </div>
                 <div class="input-group">
                     <label for="password">Authentication PIN</label>
@@ -662,17 +952,104 @@ LOGIN_HTML = f"""
 </html>
 """
 
-PO_TEMPLATE = """<!DOCTYPE html><html lang="en"><head><title>PO Report</title><link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"><style>body{background:#f8f9fa;font-family:sans-serif}.container{max-width:1200px}.company-header{text-align:center;border-bottom:2px solid #000;margin-bottom:20px}.company-name{font-size:2.2rem;font-weight:800;color:#2c3e50}.table th{background:#2c3e50;color:white;text-align:center}.table td{text-align:center;font-weight:bold}@media print{.no-print{display:none}.table th{background:#2c3e50!important;color:white!important;-webkit-print-color-adjust:exact}}</style></head><body><div class="container mt-4"><div class="d-flex justify-content-between no-print mb-3"><a href="/" class="btn btn-secondary">Back</a><button onclick="window.print()" class="btn btn-primary">Print</button></div><div class="company-header"><div class="company-name">Cotton Clothing BD Limited</div><h4>Purchase Order Summary</h4></div>{% if message %}<div class="alert alert-warning">{{ message }}</div>{% endif %}{% if tables %}<div class="row mb-3 border p-2"><div class="col-md-6"><strong>Buyer:</strong> {{ meta.buyer }}<br><strong>Style:</strong> {{ meta.style }}</div><div class="col-md-6 text-end"><h3>Total: {{ grand_total }}</h3></div></div>{% for item in tables %}<div class="card mb-3"><div class="card-header bg-light"><strong>COLOR: {{ item.color }}</strong></div><div class="card-body p-0">{{ item.table | safe }}</div></div>{% endfor %}{% endif %}</div></body></html>"""
-
-ADMIN_DASHBOARD = f"""
-<!DOCTYPE html>
+# --- USER DASHBOARD (আপডেট করা হয়েছে: পারমিশন চেকের জন্য) ---
+USER_DASHBOARD_TEMPLATE = f"""
+<!doctype html>
 <html lang="en">
-<head><title>Admin Panel</title>{COMMON_STYLES}
-<script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Dashboard - User</title>
+    {COMMON_STYLES}
 </head>
 <body>
-    <div id="loading-overlay"><div class="spinner"></div><h3 style="margin-top:20px">Processing...</h3></div>
-    
+    <div id="loading-overlay">
+        <div class="spinner"></div>
+        <div class="success-icon">✅</div>
+        <div id="loading-text">Processing data... Please wait</div>
+    </div>
+    <div class="center-container">
+        <div class="glass-card" style="max-width: 500px;">
+            <h1>(©) Mehedi Hasan</h1>
+            <p class="subtitle">Welcome, {{{{ session.user }}}}</p>
+            
+            {{% if 'closing' in session.permissions %}}
+            <div style="margin-bottom: 30px;">
+                <h4 style="margin-bottom:10px; border-bottom:1px solid rgba(255,255,255,0.2); padding-bottom:5px;">Closing Report</h4>
+                <form action="/generate-report" method="post" id="reportForm" onsubmit="startDownloadProcess()">
+                    <div class="input-group">
+                        <label for="ref_no">Internal Reference No</label>
+                        <input type="text" id="ref_no" name="ref_no" placeholder="Booking-123/456.." required>
+                        <input type="hidden" name="download_token" id="download_token">
+                    </div>
+                    <button type="submit">Generate Excel Report</button>
+                </form>
+            </div>
+            {{% endif %}}
+
+            {{% if 'po_sheet' in session.permissions %}}
+             <div style="margin-bottom: 20px;">
+                <h4 style="margin-bottom:10px; border-bottom:1px solid rgba(255,255,255,0.2); padding-bottom:5px;">PO Sheet Generator</h4>
+                 <form action="/generate-po-report" method="post" enctype="multipart/form-data">
+                    <div class="input-group">
+                        <label for="pdf_files">Select PDF Files</label>
+                        <input type="file" id="pdf_files" name="pdf_files" multiple accept=".pdf" required>
+                    </div>
+                    <button type="submit" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);">Generate Report</button>
+                </form>
+            </div>
+            {{% endif %}}
+
+            {{% with messages = get_flashed_messages() %}}
+                {{% if messages %}}
+                    <div class="flash">{{{{ messages[0] }}}}</div>
+                {{% endif %}}
+            {{% endwith %}}
+            <a href="/logout" class="logout">Exit Session</a>
+        </div>
+    </div>
+    <script>
+        let timeout; function resetTimer() {{ clearTimeout(timeout); timeout = setTimeout(function() {{ alert("Session expired due to inactivity."); window.location.href = "/logout"; }}, 120000); }}
+        document.onmousemove = resetTimer; document.onkeypress = resetTimer; document.onload = resetTimer; resetTimer();
+        function getCookie(name) {{ let parts = document.cookie.split(name + "="); if (parts.length == 2) return parts.pop().split(";").shift(); return null; }}
+        function startDownloadProcess() {{
+            const overlay = document.getElementById('loading-overlay'); const loadingText = document.getElementById('loading-text'); const spinner = document.querySelector('.spinner'); const successIcon = document.querySelector('.success-icon'); const tokenInput = document.getElementById('download_token');
+            const token = new Date().getTime(); tokenInput.value = token;
+            overlay.style.display = 'flex'; overlay.className = ''; loadingText.innerHTML = "Processing data...<br><span style='font-size:12px; opacity:0.8'>Downloading will start automatically</span>"; spinner.style.display = 'block'; successIcon.style.display = 'none';
+            let attempts = 0;
+            const downloadTimer = setInterval(function() {{
+                const cookieValue = getCookie("download_token");
+                if (cookieValue == token) {{
+                    clearInterval(downloadTimer);
+                    overlay.classList.add('loader-success'); loadingText.innerHTML = "Successful Download Complete!";
+                    setTimeout(() => {{ overlay.style.opacity = '0'; setTimeout(() => {{ overlay.style.display = 'none'; overlay.style.opacity = '1'; }}, 500); }}, 2000);
+                }}
+                attempts++; if (attempts > 300) {{ clearInterval(downloadTimer); overlay.classList.add('loader-error'); spinner.style.display = 'none'; loadingText.innerHTML = "Server Timeout"; }}
+            }}, 1000);
+        }}
+    </script>
+</body>
+</html>
+"""
+
+# --- ADMIN DASHBOARD (আপডেট করা হয়েছে: USER MANAGEMENT সহ) ---
+ADMIN_DASHBOARD_TEMPLATE = f"""
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Admin Console</title>
+    {COMMON_STYLES}
+    <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+</head>
+<body>
+    <div id="loading-overlay">
+        <div class="spinner"></div>
+        <div class="success-icon">✅</div>
+        <div id="loading-text">Processing data... Please wait</div>
+    </div>
+
     <div class="admin-container">
         <div class="admin-sidebar">
             <div class="sidebar-header">
@@ -682,61 +1059,78 @@ ADMIN_DASHBOARD = f"""
             
             <ul class="nav-menu">
                 <li class="nav-item">
-                    <a class="nav-link active" onclick="showTab('dashboard', this)" id="link-dashboard"><i class="fas fa-home"></i> Dashboard</a>
+                    <a class="nav-link active" onclick="showSection('closing', this)">
+                        <i class="fas fa-file-export"></i> Closing Report
+                    </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" onclick="showTab('closing', this)" id="link-closing"><i class="fas fa-file-export"></i> Closing Report</a>
+                    <a class="nav-link" onclick="showSection('purchase-order', this)">
+                        <i class="fas fa-file-invoice"></i> PURCHASE ORDER SHEET
+                    </a>
+                </li>
+                 <li class="nav-item">
+                    <a class="nav-link" onclick="showSection('user-manage', this)">
+                        <i class="fas fa-users-cog"></i> User Management
+                    </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" onclick="showTab('po', this)" id="link-po"><i class="fas fa-file-invoice"></i> PO Sheet</a>
+                    <a class="nav-link" onclick="showComingSoon('Input & Output Report')">
+                        <i class="fas fa-exchange-alt"></i> Input & Output Report
+                    </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" onclick="showTab('users', this)" id="link-users"><i class="fas fa-users-cog"></i> User Management</a>
+                    <a class="nav-link" onclick="showComingSoon('Cutting Plan Sheet')">
+                        <i class="fas fa-cut"></i> Cutting Plan Sheet
+                    </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" onclick="showComingSoon('Input & Output Report')"><i class="fas fa-exchange-alt"></i> Input & Output Report</a>
+                    <a class="nav-link" onclick="showComingSoon('Production Analysis')">
+                        <i class="fas fa-chart-line"></i> Production Analysis
+                    </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" onclick="showComingSoon('Cutting Plan Sheet')"><i class="fas fa-cut"></i> Cutting Plan Sheet</a>
+                    <a class="nav-link" onclick="showComingSoon('Efficiency Tracker')">
+                        <i class="fas fa-tachometer-alt"></i> Efficiency Tracker
+                    </a>
                 </li>
             </ul>
             
             <div class="admin-footer">
-                <a href="/logout" class="nav-link" style="color: #ff7675;"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                <a href="/logout" class="nav-link" style="color: #ff7675;">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </a>
             </div>
         </div>
-        
+
         <div class="admin-content">
-            <div id="dashboard" class="section active">
-                <h1>Welcome, {{{{ session.user }}}}</h1>
-                <div class="stats-grid">
-                    <div class="stat-card">
-                        <div class="stat-icon bg-purple"><i class="fas fa-calendar-day"></i></div>
-                        <div class="stat-info">
-                            <h3>{{{{ stats.today }}}}</h3>
-                            <p>Today's Downloads</p>
-                        </div>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon bg-purple"><i class="fas fa-calendar-day"></i></div>
+                    <div class="stat-info">
+                        <h3>{{{{ stats.today }}}}</h3>
+                        <p>Today's Downloads</p>
                     </div>
-                    <div class="stat-card">
-                        <div class="stat-icon bg-orange"><i class="fas fa-calendar-alt"></i></div>
-                        <div class="stat-info">
-                            <h3>{{{{ stats.month }}}}</h3>
-                            <p>Monthly Downloads</p>
-                        </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon bg-orange"><i class="fas fa-calendar-alt"></i></div>
+                    <div class="stat-info">
+                        <h3>{{{{ stats.month }}}}</h3>
+                        <p>Monthly Downloads</p>
                     </div>
-                    <div class="stat-card">
-                        <div class="stat-icon bg-green"><i class="fas fa-history"></i></div>
-                        <div class="stat-info">
-                            <h3 style="font-size: 16px; word-break: break-all;">{{{{ stats.last_booking }}}}</h3>
-                            <p>Last Generated Booking</p>
-                        </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon bg-green"><i class="fas fa-history"></i></div>
+                    <div class="stat-info">
+                        <h3 style="font-size: 16px; word-break: break-all;">{{{{ stats.last_booking }}}}</h3>
+                        <p>Last Generated Booking</p>
                     </div>
                 </div>
             </div>
 
-            <div id="closing" class="section">
-                <div class="work-area">
-                    <div class="glass-card" style="width: 100%; max-width: 500px; background: rgba(255,255,255,0.05); box-shadow: none; border: none;">
+            <div class="work-area" id="work-area">
+                
+                <div id="closing-section" class="work-section" style="width: 100%; max-width: 500px;">
+                    <div class="glass-card" style="background: rgba(255,255,255,0.05); box-shadow: none; border: none;">
                         <h2 style="margin-bottom: 20px; font-weight: 500;"><i class="fas fa-file-export"></i> Generate Closing Report</h2>
                         <form action="/generate-report" method="post" onsubmit="startDownloadProcess()">
                             <div class="input-group">
@@ -748,11 +1142,9 @@ ADMIN_DASHBOARD = f"""
                         </form>
                     </div>
                 </div>
-            </div>
 
-            <div id="po" class="section">
-                <div class="work-area">
-                    <div class="glass-card" style="width: 100%; max-width: 500px; background: rgba(255,255,255,0.05); box-shadow: none; border: none;">
+                <div id="purchase-order-section" class="work-section" style="display:none; width: 100%; max-width: 500px;">
+                    <div class="glass-card" style="background: rgba(255,255,255,0.05); box-shadow: none; border: none;">
                         <h2 style="margin-bottom: 20px; font-weight: 500;"><i class="fas fa-file-invoice"></i> PDF Report Generator</h2>
                         <form action="/generate-po-report" method="post" enctype="multipart/form-data">
                             <div class="input-group">
@@ -761,73 +1153,189 @@ ADMIN_DASHBOARD = f"""
                             </div>
                             <button type="submit" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);">Generate Report</button>
                         </form>
+                         <div style="margin-top: 15px; font-size: 12px; color: #a29bfe; text-align: center;">
+                            Select both Booking File & PO Files together
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <div id="users" class="section">
-                <div class="glass-card">
-                    <div style="display:flex; justify-content:space-between; align-items:center;">
-                        <h2>User Management</h2>
-                        <button onclick="document.getElementById('add-user-form').style.display='block'" style="width:auto; padding: 8px 20px;">+ Add User</button>
-                    </div>
-                    
-                    <div id="add-user-form" style="display:none; background: rgba(0,0,0,0.2); padding: 20px; border-radius: 10px; margin-top: 20px;">
-                        <h3>Create / Edit User</h3>
-                        <form action="/manage-users/add" method="post">
-                            <input type="text" name="new_username" placeholder="Username" required>
-                            <input type="text" name="new_password" placeholder="Password" required>
-                            <label>Permissions:</label>
-                            <div class="checkbox-group">
-                                <label class="checkbox-item"><input type="checkbox" name="perms" value="closing"> Closing Report</label>
-                                <label class="checkbox-item"><input type="checkbox" name="perms" value="po"> PO Sheet</label>
-                                <label class="checkbox-item"><input type="checkbox" name="perms" value="input"> Input Report</label>
-                                <label class="checkbox-item"><input type="checkbox" name="perms" value="cutting"> Cutting Report</label>
-                                <label class="checkbox-item"><input type="checkbox" name="perms" value="user_manage"> User Manage</label>
-                            </div>
-                            <button type="submit">Save User</button>
-                            <button type="button" onclick="document.getElementById('add-user-form').style.display='none'" class="danger-btn">Cancel</button>
-                        </form>
-                    </div>
+                <div id="user-manage-section" class="work-section" style="display:none; width: 100%; max-width: 700px;">
+                    <div class="glass-card" style="background: rgba(255,255,255,0.05); box-shadow: none; border: none;">
+                        <h2 style="margin-bottom: 20px; font-weight: 500;"><i class="fas fa-users-cog"></i> User Management</h2>
+                        
+                        <div style="background: rgba(0,0,0,0.2); padding: 15px; border-radius: 10px; margin-bottom: 20px;">
+                            <h4 style="font-size: 14px; margin-bottom: 10px; color: #a29bfe;">Create / Update User</h4>
+                            <form id="userForm">
+                                <input type="hidden" id="action_type" name="action_type" value="create">
+                                <div style="display: flex; gap: 10px;">
+                                    <div class="input-group" style="flex: 1; margin-bottom: 10px;">
+                                        <input type="text" id="new_username" name="username" placeholder="Username" required>
+                                    </div>
+                                    <div class="input-group" style="flex: 1; margin-bottom: 10px;">
+                                        <input type="text" id="new_password" name="password" placeholder="Password" required>
+                                    </div>
+                                </div>
+                                <div class="input-group" style="margin-bottom: 10px;">
+                                    <label>Permissions:</label>
+                                    <div class="perm-group">
+                                        <div class="perm-item">
+                                            <input type="checkbox" name="permissions" value="closing" id="perm_closing" checked> Closing Report
+                                        </div>
+                                        <div class="perm-item">
+                                            <input type="checkbox" name="permissions" value="po_sheet" id="perm_po"> PO Sheet
+                                        </div>
+                                    </div>
+                                </div>
+                                <button type="button" onclick="handleUserSubmit()" id="saveUserBtn" style="padding: 10px;">Create User</button>
+                            </form>
+                        </div>
 
-                    <table class="user-table">
-                        <thead><tr><th>Username</th><th>Role</th><th>Permissions</th><th>Actions</th></tr></thead>
-                        <tbody>
-                            {% for name, details in users.items() %}
-                            <tr>
-                                <td>{{{{ name }}}}</td>
-                                <td><span style="padding: 2px 8px; border-radius: 4px; background: {{{{ 'rgba(46, 204, 113,0.3)' if details.role=='admin' else 'rgba(52, 152, 219,0.3)' }}}};">{{{{ details.role }}}}</span></td>
-                                <td>{{{{ details.permissions | join(', ') }}}}</td>
-                                <td>
-                                    {% if name != 'Admin' %}
-                                    <form action="/manage-users/delete" method="post" style="display:inline;" onsubmit="return confirm('Delete user?');">
-                                        <input type="hidden" name="username" value="{{{{ name }}}}">
-                                        <button type="submit" class="danger-btn" style="width:auto; padding:5px 10px; font-size:12px;"><i class="fas fa-trash"></i></button>
-                                    </form>
-                                    {% endif %}
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
+                        <div style="overflow-x: auto;">
+                            <table class="user-table">
+                                <thead>
+                                    <tr>
+                                        <th>Username</th>
+                                        <th>Role</th>
+                                        <th>Permissions</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="userTableBody">
+                                    </tbody>
+                            </table>
+                        </div>
+                    </div>
                 </div>
+
             </div>
         </div>
     </div>
 
     <script>
-        function showTab(id, element) {{
-            document.querySelectorAll('.section').forEach(el => el.classList.remove('active'));
-            document.getElementById(id).classList.add('active');
-            document.querySelectorAll('.nav-link').forEach(el => el.classList.remove('active'));
-            if(element) element.classList.add('active');
+        // --- Fetch Users ---
+        function loadUsers() {{
+            fetch('/admin/get-users')
+                .then(response => response.json())
+                .then(data => {{
+                    const tbody = document.getElementById('userTableBody');
+                    tbody.innerHTML = '';
+                    for (const [user, details] of Object.entries(data)) {{
+                        let perms = details.permissions.join(', ');
+                        let row = `<tr>
+                            <td>${{user}}</td>
+                            <td>${{details.role}}</td>
+                            <td>${{perms}}</td>
+                            <td>
+                                ${{details.role !== 'admin' ? 
+                                    `<button class="user-btn btn-edit" onclick="editUser('${{user}}', '${{details.password}}', '${{details.permissions}}')">Edit</button>
+                                     <button class="user-btn btn-delete" onclick="deleteUser('${{user}}')">Delete</button>` : 
+                                    '<span style="font-size:10px; opacity:0.7">System Admin</span>'}}
+                            </td>
+                        </tr>`;
+                        tbody.innerHTML += row;
+                    }}
+                }});
         }}
+
+        function handleUserSubmit() {{
+            const username = document.getElementById('new_username').value;
+            const password = document.getElementById('new_password').value;
+            const action = document.getElementById('action_type').value;
+            
+            let permissions = [];
+            if(document.getElementById('perm_closing').checked) permissions.push('closing');
+            if(document.getElementById('perm_po').checked) permissions.push('po_sheet');
+
+            fetch('/admin/save-user', {{
+                method: 'POST',
+                headers: {{'Content-Type': 'application/json'}},
+                body: JSON.stringify({{ username, password, permissions, action }})
+            }})
+            .then(res => res.json())
+            .then(data => {{
+                if(data.status === 'success') {{
+                    swal("Success", data.message, "success");
+                    loadUsers();
+                    document.getElementById('userForm').reset();
+                    document.getElementById('action_type').value = 'create';
+                    document.getElementById('saveUserBtn').innerText = 'Create User';
+                    document.getElementById('new_username').readOnly = false;
+                }} else {{
+                    swal("Error", data.message, "error");
+                }}
+            }});
+        }}
+
+        function editUser(user, pass, perms) {{
+            document.getElementById('new_username').value = user;
+            document.getElementById('new_username').readOnly = true; // Cannot change username
+            document.getElementById('new_password').value = pass;
+            document.getElementById('action_type').value = 'update';
+            document.getElementById('saveUserBtn').innerText = 'Update User';
+            
+            // Set checkboxes
+            document.getElementById('perm_closing').checked = perms.includes('closing');
+            document.getElementById('perm_po').checked = perms.includes('po_sheet');
+        }}
+
+        function deleteUser(user) {{
+            swal({{
+                title: "Are you sure?",
+                text: "Once deleted, you will not be able to recover this user!",
+                icon: "warning",
+                buttons: true,
+                dangerMode: true,
+            }})
+            .then((willDelete) => {{
+                if (willDelete) {{
+                    fetch('/admin/delete-user', {{
+                        method: 'POST',
+                        headers: {{'Content-Type': 'application/json'}},
+                        body: JSON.stringify({{ username: user }})
+                    }})
+                    .then(res => res.json())
+                    .then(data => {{
+                        if(data.status === 'success') {{
+                            swal("Poof! User has been deleted!", {{ icon: "success", }});
+                            loadUsers();
+                        }}
+                    }});
+                }}
+            }});
+        }}
+
+        // --- Feature Alert ---
         function showComingSoon(featureName) {{
-            swal({{ title: "Feature Coming Soon!", text: "The '" + featureName + "' module will be launched very soon. Stay tuned!", icon: "info", button: "Got it!", className: "swal-dark" }});
+            swal({{
+                title: "Feature Coming Soon!",
+                text: "The '" + featureName + "' module will be launched very soon. Stay tuned!",
+                icon: "info",
+                button: "Got it!",
+                className: "swal-dark"
+            }});
         }}
-        function showLoader() {{ document.getElementById('loading-overlay').style.display = 'flex'; setTimeout(() => {{ location.reload(); }}, 3000); }}
-        
-        // Cookie logic for closing report
+
+        // --- Toggle Sections ---
+        function showSection(sectionId, element) {{
+            document.querySelectorAll('.nav-link').forEach(el => el.classList.remove('active'));
+            element.classList.add('active');
+            document.querySelectorAll('.work-section').forEach(el => el.style.display = 'none');
+
+            if (sectionId === 'closing') {{
+                document.getElementById('closing-section').style.display = 'block';
+            }} else if (sectionId === 'purchase-order') {{
+                document.getElementById('purchase-order-section').style.display = 'block';
+            }} else if (sectionId === 'user-manage') {{
+                document.getElementById('user-manage-section').style.display = 'block';
+                loadUsers(); // Load users when tab is clicked
+            }}
+        }}
+
+        // --- Standard Scripts ---
+        let timeout;
+        function resetTimer() {{ clearTimeout(timeout); timeout = setTimeout(function() {{ alert("Session expired."); window.location.href = "/logout"; }}, 120000); }}
+        document.onmousemove = resetTimer; document.onkeypress = resetTimer; document.onload = resetTimer; resetTimer();
+
         function getCookie(name) {{ let parts = document.cookie.split(name + "="); if (parts.length == 2) return parts.pop().split(";").shift(); return null; }}
         function startDownloadProcess() {{
             const overlay = document.getElementById('loading-overlay'); const loadingText = document.getElementById('loading-text'); const spinner = document.querySelector('.spinner'); const successIcon = document.querySelector('.success-icon'); const tokenInput = document.getElementById('download_token');
@@ -844,199 +1352,124 @@ ADMIN_DASHBOARD = f"""
                 attempts++; if (attempts > 300) {{ clearInterval(downloadTimer); overlay.classList.add('loader-error'); spinner.style.display = 'none'; loadingText.innerHTML = "Server Timeout"; }}
             }}, 1000);
         }}
-
-        // Show success/error messages
-        {% with messages = get_flashed_messages() %}
-            {% if messages %}
-                swal("Notification", "{{{{ messages[0] }}}}", "info");
-            {% endif %}
-        {% endwith %}
     </script>
 </body>
 </html>
 """
 
-USER_DASHBOARD = f"""
-<!DOCTYPE html>
-<html lang="en">
-<head><title>Dashboard</title>{COMMON_STYLES}</head>
-<body>
-    <div id="loading-overlay"><div class="spinner"></div><h3>Processing...</h3></div>
-    <div style="display: flex; justify-content: center; align-items: center; height: 100vh; flex-direction: column; gap: 20px;">
-        <div class="glass-card" style="text-align: center; width: 400px;">
-            <h2>Welcome, {{{{ session.user }}}}</h2>
-            <p style="color:#a29bfe;">Select a Module</p>
-            
-            {% if 'closing' in perms %}
-            <button onclick="document.getElementById('closing-modal').style.display='block'" style="margin-top:10px;"><i class="fas fa-file-export"></i> Closing Report</button>
-            {% endif %}
-            
-            {% if 'po' in perms %}
-            <button onclick="document.getElementById('po-modal').style.display='block'" style="background: linear-gradient(135deg, #11998e, #38ef7d); margin-top:10px;"><i class="fas fa-file-invoice"></i> PO Sheet</button>
-            {% endif %}
-            
-            <a href="/logout" style="color: #ff7675; display: block; margin-top: 20px;">Logout</a>
-        </div>
-    </div>
-
-    <div id="closing-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:100;">
-        <div style="display:flex; justify-content:center; align-items:center; height:100%;">
-            <div class="glass-card" style="width:400px; position:relative;">
-                <span onclick="document.getElementById('closing-modal').style.display='none'" style="position:absolute; top:10px; right:20px; cursor:pointer; font-size:20px;">&times;</span>
-                <h3>Closing Report</h3>
-                <form action="/generate-report" method="post" onsubmit="startDownloadProcess()">
-                    <input type="text" name="ref_no" placeholder="Reference No" required>
-                    <input type="hidden" name="download_token" id="download_token">
-                    <button type="submit">Generate</button>
-                </form>
-            </div>
-        </div>
-    </div>
-
-    <div id="po-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:100;">
-        <div style="display:flex; justify-content:center; align-items:center; height:100%;">
-            <div class="glass-card" style="width:400px; position:relative;">
-                <span onclick="document.getElementById('po-modal').style.display='none'" style="position:absolute; top:10px; right:20px; cursor:pointer; font-size:20px;">&times;</span>
-                <h3>PO Sheet</h3>
-                <form action="/generate-po-report" method="post" enctype="multipart/form-data">
-                    <input type="file" name="pdf_files" multiple accept=".pdf" required>
-                    <button type="submit" style="background: linear-gradient(135deg, #11998e, #38ef7d);">Generate</button>
-                </form>
-            </div>
-        </div>
-    </div>
-
-    <script>
-        function showLoader() {{ document.getElementById('loading-overlay').style.display = 'flex'; setTimeout(() => {{ location.reload(); }}, 3000); }}
-        // Cookie logic same as admin
-        function getCookie(name) {{ let parts = document.cookie.split(name + "="); if (parts.length == 2) return parts.pop().split(";").shift(); return null; }}
-        function startDownloadProcess() {{
-            const overlay = document.getElementById('loading-overlay'); const spinner = document.querySelector('.spinner'); 
-            const tokenInput = document.getElementById('download_token');
-            const token = new Date().getTime(); tokenInput.value = token;
-            overlay.style.display = 'flex'; 
-            let attempts = 0;
-            const downloadTimer = setInterval(function() {{
-                const cookieValue = getCookie("download_token");
-                if (cookieValue == token) {{
-                    clearInterval(downloadTimer);
-                    overlay.style.display = 'none';
-                }}
-                attempts++; if (attempts > 300) {{ clearInterval(downloadTimer); overlay.style.display = 'none'; }}
-            }}, 1000);
-        }}
-    </script>
-</body>
-</html>
-"""
-
-# ==============================================================================
-# ROUTING LOGIC
-# ==============================================================================
+# --- Flask রুট ---
 
 @app.route('/')
 def index():
-    if not session.get('logged_in'): return render_template_string(LOGIN_HTML)
+    # অ্যাপ চালু হওয়ার সময় ইউজার ফাইল চেক করা
+    load_users()
     
-    users = load_users()
-    current_user = session.get('user')
-    
-    # Handle case where user might be deleted while logged in
-    if current_user not in users:
-        session.clear()
-        return redirect('/')
-
-    user_data = users.get(current_user, {})
-    role = user_data.get('role', 'user')
-    perms = user_data.get('permissions', [])
-
-    if role == 'admin':
-        stats = get_dashboard_summary()
-        return render_template_string(ADMIN_DASHBOARD, stats=stats, users=users)
+    if not session.get('logged_in'):
+        return render_template_string(LOGIN_TEMPLATE)
     else:
-        return render_template_string(USER_DASHBOARD, perms=perms)
+        if session.get('role') == 'admin':
+            stats = get_dashboard_summary()
+            return render_template_string(ADMIN_DASHBOARD_TEMPLATE, stats=stats)
+        else:
+            return render_template_string(USER_DASHBOARD_TEMPLATE)
 
 @app.route('/login', methods=['POST'])
 def login():
     username = request.form.get('username')
     password = request.form.get('password')
-    users = load_users()
 
-    if username in users and users[username]['password'] == password:
+    users_db = load_users()
+
+    if username in users_db and users_db[username]['password'] == password:
         session.permanent = True
         session['logged_in'] = True
         session['user'] = username
+        session['role'] = users_db[username]['role']
+        session['permissions'] = users_db[username].get('permissions', [])
         return redirect(url_for('index'))
     else:
-        flash('Invalid Credentials')
+        flash('Incorrect Username or Password.')
         return redirect(url_for('index'))
 
 @app.route('/logout')
 def logout():
     session.clear()
-    flash('Logged out successfully')
+    flash('Session terminated.')
     return redirect(url_for('index'))
 
-# --- User Management Routes ---
-@app.route('/manage-users/add', methods=['POST'])
-def add_user():
-    if not session.get('logged_in'): return redirect('/')
-    # Check admin permission
-    users = load_users()
-    if users.get(session['user'], {}).get('role') != 'admin':
-        flash("Unauthorized"); return redirect('/')
+# --- USER MANAGEMENT ROUTES (API) ---
 
-    new_user = request.form.get('new_username')
-    new_pass = request.form.get('new_password')
-    perms = request.form.getlist('perms')
+@app.route('/admin/get-users', methods=['GET'])
+def get_users():
+    if not session.get('logged_in') or session.get('role') != 'admin':
+        return jsonify({})
+    return jsonify(load_users())
 
-    if new_user and new_pass:
-        users[new_user] = {
-            "password": new_pass,
-            "role": "user",
-            "permissions": perms
-        }
-        save_users(users)
-        flash(f"User {new_user} saved successfully!")
-    return redirect('/')
-
-@app.route('/manage-users/delete', methods=['POST'])
-def delete_user():
-    if not session.get('logged_in'): return redirect('/')
-    users = load_users()
-    if users.get(session['user'], {}).get('role') != 'admin': return redirect('/')
+@app.route('/admin/save-user', methods=['POST'])
+def save_user():
+    if not session.get('logged_in') or session.get('role') != 'admin':
+        return jsonify({'status': 'error', 'message': 'Unauthorized'})
     
-    target_user = request.form.get('username')
-    if target_user == 'Admin':
-        flash("Cannot delete Super Admin!")
-    elif target_user in users:
-        del users[target_user]
-        save_users(users)
-        flash(f"User {target_user} deleted.")
-    return redirect('/')
+    data = request.json
+    username = data.get('username')
+    password = data.get('password')
+    permissions = data.get('permissions', [])
+    action = data.get('action_type')
+    
+    users_db = load_users()
+    
+    if action == 'create':
+        if username in users_db:
+            return jsonify({'status': 'error', 'message': 'User already exists!'})
+        users_db[username] = {
+            "password": password,
+            "role": "user",
+            "permissions": permissions
+        }
+    elif action == 'update':
+        if username not in users_db:
+            return jsonify({'status': 'error', 'message': 'User not found!'})
+        # Prevent Admin role downgrade logic if needed, but here simple update
+        users_db[username]['password'] = password
+        users_db[username]['permissions'] = permissions
+    
+    save_users(users_db)
+    return jsonify({'status': 'success', 'message': 'User saved successfully!'})
 
-# --- Report Generators ---
+@app.route('/admin/delete-user', methods=['POST'])
+def delete_user():
+    if not session.get('logged_in') or session.get('role') != 'admin':
+        return jsonify({'status': 'error', 'message': 'Unauthorized'})
+    
+    username = request.json.get('username')
+    users_db = load_users()
+    
+    if username == 'Admin':
+         return jsonify({'status': 'error', 'message': 'Cannot delete Main Admin!'})
+
+    if username in users_db:
+        del users_db[username]
+        save_users(users_db)
+        return jsonify({'status': 'success', 'message': 'User deleted!'})
+    
+    return jsonify({'status': 'error', 'message': 'User not found'})
+
+# --- CLOSING REPORT ROUTE ---
 @app.route('/generate-report', methods=['POST'])
 def generate_report():
-    if not session.get('logged_in'): return redirect('/')
-    # Check Permission
-    users = load_users()
-    user_perms = users.get(session['user'], {}).get('permissions', [])
-    # Admin always has access, others check permission
-    if 'closing' not in user_perms and users.get(session['user'], {}).get('role') != 'admin':
-        flash("Permission Denied"); return redirect('/')
+    if not session.get('logged_in'): return redirect(url_for('index'))
+    
+    # Permission Check
+    if 'closing' not in session.get('permissions', []):
+        flash("You do not have permission to access Closing Report.")
+        return redirect(url_for('index'))
 
     internal_ref_no = request.form['ref_no']
     download_token = request.form.get('download_token')
-
-    if not internal_ref_no:
-        flash("Ref No required.")
-        return redirect(url_for('index'))
+    if not internal_ref_no: return redirect(url_for('index'))
 
     active_session = get_authenticated_session("input2.clothing-cutting", "123456")
-    if not active_session:
-        flash("ERP Connection Failed.")
-        return redirect(url_for('index'))
+    if not active_session: return redirect(url_for('index'))
 
     report_url = 'http://180.92.235.190:8022/erp/prod_planning/reports/requires/cutting_lay_production_report_controller.php'
     payload_template = {'action': 'report_generate', 'cbo_wo_company_name': '2', 'cbo_location_name': '2', 'cbo_floor_id': '0', 'cbo_buyer_name': '0', 'txt_internal_ref_no': internal_ref_no, 'reportType': '3'}
@@ -1052,10 +1485,8 @@ def generate_report():
                 if response.status_code == 200 and "Data not Found" not in response.text:
                     found_data = response.text
                     break
-            except requests.exceptions.RequestException:
-                continue
-        if found_data:
-            break
+            except: continue
+        if found_data: break
            
     if not found_data:
         flash(f"No data found for: {internal_ref_no}")
@@ -1070,76 +1501,88 @@ def generate_report():
     
     if excel_file_stream:
         update_stats(internal_ref_no)
-        response = make_response(send_file(
-            excel_file_stream,
-            as_attachment=True,
-            download_name=f"Closing-Report-{internal_ref_no.replace('/', '_')}.xlsx",
-            mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-        ))
-        if download_token:
-            response.set_cookie('download_token', download_token, max_age=60, path='/')
+        response = make_response(send_file(excel_file_stream, as_attachment=True, download_name=f"Closing-Report-{internal_ref_no.replace('/', '_')}.xlsx", mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'))
+        if download_token: response.set_cookie('download_token', download_token, max_age=60, path='/')
         return response
     else:
-        flash("Excel generation failed.")
         return redirect(url_for('index'))
 
+# --- PO SHEET GENERATOR ROUTE ---
 @app.route('/generate-po-report', methods=['POST'])
 def generate_po_report():
-    if not session.get('logged_in'): return redirect('/')
-    users = load_users()
-    user_perms = users.get(session['user'], {}).get('permissions', [])
-    if 'po' not in user_perms and users.get(session['user'], {}).get('role') != 'admin':
-        flash("Permission Denied"); return redirect('/')
+    if not session.get('logged_in'):
+        flash('Unauthorized Access')
+        return redirect(url_for('index'))
+
+    # Permission Check
+    if 'po_sheet' not in session.get('permissions', []):
+         flash("You do not have permission to access PO Sheet.")
+         return redirect(url_for('index'))
 
     if os.path.exists(UPLOAD_FOLDER): shutil.rmtree(UPLOAD_FOLDER)
     os.makedirs(UPLOAD_FOLDER)
-    
+
+    uploaded_files = request.files.getlist('pdf_files')
     all_data = []
-    meta = {'buyer': 'N/A', 'style': 'N/A'}
+    final_meta = {
+        'buyer': 'N/A', 'booking': 'N/A', 'style': 'N/A',
+        'season': 'N/A', 'dept': 'N/A', 'item': 'N/A'
+    }
     
-    files = request.files.getlist('pdf_files')
-    for f in files:
-        if not f.filename: continue
-        path = os.path.join(UPLOAD_FOLDER, f.filename)
-        f.save(path)
-        d, m = extract_data_dynamic(path)
-        if m['buyer'] != 'N/A': meta = m
-        all_data.extend(d)
-        
-    if not all_data: return render_template_string(PO_TEMPLATE, message="No Data Found", tables=[])
+    for file in uploaded_files:
+        if file.filename == '': continue
+        file_path = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
+        file.save(file_path)
+        data, meta = extract_data_dynamic(file_path)
+        if meta['buyer'] != 'N/A': final_meta = meta
+        if data: all_data.extend(data)
     
-    # Process DataFrame
+    if not all_data:
+        return render_template_string(PO_REPORT_TEMPLATE, tables=None, message="No PO table data found in files.")
+
     df = pd.DataFrame(all_data)
     df['Color'] = df['Color'].str.strip()
-    df = df[df['Color']!=""]
-    tables = []
-    grand_total = 0
+    df = df[df['Color'] != ""]
+    unique_colors = df['Color'].unique()
     
-    for color in df['Color'].unique():
-        cdf = df[df['Color']==color]
-        piv = cdf.pivot_table(index='P.O NO', columns='Size', values='Quantity', aggfunc='sum', fill_value=0)
-        piv = piv[sort_sizes(piv.columns.tolist())]
-        piv['Total'] = piv.sum(axis=1)
-        grand_total += piv['Total'].sum()
-        
-        # Add Summary Rows
-        act = piv.sum(); act.name='Actual Qty'
-        p3 = (act * 1.03).round().astype(int); p3.name='3% Order Qty'
-        piv = pd.concat([piv, act.to_frame().T, p3.to_frame().T])
-        
-        html = piv.reset_index().to_html(classes='table table-bordered table-striped', index=False)
-        
-        # HTML Injections for PO Styling
-        html = re.sub(r'<tr>\s*<td>', '<tr><td class="order-col">', html)
-        html = html.replace('<th>Total</th>', '<th class="total-col-header">Total</th>')
-        html = html.replace('<td>Total</td>', '<td class="total-col">Total</td>')
-        html = html.replace('<td>Actual Qty</td>', '<td class="summary-label">Actual Qty</td>')
-        html = html.replace('<td>3% Order Qty</td>', '<td class="summary-label">3% Order Qty</td>')
-        html = re.sub(r'<tr>\s*<td class="summary-label">', '<tr class="summary-row"><td class="summary-label">', html)
+    final_tables = []
+    grand_total_qty = 0
 
-        tables.append({'color': color, 'table': html})
+    for color in unique_colors:
+        color_df = df[df['Color'] == color]
+        pivot = color_df.pivot_table(index='P.O NO', columns='Size', values='Quantity', aggfunc='sum', fill_value=0)
+        
+        existing_sizes = pivot.columns.tolist()
+        sorted_sizes = sort_sizes(existing_sizes)
+        pivot = pivot[sorted_sizes]
+        
+        pivot['Total'] = pivot.sum(axis=1)
+        grand_total_qty += pivot['Total'].sum()
 
-    return render_template_string(PO_TEMPLATE, tables=tables, meta=meta, grand_total=f"{grand_total:,}")
+        actual_qty = pivot.sum()
+        actual_qty.name = 'Actual Qty'
+        qty_plus_3 = (actual_qty * 1.03).round().astype(int)
+        qty_plus_3.name = '3% Order Qty'
+        
+        pivot = pd.concat([pivot, actual_qty.to_frame().T, qty_plus_3.to_frame().T])
+        pivot = pivot.reset_index()
+        pivot = pivot.rename(columns={'index': 'P.O NO'})
+        pivot.columns.name = None
+
+        pd.set_option('colheader_justify', 'center')
+        table_html = pivot.to_html(classes='table table-bordered table-striped', index=False, border=0)
+        
+        # HTML Injections for Styling
+        table_html = re.sub(r'<tr>\s*<td>', '<tr><td class="order-col">', table_html)
+        table_html = table_html.replace('<th>Total</th>', '<th class="total-col-header">Total</th>')
+        table_html = table_html.replace('<td>Total</td>', '<td class="total-col">Total</td>')
+        table_html = table_html.replace('<td>Actual Qty</td>', '<td class="summary-label">Actual Qty</td>')
+        table_html = table_html.replace('<td>3% Order Qty</td>', '<td class="summary-label">3% Order Qty</td>')
+        table_html = re.sub(r'<tr>\s*<td class="summary-label">', '<tr class="summary-row"><td class="summary-label">', table_html)
+
+        final_tables.append({'color': color, 'table': table_html})
+        
+    return render_template_string(PO_REPORT_TEMPLATE, tables=final_tables, meta=final_meta, grand_total=f"{grand_total_qty:,}")
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    app.run(debug=True)
