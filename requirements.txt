@@ -5,3 +5,8 @@ lxml
 Pillow
 Flask
 gunicorn
+Flask
+pypdf
+pandas
+numpy
+gunicorn
