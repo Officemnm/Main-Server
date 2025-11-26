@@ -27,7 +27,7 @@ if not os.path.exists(UPLOAD_FOLDER):
     os.makedirs(UPLOAD_FOLDER)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
-# সেশন টাইমআউট (২ মিনিট)
+# --- ২ মিনিটের সেশন টাইমআউট কনফিগারেশন ---
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=2)
 
 # ==============================================================================
@@ -88,16 +88,25 @@ def save_users(data):
     with open(USERS_FILE, 'w') as f: json.dump(data, f, indent=4)
 
 # ==============================================================================
-# লজিক ১: PO Sheet Parser Functions
+# লজিক ১: PO Sheet Parser Functions (আপনার দেওয়া কোড হুবহু)
 # ==============================================================================
 def is_potential_size(header):
     h = header.strip().upper()
-    if h in ["COLO", "SIZE", "TOTAL", "QUANTITY", "PRICE", "AMOUNT", "CURRENCY", "ORDER NO", "P.O NO"]: return False
-    if re.match(r'^\d+$', h) or re.match(r'^\d+[AMYT]$', h) or re.match(r'^(XXS|XS|S|M|L|XL|XXL|XXXL|TU|ONE\s*SIZE)$', h): return True
+    if h in ["COLO", "SIZE", "TOTAL", "QUANTITY", "PRICE", "AMOUNT", "CURRENCY", "ORDER NO", "P.O NO"]:
+        return False
+    if re.match(r'^\d+$', h): return True
+    if re.match(r'^\d+[AMYT]$', h): return True
+    if re.match(r'^(XXS|XS|S|M|L|XL|XXL|XXXL|TU|ONE\s*SIZE)$', h): return True
+    if re.match(r'^[A-Z]\d{2,}$', h): return False
     return False
 
 def sort_sizes(size_list):
-    STANDARD_ORDER = ['0M', '1M', '3M', '6M', '9M', '12M', '18M', '24M', '36M', '2A', '3A', '4A', '5A', '6A', '8A', '10A', '12A', '14A', '16A', '18A', 'XXS', 'XS', 'S', 'M', 'L', 'XL', 'XXL', '3XL', '4XL', '5XL', 'TU', 'One Size']
+    STANDARD_ORDER = [
+        '0M', '1M', '3M', '6M', '9M', '12M', '18M', '24M', '36M',
+        '2A', '3A', '4A', '5A', '6A', '8A', '10A', '12A', '14A', '16A', '18A',
+        'XXS', 'XS', 'S', 'M', 'L', 'XL', 'XXL', '3XL', '4XL', '5XL',
+        'TU', 'One Size'
+    ]
     def sort_key(s):
         s = s.strip()
         if s in STANDARD_ORDER: return (0, STANDARD_ORDER.index(s))
@@ -107,36 +116,68 @@ def sort_sizes(size_list):
         return (3, s)
     return sorted(size_list, key=sort_key)
 
-def extract_metadata(text):
-    meta = {'buyer': 'N/A', 'booking': 'N/A', 'style': 'N/A', 'season': 'N/A', 'dept': 'N/A', 'item': 'N/A'}
-    if "KIABI" in text.upper(): meta['buyer'] = "KIABI"
-    else: 
-        m = re.search(r"Buyer.*?Name[\s\S]*?([\w\s&]+)(?:\n|$)", text)
-        if m: meta['buyer'] = m.group(1).strip()
-    m = re.search(r"(?:Internal )?Booking NO\.?[:\s]*([\s\S]*?)(?:System NO|Control No|Buyer)", text, re.IGNORECASE)
-    if m: meta['booking'] = m.group(1).strip().replace('\n','').replace(' ','').split("System")[0]
-    m = re.search(r"Style Ref\.?[:\s]*([\w-]+)", text, re.IGNORECASE)
-    if m: meta['style'] = m.group(1).strip()
-    m = re.search(r"Season\s*[:\n\"]*([\w\d-]+)", text, re.IGNORECASE)
-    if m: meta['season'] = m.group(1).strip()
-    m = re.search(r"Dept\.?[\s\n:]*([A-Za-z]+)", text, re.IGNORECASE)
-    if m: meta['dept'] = m.group(1).strip()
-    m = re.search(r"Garments? Item[\s\n:]*([^\n\r]+)", text, re.IGNORECASE)
-    if m: meta['item'] = m.group(1).strip().split("Style")[0].strip()
+def extract_metadata(first_page_text):
+    meta = {
+        'buyer': 'N/A', 'booking': 'N/A', 'style': 'N/A', 
+        'season': 'N/A', 'dept': 'N/A', 'item': 'N/A'
+    }
+    
+    if "KIABI" in first_page_text.upper():
+        meta['buyer'] = "KIABI"
+    else:
+        buyer_match = re.search(r"Buyer.*?Name[\s\S]*?([\w\s&]+)(?:\n|$)", first_page_text)
+        if buyer_match: meta['buyer'] = buyer_match.group(1).strip()
+
+    booking_block_match = re.search(r"(?:Internal )?Booking NO\.?[:\s]*([\s\S]*?)(?:System NO|Control No|Buyer)", first_page_text, re.IGNORECASE)
+    if booking_block_match: 
+        raw_booking = booking_block_match.group(1).strip()
+        clean_booking = raw_booking.replace('\n', '').replace('\r', '').replace(' ', '')
+        if "System" in clean_booking: clean_booking = clean_booking.split("System")[0]
+        meta['booking'] = clean_booking
+
+    style_match = re.search(r"Style Ref\.?[:\s]*([\w-]+)", first_page_text, re.IGNORECASE)
+    if style_match: meta['style'] = style_match.group(1).strip()
+    else:
+        style_match = re.search(r"Style Des\.?[\s\S]*?([\w-]+)", first_page_text, re.IGNORECASE)
+        if style_match: meta['style'] = style_match.group(1).strip()
+
+    season_match = re.search(r"Season\s*[:\n\"]*([\w\d-]+)", first_page_text, re.IGNORECASE)
+    if season_match: meta['season'] = season_match.group(1).strip()
+
+    dept_match = re.search(r"Dept\.?[\s\n:]*([A-Za-z]+)", first_page_text, re.IGNORECASE)
+    if dept_match: meta['dept'] = dept_match.group(1).strip()
+
+    item_match = re.search(r"Garments? Item[\s\n:]*([^\n\r]+)", first_page_text, re.IGNORECASE)
+    if item_match: 
+        item_text = item_match.group(1).strip()
+        if "Style" in item_text: item_text = item_text.split("Style")[0].strip()
+        meta['item'] = item_text
+
     return meta
 
 def extract_data_dynamic(file_path):
     extracted_data = []
-    metadata = {'buyer': 'N/A', 'booking': 'N/A', 'style': 'N/A', 'season': 'N/A', 'dept': 'N/A', 'item': 'N/A'}
+    metadata = {
+        'buyer': 'N/A', 'booking': 'N/A', 'style': 'N/A', 
+        'season': 'N/A', 'dept': 'N/A', 'item': 'N/A'
+    }
     order_no = "Unknown"
+    
     try:
         reader = pypdf.PdfReader(file_path)
         first_page_text = reader.pages[0].extract_text()
-        if "Main Fabric Booking" in first_page_text or "Fabric Booking Sheet" in first_page_text:
-            return [], extract_metadata(first_page_text)
         
-        om = re.search(r"Order no\D*(\d+)", first_page_text, re.IGNORECASE) or re.search(r"Order\s*[:\.]?\s*(\d+)", first_page_text, re.IGNORECASE)
-        if om: order_no = om.group(1).strip()
+        if "Main Fabric Booking" in first_page_text or "Fabric Booking Sheet" in first_page_text:
+            metadata = extract_metadata(first_page_text)
+            return [], metadata 
+
+        order_match = re.search(r"Order no\D*(\d+)", first_page_text, re.IGNORECASE)
+        if order_match: order_no = order_match.group(1)
+        else:
+            alt_match = re.search(r"Order\s*[:\.]?\s*(\d+)", first_page_text, re.IGNORECASE)
+            if alt_match: order_no = alt_match.group(1)
+        
+        order_no = str(order_no).strip()
         if order_no.endswith("00"): order_no = order_no[:-2]
 
         for page in reader.pages:
@@ -144,45 +185,71 @@ def extract_data_dynamic(file_path):
             lines = text.split('\n')
             sizes = []
             capturing_data = False
+            
             for i, line in enumerate(lines):
                 line = line.strip()
                 if not line: continue
+
                 if ("Colo" in line or "Size" in line) and "Total" in line:
                     parts = line.split()
                     try:
                         total_idx = [idx for idx, x in enumerate(parts) if 'Total' in x][0]
-                        temp_sizes = [s for s in parts[:total_idx] if s not in ["Colo", "/", "Size", "Colo/Size", "Colo/", "Size's"]]
-                        if sum(1 for s in temp_sizes if is_potential_size(s)) >= len(temp_sizes)/2:
+                        raw_sizes = parts[:total_idx]
+                        temp_sizes = [s for s in raw_sizes if s not in ["Colo", "/", "Size", "Colo/Size", "Colo/", "Size's"]]
+                        
+                        valid_size_count = sum(1 for s in temp_sizes if is_potential_size(s))
+                        if temp_sizes and valid_size_count >= len(temp_sizes) / 2:
                             sizes = temp_sizes
                             capturing_data = True
-                        else: capturing_data = False
+                        else:
+                            sizes = []
+                            capturing_data = False
                     except: pass
                     continue
+                
                 if capturing_data:
-                    if line.startswith("Total") or "quantity" in line.lower(): 
-                        capturing_data = False; continue
+                    if line.startswith("Total Quantity") or line.startswith("Total Amount"):
+                        capturing_data = False
+                        continue
+                    
+                    lower_line = line.lower()
+                    if "quantity" in lower_line or "currency" in lower_line or "price" in lower_line or "amount" in lower_line:
+                        continue
+                        
                     clean_line = line.replace("Spec. price", "").replace("Spec", "").strip()
-                    if not re.search(r'[a-zA-Z]', clean_line) or re.match(r'^[A-Z]\d+$', clean_line): continue
-                    
-                    nums = [int(n) for n in re.findall(r'\b\d+\b', line)]
-                    if not nums: continue
-                    color = re.sub(r'\s\d+$', '', clean_line).strip()
-                    qty_list = nums[:-1] if len(nums) == len(sizes) + 1 else nums[:len(sizes)]
-                    
-                    if len(nums) < len(sizes): # Handle multiline
-                         for nl in lines[i+1:]:
-                             if "Total" in nl or re.search(r'[a-zA-Z]', nl.replace("Spec","")): break
-                             nums.extend([int(n) for n in re.findall(r'\b\d+\b', nl)])
-                         qty_list = nums[:len(sizes)]
+                    if not re.search(r'[a-zA-Z]', clean_line): continue
+                    if re.match(r'^[A-Z]\d+$', clean_line) or "Assortment" in clean_line: continue
 
-                    for idx, size in enumerate(sizes):
-                        if idx < len(qty_list):
-                            extracted_data.append({'P.O NO': order_no, 'Color': color, 'Size': size, 'Quantity': qty_list[idx]})
-    except Exception as e: print(e)
+                    numbers_in_line = re.findall(r'\b\d+\b', line)
+                    quantities = [int(n) for n in numbers_in_line]
+                    color_name = clean_line
+                    final_qtys = []
+
+                    if len(quantities) >= len(sizes):
+                        if len(quantities) == len(sizes) + 1: final_qtys = quantities[:-1] 
+                        else: final_qtys = quantities[:len(sizes)]
+                        color_name = re.sub(r'\s\d+$', '', color_name).strip()
+                    elif len(quantities) < len(sizes): 
+                        vertical_qtys = []
+                        for next_line in lines[i+1:]:
+                            next_line = next_line.strip()
+                            if "Total" in next_line or re.search(r'[a-zA-Z]', next_line.replace("Spec", "").replace("price", "")): break
+                            if re.match(r'^\d+$', next_line): vertical_qtys.append(int(next_line))
+                        if len(vertical_qtys) >= len(sizes): final_qtys = vertical_qtys[:len(sizes)]
+                    
+                    if final_qtys and color_name:
+                         for idx, size in enumerate(sizes):
+                            extracted_data.append({
+                                'P.O NO': order_no,
+                                'Color': color_name,
+                                'Size': size,
+                                'Quantity': final_qtys[idx]
+                            })
+    except Exception as e: print(f"Error processing file: {e}")
     return extracted_data, metadata
 
 # ==============================================================================
-# লজিক ২: CLOSING REPORT (ORIGINAL LOGIC - UNTOUCHED)
+# লজিক ২: CLOSING REPORT (ERP Login & Parsing) - হুবহু আপনার আগের কোড
 # ==============================================================================
 def get_authenticated_session(username, password):
     login_url = 'http://180.92.235.190:8022/erp/login.php'
@@ -192,6 +259,7 @@ def get_authenticated_session(username, password):
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
     })
     try:
+        # 5 Minute Timeout (300 Seconds)
         response = session_req.post(login_url, data=login_payload, timeout=300)
         if "dashboard.php" in response.url or "Invalid" not in response.text:
             return session_req
@@ -250,7 +318,9 @@ def parse_report_data(html_content):
     except Exception as e:
         return None
 
-# --- অরিজিনাল ক্লোজিং রিপোর্ট ফাংশন (কোনো পরিবর্তন ছাড়া) ---
+# ==============================================================================
+# ফাংশন ৩: ফরম্যাটেড এক্সেল রিপোর্ট (হুবহু আপনার দেওয়া কোড)
+# ==============================================================================
 def create_formatted_excel_report(report_data, internal_ref_no=""):
     if not report_data: return None
     wb = openpyxl.Workbook()
@@ -267,16 +337,15 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
     thin_border = Border(left=Side(style='thin'), right=Side(style='thin'), top=Side(style='thin'), bottom=Side(style='thin'))
     medium_border = Border(left=Side(style='medium'), right=Side(style='medium'), top=Side(style='medium'), bottom=Side(style='medium'))
     
-    ir_ib_fill = PatternFill(start_color="7B261A", end_color="7B261A", fill_type="solid") # Dark Red for IR/IB
-    header_row_fill = PatternFill(start_color="DE7465", end_color="DE7465", fill_type="solid") # Light Orange
-    light_brown_fill = PatternFill(start_color="DE7465", end_color="DE7465", fill_type="solid") # Total Row
-    light_blue_fill = PatternFill(start_color="B9C2DF", end_color="B9C2DF", fill_type="solid") # Order Qty (Column 3)
-    light_green_fill = PatternFill(start_color="C4D09D", end_color="C4D09D", fill_type="solid") # Input Qty (Column 6)
+    ir_ib_fill = PatternFill(start_color="7B261A", end_color="7B261A", fill_type="solid") 
+    header_row_fill = PatternFill(start_color="DE7465", end_color="DE7465", fill_type="solid") 
+    light_brown_fill = PatternFill(start_color="DE7465", end_color="DE7465", fill_type="solid") 
+    light_blue_fill = PatternFill(start_color="B9C2DF", end_color="B9C2DF", fill_type="solid") 
+    light_green_fill = PatternFill(start_color="C4D09D", end_color="C4D09D", fill_type="solid") 
     dark_green_fill = PatternFill(start_color="f1f2e8", end_color="f1f2e8", fill_type="solid") 
 
     NUM_COLUMNS, TABLE_START_ROW = 9, 8
    
-    # --- প্রধান দুটি হেডার ---
     ws.merge_cells(start_row=1, start_column=1, end_row=1, end_column=NUM_COLUMNS)
     ws['A1'].value = "COTTON CLOTHING BD LTD"
     ws['A1'].font = title_font 
@@ -288,7 +357,6 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
     ws['A2'].alignment = center_align
     ws.row_dimensions[3].height = 6
 
-    # --- সাব-হেডারসমূহ ---
     formatted_ref_no = internal_ref_no.upper()
     current_date = datetime.now().strftime("%d/%m/%Y")
     left_sub_headers = {'A4': 'BUYER', 'B4': report_data[0].get('buyer', ''), 'A5': 'IR/IB NO', 'B5': formatted_ref_no, 'A6': 'STYLE NO', 'B6': report_data[0].get('style', '')}
@@ -323,7 +391,6 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
        
     current_row = TABLE_START_ROW
    
-    # --- ডেটা টেবিল তৈরি ---
     for block in report_data:
         table_headers = ["COLOUR NAME", "SIZE", "ORDER QTY 3%", "ACTUAL QTY", "CUTTING QC", "INPUT QTY", "BALANCE", "SHORT/PLUS QTY", "Percentage %"]
         for col_idx, header in enumerate(table_headers, 1):
@@ -349,7 +416,6 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
             ws.cell(row=current_row, column=5, value=cutting_qc_val)
             ws.cell(row=current_row, column=6, value=input_qty)
             
-            # --- ফর্মুলা (অপরিবর্তিত) ---
             ws.cell(row=current_row, column=3, value=f"=ROUND(D{current_row}*1.03, 0)")      
             ws.cell(row=current_row, column=7, value=f"=E{current_row}-F{current_row}")      
             ws.cell(row=current_row, column=8, value=f"=F{current_row}-C{current_row}")      
@@ -376,7 +442,6 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
             merged_cell.alignment = color_align
             if not merged_cell.font.bold: merged_cell.font = bold_font
 
-        # --- টোটাল হিসাব (Total Row) ---
         total_row_str = str(current_row)
         ws.merge_cells(start_row=current_row, start_column=1, end_row=current_row, end_column=2)
         
@@ -410,7 +475,6 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
        
     image_row = current_row + 1
    
-    # --- ছবি যোগ করার অংশ ---
     try:
         direct_image_url = 'https://i.ibb.co/v6bp0jQW/rockybilly-regular.webp'
         image_response = requests.get(direct_image_url)
@@ -426,10 +490,9 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
         img.height = int(img.width * aspect_ratio)
         ws.row_dimensions[image_row].height = img.height * 0.90
         ws.add_image(img, f'A{image_row}')
-    except Exception as e:
-        print(f"ছবি যোগ করার সময় ত্রুটি: {e}")
+    except Exception:
+        pass
 
-    # --- স্বাক্ষর সেকশন ---
     signature_row = image_row + 1
     ws.merge_cells(start_row=signature_row, start_column=1, end_row=signature_row, end_column=NUM_COLUMNS)
     titles = ["Prepared By", "Input Incharge", "Cutting Incharge", "IE & Planning", "Sewing Manager", "Cutting Manager"]
@@ -438,7 +501,6 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
     signature_cell.font = Font(bold=True, size=15)
     signature_cell.alignment = Alignment(horizontal='center', vertical='center')
 
-    # --- ফন্ট সাইজ ---
     last_data_row = current_row - 2
     for row in ws.iter_rows(min_row=4, max_row=last_data_row):
         for cell in row:
@@ -449,7 +511,6 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
                     new_font = Font(name=existing_font.name, size=16.5, bold=existing_font.bold, italic=existing_font.italic, vertAlign=existing_font.vertAlign, underline=existing_font.underline, strike=existing_font.strike, color=existing_font.color)
                     cell.font = new_font
    
-    # --- কলামের প্রস্থ ---
     ws.column_dimensions['A'].width = 23
     ws.column_dimensions['B'].width = 8.5
     ws.column_dimensions['C'].width = 20
@@ -460,7 +521,6 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
     ws.column_dimensions['H'].width = 23
     ws.column_dimensions['I'].width = 18
    
-    # --- পেজ সেটআপ ---
     ws.page_setup.orientation = ws.ORIENTATION_PORTRAIT
     ws.page_setup.fitToPage = True
     ws.page_setup.fitToWidth = 1
@@ -531,24 +591,70 @@ COMMON_STYLES = """
         #loading-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 9999; justify-content: center; align-items: center; flex-direction: column; }
         .spinner { width: 50px; height: 50px; border: 5px solid rgba(255,255,255,0.3); border-top-color: #a29bfe; border-radius: 50%; animation: spin 1s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
+        .success-icon { font-size: 60px; color: #2ecc71; display: none; margin-bottom: 10px; animation: popIn 0.5s ease; }
+        @keyframes popIn { from { transform: scale(0); } to { transform: scale(1); } }
+        #loading-text { font-size: 18px; font-weight: 500; letter-spacing: 1px; text-align: center; }
+        .loader-error .spinner { border-top-color: #e74c3c; animation: none; }
+        .loader-error #loading-text { color: #e74c3c; font-weight: 700; }
+        .loader-success .spinner { display: none; }
+        .loader-success .success-icon { display: block; }
+        .loader-success #loading-text { color: #2ecc71; font-weight: 600; }
+
+        /* Admin Dashboard CSS */
+        .admin-sidebar { width: 280px; background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(15px); border-right: 1px solid rgba(255, 255, 255, 0.1); display: flex; flex-direction: column; padding: 25px; }
+        .sidebar-header { margin-bottom: 40px; text-align: center; }
+        .sidebar-header h2 { color: white; font-size: 22px; font-weight: 600; }
+        .sidebar-header p { color: #a29bfe; font-size: 12px; letter-spacing: 1px; }
+        .nav-menu { list-style: none; }
+        .nav-item { margin-bottom: 15px; }
+        .nav-link { display: flex; align-items: center; padding: 12px 15px; color: rgba(255, 255, 255, 0.7); text-decoration: none; border-radius: 10px; transition: all 0.3s ease; font-size: 14px; cursor: pointer; }
+        .nav-link i { margin-right: 12px; width: 20px; text-align: center; }
+        .nav-link:hover, .nav-link.active { background: linear-gradient(90deg, rgba(108, 92, 231, 0.8) 0%, rgba(118, 75, 162, 0.8) 100%); color: white; box-shadow: 0 4px 15px rgba(0,0,0,0.2); transform: translateX(5px); }
+        .admin-footer { margin-top: auto; border-top: 1px solid rgba(255, 255, 255, 0.1); padding-top: 20px; }
+        .admin-content { flex: 1; padding: 30px; overflow-y: auto; display: flex; flex-direction: column; }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 30px; }
+        .stat-card { background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.2); padding: 20px; border-radius: 15px; display: flex; align-items: center; transition: transform 0.3s; }
+        .stat-card:hover { transform: translateY(-5px); background: rgba(255, 255, 255, 0.15); }
+        .stat-icon { width: 50px; height: 50px; border-radius: 12px; background: rgba(255, 255, 255, 0.1); display: flex; align-items: center; justify-content: center; font-size: 20px; color: #fff; margin-right: 15px; }
+        .stat-info h3 { font-size: 24px; color: white; margin-bottom: 5px; }
+        .stat-info p { font-size: 13px; color: #dcdcdc; }
+        .bg-purple { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .bg-orange { background: linear-gradient(135deg, #ff9966 0%, #ff5e62 100%); }
+        .bg-green { background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); }
+        .work-area { flex: 1; background: rgba(0, 0, 0, 0.2); border-radius: 20px; padding: 30px; display: flex; justify-content: center; align-items: flex-start; position: relative; }
+        .swal-overlay { background-color: rgba(0, 0, 0, 0.6); }
+        .swal-modal { background-color: #2d3436; border: 1px solid rgba(255,255,255,0.1); }
+        .swal-title { color: white; }
+        .swal-text { color: #b2bec3; }
     </style>
 """
 
 LOGIN_HTML = f"""
 <!DOCTYPE html>
 <html lang="en">
-<head><title>Login</title>{COMMON_STYLES}</head>
+<head><title>MEHEDI HASAN</title>{COMMON_STYLES}</head>
 <body>
-    <div style="display:flex; justify-content:center; align-items:center; height:100vh;">
+    <div class="center-container">
         <div class="glass-card" style="width: 400px; text-align: center;">
             <h2 style="margin-bottom: 20px;">System Login</h2>
             <form action="/login" method="post">
-                <input type="text" name="username" placeholder="Username" required>
-                <input type="password" name="password" placeholder="Password" required>
-                <button type="submit">Login</button>
+                <div class="input-group">
+                    <label for="username">Select User</label>
+                    <select id="username" name="username" required>
+                        <option value="KobirAhmed">KobirAhmed</option>
+                        <option value="Admin">Admin</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label for="password">Authentication PIN</label>
+                    <input type="password" id="password" name="password" placeholder="Enter Password" required>
+                </div>
+                <button type="submit">Verify & Enter</button>
             </form>
             {{% with messages = get_flashed_messages() %}}
-                {{% if messages %}}<div style="color: #ff7675; margin-top: 10px;">{{{{ messages[0] }}}}</div>{{% endif %}}
+                {{% if messages %}}
+                    <div class="flash">{{{{ messages[0] }}}}</div>
+                {{% endif %}}
             {{% endwith %}}
         </div>
     </div>
@@ -568,57 +674,94 @@ ADMIN_DASHBOARD = f"""
     <div id="loading-overlay"><div class="spinner"></div><h3 style="margin-top:20px">Processing...</h3></div>
     
     <div class="admin-container">
-        <div class="sidebar">
-            <div style="text-align: center; margin-bottom: 30px;">
+        <div class="admin-sidebar">
+            <div class="sidebar-header">
                 <h2>Admin Panel</h2>
-                <small style="color: #a29bfe;">SUPER ADMIN</small>
+                <p>SUPER ADMIN ACCESS</p>
             </div>
-            <a onclick="showTab('dashboard')" class="nav-item active" id="link-dashboard"><i class="fas fa-home"></i> Dashboard</a>
-            <a onclick="showTab('closing')" class="nav-item" id="link-closing"><i class="fas fa-file-export"></i> Closing Report</a>
-            <a onclick="showTab('po')" class="nav-item" id="link-po"><i class="fas fa-file-invoice"></i> PO Sheet</a>
-            <a onclick="showTab('users')" class="nav-item" id="link-users"><i class="fas fa-users-cog"></i> User Management</a>
-            <div style="margin-top: auto;">
-                <a href="/logout" class="nav-item" style="color: #ff7675;"><i class="fas fa-sign-out-alt"></i> Logout</a>
+            
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a class="nav-link active" onclick="showTab('dashboard', this)" id="link-dashboard"><i class="fas fa-home"></i> Dashboard</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" onclick="showTab('closing', this)" id="link-closing"><i class="fas fa-file-export"></i> Closing Report</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" onclick="showTab('po', this)" id="link-po"><i class="fas fa-file-invoice"></i> PO Sheet</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" onclick="showTab('users', this)" id="link-users"><i class="fas fa-users-cog"></i> User Management</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" onclick="showComingSoon('Input & Output Report')"><i class="fas fa-exchange-alt"></i> Input & Output Report</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" onclick="showComingSoon('Cutting Plan Sheet')"><i class="fas fa-cut"></i> Cutting Plan Sheet</a>
+                </li>
+            </ul>
+            
+            <div class="admin-footer">
+                <a href="/logout" class="nav-link" style="color: #ff7675;"><i class="fas fa-sign-out-alt"></i> Logout</a>
             </div>
         </div>
         
-        <div class="content">
+        <div class="admin-content">
             <div id="dashboard" class="section active">
                 <h1>Welcome, {{{{ session.user }}}}</h1>
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-top: 20px;">
-                    <div class="glass-card" style="background: linear-gradient(135deg, #667eea, #764ba2);">
-                        <h3>Today</h3>
-                        <h1>{{{{ stats.today }}}}</h1>
-                        <small>Downloads</small>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon bg-purple"><i class="fas fa-calendar-day"></i></div>
+                        <div class="stat-info">
+                            <h3>{{{{ stats.today }}}}</h3>
+                            <p>Today's Downloads</p>
+                        </div>
                     </div>
-                    <div class="glass-card" style="background: linear-gradient(135deg, #ff9966, #ff5e62);">
-                        <h3>Month</h3>
-                        <h1>{{{{ stats.month }}}}</h1>
-                        <small>Downloads</small>
+                    <div class="stat-card">
+                        <div class="stat-icon bg-orange"><i class="fas fa-calendar-alt"></i></div>
+                        <div class="stat-info">
+                            <h3>{{{{ stats.month }}}}</h3>
+                            <p>Monthly Downloads</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon bg-green"><i class="fas fa-history"></i></div>
+                        <div class="stat-info">
+                            <h3 style="font-size: 16px; word-break: break-all;">{{{{ stats.last_booking }}}}</h3>
+                            <p>Last Generated Booking</p>
+                        </div>
                     </div>
                 </div>
             </div>
 
             <div id="closing" class="section">
-                <div class="glass-card" style="max-width: 500px; margin: 0 auto;">
-                    <h2><i class="fas fa-file-export"></i> Closing Report</h2>
-                    <form action="/generate-report" method="post" onsubmit="showLoader()">
-                        <label>Internal Reference No</label>
-                        <input type="text" name="ref_no" placeholder="e.g. DFL/24/..." required>
-                        <input type="hidden" name="download_token" value="1">
-                        <button type="submit">Generate Report</button>
-                    </form>
+                <div class="work-area">
+                    <div class="glass-card" style="width: 100%; max-width: 500px; background: rgba(255,255,255,0.05); box-shadow: none; border: none;">
+                        <h2 style="margin-bottom: 20px; font-weight: 500;"><i class="fas fa-file-export"></i> Generate Closing Report</h2>
+                        <form action="/generate-report" method="post" onsubmit="startDownloadProcess()">
+                            <div class="input-group">
+                                <label for="ref_no">Internal Reference No</label>
+                                <input type="text" id="ref_no" name="ref_no" placeholder="Enter Ref No (e.g. DFL/24/..)" required>
+                                <input type="hidden" name="download_token" id="download_token">
+                            </div>
+                            <button type="submit">Generate Report</button>
+                        </form>
+                    </div>
                 </div>
             </div>
 
             <div id="po" class="section">
-                <div class="glass-card" style="max-width: 500px; margin: 0 auto;">
-                    <h2><i class="fas fa-file-invoice"></i> PO Sheet Generator</h2>
-                    <form action="/generate-po-report" method="post" enctype="multipart/form-data">
-                        <label>Select PDF Files (Booking & PO)</label>
-                        <input type="file" name="pdf_files" multiple accept=".pdf" required>
-                        <button type="submit" style="background: linear-gradient(135deg, #11998e, #38ef7d);">Generate Report</button>
-                    </form>
+                <div class="work-area">
+                    <div class="glass-card" style="width: 100%; max-width: 500px; background: rgba(255,255,255,0.05); box-shadow: none; border: none;">
+                        <h2 style="margin-bottom: 20px; font-weight: 500;"><i class="fas fa-file-invoice"></i> PDF Report Generator</h2>
+                        <form action="/generate-po-report" method="post" enctype="multipart/form-data">
+                            <div class="input-group">
+                                <label for="pdf_files">Select PDF Files (Booking & PO)</label>
+                                <input type="file" id="pdf_files" name="pdf_files" multiple accept=".pdf" required style="height: auto;">
+                            </div>
+                            <button type="submit" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);">Generate Report</button>
+                        </form>
+                    </div>
                 </div>
             </div>
 
@@ -673,14 +816,35 @@ ADMIN_DASHBOARD = f"""
     </div>
 
     <script>
-        function showTab(id) {{
+        function showTab(id, element) {{
             document.querySelectorAll('.section').forEach(el => el.classList.remove('active'));
             document.getElementById(id).classList.add('active');
-            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-            document.getElementById('link-'+id).classList.add('active');
+            document.querySelectorAll('.nav-link').forEach(el => el.classList.remove('active'));
+            if(element) element.classList.add('active');
+        }}
+        function showComingSoon(featureName) {{
+            swal({{ title: "Feature Coming Soon!", text: "The '" + featureName + "' module will be launched very soon. Stay tuned!", icon: "info", button: "Got it!", className: "swal-dark" }});
         }}
         function showLoader() {{ document.getElementById('loading-overlay').style.display = 'flex'; setTimeout(() => {{ location.reload(); }}, 3000); }}
         
+        // Cookie logic for closing report
+        function getCookie(name) {{ let parts = document.cookie.split(name + "="); if (parts.length == 2) return parts.pop().split(";").shift(); return null; }}
+        function startDownloadProcess() {{
+            const overlay = document.getElementById('loading-overlay'); const loadingText = document.getElementById('loading-text'); const spinner = document.querySelector('.spinner'); const successIcon = document.querySelector('.success-icon'); const tokenInput = document.getElementById('download_token');
+            const token = new Date().getTime(); tokenInput.value = token;
+            overlay.style.display = 'flex'; overlay.className = ''; loadingText.innerHTML = "Processing data...<br><span style='font-size:12px; opacity:0.8'>Downloading will start automatically</span>"; spinner.style.display = 'block'; successIcon.style.display = 'none';
+            let attempts = 0;
+            const downloadTimer = setInterval(function() {{
+                const cookieValue = getCookie("download_token");
+                if (cookieValue == token) {{
+                    clearInterval(downloadTimer);
+                    overlay.classList.add('loader-success'); loadingText.innerHTML = "Successful Download Complete!";
+                    setTimeout(() => {{ window.location.reload(); }}, 2000);
+                }}
+                attempts++; if (attempts > 300) {{ clearInterval(downloadTimer); overlay.classList.add('loader-error'); spinner.style.display = 'none'; loadingText.innerHTML = "Server Timeout"; }}
+            }}, 1000);
+        }}
+
         // Show success/error messages
         {% with messages = get_flashed_messages() %}
             {% if messages %}
@@ -720,8 +884,9 @@ USER_DASHBOARD = f"""
             <div class="glass-card" style="width:400px; position:relative;">
                 <span onclick="document.getElementById('closing-modal').style.display='none'" style="position:absolute; top:10px; right:20px; cursor:pointer; font-size:20px;">&times;</span>
                 <h3>Closing Report</h3>
-                <form action="/generate-report" method="post" onsubmit="showLoader()">
+                <form action="/generate-report" method="post" onsubmit="startDownloadProcess()">
                     <input type="text" name="ref_no" placeholder="Reference No" required>
+                    <input type="hidden" name="download_token" id="download_token">
                     <button type="submit">Generate</button>
                 </form>
             </div>
@@ -741,7 +906,26 @@ USER_DASHBOARD = f"""
         </div>
     </div>
 
-    <script>function showLoader() {{ document.getElementById('loading-overlay').style.display = 'flex'; setTimeout(() => {{ location.reload(); }}, 3000); }}</script>
+    <script>
+        function showLoader() {{ document.getElementById('loading-overlay').style.display = 'flex'; setTimeout(() => {{ location.reload(); }}, 3000); }}
+        // Cookie logic same as admin
+        function getCookie(name) {{ let parts = document.cookie.split(name + "="); if (parts.length == 2) return parts.pop().split(";").shift(); return null; }}
+        function startDownloadProcess() {{
+            const overlay = document.getElementById('loading-overlay'); const spinner = document.querySelector('.spinner'); 
+            const tokenInput = document.getElementById('download_token');
+            const token = new Date().getTime(); tokenInput.value = token;
+            overlay.style.display = 'flex'; 
+            let attempts = 0;
+            const downloadTimer = setInterval(function() {{
+                const cookieValue = getCookie("download_token");
+                if (cookieValue == token) {{
+                    clearInterval(downloadTimer);
+                    overlay.style.display = 'none';
+                }}
+                attempts++; if (attempts > 300) {{ clearInterval(downloadTimer); overlay.style.display = 'none'; }}
+            }}, 1000);
+        }}
+    </script>
 </body>
 </html>
 """
@@ -756,6 +940,12 @@ def index():
     
     users = load_users()
     current_user = session.get('user')
+    
+    # Handle case where user might be deleted while logged in
+    if current_user not in users:
+        session.clear()
+        return redirect('/')
+
     user_data = users.get(current_user, {})
     role = user_data.get('role', 'user')
     perms = user_data.get('permissions', [])
@@ -832,33 +1022,66 @@ def generate_report():
     # Check Permission
     users = load_users()
     user_perms = users.get(session['user'], {}).get('permissions', [])
+    # Admin always has access, others check permission
     if 'closing' not in user_perms and users.get(session['user'], {}).get('role') != 'admin':
         flash("Permission Denied"); return redirect('/')
 
-    ref = request.form.get('ref_no')
-    s = get_authenticated_session("input2.clothing-cutting", "123456")
-    if not s: flash("ERP Connection Failed"); return redirect('/')
+    internal_ref_no = request.form['ref_no']
+    download_token = request.form.get('download_token')
 
-    url = 'http://180.92.235.190:8022/erp/prod_planning/reports/requires/cutting_lay_production_report_controller.php'
-    payload = {'action': 'report_generate', 'cbo_wo_company_name': '2', 'txt_internal_ref_no': ref, 'reportType': '3'}
+    if not internal_ref_no:
+        flash("Ref No required.")
+        return redirect(url_for('index'))
+
+    active_session = get_authenticated_session("input2.clothing-cutting", "123456")
+    if not active_session:
+        flash("ERP Connection Failed.")
+        return redirect(url_for('index'))
+
+    report_url = 'http://180.92.235.190:8022/erp/prod_planning/reports/requires/cutting_lay_production_report_controller.php'
+    payload_template = {'action': 'report_generate', 'cbo_wo_company_name': '2', 'cbo_location_name': '2', 'cbo_floor_id': '0', 'cbo_buyer_name': '0', 'txt_internal_ref_no': internal_ref_no, 'reportType': '3'}
+    found_data = None
+   
+    for year in ['2025', '2024']:
+        for company_id in range(1, 6):
+            payload = payload_template.copy()
+            payload['cbo_year_selection'] = year
+            payload['cbo_company_name'] = str(company_id)
+            try:
+                response = active_session.post(report_url, data=payload, timeout=300)
+                if response.status_code == 200 and "Data not Found" not in response.text:
+                    found_data = response.text
+                    break
+            except requests.exceptions.RequestException:
+                continue
+        if found_data:
+            break
+           
+    if not found_data:
+        flash(f"No data found for: {internal_ref_no}")
+        return redirect(url_for('index'))
+
+    report_data = parse_report_data(found_data)
+    if not report_data:
+        flash(f"Data parsing error for: {internal_ref_no}")
+        return redirect(url_for('index'))
+
+    excel_file_stream = create_formatted_excel_report(report_data, internal_ref_no)
     
-    html = None
-    for y in ['2025', '2024']:
-        for c in range(1, 6):
-            payload.update({'cbo_year_selection': y, 'cbo_company_name': str(c)})
-            try: 
-                r = s.post(url, data=payload, timeout=60)
-                if "Data not Found" not in r.text: html = r.text; break
-            except: continue
-        if html: break
-    
-    if not html: flash("No Data Found"); return redirect('/')
-    data = parse_report_data(html)
-    if not data: flash("Parsing Error"); return redirect('/')
-    
-    excel = create_formatted_excel_report(data, ref)
-    update_stats(ref)
-    return send_file(excel, as_attachment=True, download_name=f"Closing_{ref.replace('/','_')}.xlsx")
+    if excel_file_stream:
+        update_stats(internal_ref_no)
+        response = make_response(send_file(
+            excel_file_stream,
+            as_attachment=True,
+            download_name=f"Closing-Report-{internal_ref_no.replace('/', '_')}.xlsx",
+            mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        ))
+        if download_token:
+            response.set_cookie('download_token', download_token, max_age=60, path='/')
+        return response
+    else:
+        flash("Excel generation failed.")
+        return redirect(url_for('index'))
 
 @app.route('/generate-po-report', methods=['POST'])
 def generate_po_report():
@@ -905,10 +1128,18 @@ def generate_po_report():
         piv = pd.concat([piv, act.to_frame().T, p3.to_frame().T])
         
         html = piv.reset_index().to_html(classes='table table-bordered table-striped', index=False)
+        
+        # HTML Injections for PO Styling
+        html = re.sub(r'<tr>\s*<td>', '<tr><td class="order-col">', html)
+        html = html.replace('<th>Total</th>', '<th class="total-col-header">Total</th>')
+        html = html.replace('<td>Total</td>', '<td class="total-col">Total</td>')
+        html = html.replace('<td>Actual Qty</td>', '<td class="summary-label">Actual Qty</td>')
+        html = html.replace('<td>3% Order Qty</td>', '<td class="summary-label">3% Order Qty</td>')
+        html = re.sub(r'<tr>\s*<td class="summary-label">', '<tr class="summary-row"><td class="summary-label">', html)
+
         tables.append({'color': color, 'table': html})
 
     return render_template_string(PO_TEMPLATE, tables=tables, meta=meta, grand_total=f"{grand_total:,}")
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
-``````python
