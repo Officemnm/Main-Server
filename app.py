@@ -293,6 +293,32 @@ def get_authenticated_session(username, password):
         print(f"Connection Error: {e}")
         return None
 
+# --- Common function to fetch data for both Preview and Excel ---
+def fetch_closing_report_data(internal_ref_no):
+    active_session = get_authenticated_session("input2.clothing-cutting", "123456")
+    if not active_session: return None
+
+    report_url = 'http://180.92.235.190:8022/erp/prod_planning/reports/requires/cutting_lay_production_report_controller.php'
+    payload_template = {'action': 'report_generate', 'cbo_wo_company_name': '2', 'cbo_location_name': '2', 'cbo_floor_id': '0', 'cbo_buyer_name': '0', 'txt_internal_ref_no': internal_ref_no, 'reportType': '3'}
+    found_data = None
+   
+    for year in ['2025', '2024']:
+        for company_id in range(1, 6):
+            payload = payload_template.copy()
+            payload['cbo_year_selection'] = year
+            payload['cbo_company_name'] = str(company_id)
+            try:
+                response = active_session.post(report_url, data=payload, timeout=300)
+                if response.status_code == 200 and "Data not Found" not in response.text:
+                    found_data = response.text
+                    break
+            except: continue
+        if found_data: break
+    
+    if found_data:
+        return parse_report_data(found_data)
+    return None
+
 def parse_report_data(html_content):
     all_report_data = []
     try:
@@ -804,6 +830,178 @@ COMMON_STYLES = """
     </style>
 """
 
+# --- NEW: Report Preview Template for Closing Report ---
+CLOSING_REPORT_PREVIEW_TEMPLATE = """
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Closing Report Preview</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background-color: #f8f9fa; padding: 30px 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .container { max-width: 1400px; }
+        .company-header { text-align: center; margin-bottom: 20px; border-bottom: 2px solid #000; padding-bottom: 10px; }
+        .company-name { font-size: 2.2rem; font-weight: 800; color: #2c3e50; text-transform: uppercase; letter-spacing: 1px; line-height: 1; }
+        .report-title { font-size: 1.1rem; color: #555; font-weight: 600; text-transform: uppercase; margin-top: 5px; }
+        .date-section { font-size: 1.2rem; font-weight: 800; color: #000; margin-top: 5px; }
+        
+        .info-container { margin-bottom: 15px; border: 1px solid #ddd; background: white; padding: 15px; border-left: 5px solid #2c3e50; }
+        .info-row { display: flex; flex-wrap: wrap; gap: 20px; }
+        .info-item { font-size: 1.1rem; font-weight: 600; color: #444; margin-right: 20px;}
+        .info-value { color: #000; font-weight: 800; }
+
+        .table-card { background: white; border-radius: 0; margin-bottom: 30px; border: 1px solid #dee2e6; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        .color-header { background-color: #DE7465; color: white; padding: 10px 15px; font-size: 1.3rem; font-weight: 800; text-transform: uppercase; }
+        
+        .table { margin-bottom: 0; width: 100%; border-collapse: collapse; font-size: 0.95rem; }
+        .table th { background-color: #7B261A; color: white; text-align: center; border: 1px solid #ccc; padding: 8px; vertical-align: middle; font-weight: 600; }
+        .table td { text-align: center; vertical-align: middle; border: 1px solid #ccc; padding: 6px; color: #000; font-weight: 600; }
+        
+        /* Custom Colors matching Excel */
+        .col-3pct { background-color: #B9C2DF !important; font-weight: 700; }
+        .col-input { background-color: #C4D09D !important; font-weight: 700; }
+        .col-balance { font-weight: 700; color: #c0392b; }
+        
+        .action-bar { margin-bottom: 20px; display: flex; justify-content: flex-end; gap: 15px; position: sticky; top: 0; z-index: 1000; background: #f8f9fa; padding: 10px 0; }
+        .btn-print { background-color: #2c3e50; color: white; border-radius: 50px; padding: 10px 30px; font-weight: 600; }
+        .btn-excel { background-color: #27ae60; color: white; border-radius: 50px; padding: 10px 30px; font-weight: 600; text-decoration: none; display: inline-block; }
+        .btn-excel:hover { color: white; background-color: #219150; }
+
+        .signature-section { margin-top: 50px; display: flex; justify-content: space-between; text-align: center; padding: 0 50px; }
+        .sig-box { border-top: 1px solid #000; padding-top: 5px; width: 150px; font-weight: 700; }
+
+        @media print {
+            @page { margin: 5mm; size: landscape; }
+            body { background-color: white; padding: 0; }
+            .no-print { display: none !important; }
+            .action-bar { display: none; }
+            .table th, .table td { border: 1px solid #000 !important; }
+            .col-3pct { background-color: #B9C2DF !important; -webkit-print-color-adjust: exact; }
+            .col-input { background-color: #C4D09D !important; -webkit-print-color-adjust: exact; }
+            .color-header { background-color: #DE7465 !important; -webkit-print-color-adjust: exact; color: white !important;}
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="action-bar no-print">
+            <a href="/" class="btn btn-outline-secondary rounded-pill px-4">Back to Dashboard</a>
+            <a href="/download-closing-excel?ref_no={{ ref_no }}" class="btn btn-excel"><i class="fas fa-file-excel"></i> Download Excel</a>
+            <button onclick="window.print()" class="btn btn-print">🖨️ Print Report</button>
+        </div>
+
+        <div class="company-header">
+            <div class="company-name">Cotton Clothing BD Limited</div>
+            <div class="report-title">CLOSING REPORT [ INPUT SECTION ]</div>
+            <div class="date-section">Date: <span id="date"></span></div>
+        </div>
+
+        {% if report_data %}
+        <div class="info-container">
+            <div class="info-row">
+                <div class="info-item">Buyer: <span class="info-value">{{ report_data[0].buyer }}</span></div>
+                <div class="info-item">Style: <span class="info-value">{{ report_data[0].style }}</span></div>
+                <div class="info-item" style="background: #7B261A; color: white; padding: 0 10px;">IR/IB NO: <span class="info-value" style="color: white;">{{ ref_no }}</span></div>
+            </div>
+        </div>
+
+        {% for block in report_data %}
+        <div class="table-card">
+            <div class="color-header">COLOR: {{ block.color }}</div>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>SIZE</th>
+                        <th>ORDER QTY 3%</th>
+                        <th>ACTUAL QTY</th>
+                        <th>CUTTING QC</th>
+                        <th>INPUT QTY</th>
+                        <th>BALANCE (Cut-Inp)</th>
+                        <th>SHORT/PLUS (Inp-Ord)</th>
+                        <th>PERCENTAGE %</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% set ns = namespace(tot_3=0, tot_act=0, tot_cut=0, tot_inp=0, tot_bal=0, tot_sp=0) %}
+                    {% for i in range(block.headers|length) %}
+                        {% set actual = block.gmts_qty[i]|replace(',', '')|int %}
+                        {% set qty_3 = (actual * 1.03)|round|int %}
+                        {% set cut_qc = 0 %}
+                        {% if i < block.cutting_qc|length %}
+                            {% set cut_qc = block.cutting_qc[i]|replace(',', '')|int %}
+                        {% endif %}
+                        {% set inp_qty = 0 %}
+                        {% if i < block.sewing_input|length %}
+                            {% set inp_qty = block.sewing_input[i]|replace(',', '')|int %}
+                        {% endif %}
+                        
+                        {% set balance = cut_qc - inp_qty %}
+                        {% set short_plus = inp_qty - qty_3 %}
+                        {% set percentage = 0 %}
+                        {% if qty_3 > 0 %}
+                            {% set percentage = (short_plus / qty_3) * 100 %}
+                        {% endif %}
+
+                        {# Update Totals #}
+                        {% set ns.tot_3 = ns.tot_3 + qty_3 %}
+                        {% set ns.tot_act = ns.tot_act + actual %}
+                        {% set ns.tot_cut = ns.tot_cut + cut_qc %}
+                        {% set ns.tot_inp = ns.tot_inp + inp_qty %}
+                        {% set ns.tot_bal = ns.tot_bal + balance %}
+                        {% set ns.tot_sp = ns.tot_sp + short_plus %}
+
+                        <tr>
+                            <td>{{ block.headers[i] }}</td>
+                            <td class="col-3pct">{{ qty_3 }}</td>
+                            <td>{{ actual }}</td>
+                            <td>{{ cut_qc }}</td>
+                            <td class="col-input">{{ inp_qty }}</td>
+                            <td class="col-balance">{{ balance }}</td>
+                            <td style="color: {{ 'green' if short_plus >= 0 else 'red' }}">{{ short_plus }}</td>
+                            <td>{{ "%.2f"|format(percentage) }}%</td>
+                        </tr>
+                    {% endfor %}
+                    <tr style="background: #DE7465; color: white; font-weight: bold;">
+                        <td>TOTAL</td>
+                        <td>{{ ns.tot_3 }}</td>
+                        <td>{{ ns.tot_act }}</td>
+                        <td>{{ ns.tot_cut }}</td>
+                        <td>{{ ns.tot_inp }}</td>
+                        <td>{{ ns.tot_bal }}</td>
+                        <td>{{ ns.tot_sp }}</td>
+                        <td>
+                            {% if ns.tot_3 > 0 %}
+                                {{ "%.2f"|format((ns.tot_sp / ns.tot_3) * 100) }}%
+                            {% else %}
+                                0.00%
+                            {% endif %}
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        {% endfor %}
+
+        <div class="signature-section no-print">
+            <div class="sig-box">Prepared By</div>
+            <div class="sig-box">Input Incharge</div>
+            <div class="sig-box">Cutting Incharge</div>
+            <div class="sig-box">Sewing Manager</div>
+        </div>
+        
+        <div class="footer-credit no-print">Report Generated By System</div>
+        {% endif %}
+    </div>
+    <script>
+        const dateObj = new Date();
+        document.getElementById('date').innerText = dateObj.toLocaleDateString('en-GB');
+    </script>
+</body>
+</html>
+"""
+
 # --- Report HTML Template for PO Sheet (Print Friendly) ---
 PO_REPORT_TEMPLATE = """
 <!DOCTYPE html>
@@ -983,7 +1181,7 @@ USER_DASHBOARD_TEMPLATE = f"""
                         <input type="text" id="ref_no" name="ref_no" placeholder="Booking-123/456.." required>
                         <input type="hidden" name="download_token" id="download_token">
                     </div>
-                    <button type="submit">Generate Excel Report</button>
+                    <button type="submit">Generate Report</button>
                 </form>
             </div>
             {{% endif %}}
@@ -1016,17 +1214,9 @@ USER_DASHBOARD_TEMPLATE = f"""
         function startDownloadProcess() {{
             const overlay = document.getElementById('loading-overlay'); const loadingText = document.getElementById('loading-text'); const spinner = document.querySelector('.spinner'); const successIcon = document.querySelector('.success-icon'); const tokenInput = document.getElementById('download_token');
             const token = new Date().getTime(); tokenInput.value = token;
-            overlay.style.display = 'flex'; overlay.className = ''; loadingText.innerHTML = "Processing data...<br><span style='font-size:12px; opacity:0.8'>Downloading will start automatically</span>"; spinner.style.display = 'block'; successIcon.style.display = 'none';
-            let attempts = 0;
-            const downloadTimer = setInterval(function() {{
-                const cookieValue = getCookie("download_token");
-                if (cookieValue == token) {{
-                    clearInterval(downloadTimer);
-                    overlay.classList.add('loader-success'); loadingText.innerHTML = "Successful Download Complete!";
-                    setTimeout(() => {{ overlay.style.opacity = '0'; setTimeout(() => {{ overlay.style.display = 'none'; overlay.style.opacity = '1'; }}, 500); }}, 2000);
-                }}
-                attempts++; if (attempts > 300) {{ clearInterval(downloadTimer); overlay.classList.add('loader-error'); spinner.style.display = 'none'; loadingText.innerHTML = "Server Timeout"; }}
-            }}, 1000);
+            overlay.style.display = 'flex'; overlay.className = ''; loadingText.innerHTML = "Processing data...<br><span style='font-size:12px; opacity:0.8'>Fetching Preview...</span>"; spinner.style.display = 'block'; successIcon.style.display = 'none';
+            // Just show loader for 2 seconds then remove as it redirects to preview
+            setTimeout(() => {{ overlay.style.display = 'none'; }}, 2000);
         }}
     </script>
 </body>
@@ -1223,7 +1413,6 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
                     tbody.innerHTML = '';
                     for (const [user, details] of Object.entries(data)) {{
                         let perms = details.permissions.join(', ');
-                        // We pass perms as a simple string to avoid quoting errors
                         let row = `<tr>
                             <td>${{user}}</td>
                             <td>${{details.role}}</td>
@@ -1358,17 +1547,9 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
         function startDownloadProcess() {{
             const overlay = document.getElementById('loading-overlay'); const loadingText = document.getElementById('loading-text'); const spinner = document.querySelector('.spinner'); const successIcon = document.querySelector('.success-icon'); const tokenInput = document.getElementById('download_token');
             const token = new Date().getTime(); tokenInput.value = token;
-            overlay.style.display = 'flex'; overlay.className = ''; loadingText.innerHTML = "Processing data...<br><span style='font-size:12px; opacity:0.8'>Downloading will start automatically</span>"; spinner.style.display = 'block'; successIcon.style.display = 'none';
-            let attempts = 0;
-            const downloadTimer = setInterval(function() {{
-                const cookieValue = getCookie("download_token");
-                if (cookieValue == token) {{
-                    clearInterval(downloadTimer);
-                    overlay.classList.add('loader-success'); loadingText.innerHTML = "Successful Download Complete!";
-                    setTimeout(() => {{ window.location.reload(); }}, 2000);
-                }}
-                attempts++; if (attempts > 300) {{ clearInterval(downloadTimer); overlay.classList.add('loader-error'); spinner.style.display = 'none'; loadingText.innerHTML = "Server Timeout"; }}
-            }}, 1000);
+            overlay.style.display = 'flex'; overlay.className = ''; loadingText.innerHTML = "Processing data...<br><span style='font-size:12px; opacity:0.8'>Fetching Preview...</span>"; spinner.style.display = 'block'; successIcon.style.display = 'none';
+            // Simple timeout for preview mode as it's not a direct file download stream
+            setTimeout(() => {{ overlay.style.display = 'none'; }}, 3000);
         }}
     </script>
 </body>
@@ -1379,9 +1560,7 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
 
 @app.route('/')
 def index():
-    # অ্যাপ চালু হওয়ার সময় ইউজার ফাইল চেক করা
     load_users()
-    
     if not session.get('logged_in'):
         return render_template_string(LOGIN_TEMPLATE)
     else:
@@ -1450,7 +1629,6 @@ def save_user():
     elif action == 'update':
         if username not in users_db:
             return jsonify({'status': 'error', 'message': 'User not found!'})
-        # Update
         users_db[username]['password'] = password
         users_db[username]['permissions'] = permissions
     
@@ -1475,56 +1653,46 @@ def delete_user():
     
     return jsonify({'status': 'error', 'message': 'User not found'})
 
-# --- CLOSING REPORT ROUTE ---
+# --- CLOSING REPORT ROUTE (MODIFIED FOR PREVIEW) ---
 @app.route('/generate-report', methods=['POST'])
 def generate_report():
     if not session.get('logged_in'): return redirect(url_for('index'))
     
-    # Permission Check
     if 'closing' not in session.get('permissions', []):
         flash("You do not have permission to access Closing Report.")
         return redirect(url_for('index'))
 
     internal_ref_no = request.form['ref_no']
-    download_token = request.form.get('download_token')
     if not internal_ref_no: return redirect(url_for('index'))
 
-    active_session = get_authenticated_session("input2.clothing-cutting", "123456")
-    if not active_session: return redirect(url_for('index'))
+    report_data = fetch_closing_report_data(internal_ref_no)
 
-    report_url = 'http://180.92.235.190:8022/erp/prod_planning/reports/requires/cutting_lay_production_report_controller.php'
-    payload_template = {'action': 'report_generate', 'cbo_wo_company_name': '2', 'cbo_location_name': '2', 'cbo_floor_id': '0', 'cbo_buyer_name': '0', 'txt_internal_ref_no': internal_ref_no, 'reportType': '3'}
-    found_data = None
-   
-    for year in ['2025', '2024']:
-        for company_id in range(1, 6):
-            payload = payload_template.copy()
-            payload['cbo_year_selection'] = year
-            payload['cbo_company_name'] = str(company_id)
-            try:
-                response = active_session.post(report_url, data=payload, timeout=300)
-                if response.status_code == 200 and "Data not Found" not in response.text:
-                    found_data = response.text
-                    break
-            except: continue
-        if found_data: break
-           
-    if not found_data:
+    if not report_data:
         flash(f"No data found for: {internal_ref_no}")
         return redirect(url_for('index'))
 
-    report_data = parse_report_data(found_data)
+    # Render Preview Template instead of downloading
+    return render_template_string(CLOSING_REPORT_PREVIEW_TEMPLATE, report_data=report_data, ref_no=internal_ref_no)
+
+# --- NEW EXCEL DOWNLOAD ROUTE ---
+@app.route('/download-closing-excel', methods=['GET'])
+def download_closing_excel():
+    if not session.get('logged_in'): return redirect(url_for('index'))
+    
+    internal_ref_no = request.args.get('ref_no')
+    if not internal_ref_no: return redirect(url_for('index'))
+
+    report_data = fetch_closing_report_data(internal_ref_no)
+    
     if not report_data:
-        flash(f"Data parsing error for: {internal_ref_no}")
+        flash(f"Error fetching data for download: {internal_ref_no}")
         return redirect(url_for('index'))
 
     excel_file_stream = create_formatted_excel_report(report_data, internal_ref_no)
     
     if excel_file_stream:
         update_stats(internal_ref_no)
-        response = make_response(send_file(excel_file_stream, as_attachment=True, download_name=f"Closing-Report-{internal_ref_no.replace('/', '_')}.xlsx", mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'))
-        if download_token: response.set_cookie('download_token', download_token, max_age=60, path='/')
-        return response
+        return make_response(send_file(excel_file_stream, as_attachment=True, download_name=f"Closing-Report-{internal_ref_no.replace('/', '_')}.xlsx", mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'))
     else:
         return redirect(url_for('index'))
 
@@ -1535,7 +1703,6 @@ def generate_po_report():
         flash('Unauthorized Access')
         return redirect(url_for('index'))
 
-    # Permission Check
     if 'po_sheet' not in session.get('permissions', []):
          flash("You do not have permission to access PO Sheet.")
          return redirect(url_for('index'))
