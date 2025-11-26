@@ -16,7 +16,7 @@ import shutil
 import numpy as np
 
 # --- Flask লাইব্রেরি ইম্পোর্ট ---
-from flask import Flask, request, render_template_string, send_file, flash, session, redirect, url_for, make_response, jsonify
+from flask import Flask, request, render_template_string, send_file, flash, session, redirect, url_for, make_response
 
 app = Flask(__name__)
 app.secret_key = 'super-secret-secure-key-bd' 
@@ -888,7 +888,7 @@ def generate_po_report():
     # Process DataFrame
     df = pd.DataFrame(all_data)
     df['Color'] = df['Color'].str.strip()
-    df = df[df['Color'] != ""]
+    df = df[df['Color']!=""]
     tables = []
     grand_total = 0
     
@@ -911,3 +911,4 @@ def generate_po_report():
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
+``````python
