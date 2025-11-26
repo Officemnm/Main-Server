@@ -795,6 +795,7 @@ COMMON_STYLES = """
         .user-btn { padding: 5px 10px; border-radius: 5px; border: none; font-size: 12px; cursor: pointer; color: white; margin-right: 5px; display: inline-block; width: auto; margin-top: 0; }
         .btn-edit { background: #f39c12; }
         .btn-delete { background: #e74c3c; }
+        .btn-reset { background: #95a5a6; width: 100%; margin-top: 5px; }
         
         /* Permissions Checkboxes */
         .perm-group { display: flex; gap: 10px; margin-top: 5px; }
@@ -1186,7 +1187,8 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
                                         </div>
                                     </div>
                                 </div>
-                                <button type="button" onclick="handleUserSubmit()" id="saveUserBtn" style="padding: 10px;">Create User</button>
+                                <button type="button" onclick="handleUserSubmit(event)" id="saveUserBtn" style="padding: 10px;">Create User</button>
+                                <button type="button" onclick="resetForm()" class="user-btn btn-reset">Reset / Create New</button>
                             </form>
                         </div>
 
@@ -1221,13 +1223,14 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
                     tbody.innerHTML = '';
                     for (const [user, details] of Object.entries(data)) {{
                         let perms = details.permissions.join(', ');
+                        // We pass perms as a simple string to avoid quoting errors
                         let row = `<tr>
                             <td>${{user}}</td>
                             <td>${{details.role}}</td>
                             <td>${{perms}}</td>
                             <td>
                                 ${{details.role !== 'admin' ? 
-                                    `<button class="user-btn btn-edit" onclick="editUser('${{user}}', '${{details.password}}', '${{details.permissions}}')">Edit</button>
+                                    `<button class="user-btn btn-edit" onclick="editUser('${{user}}', '${{details.password}}', '${{perms}}')">Edit</button>
                                      <button class="user-btn btn-delete" onclick="deleteUser('${{user}}')">Delete</button>` : 
                                     '<span style="font-size:10px; opacity:0.7">System Admin</span>'}}
                             </td>
@@ -1237,10 +1240,17 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
                 }});
         }}
 
-        function handleUserSubmit() {{
+        function handleUserSubmit(e) {{
+            if(e) e.preventDefault();
+            
             const username = document.getElementById('new_username').value;
             const password = document.getElementById('new_password').value;
             const action = document.getElementById('action_type').value;
+            
+            if(!username || !password) {{
+                swal("Error", "Username and Password required!", "warning");
+                return;
+            }}
             
             let permissions = [];
             if(document.getElementById('perm_closing').checked) permissions.push('closing');
@@ -1249,33 +1259,39 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
             fetch('/admin/save-user', {{
                 method: 'POST',
                 headers: {{'Content-Type': 'application/json'}},
-                body: JSON.stringify({{ username, password, permissions, action }})
+                body: JSON.stringify({{ username, password, permissions, action_type: action }})
             }})
             .then(res => res.json())
             .then(data => {{
                 if(data.status === 'success') {{
                     swal("Success", data.message, "success");
                     loadUsers();
-                    document.getElementById('userForm').reset();
-                    document.getElementById('action_type').value = 'create';
-                    document.getElementById('saveUserBtn').innerText = 'Create User';
-                    document.getElementById('new_username').readOnly = false;
+                    resetForm();
                 }} else {{
                     swal("Error", data.message, "error");
                 }}
             }});
         }}
 
-        function editUser(user, pass, perms) {{
+        function editUser(user, pass, permsStr) {{
             document.getElementById('new_username').value = user;
-            document.getElementById('new_username').readOnly = true; // Cannot change username
+            document.getElementById('new_username').readOnly = true; 
             document.getElementById('new_password').value = pass;
             document.getElementById('action_type').value = 'update';
             document.getElementById('saveUserBtn').innerText = 'Update User';
             
-            // Set checkboxes
+            let perms = permsStr.split(', ');
             document.getElementById('perm_closing').checked = perms.includes('closing');
             document.getElementById('perm_po').checked = perms.includes('po_sheet');
+        }}
+
+        function resetForm() {{
+            document.getElementById('userForm').reset();
+            document.getElementById('action_type').value = 'create';
+            document.getElementById('saveUserBtn').innerText = 'Create User';
+            document.getElementById('new_username').readOnly = false;
+            document.getElementById('perm_closing').checked = true; // Default
+            document.getElementById('perm_po').checked = false;
         }}
 
         function deleteUser(user) {{
@@ -1298,6 +1314,8 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
                         if(data.status === 'success') {{
                             swal("Poof! User has been deleted!", {{ icon: "success", }});
                             loadUsers();
+                        }} else {{
+                            swal("Error", data.message, "error");
                         }}
                     }});
                 }}
@@ -1327,7 +1345,7 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
                 document.getElementById('purchase-order-section').style.display = 'block';
             }} else if (sectionId === 'user-manage') {{
                 document.getElementById('user-manage-section').style.display = 'block';
-                loadUsers(); // Load users when tab is clicked
+                loadUsers(); 
             }}
         }}
 
@@ -1411,11 +1429,14 @@ def save_user():
         return jsonify({'status': 'error', 'message': 'Unauthorized'})
     
     data = request.json
-    username = data.get('username')
-    password = data.get('password')
+    username = data.get('username', '').strip()
+    password = data.get('password', '').strip()
     permissions = data.get('permissions', [])
     action = data.get('action_type')
     
+    if not username or not password:
+         return jsonify({'status': 'error', 'message': 'Invalid Data'})
+
     users_db = load_users()
     
     if action == 'create':
@@ -1429,7 +1450,7 @@ def save_user():
     elif action == 'update':
         if username not in users_db:
             return jsonify({'status': 'error', 'message': 'User not found!'})
-        # Prevent Admin role downgrade logic if needed, but here simple update
+        # Update
         users_db[username]['password'] = password
         users_db[username]['permissions'] = permissions
     
