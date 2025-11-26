@@ -9,6 +9,11 @@ from PIL import Image as PILImage
 import time
 import json
 import os
+import pypdf
+import pandas as pd
+import re
+import shutil
+import numpy as np
 
 # --- Flask লাইব্রেরি ইম্পোর্ট ---
 from flask import Flask, request, render_template_string, send_file, flash, session, redirect, url_for, make_response
@@ -16,11 +21,17 @@ from flask import Flask, request, render_template_string, send_file, flash, sess
 app = Flask(__name__)
 app.secret_key = 'super-secret-secure-key-bd' 
 
+# কনফিগারেশন (PO ফাইলের জন্য)
+UPLOAD_FOLDER = 'uploads'
+if not os.path.exists(UPLOAD_FOLDER):
+    os.makedirs(UPLOAD_FOLDER)
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
 # --- ২ মিনিটের সেশন টাইমআউট কনফিগারেশন ---
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=2)
 
 # ==============================================================================
-# হেল্পার ফাংশন: পরিসংখ্যান বা স্ট্যাটাস ম্যানেজমেন্ট (JSON ফাইল দিয়ে)
+# হেল্পার ফাংশন: পরিসংখ্যান (JSON)
 # ==============================================================================
 STATS_FILE = 'stats.json'
 
@@ -39,7 +50,6 @@ def save_stats(data):
 
 def update_stats(ref_no):
     data = load_stats()
-    # বর্তমান সময় সেভ করা
     current_time = datetime.now().isoformat()
     data['downloads'].append({"ref": ref_no, "time": current_time})
     data['last_booking'] = ref_no
@@ -71,7 +81,168 @@ def get_dashboard_summary():
     }
 
 # ==============================================================================
-# ফাংশন ১: ERP সিস্টেমে লগইন করার ফাংশন
+# লজিক পার্ট: PURCHASE ORDER SHEET PARSER (আপনার দেওয়া কোড)
+# ==============================================================================
+def is_potential_size(header):
+    h = header.strip().upper()
+    if h in ["COLO", "SIZE", "TOTAL", "QUANTITY", "PRICE", "AMOUNT", "CURRENCY", "ORDER NO", "P.O NO"]:
+        return False
+    if re.match(r'^\d+$', h): return True
+    if re.match(r'^\d+[AMYT]$', h): return True
+    if re.match(r'^(XXS|XS|S|M|L|XL|XXL|XXXL|TU|ONE\s*SIZE)$', h): return True
+    if re.match(r'^[A-Z]\d{2,}$', h): return False
+    return False
+
+def sort_sizes(size_list):
+    STANDARD_ORDER = [
+        '0M', '1M', '3M', '6M', '9M', '12M', '18M', '24M', '36M',
+        '2A', '3A', '4A', '5A', '6A', '8A', '10A', '12A', '14A', '16A', '18A',
+        'XXS', 'XS', 'S', 'M', 'L', 'XL', 'XXL', '3XL', '4XL', '5XL',
+        'TU', 'One Size'
+    ]
+    def sort_key(s):
+        s = s.strip()
+        if s in STANDARD_ORDER: return (0, STANDARD_ORDER.index(s))
+        if s.isdigit(): return (1, int(s))
+        match = re.match(r'^(\d+)([A-Z]+)$', s)
+        if match: return (2, int(match.group(1)), match.group(2))
+        return (3, s)
+    return sorted(size_list, key=sort_key)
+
+def extract_metadata(first_page_text):
+    meta = {
+        'buyer': 'N/A', 'booking': 'N/A', 'style': 'N/A', 
+        'season': 'N/A', 'dept': 'N/A', 'item': 'N/A'
+    }
+    
+    if "KIABI" in first_page_text.upper():
+        meta['buyer'] = "KIABI"
+    else:
+        buyer_match = re.search(r"Buyer.*?Name[\s\S]*?([\w\s&]+)(?:\n|$)", first_page_text)
+        if buyer_match: meta['buyer'] = buyer_match.group(1).strip()
+
+    booking_block_match = re.search(r"(?:Internal )?Booking NO\.?[:\s]*([\s\S]*?)(?:System NO|Control No|Buyer)", first_page_text, re.IGNORECASE)
+    if booking_block_match: 
+        raw_booking = booking_block_match.group(1).strip()
+        clean_booking = raw_booking.replace('\n', '').replace('\r', '').replace(' ', '')
+        if "System" in clean_booking: clean_booking = clean_booking.split("System")[0]
+        meta['booking'] = clean_booking
+
+    style_match = re.search(r"Style Ref\.?[:\s]*([\w-]+)", first_page_text, re.IGNORECASE)
+    if style_match: meta['style'] = style_match.group(1).strip()
+    else:
+        style_match = re.search(r"Style Des\.?[\s\S]*?([\w-]+)", first_page_text, re.IGNORECASE)
+        if style_match: meta['style'] = style_match.group(1).strip()
+
+    season_match = re.search(r"Season\s*[:\n\"]*([\w\d-]+)", first_page_text, re.IGNORECASE)
+    if season_match: meta['season'] = season_match.group(1).strip()
+
+    dept_match = re.search(r"Dept\.?[\s\n:]*([A-Za-z]+)", first_page_text, re.IGNORECASE)
+    if dept_match: meta['dept'] = dept_match.group(1).strip()
+
+    item_match = re.search(r"Garments? Item[\s\n:]*([^\n\r]+)", first_page_text, re.IGNORECASE)
+    if item_match: 
+        item_text = item_match.group(1).strip()
+        if "Style" in item_text: item_text = item_text.split("Style")[0].strip()
+        meta['item'] = item_text
+
+    return meta
+
+def extract_data_dynamic(file_path):
+    extracted_data = []
+    metadata = {
+        'buyer': 'N/A', 'booking': 'N/A', 'style': 'N/A', 
+        'season': 'N/A', 'dept': 'N/A', 'item': 'N/A'
+    }
+    order_no = "Unknown"
+    
+    try:
+        reader = pypdf.PdfReader(file_path)
+        first_page_text = reader.pages[0].extract_text()
+        
+        if "Main Fabric Booking" in first_page_text or "Fabric Booking Sheet" in first_page_text:
+            metadata = extract_metadata(first_page_text)
+            return [], metadata 
+
+        order_match = re.search(r"Order no\D*(\d+)", first_page_text, re.IGNORECASE)
+        if order_match: order_no = order_match.group(1)
+        else:
+            alt_match = re.search(r"Order\s*[:\.]?\s*(\d+)", first_page_text, re.IGNORECASE)
+            if alt_match: order_no = alt_match.group(1)
+        
+        order_no = str(order_no).strip()
+        if order_no.endswith("00"): order_no = order_no[:-2]
+
+        for page in reader.pages:
+            text = page.extract_text()
+            lines = text.split('\n')
+            sizes = []
+            capturing_data = False
+            
+            for i, line in enumerate(lines):
+                line = line.strip()
+                if not line: continue
+
+                if ("Colo" in line or "Size" in line) and "Total" in line:
+                    parts = line.split()
+                    try:
+                        total_idx = [idx for idx, x in enumerate(parts) if 'Total' in x][0]
+                        raw_sizes = parts[:total_idx]
+                        temp_sizes = [s for s in raw_sizes if s not in ["Colo", "/", "Size", "Colo/Size", "Colo/", "Size's"]]
+                        
+                        valid_size_count = sum(1 for s in temp_sizes if is_potential_size(s))
+                        if temp_sizes and valid_size_count >= len(temp_sizes) / 2:
+                            sizes = temp_sizes
+                            capturing_data = True
+                        else:
+                            sizes = []
+                            capturing_data = False
+                    except: pass
+                    continue
+                
+                if capturing_data:
+                    if line.startswith("Total Quantity") or line.startswith("Total Amount"):
+                        capturing_data = False
+                        continue
+                    
+                    lower_line = line.lower()
+                    if "quantity" in lower_line or "currency" in lower_line or "price" in lower_line or "amount" in lower_line:
+                        continue
+                        
+                    clean_line = line.replace("Spec. price", "").replace("Spec", "").strip()
+                    if not re.search(r'[a-zA-Z]', clean_line): continue
+                    if re.match(r'^[A-Z]\d+$', clean_line) or "Assortment" in clean_line: continue
+
+                    numbers_in_line = re.findall(r'\b\d+\b', line)
+                    quantities = [int(n) for n in numbers_in_line]
+                    color_name = clean_line
+                    final_qtys = []
+
+                    if len(quantities) >= len(sizes):
+                        if len(quantities) == len(sizes) + 1: final_qtys = quantities[:-1] 
+                        else: final_qtys = quantities[:len(sizes)]
+                        color_name = re.sub(r'\s\d+$', '', color_name).strip()
+                    elif len(quantities) < len(sizes): 
+                        vertical_qtys = []
+                        for next_line in lines[i+1:]:
+                            next_line = next_line.strip()
+                            if "Total" in next_line or re.search(r'[a-zA-Z]', next_line.replace("Spec", "").replace("price", "")): break
+                            if re.match(r'^\d+$', next_line): vertical_qtys.append(int(next_line))
+                        if len(vertical_qtys) >= len(sizes): final_qtys = vertical_qtys[:len(sizes)]
+                    
+                    if final_qtys and color_name:
+                         for idx, size in enumerate(sizes):
+                            extracted_data.append({
+                                'P.O NO': order_no,
+                                'Color': color_name,
+                                'Size': size,
+                                'Quantity': final_qtys[idx]
+                            })
+    except Exception as e: print(f"Error processing file: {e}")
+    return extracted_data, metadata
+
+# ==============================================================================
+# লজিক পার্ট: CLOSING REPORT (আপনার আগের কোড)
 # ==============================================================================
 def get_authenticated_session(username, password):
     login_url = 'http://180.92.235.190:8022/erp/login.php'
@@ -90,9 +261,6 @@ def get_authenticated_session(username, password):
         print(f"Connection Error: {e}")
         return None
 
-# ==============================================================================
-# ফাংশন ২: HTML পার্সার
-# ==============================================================================
 def parse_report_data(html_content):
     all_report_data = []
     try:
@@ -142,9 +310,6 @@ def parse_report_data(html_content):
     except Exception as e:
         return None
 
-# ==============================================================================
-# ফাংশন ৩: এক্সেল জেনারেটর 
-# ==============================================================================
 def create_formatted_excel_report(report_data, internal_ref_no=""):
     if not report_data: return None
     wb = openpyxl.Workbook()
@@ -364,7 +529,7 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
     return file_stream
 
 # ==============================================================================
-# CSS & HTML Templates (আপডেট করা হয়েছে)
+# CSS & HTML Templates
 # ==============================================================================
 COMMON_STYLES = """
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
@@ -379,17 +544,17 @@ COMMON_STYLES = """
             background-attachment: fixed;
             background-size: cover;
             height: 100vh;
-            overflow: hidden; /* Prevent body scroll for admin layout */
+            overflow: hidden; 
         }
         body::before {
             content: "";
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.4); /* Darker overlay for better contrast */
+            background: rgba(0, 0, 0, 0.4);
             z-index: -1;
         }
         
-        /* --- Shared Classes --- */
+        /* Glass Card */
         .glass-card {
             background: rgba(255, 255, 255, 0.15);
             backdrop-filter: blur(12px);
@@ -402,7 +567,6 @@ COMMON_STYLES = """
             animation: floatIn 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
         }
 
-        /* Login & User Dashboard specific centering */
         .center-container {
             display: flex;
             justify-content: center;
@@ -436,7 +600,7 @@ COMMON_STYLES = """
             text-shadow: 0 1px 2px rgba(0,0,0,0.3);
         }
         
-        input[type="password"], input[type="text"], select {
+        input[type="password"], input[type="text"], input[type="file"], select {
             width: 100%;
             padding: 12px 15px;
             background: rgba(255, 255, 255, 0.2);
@@ -447,6 +611,9 @@ COMMON_STYLES = """
             transition: all 0.3s ease;
             outline: none;
             appearance: none;
+        }
+        input[type="file"] {
+            padding: 10px;
         }
         
         select {
@@ -507,7 +674,7 @@ COMMON_STYLES = """
         }
         a.logout:hover { background: rgba(255,255,255,0.2); color: white; }
 
-        /* --- LOADER & SUCCESS CSS --- */
+        /* Loader */
         #loading-overlay {
             display: none;
             position: fixed;
@@ -531,120 +698,51 @@ COMMON_STYLES = """
             margin-bottom: 20px;
         }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-
-        .success-icon {
-            font-size: 60px; color: #2ecc71; display: none; margin-bottom: 10px;
-            animation: popIn 0.5s ease;
-        }
+        .success-icon { font-size: 60px; color: #2ecc71; display: none; margin-bottom: 10px; animation: popIn 0.5s ease; }
         @keyframes popIn { from { transform: scale(0); } to { transform: scale(1); } }
-
         #loading-text { font-size: 18px; font-weight: 500; letter-spacing: 1px; text-align: center; }
-
-        /* Error State */
         .loader-error .spinner { border-top-color: #e74c3c; animation: none; }
         .loader-error #loading-text { color: #e74c3c; font-weight: 700; }
-        
-        /* Success State */
         .loader-success .spinner { display: none; }
         .loader-success .success-icon { display: block; }
         .loader-success #loading-text { color: #2ecc71; font-weight: 600; }
 
-        /* =========================================
-           ADMIN DASHBOARD SPECIFIC CSS
-           ========================================= */
-        .admin-container {
-            display: flex;
-            width: 100%;
-            height: 100vh;
-        }
-        
-        /* Sidebar */
+        /* Admin Dashboard CSS */
+        .admin-container { display: flex; width: 100%; height: 100vh; }
         .admin-sidebar {
             width: 280px;
             background: rgba(255, 255, 255, 0.1);
             backdrop-filter: blur(15px);
             border-right: 1px solid rgba(255, 255, 255, 0.1);
-            display: flex;
-            flex-direction: column;
-            padding: 25px;
+            display: flex; flex-direction: column; padding: 25px;
         }
-        
-        .sidebar-header {
-            margin-bottom: 40px;
-            text-align: center;
-        }
+        .sidebar-header { margin-bottom: 40px; text-align: center; }
         .sidebar-header h2 { color: white; font-size: 22px; font-weight: 600; }
         .sidebar-header p { color: #a29bfe; font-size: 12px; letter-spacing: 1px; }
 
         .nav-menu { list-style: none; }
         .nav-item { margin-bottom: 15px; }
-        
         .nav-link {
-            display: flex;
-            align-items: center;
-            padding: 12px 15px;
-            color: rgba(255, 255, 255, 0.7);
-            text-decoration: none;
-            border-radius: 10px;
-            transition: all 0.3s ease;
-            font-size: 14px;
-            cursor: pointer;
+            display: flex; align-items: center; padding: 12px 15px;
+            color: rgba(255, 255, 255, 0.7); text-decoration: none; border-radius: 10px;
+            transition: all 0.3s ease; font-size: 14px; cursor: pointer;
         }
-        
         .nav-link i { margin-right: 12px; width: 20px; text-align: center; }
         .nav-link:hover, .nav-link.active {
             background: linear-gradient(90deg, rgba(108, 92, 231, 0.8) 0%, rgba(118, 75, 162, 0.8) 100%);
-            color: white;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-            transform: translateX(5px);
+            color: white; box-shadow: 0 4px 15px rgba(0,0,0,0.2); transform: translateX(5px);
         }
 
-        .admin-footer {
-            margin-top: auto;
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-            padding-top: 20px;
-        }
-
-        /* Main Content */
-        .admin-content {
-            flex: 1;
-            padding: 30px;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-        }
-
-        /* Stats Grid */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
-        }
-        
+        .admin-footer { margin-top: auto; border-top: 1px solid rgba(255, 255, 255, 0.1); padding-top: 20px; }
+        .admin-content { flex: 1; padding: 30px; overflow-y: auto; display: flex; flex-direction: column; }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 30px; }
         .stat-card {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            padding: 20px;
-            border-radius: 15px;
-            display: flex;
-            align-items: center;
-            transition: transform 0.3s;
+            background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2); padding: 20px; border-radius: 15px;
+            display: flex; align-items: center; transition: transform 0.3s;
         }
         .stat-card:hover { transform: translateY(-5px); background: rgba(255, 255, 255, 0.15); }
-        
-        .stat-icon {
-            width: 50px; height: 50px;
-            border-radius: 12px;
-            background: rgba(255, 255, 255, 0.1);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 20px;
-            color: #fff;
-            margin-right: 15px;
-        }
+        .stat-icon { width: 50px; height: 50px; border-radius: 12px; background: rgba(255, 255, 255, 0.1); display: flex; align-items: center; justify-content: center; font-size: 20px; color: #fff; margin-right: 15px; }
         .stat-info h3 { font-size: 24px; color: white; margin-bottom: 5px; }
         .stat-info p { font-size: 13px; color: #dcdcdc; }
 
@@ -652,30 +750,127 @@ COMMON_STYLES = """
         .bg-orange { background: linear-gradient(135deg, #ff9966 0%, #ff5e62 100%); }
         .bg-green { background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); }
 
-        /* Content Area */
-        .work-area {
-            flex: 1;
-            background: rgba(0, 0, 0, 0.2);
-            border-radius: 20px;
-            padding: 30px;
-            display: flex;
-            justify-content: center;
-            align-items: flex-start;
-            position: relative;
-        }
-        
-        /* Sweet Alert Style Customization */
+        .work-area { flex: 1; background: rgba(0, 0, 0, 0.2); border-radius: 20px; padding: 30px; display: flex; justify-content: center; align-items: flex-start; position: relative; }
         .swal-overlay { background-color: rgba(0, 0, 0, 0.6); }
-        .swal-modal {
-            background-color: #2d3436;
-            border: 1px solid rgba(255,255,255,0.1);
-        }
+        .swal-modal { background-color: #2d3436; border: 1px solid rgba(255,255,255,0.1); }
         .swal-title { color: white; }
         .swal-text { color: #b2bec3; }
     </style>
 """
 
-# --- লগইন পেজের টেমপ্লেট (অপরিবর্তিত) ---
+# --- Report HTML Template for PO Sheet (Print Friendly) ---
+PO_REPORT_TEMPLATE = """
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PO Report - Cotton Clothing BD</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background-color: #f8f9fa; padding: 30px 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .container { max-width: 1200px; }
+        .company-header { text-align: center; margin-bottom: 20px; border-bottom: 2px solid #000; padding-bottom: 10px; }
+        .company-name { font-size: 2.2rem; font-weight: 800; color: #2c3e50; text-transform: uppercase; letter-spacing: 1px; line-height: 1; }
+        .report-title { font-size: 1.1rem; color: #555; font-weight: 600; text-transform: uppercase; margin-top: 5px; }
+        .date-section { font-size: 1.2rem; font-weight: 800; color: #000; margin-top: 5px; }
+        .info-container { display: flex; justify-content: space-between; margin-bottom: 15px; gap: 15px; }
+        .info-box { background: white; border: 1px solid #ddd; border-left: 5px solid #2c3e50; padding: 10px 15px; border-radius: 5px; flex: 2; box-shadow: 0 2px 5px rgba(0,0,0,0.05); display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .total-box { background: #2c3e50; color: white; padding: 10px 15px; border-radius: 5px; width: 240px; text-align: right; display: flex; flex-direction: column; justify-content: center; box-shadow: 0 4px 10px rgba(44, 62, 80, 0.3); }
+        .info-item { margin-bottom: 6px; font-size: 1.3rem; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .info-label { font-weight: 800; color: #444; width: 90px; display: inline-block; }
+        .info-value { font-weight: 800; color: #000; }
+        .total-label { font-size: 1.1rem; opacity: 0.9; text-transform: uppercase; letter-spacing: 1px; font-weight: 700; }
+        .total-value { font-size: 2.5rem; font-weight: 800; line-height: 1.1; }
+        .table-card { background: white; border-radius: 0; margin-bottom: 20px; overflow: hidden; border: 1px solid #dee2e6; }
+        .color-header { background-color: #e9ecef; color: #2c3e50; padding: 10px 12px; font-size: 1.5rem; font-weight: 900; border-bottom: 1px solid #dee2e6; text-transform: uppercase; }
+        .table { margin-bottom: 0; width: 100%; border-collapse: collapse; }
+        .table th { background-color: #2c3e50; color: white; font-weight: 900; font-size: 1.2rem; text-align: center; border: 1px solid #34495e; padding: 8px 4px; vertical-align: middle; }
+        .table td { text-align: center; vertical-align: middle; border: 1px solid #dee2e6; padding: 6px 3px; color: #000; font-weight: 800; font-size: 1.15rem; }
+        .table-striped tbody tr:nth-of-type(odd) { background-color: #f8f9fa; }
+        .order-col { font-weight: 900 !important; text-align: center !important; background-color: #fdfdfd; white-space: nowrap; width: 1%; }
+        .total-col { font-weight: 900; background-color: #e8f6f3 !important; color: #16a085; border-left: 2px solid #1abc9c !important; }
+        .total-col-header { background-color: #e8f6f3 !important; color: #000 !important; font-weight: 900 !important; border: 1px solid #34495e !important; }
+        .table-striped tbody tr.summary-row, .table-striped tbody tr.summary-row td { background-color: #d1ecff !important; --bs-table-accent-bg: #d1ecff !important; color: #000 !important; font-weight: 900 !important; border-top: 2px solid #aaa !important; font-size: 1.2rem !important; }
+        .summary-label { text-align: right !important; padding-right: 15px !important; color: #000 !important; }
+        .action-bar { margin-bottom: 20px; display: flex; justify-content: flex-end; gap: 10px; }
+        .btn-print { background-color: #2c3e50; color: white; border-radius: 50px; padding: 8px 30px; font-weight: 600; }
+        .footer-credit { text-align: center; margin-top: 30px; margin-bottom: 20px; font-size: 0.8rem; color: #2c3e50; padding-top: 10px; border-top: 1px solid #ddd; }
+        @media print {
+            @page { margin: 5mm; size: portrait; }
+            body { background-color: white; padding: 0; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; color-adjust: exact !important; }
+            .container { max-width: 100% !important; width: 100% !important; padding: 0; margin: 0; }
+            .no-print { display: none !important; }
+            .company-header { border-bottom: 2px solid #000; margin-bottom: 5px; padding-bottom: 5px; }
+            .company-name { font-size: 1.8rem; } 
+            .info-container { margin-bottom: 10px; }
+            .info-box { border: 1px solid #000 !important; border-left: 5px solid #000 !important; padding: 5px 10px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+            .total-box { border: 2px solid #000 !important; background: white !important; color: black !important; padding: 5px 10px; }
+            .info-item { font-size: 13pt !important; font-weight: 800 !important; }
+            .table th, .table td { border: 1px solid #000 !important; padding: 2px !important; font-size: 13pt !important; font-weight: 800 !important; }
+            .table-striped tbody tr.summary-row td { background-color: #d1ecff !important; box-shadow: inset 0 0 0 9999px #d1ecff !important; color: #000 !important; font-weight: 900 !important; }
+            .color-header { background-color: #f1f1f1 !important; border: 1px solid #000 !important; font-size: 1.4rem !important; font-weight: 900 !important; padding: 5px; margin-top: 10px; box-shadow: inset 0 0 0 9999px #f1f1f1 !important; }
+            .total-col-header { background-color: #e8f6f3 !important; box-shadow: inset 0 0 0 9999px #e8f6f3 !important; color: #000 !important; }
+            .table-card { border: none; margin-bottom: 10px; break-inside: avoid; }
+            .footer-credit { display: block !important; color: black; border-top: 1px solid #000; margin-top: 10px; font-size: 8pt !important; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="action-bar no-print">
+            <a href="/" class="btn btn-outline-secondary rounded-pill px-4">Back to Dashboard</a>
+            <button onclick="window.print()" class="btn btn-print">🖨️ Print Report</button>
+        </div>
+        <div class="company-header">
+            <div class="company-name">Cotton Clothing BD Limited</div>
+            <div class="report-title">Purchase Order Summary</div>
+            <div class="date-section">Date: <span id="date"></span></div>
+        </div>
+        {% if message %}
+            <div class="alert alert-warning text-center no-print">{{ message }}</div>
+        {% endif %}
+        {% if tables %}
+            <div class="info-container">
+                <div class="info-box">
+                    <div>
+                        <div class="info-item"><span class="info-label">Buyer:</span> <span class="info-value">{{ meta.buyer }}</span></div>
+                        <div class="info-item"><span class="info-label">Booking:</span> <span class="info-value">{{ meta.booking }}</span></div>
+                        <div class="info-item"><span class="info-label">Style:</span> <span class="info-value">{{ meta.style }}</span></div>
+                    </div>
+                    <div>
+                        <div class="info-item"><span class="info-label">Season:</span> <span class="info-value">{{ meta.season }}</span></div>
+                        <div class="info-item"><span class="info-label">Dept:</span> <span class="info-value">{{ meta.dept }}</span></div>
+                        <div class="info-item"><span class="info-label">Item:</span> <span class="info-value">{{ meta.item }}</span></div>
+                    </div>
+                </div>
+                <div class="total-box">
+                    <div class="total-label">Grand Total</div>
+                    <div class="total-value">{{ grand_total }}</div>
+                    <small>Pieces</small>
+                </div>
+            </div>
+            {% for item in tables %}
+                <div class="table-card">
+                    <div class="color-header">COLOR: {{ item.color }}</div>
+                    <div class="table-responsive">{{ item.table | safe }}</div>
+                </div>
+            {% endfor %}
+            <div class="footer-credit">Report Created By <strong>Mehedi Hasan</strong></div>
+        {% endif %}
+    </div>
+    <script>
+        const dateObj = new Date();
+        const day = String(dateObj.getDate()).padStart(2, '0');
+        const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+        const year = dateObj.getFullYear();
+        document.getElementById('date').innerText = `${day}-${month}-${year}`;
+    </script>
+</body>
+</html>
+"""
+
+# --- LOGIN TEMPLATE (অপরিবর্তিত) ---
 LOGIN_TEMPLATE = f"""
 <!doctype html>
 <html lang="en">
@@ -715,7 +910,7 @@ LOGIN_TEMPLATE = f"""
 </html>
 """
 
-# --- ইউজার ড্যাশবোর্ড (KobirAhmed) ---
+# --- USER DASHBOARD (অপরিবর্তিত) ---
 USER_DASHBOARD_TEMPLATE = f"""
 <!doctype html>
 <html lang="en">
@@ -731,10 +926,9 @@ USER_DASHBOARD_TEMPLATE = f"""
         <div class="success-icon">✅</div>
         <div id="loading-text">Processing data... Please wait</div>
     </div>
-
     <div class="center-container">
         <div class="glass-card">
-            <h1>© Mehedi Hasan</h1>
+            <h1>(©) Mehedi Hasan</h1>
             <p class="subtitle">Create Closing Reports Instantly</p>
             <form action="/generate-report" method="post" id="reportForm" onsubmit="startDownloadProcess()">
                 <div class="input-group">
@@ -752,13 +946,9 @@ USER_DASHBOARD_TEMPLATE = f"""
             <a href="/logout" class="logout">Exit Session</a>
         </div>
     </div>
-
     <script>
-        // Auto Logout & Cookie scripts same as before
-        let timeout;
-        function resetTimer() {{ clearTimeout(timeout); timeout = setTimeout(function() {{ alert("Session expired due to inactivity."); window.location.href = "/logout"; }}, 120000); }}
+        let timeout; function resetTimer() {{ clearTimeout(timeout); timeout = setTimeout(function() {{ alert("Session expired due to inactivity."); window.location.href = "/logout"; }}, 120000); }}
         document.onmousemove = resetTimer; document.onkeypress = resetTimer; document.onload = resetTimer; resetTimer();
-
         function getCookie(name) {{ let parts = document.cookie.split(name + "="); if (parts.length == 2) return parts.pop().split(";").shift(); return null; }}
         function startDownloadProcess() {{
             const overlay = document.getElementById('loading-overlay'); const loadingText = document.getElementById('loading-text'); const spinner = document.querySelector('.spinner'); const successIcon = document.querySelector('.success-icon'); const tokenInput = document.getElementById('download_token');
@@ -772,7 +962,7 @@ USER_DASHBOARD_TEMPLATE = f"""
                     overlay.classList.add('loader-success'); loadingText.innerHTML = "Successful Download Complete!";
                     setTimeout(() => {{ overlay.style.opacity = '0'; setTimeout(() => {{ overlay.style.display = 'none'; overlay.style.opacity = '1'; }}, 500); }}, 2000);
                 }}
-                attempts++; if (attempts > 300) {{ clearInterval(downloadTimer); overlay.classList.add('loader-error'); spinner.style.display = 'none'; loadingText.innerHTML = "Server Timeout<br><span style='font-size:12px'>Please try again later.</span><br><a href='/' style='color:white; border:1px solid white; padding:5px; border-radius:4px; margin-top:5px; display:inline-block;'>Reload</a>"; }}
+                attempts++; if (attempts > 300) {{ clearInterval(downloadTimer); overlay.classList.add('loader-error'); spinner.style.display = 'none'; loadingText.innerHTML = "Server Timeout"; }}
             }}, 1000);
         }}
     </script>
@@ -780,7 +970,7 @@ USER_DASHBOARD_TEMPLATE = f"""
 </html>
 """
 
-# --- অ্যাডমিন ড্যাশবোর্ড (Admin) ---
+# --- ADMIN DASHBOARD (আপডেট করা হয়েছে: PO SHEET মেনু সহ) ---
 ADMIN_DASHBOARD_TEMPLATE = f"""
 <!doctype html>
 <html lang="en">
@@ -809,6 +999,11 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
                 <li class="nav-item">
                     <a class="nav-link active" onclick="showSection('closing', this)">
                         <i class="fas fa-file-export"></i> Closing Report
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" onclick="showSection('purchase-order', this)">
+                        <i class="fas fa-file-invoice"></i> PURCHASE ORDER SHEET
                     </a>
                 </li>
                 <li class="nav-item">
@@ -866,7 +1061,8 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
             </div>
 
             <div class="work-area" id="work-area">
-                <div id="closing-section" style="width: 100%; max-width: 500px;">
+                
+                <div id="closing-section" class="work-section" style="width: 100%; max-width: 500px;">
                     <div class="glass-card" style="background: rgba(255,255,255,0.05); box-shadow: none; border: none;">
                         <h2 style="margin-bottom: 20px; font-weight: 500;"><i class="fas fa-file-export"></i> Generate Closing Report</h2>
                         <form action="/generate-report" method="post" onsubmit="startDownloadProcess()">
@@ -884,12 +1080,29 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
                         {{% endwith %}}
                     </div>
                 </div>
+
+                <div id="purchase-order-section" class="work-section" style="display:none; width: 100%; max-width: 500px;">
+                    <div class="glass-card" style="background: rgba(255,255,255,0.05); box-shadow: none; border: none;">
+                        <h2 style="margin-bottom: 20px; font-weight: 500;"><i class="fas fa-file-invoice"></i> PDF Report Generator</h2>
+                        <form action="/generate-po-report" method="post" enctype="multipart/form-data">
+                            <div class="input-group">
+                                <label for="pdf_files">Select PDF Files (Booking & PO)</label>
+                                <input type="file" id="pdf_files" name="pdf_files" multiple accept=".pdf" required style="height: auto;">
+                            </div>
+                            <button type="submit" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);">Generate Report</button>
+                        </form>
+                         <div style="margin-top: 15px; font-size: 12px; color: #a29bfe; text-align: center;">
+                            Select both Booking File & PO Files together
+                        </div>
+                    </div>
+                </div>
+
             </div>
         </div>
     </div>
 
     <script>
-        // --- Coming Soon Alert ---
+        // --- Feature Alert ---
         function showComingSoon(featureName) {{
             swal({{
                 title: "Feature Coming Soon!",
@@ -900,14 +1113,24 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
             }});
         }}
 
-        // --- Section Toggle Logic (Visual only since others are disabled) ---
+        // --- Toggle Sections ---
         function showSection(sectionId, element) {{
-            // Reset active class
+            // Sidebar Active State
             document.querySelectorAll('.nav-link').forEach(el => el.classList.remove('active'));
             element.classList.add('active');
+
+            // Hide all sections
+            document.querySelectorAll('.work-section').forEach(el => el.style.display = 'none');
+
+            // Show selected section
+            if (sectionId === 'closing') {{
+                document.getElementById('closing-section').style.display = 'block';
+            }} else if (sectionId === 'purchase-order') {{
+                document.getElementById('purchase-order-section').style.display = 'block';
+            }}
         }}
 
-        // --- Standard Scripts (Logout, Download) ---
+        // --- Standard Scripts ---
         let timeout;
         function resetTimer() {{ clearTimeout(timeout); timeout = setTimeout(function() {{ alert("Session expired."); window.location.href = "/logout"; }}, 120000); }}
         document.onmousemove = resetTimer; document.onkeypress = resetTimer; document.onload = resetTimer; resetTimer();
@@ -923,11 +1146,7 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
                 if (cookieValue == token) {{
                     clearInterval(downloadTimer);
                     overlay.classList.add('loader-success'); loadingText.innerHTML = "Successful Download Complete!";
-                    
-                    // Reload page to update stats after successful download
-                    setTimeout(() => {{ 
-                        window.location.reload(); 
-                    }}, 2000);
+                    setTimeout(() => {{ window.location.reload(); }}, 2000);
                 }}
                 attempts++; if (attempts > 300) {{ clearInterval(downloadTimer); overlay.classList.add('loader-error'); spinner.style.display = 'none'; loadingText.innerHTML = "Server Timeout"; }}
             }}, 1000);
@@ -944,7 +1163,6 @@ def index():
     if not session.get('logged_in'):
         return render_template_string(LOGIN_TEMPLATE)
     else:
-        # Check who is logged in
         if session.get('user') == 'Admin':
             stats = get_dashboard_summary()
             return render_template_string(ADMIN_DASHBOARD_TEMPLATE, stats=stats)
@@ -965,7 +1183,6 @@ def login():
         session['user'] = username
     else:
         flash('Incorrect Username or Password.')
-    
     return redirect(url_for('index'))
 
 @app.route('/logout')
@@ -974,23 +1191,16 @@ def logout():
     flash('Session terminated.')
     return redirect(url_for('index'))
 
+# --- CLOSING REPORT ROUTE ---
 @app.route('/generate-report', methods=['POST'])
 def generate_report():
-    if not session.get('logged_in'):
-        flash('Unauthorized access.')
-        return redirect(url_for('index'))
-
+    if not session.get('logged_in'): return redirect(url_for('index'))
     internal_ref_no = request.form['ref_no']
     download_token = request.form.get('download_token')
-
-    if not internal_ref_no:
-        flash("Ref No required.")
-        return redirect(url_for('index'))
+    if not internal_ref_no: return redirect(url_for('index'))
 
     active_session = get_authenticated_session("input2.clothing-cutting", "123456")
-    if not active_session:
-        flash("ERP Connection Failed.")
-        return redirect(url_for('index'))
+    if not active_session: return redirect(url_for('index'))
 
     report_url = 'http://180.92.235.190:8022/erp/prod_planning/reports/requires/cutting_lay_production_report_controller.php'
     payload_template = {'action': 'report_generate', 'cbo_wo_company_name': '2', 'cbo_location_name': '2', 'cbo_floor_id': '0', 'cbo_buyer_name': '0', 'txt_internal_ref_no': internal_ref_no, 'reportType': '3'}
@@ -1006,10 +1216,8 @@ def generate_report():
                 if response.status_code == 200 and "Data not Found" not in response.text:
                     found_data = response.text
                     break
-            except requests.exceptions.RequestException:
-                continue
-        if found_data:
-            break
+            except: continue
+        if found_data: break
            
     if not found_data:
         flash(f"No data found for: {internal_ref_no}")
@@ -1023,24 +1231,84 @@ def generate_report():
     excel_file_stream = create_formatted_excel_report(report_data, internal_ref_no)
     
     if excel_file_stream:
-        # সফল ডাউনলোড হলে Stats আপডেট হবে
         update_stats(internal_ref_no)
-
-        response = make_response(send_file(
-            excel_file_stream,
-            as_attachment=True,
-            download_name=f"Closing-Report-{internal_ref_no.replace('/', '_')}.xlsx",
-            mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-        ))
-        
-        if download_token:
-            response.set_cookie('download_token', download_token, max_age=60, path='/')
-            
+        response = make_response(send_file(excel_file_stream, as_attachment=True, download_name=f"Closing-Report-{internal_ref_no.replace('/', '_')}.xlsx", mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'))
+        if download_token: response.set_cookie('download_token', download_token, max_age=60, path='/')
         return response
     else:
-        flash("Excel generation failed.")
         return redirect(url_for('index'))
+
+# --- PO SHEET GENERATOR ROUTE ---
+@app.route('/generate-po-report', methods=['POST'])
+def generate_po_report():
+    if not session.get('logged_in') or session.get('user') != 'Admin':
+        flash('Unauthorized Access')
+        return redirect(url_for('index'))
+
+    if os.path.exists(UPLOAD_FOLDER): shutil.rmtree(UPLOAD_FOLDER)
+    os.makedirs(UPLOAD_FOLDER)
+
+    uploaded_files = request.files.getlist('pdf_files')
+    all_data = []
+    final_meta = {
+        'buyer': 'N/A', 'booking': 'N/A', 'style': 'N/A',
+        'season': 'N/A', 'dept': 'N/A', 'item': 'N/A'
+    }
+    
+    for file in uploaded_files:
+        if file.filename == '': continue
+        file_path = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
+        file.save(file_path)
+        data, meta = extract_data_dynamic(file_path)
+        if meta['buyer'] != 'N/A': final_meta = meta
+        if data: all_data.extend(data)
+    
+    if not all_data:
+        return render_template_string(PO_REPORT_TEMPLATE, tables=None, message="No PO table data found in files.")
+
+    df = pd.DataFrame(all_data)
+    df['Color'] = df['Color'].str.strip()
+    df = df[df['Color'] != ""]
+    unique_colors = df['Color'].unique()
+    
+    final_tables = []
+    grand_total_qty = 0
+
+    for color in unique_colors:
+        color_df = df[df['Color'] == color]
+        pivot = color_df.pivot_table(index='P.O NO', columns='Size', values='Quantity', aggfunc='sum', fill_value=0)
+        
+        existing_sizes = pivot.columns.tolist()
+        sorted_sizes = sort_sizes(existing_sizes)
+        pivot = pivot[sorted_sizes]
+        
+        pivot['Total'] = pivot.sum(axis=1)
+        grand_total_qty += pivot['Total'].sum()
+
+        actual_qty = pivot.sum()
+        actual_qty.name = 'Actual Qty'
+        qty_plus_3 = (actual_qty * 1.03).round().astype(int)
+        qty_plus_3.name = '3% Order Qty'
+        
+        pivot = pd.concat([pivot, actual_qty.to_frame().T, qty_plus_3.to_frame().T])
+        pivot = pivot.reset_index()
+        pivot = pivot.rename(columns={'index': 'P.O NO'})
+        pivot.columns.name = None
+
+        pd.set_option('colheader_justify', 'center')
+        table_html = pivot.to_html(classes='table table-bordered table-striped', index=False, border=0)
+        
+        # HTML Injections for Styling
+        table_html = re.sub(r'<tr>\s*<td>', '<tr><td class="order-col">', table_html)
+        table_html = table_html.replace('<th>Total</th>', '<th class="total-col-header">Total</th>')
+        table_html = table_html.replace('<td>Total</td>', '<td class="total-col">Total</td>')
+        table_html = table_html.replace('<td>Actual Qty</td>', '<td class="summary-label">Actual Qty</td>')
+        table_html = table_html.replace('<td>3% Order Qty</td>', '<td class="summary-label">3% Order Qty</td>')
+        table_html = re.sub(r'<tr>\s*<td class="summary-label">', '<tr class="summary-row"><td class="summary-label">', table_html)
+
+        final_tables.append({'color': color, 'table': table_html})
+        
+    return render_template_string(PO_REPORT_TEMPLATE, tables=final_tables, meta=final_meta, grand_total=f"{grand_total_qty:,}")
 
 if __name__ == '__main__':
     app.run(debug=True)
-
