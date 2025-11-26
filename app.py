@@ -113,7 +113,7 @@ def get_dashboard_summary():
     }
 
 # ==============================================================================
-# লজিক পার্ট: PURCHASE ORDER SHEET PARSER (আপনার দেওয়া কোড)
+# লজিক পার্ট: PURCHASE ORDER SHEET PARSER
 # ==============================================================================
 def is_potential_size(header):
     h = header.strip().upper()
@@ -274,7 +274,7 @@ def extract_data_dynamic(file_path):
     return extracted_data, metadata
 
 # ==============================================================================
-# লজিক পার্ট: CLOSING REPORT (আপনার আগের কোড)
+# লজিক পার্ট: CLOSING REPORT
 # ==============================================================================
 def get_authenticated_session(username, password):
     login_url = 'http://180.92.235.190:8022/erp/login.php'
@@ -840,37 +840,52 @@ CLOSING_REPORT_PREVIEW_TEMPLATE = """
     <title>Closing Report Preview</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        body { background-color: #f8f9fa; padding: 30px 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: #f8f9fa; padding: 30px 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; font-size: 1.1rem; }
         .container { max-width: 1400px; }
         .company-header { text-align: center; margin-bottom: 20px; border-bottom: 2px solid #000; padding-bottom: 10px; }
         .company-name { font-size: 2.2rem; font-weight: 800; color: #2c3e50; text-transform: uppercase; letter-spacing: 1px; line-height: 1; }
         .report-title { font-size: 1.1rem; color: #555; font-weight: 600; text-transform: uppercase; margin-top: 5px; }
         .date-section { font-size: 1.2rem; font-weight: 800; color: #000; margin-top: 5px; }
         
-        .info-container { margin-bottom: 15px; border: 1px solid #ddd; background: white; padding: 15px; border-left: 5px solid #2c3e50; }
-        .info-row { display: flex; flex-wrap: wrap; gap: 20px; }
-        .info-item { font-size: 1.1rem; font-weight: 600; color: #444; margin-right: 20px;}
+        .info-container { margin-bottom: 15px; background: white; padding: 15px; display: flex; justify-content: space-between; align-items: flex-end;}
+        .info-row { display: flex; flex-direction: column; gap: 5px; }
+        .info-item { font-size: 1.2rem; font-weight: 600; color: #444; }
         .info-value { color: #000; font-weight: 800; }
 
-        .table-card { background: white; border-radius: 0; margin-bottom: 30px; border: 1px solid #dee2e6; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
-        .color-header { background-color: #DE7465; color: white; padding: 10px 15px; font-size: 1.3rem; font-weight: 800; text-transform: uppercase; }
+        /* Booking Number Box like Grand Total */
+        .booking-box { 
+            background: #2c3e50; color: white; padding: 10px 20px; border-radius: 5px; 
+            text-align: right; box-shadow: 0 4px 10px rgba(44, 62, 80, 0.3); 
+            display: flex; flex-direction: column; justify-content: center; min-width: 200px;
+        }
+        .booking-label { font-size: 1.1rem; opacity: 0.9; text-transform: uppercase; letter-spacing: 1px; font-weight: 700; }
+        .booking-value { font-size: 1.8rem; font-weight: 800; line-height: 1.1; }
+
+        .table-card { background: white; border-radius: 0; margin-bottom: 30px; border: none; }
+        /* Dark Blue Header */
+        .color-header { background-color: #2c3e50 !important; color: white; padding: 10px 15px; font-size: 1.4rem; font-weight: 800; text-transform: uppercase; border: 1px solid #000;}
         
-        .table { margin-bottom: 0; width: 100%; border-collapse: collapse; font-size: 0.95rem; }
-        .table th { background-color: #7B261A; color: white; text-align: center; border: 1px solid #ccc; padding: 8px; vertical-align: middle; font-weight: 600; }
-        .table td { text-align: center; vertical-align: middle; border: 1px solid #ccc; padding: 6px; color: #000; font-weight: 600; }
+        .table { margin-bottom: 0; width: 100%; border-collapse: collapse; font-size: 1rem; }
+        /* Table Headers: White BG, Black Text, Bold, Large */
+        .table th { background-color: #fff !important; color: #000 !important; text-align: center; border: 1px solid #000; padding: 8px; vertical-align: middle; font-weight: 900; font-size: 1.2rem; }
+        
+        /* Table Cells: Increased Size */
+        .table td { text-align: center; vertical-align: middle; border: 1px solid #000; padding: 6px; color: #000; font-weight: 600; font-size: 1.1rem; }
         
         /* Custom Colors matching Excel */
         .col-3pct { background-color: #B9C2DF !important; font-weight: 700; }
         .col-input { background-color: #C4D09D !important; font-weight: 700; }
         .col-balance { font-weight: 700; color: #c0392b; }
+
+        /* Total Row: Same as Header */
+        .total-row td { background-color: #fff !important; color: #000 !important; font-weight: 900; font-size: 1.2rem; border-top: 2px solid #000; }
         
         .action-bar { margin-bottom: 20px; display: flex; justify-content: flex-end; gap: 15px; position: sticky; top: 0; z-index: 1000; background: #f8f9fa; padding: 10px 0; }
         .btn-print { background-color: #2c3e50; color: white; border-radius: 50px; padding: 10px 30px; font-weight: 600; }
         .btn-excel { background-color: #27ae60; color: white; border-radius: 50px; padding: 10px 30px; font-weight: 600; text-decoration: none; display: inline-block; }
         .btn-excel:hover { color: white; background-color: #219150; }
 
-        .signature-section { margin-top: 50px; display: flex; justify-content: space-between; text-align: center; padding: 0 50px; }
-        .sig-box { border-top: 1px solid #000; padding-top: 5px; width: 150px; font-weight: 700; }
+        .footer-credit { text-align: center; margin-top: 40px; margin-bottom: 20px; font-size: 1rem; color: #2c3e50; padding-top: 10px; border-top: 1px solid #000; font-weight: 600;}
 
         @media print {
             @page { margin: 5mm; size: landscape; }
@@ -878,9 +893,11 @@ CLOSING_REPORT_PREVIEW_TEMPLATE = """
             .no-print { display: none !important; }
             .action-bar { display: none; }
             .table th, .table td { border: 1px solid #000 !important; }
+            .color-header { background-color: #2c3e50 !important; -webkit-print-color-adjust: exact; color: white !important;}
             .col-3pct { background-color: #B9C2DF !important; -webkit-print-color-adjust: exact; }
             .col-input { background-color: #C4D09D !important; -webkit-print-color-adjust: exact; }
-            .color-header { background-color: #DE7465 !important; -webkit-print-color-adjust: exact; color: white !important;}
+            .booking-box { background-color: #2c3e50 !important; -webkit-print-color-adjust: exact; color: white !important; border: 1px solid #000;}
+            .total-row td { font-weight: 900 !important; color: #000 !important; }
         }
     </style>
 </head>
@@ -903,7 +920,10 @@ CLOSING_REPORT_PREVIEW_TEMPLATE = """
             <div class="info-row">
                 <div class="info-item">Buyer: <span class="info-value">{{ report_data[0].buyer }}</span></div>
                 <div class="info-item">Style: <span class="info-value">{{ report_data[0].style }}</span></div>
-                <div class="info-item" style="background: #7B261A; color: white; padding: 0 10px;">IR/IB NO: <span class="info-value" style="color: white;">{{ ref_no }}</span></div>
+            </div>
+            <div class="booking-box">
+                <div class="booking-label">IR/IB NO</div>
+                <div class="booking-value">{{ ref_no }}</div>
             </div>
         </div>
 
@@ -963,7 +983,7 @@ CLOSING_REPORT_PREVIEW_TEMPLATE = """
                             <td>{{ "%.2f"|format(percentage) }}%</td>
                         </tr>
                     {% endfor %}
-                    <tr style="background: #DE7465; color: white; font-weight: bold;">
+                    <tr class="total-row">
                         <td>TOTAL</td>
                         <td>{{ ns.tot_3 }}</td>
                         <td>{{ ns.tot_act }}</td>
@@ -983,15 +1003,8 @@ CLOSING_REPORT_PREVIEW_TEMPLATE = """
             </table>
         </div>
         {% endfor %}
-
-        <div class="signature-section no-print">
-            <div class="sig-box">Prepared By</div>
-            <div class="sig-box">Input Incharge</div>
-            <div class="sig-box">Cutting Incharge</div>
-            <div class="sig-box">Sewing Manager</div>
-        </div>
         
-        <div class="footer-credit no-print">Report Generated By System</div>
+        <div class="footer-credit">Report Generated By Mehedi Hasan</div>
         {% endif %}
     </div>
     <script>
@@ -1215,8 +1228,8 @@ USER_DASHBOARD_TEMPLATE = f"""
             const overlay = document.getElementById('loading-overlay'); const loadingText = document.getElementById('loading-text'); const spinner = document.querySelector('.spinner'); const successIcon = document.querySelector('.success-icon'); const tokenInput = document.getElementById('download_token');
             const token = new Date().getTime(); tokenInput.value = token;
             overlay.style.display = 'flex'; overlay.className = ''; loadingText.innerHTML = "Processing data...<br><span style='font-size:12px; opacity:0.8'>Fetching Preview...</span>"; spinner.style.display = 'block'; successIcon.style.display = 'none';
-            // Just show loader for 2 seconds then remove as it redirects to preview
-            setTimeout(() => {{ overlay.style.display = 'none'; }}, 2000);
+            // Simple timeout for preview mode as it's not a direct file download stream
+            setTimeout(() => {{ overlay.style.display = 'none'; }}, 3000);
         }}
     </script>
 </body>
