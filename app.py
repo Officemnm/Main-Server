@@ -1351,9 +1351,9 @@ ACCESSORIES_REPORT_TEMPLATE = """
     </div>
 
     <div style="margin-top: 60px; display: flex; justify-content: space-between; text-align: center; font-weight: bold; padding: 0 50px;">
-        <div style="border-top: 2px solid #000; width: 180px; padding-top: 5px;">Store Incharge</div>
         <div style="border-top: 2px solid #000; width: 180px; padding-top: 5px;">Received By</div>
-        <div style="border-top: 2px solid #000; width: 180px; padding-top: 5px;">Cutting Incharge</div>
+        <div style="border-top: 2px solid #000; width: 180px; padding-top: 5px;">Input Incharge</div>
+        <div style="border-top: 2px solid #000; width: 180px; padding-top: 5px;">Store</div>
     </div>
 </div>
 
@@ -2352,3 +2352,4 @@ def generate_po_report():
 
 if __name__ == '__main__':
     app.run(debug=True)
+
