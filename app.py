@@ -931,7 +931,7 @@ CLOSING_REPORT_PREVIEW_TEMPLATE = """
 
         <div class="company-header">
             <div class="company-name">Cotton Clothing BD Limited</div>
-            <div class="report-title">CLOSING REPORT [ INPUT SECTION ]</div>
+            <div class="report-title">CLOSING REPORT [ INPUT SECTION]</div>
             <div class="date-section">Date: <span id="date"></span></div>
         </div>
 
@@ -1042,13 +1042,13 @@ ACCESSORIES_SEARCH_TEMPLATE = f"""
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Find Booking</title>
+    <title>Accessories Module</title>
     {COMMON_STYLES}
 </head>
 <body>
     <div class="center-container">
         <div class="glass-card" style="max-width: 500px;">
-            <h1><i class="fas fa-search"></i> Find Booking</h1>
+            <h1><i class="fas fa-search"></i> Accessories Module</h1>
             <p class="subtitle">Enter Booking Number to Create/Edit Challan</p>
             
             <form action="/admin/accessories/input" method="post">
@@ -1073,13 +1073,13 @@ ACCESSORIES_INPUT_TEMPLATE = f"""
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>New Challan Entry</title>
+    <title>Accessories Challan Input</title>
     {COMMON_STYLES}
 </head>
 <body>
     <div class="center-container">
         <div class="glass-card" style="max-width: 500px;">
-            <h1><i class="fas fa-plus-circle"></i> New Challan</h1>
+            <h1><i class="fas fa-plus-circle"></i> Accessories Challan Input</h1>
             <p class="subtitle">Booking: {{{{ ref }}}}</p>
             <div style="background: rgba(0,0,0,0.2); padding: 10px; border-radius: 8px; margin-bottom: 20px; font-size: 13px;">
                 <strong>Buyer:</strong> {{{{ buyer }}}} <br> <strong>Style:</strong> {{{{ style }}}}
@@ -1243,8 +1243,6 @@ ACCESSORIES_REPORT_TEMPLATE = """
         /* Footer Total */
         .footer-total { margin-top: 20px; display: flex; justify-content: flex-end; }
         .total-box { border: 3px solid #000; padding: 8px 30px; font-size: 20px; font-weight: 900; background: #ddd; -webkit-print-color-adjust: exact; }
-        
-        .footer-credit { text-align: center; margin-top: 40px; margin-bottom: 20px; font-size: 1rem; color: #2c3e50; padding-top: 10px; border-top: 1px solid #000; font-weight: 600;}
 
         .no-print { margin-bottom: 20px; text-align: right; }
         .btn { padding: 8px 20px; background: #2c3e50; color: white; border: none; cursor: pointer; text-decoration: none; display: inline-block; border-radius: 4px; font-size: 14px; }
@@ -1262,12 +1260,10 @@ ACCESSORIES_REPORT_TEMPLATE = """
 
 <div class="no-print">
     <a href="/admin/accessories" class="btn">Back</a>
-    {% if is_admin %}
     <form action="/admin/accessories/input" method="post" style="display:inline;">
         <input type="hidden" name="ref_no" value="{{ ref }}">
         <button type="submit" class="btn btn-add">Add New Challan</button>
     </form>
-    {% endif %}
     <button onclick="window.print()" class="btn">🖨️ Print</button>
 </div>
 
@@ -1315,7 +1311,7 @@ ACCESSORIES_REPORT_TEMPLATE = """
                 <th width="10%">SIZE</th>
                 <th width="10%">STATUS</th>
                 <th width="15%">QTY</th>
-                <th width="15%" class="action-col" {% if not is_admin %}style="display:none;"{% endif %}>ACTION</th>
+                <th width="15%" class="action-col">ACTION</th>
             </tr>
         </thead>
         <tbody>
@@ -1335,7 +1331,7 @@ ACCESSORIES_REPORT_TEMPLATE = """
                     <td>{{ item.size }}</td>
                     <td class="status-cell">{{ item.status }}</td>
                     <td class="qty-cell">{{ item.qty }}</td>
-                    <td class="action-col" {% if not is_admin %}style="display:none;"{% endif %}>
+                    <td class="action-col">
                         <a href="/admin/accessories/edit?ref={{ ref }}&index={{ loop.index0 }}" class="action-btn btn-edit-row"><i class="fas fa-pencil-alt"></i></a>
                         <form action="/admin/accessories/delete" method="POST" style="display:inline;" onsubmit="return confirm('Delete this challan?');">
                             <input type="hidden" name="ref" value="{{ ref }}">
@@ -1486,7 +1482,7 @@ LOGIN_TEMPLATE = f"""
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Login</title>
+    <title>MEHEDI HASAN</title>
     {COMMON_STYLES}
 </head>
 <body>
@@ -1692,7 +1688,7 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
                 
                 <div id="closing-section" class="work-section" style="width: 100%; max-width: 500px;">
                     <div class="glass-card" style="background: rgba(255,255,255,0.05); box-shadow: none; border: none;">
-                        <h2 style="margin-bottom: 20px; font-weight: 500;"><i class="fas fa-file-export"></i> Generate Closing Report</h2>
+                        <h2 style="margin-bottom: 20px; font-weight: 500;"><i class="fas fa-file-export"></i> Closing Report</h2>
                         <form action="/generate-report" method="post" onsubmit="startDownloadProcess()">
                             <div class="input-group">
                                 <label for="ref_no">Internal Reference No</label>
@@ -1706,7 +1702,7 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
 
                 <div id="purchase-order-section" class="work-section" style="display:none; width: 100%; max-width: 500px;">
                     <div class="glass-card" style="background: rgba(255,255,255,0.05); box-shadow: none; border: none;">
-                        <h2 style="margin-bottom: 20px; font-weight: 500;"><i class="fas fa-file-invoice"></i> PDF Report Generator</h2>
+                        <h2 style="margin-bottom: 20px; font-weight: 500;"><i class="fas fa-file-invoice"></i> PO Sheet Generator</h2>
                         <form action="/generate-po-report" method="post" enctype="multipart/form-data">
                             <div class="input-group">
                                 <label for="pdf_files">Select PDF Files (Booking & PO)</label>
@@ -1855,14 +1851,7 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
             .then(res => res.json())
             .then(data => {{
                 if(data.status === 'success') {{
-                    swal("Success", data.message, "success").then(() => {{
-                        document.getElementById('loading-overlay').classList.add('loader-success');
-                        document.getElementById('loading-overlay').style.display = 'flex';
-                        document.getElementById('loading-text').innerHTML = "User Created Successfully!";
-                        document.querySelector('.success-icon').style.display = 'block';
-                        document.querySelector('.spinner').style.display = 'none';
-                        setTimeout(() => {{ document.getElementById('loading-overlay').style.display = 'none'; }}, 2000);
-                    }});
+                    swal("Success", data.message, "success");
                     loadUsers();
                     resetForm();
                 }} else {{
@@ -2181,7 +2170,6 @@ def accessories_print_view():
     data = db[ref]
     challans = data['challans']
     item_type = data.get('item_type', '')
-    is_admin = session.get('role') == 'admin'
 
     # --- Line-wise Summary Logic (Summing Qty) ---
     line_summary = {}
@@ -2206,13 +2194,12 @@ def accessories_print_view():
                                   challans=challans,
                                   line_summary=sorted_line_summary,
                                   count=len(challans),
-                                  today=datetime.now().strftime("%d-%m-%Y"),
-                                  is_admin=is_admin)
+                                  today=datetime.now().strftime("%d-%m-%Y"))
 
 # 5. Delete Route
 @app.route('/admin/accessories/delete', methods=['POST'])
 def accessories_delete():
-    if not session.get('logged_in') or session.get('role') != 'admin': return redirect(url_for('index'))
+    if not session.get('logged_in'): return redirect(url_for('index'))
     
     ref = request.form.get('ref')
     try:
@@ -2233,7 +2220,7 @@ def accessories_delete():
 # 6. Edit Page (GET)
 @app.route('/admin/accessories/edit', methods=['GET'])
 def accessories_edit():
-    if not session.get('logged_in') or session.get('role') != 'admin': return redirect(url_for('index'))
+    if not session.get('logged_in'): return redirect(url_for('index'))
     
     ref = request.args.get('ref')
     try:
@@ -2255,7 +2242,7 @@ def accessories_edit():
 # 7. Update Logic (POST)
 @app.route('/admin/accessories/update', methods=['POST'])
 def accessories_update():
-    if not session.get('logged_in') or session.get('role') != 'admin': return redirect(url_for('index'))
+    if not session.get('logged_in'): return redirect(url_for('index'))
     
     ref = request.form.get('ref')
     try:
