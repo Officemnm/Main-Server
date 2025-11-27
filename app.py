@@ -31,7 +31,7 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=2)
 
 # ==============================================================================
-# হেল্পার ফাংশন: পরিসংখ্যান (JSON)
+# হেল্পার ফাংশন: পরিসংখ্যান ও হিস্ট্রি (JSON)
 # ==============================================================================
 STATS_FILE = 'stats.json'
 USERS_FILE = 'users.json'
@@ -43,7 +43,7 @@ def load_users():
         "Admin": {
             "password": "@Nijhum@12", 
             "role": "admin", 
-            "permissions": ["closing", "po_sheet", "user_manage"]
+            "permissions": ["closing", "po_sheet", "user_manage", "view_history"]
         },
         "KobirAhmed": {
             "password": "11223", 
@@ -69,6 +69,7 @@ def save_users(users_data):
 
 def load_stats():
     if not os.path.exists(STATS_FILE):
+        # downloads লিস্টটি এখন হিস্ট্রি হিসেবে কাজ করবে
         return {"downloads": [], "last_booking": "None"}
     try:
         with open(STATS_FILE, 'r') as f:
@@ -78,12 +79,29 @@ def load_stats():
 
 def save_stats(data):
     with open(STATS_FILE, 'w') as f:
-        json.dump(data, f)
+        json.dump(data, f, indent=4)
 
-def update_stats(ref_no):
+# --- আপডেট করা হয়েছে: ইউজার সহ হিস্ট্রি সেভ করার জন্য ---
+def update_stats(ref_no, username):
     data = load_stats()
-    current_time = datetime.now().isoformat()
-    data['downloads'].append({"ref": ref_no, "time": current_time})
+    now = datetime.now()
+    
+    # নতুন রেকর্ড তৈরি
+    new_record = {
+        "ref": ref_no,
+        "user": username,
+        "date": now.strftime('%Y-%m-%d'),
+        "time": now.strftime('%I:%M %p'),
+        "iso_time": now.isoformat()
+    }
+    
+    # লিস্টের শুরুতে যোগ করা যাতে লেটেস্ট আগে দেখায়
+    data['downloads'].insert(0, new_record)
+    
+    # ডাটা বেশি হয়ে গেলে (যেমন ৩০০০ রেকর্ড) পুরনো ডিলিট করা যেতে পারে, 
+    # তবে টেক্সট ফাইল হওয়ায় ১০,০০০ রেকর্ডও সমস্যা না।
+    # data['downloads'] = data['downloads'][:5000] 
+    
     data['last_booking'] = ref_no
     save_stats(data)
 
@@ -99,17 +117,21 @@ def get_dashboard_summary():
     today_count = 0
     month_count = 0
     
+    # কাউন্টিং লজিক
     for d in downloads:
-        dt = datetime.fromisoformat(d['time'])
-        if dt.strftime('%Y-%m-%d') == today_str:
-            today_count += 1
-        if dt.strftime('%Y-%m') == month_str:
-            month_count += 1
+        try:
+            dt = datetime.fromisoformat(d.get('iso_time', datetime.now().isoformat()))
+            if dt.strftime('%Y-%m-%d') == today_str:
+                today_count += 1
+            if dt.strftime('%Y-%m') == month_str:
+                month_count += 1
+        except: pass
             
     return {
         "today": today_count,
         "month": month_count,
-        "last_booking": last_booking
+        "last_booking": last_booking,
+        "history": downloads # সম্পূর্ণ হিস্ট্রি পাঠানো হচ্ছে
     }
 
 # ==============================================================================
@@ -888,7 +910,7 @@ CLOSING_REPORT_PREVIEW_TEMPLATE = """
         .footer-credit { text-align: center; margin-top: 40px; margin-bottom: 20px; font-size: 1rem; color: #2c3e50; padding-top: 10px; border-top: 1px solid #000; font-weight: 600;}
 
         @media print {
-            @page { margin: 5mm; size: portrait; }
+            @page { margin: 5mm; size: portrait; } /* Set to Portrait */
             body { background-color: white; padding: 0; }
             .no-print { display: none !important; }
             .action-bar { display: none; }
@@ -1278,6 +1300,11 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
                     </a>
                 </li>
                 <li class="nav-item">
+                    <a class="nav-link" onclick="showSection('history', this)">
+                        <i class="fas fa-history"></i> Closing History
+                    </a>
+                </li>
+                <li class="nav-item">
                     <a class="nav-link" onclick="showComingSoon('Input & Output Report')">
                         <i class="fas fa-exchange-alt"></i> Input & Output Report
                     </a>
@@ -1407,6 +1434,34 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
                                 </thead>
                                 <tbody id="userTableBody">
                                     </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="history-section" class="work-section" style="display:none; width: 100%; max-width: 800px;">
+                    <div class="glass-card" style="background: rgba(255,255,255,0.05); box-shadow: none; border: none;">
+                        <h2 style="margin-bottom: 20px; font-weight: 500;"><i class="fas fa-history"></i> Report Generation Log</h2>
+                        <div style="overflow-y: auto; max-height: 500px;">
+                            <table class="user-table">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Time</th>
+                                        <th>User</th>
+                                        <th>Booking Ref No</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {{% for log in stats.history %}}
+                                    <tr>
+                                        <td>{{{{ log.date }}}}</td>
+                                        <td>{{{{ log.time }}}}</td>
+                                        <td>{{{{ log.user }}}}</td>
+                                        <td style="font-weight:bold; color:#a29bfe;">{{{{ log.ref }}}}</td>
+                                    </tr>
+                                    {{% endfor %}}
+                                </tbody>
                             </table>
                         </div>
                     </div>
@@ -1548,6 +1603,8 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
             }} else if (sectionId === 'user-manage') {{
                 document.getElementById('user-manage-section').style.display = 'block';
                 loadUsers(); 
+            }} else if (sectionId === 'history') {{
+                document.getElementById('history-section').style.display = 'block';
             }}
         }}
 
@@ -1704,7 +1761,8 @@ def download_closing_excel():
     excel_file_stream = create_formatted_excel_report(report_data, internal_ref_no)
     
     if excel_file_stream:
-        update_stats(internal_ref_no)
+        # Update stats with USERNAME here
+        update_stats(internal_ref_no, session.get('user', 'Unknown'))
         return make_response(send_file(excel_file_stream, as_attachment=True, download_name=f"Closing-Report-{internal_ref_no.replace('/', '_')}.xlsx", mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'))
     else:
         return redirect(url_for('index'))
@@ -1787,4 +1845,3 @@ def generate_po_report():
 
 if __name__ == '__main__':
     app.run(debug=True)
-
