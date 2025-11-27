@@ -27,7 +27,7 @@ if not os.path.exists(UPLOAD_FOLDER):
     os.makedirs(UPLOAD_FOLDER)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
-# --- ২ মিনিটের সেশন টাইমআউট কনফিগারেশন ---
+# --- ৩০ মিনিটের সেশন টাইমআউট কনফিগারেশন ---
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=30) 
 
 # ==============================================================================
@@ -137,7 +137,7 @@ def save_accessories_db(data):
         json.dump(data, f, indent=4)
 
 # ==============================================================================
-# লজিক পার্ট: PURCHASE ORDER SHEET PARSER
+# লজিক পার্ট: PURCHASE ORDER SHEET PARSER (PO Logic)
 # ==============================================================================
 def is_potential_size(header):
     h = header.strip().upper()
@@ -605,7 +605,7 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
     file_stream.seek(0)
     return file_stream
 # ==============================================================================
-# CSS & HTML Templates (Part 2 Starts Here)
+# CSS & HTML Templates (Part 2)
 # ==============================================================================
 COMMON_STYLES = """
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -710,7 +710,6 @@ COMMON_STYLES = """
             box-shadow: 0 6px 20px rgba(0,0,0,0.3);
         }
         
-        /* Footer Credit Style */
         .footer-credit-login {
             margin-top: 25px;
             font-size: 11px;
@@ -749,7 +748,6 @@ COMMON_STYLES = """
         }
         .admin-content { flex: 1; padding: 30px; overflow-y: auto; display: flex; flex-direction: column; }
         
-        /* User Table */
         .user-table { width: 100%; border-collapse: collapse; color: white; margin-top: 20px; }
         .user-table th, .user-table td { padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.1); text-align: left; }
         .user-table th { background: rgba(255,255,255,0.1); font-weight: 600; }
@@ -760,7 +758,85 @@ COMMON_STYLES = """
     </style>
 """
 
-# --- TEMPLATE: REPORT PREVIEW (Closing Report) ---
+# --- PO SHEET REPORT TEMPLATE ---
+PO_REPORT_TEMPLATE = """
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>PO Summary Report</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background-color: #f8f9fa; padding: 30px 0; font-family: 'Segoe UI', sans-serif; }
+        .container { max-width: 1200px; }
+        .header { text-align: center; border-bottom: 2px solid #000; padding-bottom: 15px; margin-bottom: 20px; }
+        .title { font-size: 2rem; font-weight: 800; color: #2c3e50; text-transform: uppercase; }
+        
+        .info-box { background: white; padding: 15px; border-radius: 8px; border-left: 5px solid #2c3e50; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        .info-item { font-size: 1.1rem; font-weight: 600; color: #555; }
+        .info-val { color: #000; font-weight: 800; }
+        
+        .table-card { background: white; margin-bottom: 30px; border: 1px solid #ddd; }
+        .color-header { background: #2c3e50; color: white; padding: 10px; font-weight: 800; font-size: 1.3rem; text-transform: uppercase; }
+        
+        table { width: 100%; border-collapse: collapse; }
+        th, td { border: 1px solid #000; padding: 8px; text-align: center; font-weight: 700; }
+        th { background: #eee; }
+        .total-col { background: #d1ecff; }
+        
+        .summary-row td { background: #e2e6ea; border-top: 2px solid #000; font-weight: 900; }
+        
+        @media print {
+            .no-print { display: none; }
+            .color-header { background: #2c3e50 !important; color: white !important; -webkit-print-color-adjust: exact; }
+            .total-col { background: #d1ecff !important; -webkit-print-color-adjust: exact; }
+            .summary-row td { background: #e2e6ea !important; -webkit-print-color-adjust: exact; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="d-flex justify-content-end mb-3 no-print">
+            <a href="/" class="btn btn-secondary me-2">Back to Dashboard</a>
+            <button onclick="window.print()" class="btn btn-dark">🖨️ Print Report</button>
+        </div>
+
+        <div class="header">
+            <div class="title">Cotton Clothing BD Limited</div>
+            <div style="font-weight:600; color:#666;">PURCHASE ORDER SUMMARY</div>
+        </div>
+
+        {% if tables %}
+        <div class="info-box">
+            <div><span class="info-item">Buyer:</span> <span class="info-val">{{ meta.buyer }}</span></div>
+            <div><span class="info-item">Booking:</span> <span class="info-val">{{ meta.booking }}</span></div>
+            <div><span class="info-item">Style:</span> <span class="info-val">{{ meta.style }}</span></div>
+            <div><span class="info-item">Dept:</span> <span class="info-val">{{ meta.dept }}</span></div>
+            <div><span class="info-item">Season:</span> <span class="info-val">{{ meta.season }}</span></div>
+            <div style="text-align:right;"><span class="info-item">Total Qty:</span> <span class="info-val" style="font-size:1.5rem;">{{ grand_total }}</span></div>
+        </div>
+
+        {% for item in tables %}
+        <div class="table-card">
+            <div class="color-header">COLOR: {{ item.color }}</div>
+            <div class="table-responsive">
+                {{ item.table | safe }}
+            </div>
+        </div>
+        {% endfor %}
+        
+        <div class="text-center mt-5" style="border-top:1px solid #ddd; padding-top:10px; font-size:12px;">
+            Report Created By <strong>Mehedi Hasan</strong>
+        </div>
+        {% else %}
+        <div class="alert alert-warning text-center">{{ message }}</div>
+        {% endif %}
+    </div>
+</body>
+</html>
+"""
+
+# --- CLOSING REPORT TEMPLATE ---
 CLOSING_REPORT_PREVIEW_TEMPLATE = """
 <!DOCTYPE html>
 <html lang="en">
@@ -856,7 +932,6 @@ CLOSING_REPORT_PREVIEW_TEMPLATE = """
 
     <script>
         document.getElementById('date').innerText = new Date().toLocaleDateString('en-GB');
-
         function downloadExcel() {
             Swal.fire({
                 title: 'Preparing Excel...',
@@ -869,7 +944,6 @@ CLOSING_REPORT_PREVIEW_TEMPLATE = """
                 Swal.fire({
                     icon: 'success',
                     title: 'Downloaded!',
-                    text: 'Your file has been downloaded successfully.',
                     showConfirmButton: false,
                     timer: 1500
                 });
@@ -880,185 +954,7 @@ CLOSING_REPORT_PREVIEW_TEMPLATE = """
 </html>
 """
 
-# --- TEMPLATE: ACCESSORIES SEARCH ---
-ACCESSORIES_SEARCH_TEMPLATE = f"""
-<!doctype html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Find Booking - Accessories</title>
-    {COMMON_STYLES}
-</head>
-<body>
-    <div class="center-container">
-        <div class="glass-card">
-            <h1>Accessories Hub</h1>
-            <p class="subtitle">Welcome, {{{{ session.user }}}}</p>
-            
-            <form action="/admin/accessories/input" method="post">
-                <div class="input-group">
-                    <label for="ref_no">Booking Reference No</label>
-                    <input type="text" id="ref_no" name="ref_no" placeholder="e.g. Booking-123..." required>
-                </div>
-                <button type="submit">Proceed to Challan</button>
-            </form>
-            <br>
-            <a href="/" style="color:white; text-decoration:none; font-size:12px;">Back to Dashboard</a>
-            
-            <div class="footer-credit-login">
-                <a href="/logout" style="color:#ff7675; text-decoration:none; font-weight:600;">Sign Out</a>
-                <div style="margin-top:5px;">© Mehedi Hasan</div>
-            </div>
-        </div>
-    </div>
-</body>
-</html>
-"""
-
-# --- TEMPLATE: ACCESSORIES INPUT ---
-ACCESSORIES_INPUT_TEMPLATE = f"""
-<!doctype html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>New Challan Entry</title>
-    {COMMON_STYLES}
-</head>
-<body>
-    <div class="center-container">
-        <div class="glass-card">
-            <h1>New Challan</h1>
-            <p class="subtitle">Booking: {{{{ ref }}}}</p>
-            
-            <div style="background: rgba(255,255,255,0.1); padding: 10px; border-radius: 8px; margin-bottom: 20px; font-size: 13px; text-align:left;">
-                <div style="display:flex; justify-content:space-between;">
-                    <span><strong>Buyer:</strong> {{{{ buyer }}}}</span>
-                    <span><strong>Style:</strong> {{{{ style }}}}</span>
-                </div>
-            </div>
-
-            <form action="/admin/accessories/save" method="post" id="challanForm">
-                <input type="hidden" name="ref" value="{{{{ ref }}}}">
-                
-                <div class="input-group">
-                    <label>Item Type</label>
-                    <select name="item_type">
-                        <option value="" disabled selected>-- Select Item (Top/Btm) --</option>
-                        <option value="Top">Top</option>
-                        <option value="Bottom">Bottom</option>
-                    </select>
-                </div>
-
-                <div class="input-group">
-                    <label>Select Color</label>
-                    <select name="color" required>
-                        <option value="" disabled selected>-- Choose Color --</option>
-                        {{% for color in colors %}}
-                        <option value="{{{{ color }}}}">{{{{ color }}}}</option>
-                        {{% endfor %}}
-                    </select>
-                </div>
-
-                <div style="display:flex; gap:10px;">
-                    <div class="input-group" style="flex:1;">
-                        <label>Line No</label>
-                        <input type="text" name="line_no" placeholder="Line-12" required>
-                    </div>
-                    <div class="input-group" style="flex:1;">
-                        <label>Size</label>
-                        <input type="text" name="size" placeholder="XL/ALL" value="-">
-                    </div>
-                </div>
-
-                <div class="input-group">
-                    <label>Quantity</label>
-                    <input type="number" name="qty" placeholder="Enter Qty" required>
-                </div>
-
-                <button type="submit">Save Entry</button>
-            </form>
-            
-            <div style="margin-top: 15px; display:flex; justify-content:space-between; align-items:center;">
-                <a href="/admin/accessories/print?ref={{{{ ref }}}}" style="color:#a29bfe; font-size:13px;">View Report</a>
-                <a href="/admin/accessories" style="color:white; text-decoration:none; font-size:13px;">Back</a>
-            </div>
-            
-            <div class="footer-credit-login">
-                <div style="margin-top:15px;">© Mehedi Hasan</div>
-            </div>
-        </div>
-    </div>
-    
-    <script>
-        document.getElementById('challanForm').addEventListener('submit', function(e) {{
-            e.preventDefault();
-            Swal.fire({{
-                title: 'Saving...',
-                text: 'Adding to challan',
-                timer: 1000,
-                didOpen: () => {{ Swal.showLoading() }}
-            }}).then(() => {{
-                e.target.submit();
-            }});
-        }});
-    </script>
-</body>
-</html>
-"""
-
-# --- TEMPLATE: ACCESSORIES EDIT ---
-ACCESSORIES_EDIT_TEMPLATE = f"""
-<!doctype html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Edit Challan</title>
-    {COMMON_STYLES}
-</head>
-<body>
-    <div class="center-container">
-        <div class="glass-card">
-            <h1>Edit Challan</h1>
-            <p class="subtitle">Modifying entry for {{{{ ref }}}}</p>
-
-            <form action="/admin/accessories/update" method="post">
-                <input type="hidden" name="ref" value="{{{{ ref }}}}">
-                <input type="hidden" name="index" value="{{{{ index }}}}">
-
-                <div class="input-group">
-                    <label>Line No</label>
-                    <input type="text" name="line_no" value="{{{{ item.line }}}}" required>
-                </div>
-                
-                <div class="input-group">
-                    <label>Color</label>
-                    <input type="text" name="color" value="{{{{ item.color }}}}" required>
-                </div>
-
-                <div class="input-group">
-                    <label>Size</label>
-                    <input type="text" name="size" value="{{{{ item.size }}}}" required>
-                </div>
-
-                <div class="input-group">
-                    <label>Quantity</label>
-                    <input type="number" name="qty" value="{{{{ item.qty }}}}" required>
-                </div>
-
-                <button type="submit">Update Entry</button>
-            </form>
-            <br>
-            <a href="/admin/accessories/print?ref={{{{ ref }}}}" style="color:white; font-size:12px;">Cancel</a>
-        </div>
-    </div>
-</body>
-</html>
-"""
-
-# --- TEMPLATE: ACCESSORIES REPORT (PRINT VIEW) ---
+# --- ACCESSORIES REPORT TEMPLATE (With Edit/Delete Restrictions) ---
 ACCESSORIES_REPORT_TEMPLATE = """
 <!DOCTYPE html>
 <html lang="en">
@@ -1074,7 +970,6 @@ ACCESSORIES_REPORT_TEMPLATE = """
         
         .header { text-align: center; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 20px; }
         .company-name { font-size: 28px; font-weight: 800; text-transform: uppercase; color: #2c3e50; line-height: 1; }
-        .company-address { font-size: 12px; font-weight: 600; color: #444; margin-top: 5px; margin-bottom: 10px; }
         .report-title { background: #2c3e50; color: white; padding: 5px 25px; display: inline-block; font-weight: bold; font-size: 18px; border-radius: 4px; }
         
         .info-grid { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; }
@@ -1086,7 +981,6 @@ ACCESSORIES_REPORT_TEMPLATE = """
         .info-val { font-weight: 700; font-size: 15px; color: #000; }
         .booking-border { border: 2px solid #000; padding: 2px 8px; display: inline-block; font-weight: 900; }
 
-        /* Tables */
         .summary-container { margin-bottom: 20px; border: 2px solid #000; padding: 10px; background: #f9f9f9; }
         .main-table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 14px; }
         .main-table th { background: #2c3e50 !important; color: white !important; padding: 10px; border: 1px solid #000; }
@@ -1094,7 +988,6 @@ ACCESSORIES_REPORT_TEMPLATE = """
         
         .line-card { display: inline-block; padding: 4px 10px; border: 2px solid #000; font-weight: 900; border-radius: 4px; box-shadow: 2px 2px 0 #000; background: #fff; }
         
-        /* Action Buttons */
         .action-btn { color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px; margin: 0 2px; cursor: pointer; border: none; }
         .btn-edit-row { background-color: #f39c12; }
         .btn-del-row { background-color: #e74c3c; }
@@ -1127,7 +1020,7 @@ ACCESSORIES_REPORT_TEMPLATE = """
 <div class="container">
     <div class="header">
         <div class="company-name">Cotton Clothing BD Limited</div>
-        <div class="company-address">Kazi Tower, 27 Road, Gazipura, Tongi, Gazipur.</div>
+        <div style="font-size:12px; font-weight:600; margin:5px 0 10px;">Kazi Tower, 27 Road, Gazipura, Tongi, Gazipur.</div>
         <div class="report-title">ACCESSORIES DELIVERY REPORT</div>
     </div>
 
@@ -1161,15 +1054,8 @@ ACCESSORIES_REPORT_TEMPLATE = """
     <table class="main-table">
         <thead>
             <tr>
-                <th>DATE</th>
-                <th>LINE NO</th>
-                <th>COLOR</th>
-                <th>SIZE</th>
-                <th>STATUS</th>
-                <th>QTY</th>
-                {% if session.role == 'admin' %}
-                <th class="action-col">ACTION</th>
-                {% endif %}
+                <th>DATE</th><th>LINE NO</th><th>COLOR</th><th>SIZE</th><th>STATUS</th><th>QTY</th>
+                {% if session.role == 'admin' %}<th class="action-col">ACTION</th>{% endif %}
             </tr>
         </thead>
         <tbody>
@@ -1178,13 +1064,7 @@ ACCESSORIES_REPORT_TEMPLATE = """
                 {% set ns.grand_total = ns.grand_total + item.qty|int %}
                 <tr>
                     <td>{{ item.date }}</td>
-                    <td>
-                        {% if loop.index == count %}
-                            <div class="line-card">{{ item.line }}</div>
-                        {% else %}
-                            {{ item.line }}
-                        {% endif %}
-                    </td>
+                    <td>{% if loop.index == count %}<div class="line-card">{{ item.line }}</div>{% else %}{{ item.line }}{% endif %}</td>
                     <td>{{ item.color }}</td>
                     <td>{{ item.size }}</td>
                     <td style="color:green; font-size:18px; font-weight:900;">✔</td>
@@ -1201,16 +1081,14 @@ ACCESSORIES_REPORT_TEMPLATE = """
         </tbody>
     </table>
 
-    <div class="footer-total">
-        <div class="total-box">TOTAL QTY: {{ ns.grand_total }}</div>
-    </div>
+    <div class="footer-total"><div class="total-box">TOTAL QTY: {{ ns.grand_total }}</div></div>
 
     <div style="margin-top: 60px; display: flex; justify-content: space-between; text-align: center; font-weight: bold; padding: 0 50px;">
         <div style="border-top: 2px solid #000; width: 180px;">Store Incharge</div>
         <div style="border-top: 2px solid #000; width: 180px;">Received By</div>
         <div style="border-top: 2px solid #000; width: 180px;">Cutting Incharge</div>
     </div>
-
+    
     <div class="text-center mt-5" style="font-size:12px; color:#555;">Report Generator: Mehedi Hasan</div>
 </div>
 
@@ -1226,17 +1104,11 @@ ACCESSORIES_REPORT_TEMPLATE = """
             confirmButtonText: 'Yes, delete it!'
         }).then((result) => {
             if (result.isConfirmed) {
-                // Submit form dynamically
                 const form = document.createElement('form');
                 form.method = 'POST';
                 form.action = '/admin/accessories/delete';
-                
-                const refInput = document.createElement('input');
-                refInput.type = 'hidden'; refInput.name = 'ref'; refInput.value = ref;
-                
-                const idxInput = document.createElement('input');
-                idxInput.type = 'hidden'; idxInput.name = 'index'; idxInput.value = index;
-                
+                const refInput = document.createElement('input'); refInput.type = 'hidden'; refInput.name = 'ref'; refInput.value = ref;
+                const idxInput = document.createElement('input'); idxInput.type = 'hidden'; idxInput.name = 'index'; idxInput.value = index;
                 form.appendChild(refInput); form.appendChild(idxInput);
                 document.body.appendChild(form);
                 form.submit();
@@ -1244,7 +1116,6 @@ ACCESSORIES_REPORT_TEMPLATE = """
         });
     }
 </script>
-
 </body>
 </html>
 """
@@ -1349,12 +1220,7 @@ USER_DASHBOARD_TEMPLATE = f"""
     </div>
     <script>
         function showLoading() {{
-            Swal.fire({{
-                title: 'Processing...',
-                html: 'Please wait while we fetch the data.',
-                allowOutsideClick: false,
-                didOpen: () => {{ Swal.showLoading() }}
-            }});
+            Swal.fire({{ title: 'Processing...', html: 'Processing data.', allowOutsideClick: false, didOpen: () => {{ Swal.showLoading() }} }});
         }}
     </script>
 </body>
@@ -1382,6 +1248,7 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
             <ul style="list-style: none;">
                 <li><a class="nav-link active" onclick="showSection('closing', this)"><i class="fas fa-file-export" style="margin-right:10px;"></i> Closing Report</a></li>
                 <li><a class="nav-link" href="/admin/accessories"><i class="fas fa-box-open" style="margin-right:10px;"></i> Accessories Hub</a></li>
+                <li><a class="nav-link" onclick="showSection('po', this)"><i class="fas fa-file-pdf" style="margin-right:10px;"></i> PO Sheet</a></li>
                 <li><a class="nav-link" onclick="showSection('user-manage', this)"><i class="fas fa-users-cog" style="margin-right:10px;"></i> User Management</a></li>
                 <li><a class="nav-link" onclick="showSection('history', this)"><i class="fas fa-history" style="margin-right:10px;"></i> System Logs</a></li>
             </ul>
@@ -1402,10 +1269,6 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
                     <h3 style="font-size:24px;">{{{{ stats.month }}}}</h3>
                     <p style="margin:0; font-size:12px; color:#ddd;">Monthly Total</p>
                 </div>
-                <div class="glass-card" style="padding:20px; text-align:left; animation:none;">
-                    <h3 style="font-size:16px;">{{{{ stats.last_booking }}}}</h3>
-                    <p style="margin:0; font-size:12px; color:#ddd;">Last Booking Ref</p>
-                </div>
             </div>
 
             <div id="work-area" style="flex: 1; background: rgba(0, 0, 0, 0.2); border-radius: 20px; padding: 30px; position: relative;">
@@ -1420,9 +1283,18 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
                     </div>
                 </div>
 
+                <div id="po-section" class="work-section" style="display:none;">
+                    <h2 style="color:white; margin-bottom:20px;">PDF PO Sheet Generator</h2>
+                    <div style="max-width:400px;">
+                        <form action="/generate-po-report" method="post" enctype="multipart/form-data" onsubmit="showLoading()">
+                            <input type="file" name="pdf_files" multiple accept=".pdf" required style="margin-bottom:10px;">
+                            <button type="submit" style="background: linear-gradient(135deg, #ff9966 0%, #ff5e62 100%);">Process PDFs</button>
+                        </form>
+                    </div>
+                </div>
+
                 <div id="user-manage-section" class="work-section" style="display:none;">
                     <h2 style="color:white; margin-bottom:20px;">User Management</h2>
-                    
                     <div style="background: rgba(255,255,255,0.05); padding: 20px; border-radius: 10px; margin-bottom: 20px;">
                         <h4 style="color:#a29bfe; font-size:14px; margin-bottom:15px;">Add / Edit User</h4>
                         <form id="userForm">
@@ -1443,7 +1315,6 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
                             <button type="button" onclick="resetForm()" style="background:#95a5a6; margin-top:5px;">Reset</button>
                         </form>
                     </div>
-
                     <table class="user-table">
                         <thead><tr><th>User</th><th>Role</th><th>Permissions</th><th>Action</th></tr></thead>
                         <tbody id="userTableBody"></tbody>
@@ -1473,11 +1344,7 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
     </div>
 
     <script>
-        function showLoading() {{
-            Swal.fire({{ title: 'Processing...', didOpen: () => Swal.showLoading() }});
-        }}
-
-        // --- Toggle Sections ---
+        function showLoading() {{ Swal.fire({{ title: 'Processing...', didOpen: () => Swal.showLoading() }}); }}
         function showSection(id, el) {{
             document.querySelectorAll('.nav-link').forEach(e => e.classList.remove('active'));
             el.classList.add('active');
@@ -1485,97 +1352,49 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
             document.getElementById(id + '-section').style.display = 'block';
             if(id === 'user-manage') loadUsers();
         }}
-
-        // --- User Management Logic ---
         function loadUsers() {{
-            fetch('/admin/get-users')
-            .then(res => res.json())
-            .then(data => {{
+            fetch('/admin/get-users').then(res => res.json()).then(data => {{
                 let html = '';
                 for (const [user, details] of Object.entries(data)) {{
-                    html += `<tr>
-                        <td>${{user}}</td>
-                        <td>${{details.role}}</td>
-                        <td>${{details.permissions ? details.permissions.join(', ') : ''}}</td>
-                        <td>
-                            ${{details.role !== 'admin' ? 
-                                `<button class="user-btn btn-edit" onclick="editUser('${{user}}', '${{details.password}}', '${{details.permissions}}')">Edit</button>
-                                 <button class="user-btn btn-delete" onclick="deleteUser('${{user}}')">Delete</button>` : 'Admin'}}
-                        </td>
-                    </tr>`;
+                    html += `<tr><td>${{user}}</td><td>${{details.role}}</td><td>${{details.permissions ? details.permissions.join(', ') : ''}}</td>
+                    <td>${{details.role !== 'admin' ? `<button class="user-btn btn-edit" onclick="editUser('${{user}}', '${{details.password}}', '${{details.permissions}}')">Edit</button><button class="user-btn btn-delete" onclick="deleteUser('${{user}}')">Delete</button>` : 'Admin'}}</td></tr>`;
                 }}
                 document.getElementById('userTableBody').innerHTML = html;
             }});
         }}
-
         function handleUserSubmit() {{
             const user = document.getElementById('new_username').value;
             const pass = document.getElementById('new_password').value;
             const action = document.getElementById('action_type').value;
-            
             let perms = [];
             if(document.getElementById('perm_closing').checked) perms.push('closing');
             if(document.getElementById('perm_acc').checked) perms.push('accessories');
             if(document.getElementById('perm_po').checked) perms.push('po_sheet');
-
-            fetch('/admin/save-user', {{
-                method: 'POST',
-                headers: {{'Content-Type': 'application/json'}},
-                body: JSON.stringify({{ username: user, password: pass, permissions: perms, action_type: action }})
-            }})
-            .then(res => res.json())
-            .then(data => {{
-                if(data.status === 'success') {{
-                    Swal.fire('Success', data.message, 'success');
-                    loadUsers();
-                    resetForm();
-                }} else {{
-                    Swal.fire('Error', data.message, 'error');
-                }}
+            fetch('/admin/save-user', {{ method: 'POST', headers: {{'Content-Type': 'application/json'}}, body: JSON.stringify({{ username: user, password: pass, permissions: perms, action_type: action }}) }})
+            .then(res => res.json()).then(data => {{
+                if(data.status === 'success') {{ Swal.fire('Success', data.message, 'success'); loadUsers(); resetForm(); }}
+                else {{ Swal.fire('Error', data.message, 'error'); }}
             }});
         }}
-
         function editUser(user, pass, permsStr) {{
-            document.getElementById('new_username').value = user;
-            document.getElementById('new_username').readOnly = true;
-            document.getElementById('new_password').value = pass;
-            document.getElementById('action_type').value = 'update';
+            document.getElementById('new_username').value = user; document.getElementById('new_username').readOnly = true;
+            document.getElementById('new_password').value = pass; document.getElementById('action_type').value = 'update';
             document.getElementById('saveUserBtn').innerText = 'Update User';
-            
             const perms = permsStr.split(',');
             document.getElementById('perm_closing').checked = perms.includes('closing');
             document.getElementById('perm_acc').checked = perms.includes('accessories');
             document.getElementById('perm_po').checked = perms.includes('po_sheet');
         }}
-
         function resetForm() {{
-            document.getElementById('userForm').reset();
-            document.getElementById('action_type').value = 'create';
-            document.getElementById('saveUserBtn').innerText = 'Create User';
-            document.getElementById('new_username').readOnly = false;
+            document.getElementById('userForm').reset(); document.getElementById('action_type').value = 'create';
+            document.getElementById('saveUserBtn').innerText = 'Create User'; document.getElementById('new_username').readOnly = false;
         }}
-
         function deleteUser(user) {{
-            Swal.fire({{
-                title: 'Are you sure?',
-                text: "Delete user " + user + "?",
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonText: 'Yes, delete it!'
-            }}).then((result) => {{
-                if (result.isConfirmed) {{
-                    fetch('/admin/delete-user', {{
-                        method: 'POST',
-                        headers: {{'Content-Type': 'application/json'}},
-                        body: JSON.stringify({{ username: user }})
-                    }})
-                    .then(res => res.json())
-                    .then(data => {{
-                        Swal.fire('Deleted!', 'User has been deleted.', 'success');
-                        loadUsers();
-                    }});
-                }}
-            }});
+            Swal.fire({{ title: 'Are you sure?', text: "Delete user " + user + "?", icon: 'warning', showCancelButton: true, confirmButtonText: 'Yes, delete it!' }})
+            .then((result) => {{ if (result.isConfirmed) {{
+                fetch('/admin/delete-user', {{ method: 'POST', headers: {{'Content-Type': 'application/json'}}, body: JSON.stringify({{ username: user }}) }})
+                .then(res => res.json()).then(data => {{ Swal.fire('Deleted!', 'User deleted.', 'success'); loadUsers(); }});
+            }} }});
         }}
     </script>
 </body>
@@ -1602,9 +1421,7 @@ def index():
 def login():
     username = request.form.get('username')
     password = request.form.get('password')
-
     users_db = load_users()
-
     if username in users_db and users_db[username]['password'] == password:
         session.permanent = True
         session['logged_in'] = True
@@ -1621,171 +1438,120 @@ def logout():
     session.clear()
     return redirect(url_for('index'))
 
-# --- USER MANAGEMENT ROUTES (API) ---
-
+# --- USER API ---
 @app.route('/admin/get-users', methods=['GET'])
 def get_users():
-    if not session.get('logged_in') or session.get('role') != 'admin':
-        return jsonify({})
+    if not session.get('logged_in') or session.get('role') != 'admin': return jsonify({})
     return jsonify(load_users())
 
 @app.route('/admin/save-user', methods=['POST'])
 def save_user():
-    if not session.get('logged_in') or session.get('role') != 'admin':
-        return jsonify({'status': 'error', 'message': 'Unauthorized'})
-    
+    if not session.get('logged_in') or session.get('role') != 'admin': return jsonify({'status': 'error', 'message': 'Unauthorized'})
     data = request.json
     username = data.get('username', '').strip()
     password = data.get('password', '').strip()
     permissions = data.get('permissions', [])
     action = data.get('action_type')
-    
-    if not username or not password:
-         return jsonify({'status': 'error', 'message': 'Invalid Data'})
-
+    if not username or not password: return jsonify({'status': 'error', 'message': 'Invalid Data'})
     users_db = load_users()
-    
     if action == 'create':
-        if username in users_db:
-            return jsonify({'status': 'error', 'message': 'User already exists!'})
-        users_db[username] = {
-            "password": password,
-            "role": "user",
-            "permissions": permissions
-        }
+        if username in users_db: return jsonify({'status': 'error', 'message': 'User already exists!'})
+        users_db[username] = {"password": password, "role": "user", "permissions": permissions}
     elif action == 'update':
-        if username not in users_db:
-            return jsonify({'status': 'error', 'message': 'User not found!'})
+        if username not in users_db: return jsonify({'status': 'error', 'message': 'User not found!'})
         users_db[username]['password'] = password
         users_db[username]['permissions'] = permissions
-    
     save_users(users_db)
     return jsonify({'status': 'success', 'message': 'User saved successfully!'})
 
 @app.route('/admin/delete-user', methods=['POST'])
 def delete_user():
-    if not session.get('logged_in') or session.get('role') != 'admin':
-        return jsonify({'status': 'error', 'message': 'Unauthorized'})
-    
+    if not session.get('logged_in') or session.get('role') != 'admin': return jsonify({'status': 'error', 'message': 'Unauthorized'})
     username = request.json.get('username')
     users_db = load_users()
-    
-    if username == 'Admin':
-         return jsonify({'status': 'error', 'message': 'Cannot delete Main Admin!'})
-
+    if username == 'Admin': return jsonify({'status': 'error', 'message': 'Cannot delete Main Admin!'})
     if username in users_db:
         del users_db[username]
         save_users(users_db)
         return jsonify({'status': 'success', 'message': 'User deleted!'})
-    
     return jsonify({'status': 'error', 'message': 'User not found'})
 
-# --- CLOSING REPORT ROUTE ---
+# --- CLOSING REPORT ---
 @app.route('/generate-report', methods=['POST'])
 def generate_report():
     if not session.get('logged_in'): return redirect(url_for('index'))
-    
     if 'closing' not in session.get('permissions', []):
         flash("Permission Denied")
         return redirect(url_for('index'))
-
     internal_ref_no = request.form['ref_no']
     report_data = fetch_closing_report_data(internal_ref_no)
-
     if not report_data:
         flash(f"No data found for: {internal_ref_no}")
         return redirect(url_for('index'))
-
     return render_template_string(CLOSING_REPORT_PREVIEW_TEMPLATE, report_data=report_data, ref_no=internal_ref_no)
 
-# ==============================================================================
-# ACCESSORIES ROUTES (with Permissions)
-# ==============================================================================
+@app.route('/download-closing-excel', methods=['GET'])
+def download_closing_excel():
+    if not session.get('logged_in'): return redirect(url_for('index'))
+    internal_ref_no = request.args.get('ref_no')
+    report_data = fetch_closing_report_data(internal_ref_no)
+    if report_data:
+        update_stats(internal_ref_no, session.get('user', 'Unknown'))
+        stream = create_formatted_excel_report(report_data, internal_ref_no)
+        return make_response(send_file(stream, as_attachment=True, download_name=f"Report-{internal_ref_no}.xlsx", mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'))
+    return redirect(url_for('index'))
 
+# --- ACCESSORIES ROUTES ---
 @app.route('/admin/accessories', methods=['GET'])
 def accessories_search_page():
     if not session.get('logged_in'): return redirect(url_for('index'))
-    # Check permission
     if 'accessories' not in session.get('permissions', []):
         flash("You do not have permission for Accessories.")
         return redirect(url_for('index'))
-        
-    return render_template_string(ACCESSORIES_SEARCH_TEMPLATE)
+    return render_template_string(f"""<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Find Booking</title>{COMMON_STYLES}</head><body><div class="center-container"><div class="glass-card"><h1>Accessories Hub</h1><p class="subtitle">Welcome, {session.get('user')}</p><form action="/admin/accessories/input" method="post"><div class="input-group"><label>Booking Reference No</label><input type="text" name="ref_no" required></div><button type="submit">Proceed</button></form><br><a href="/" style="color:white;font-size:12px;">Back to Dashboard</a><div class="footer-credit-login"><a href="/logout" style="color:#ff7675;">Sign Out</a><div style="margin-top:5px;">© Mehedi Hasan</div></div></div></div></body></html>""")
 
 @app.route('/admin/accessories/input', methods=['POST'])
 def accessories_input_page():
     if not session.get('logged_in'): return redirect(url_for('index'))
     if 'accessories' not in session.get('permissions', []): return redirect(url_for('index'))
-    
     ref_no = request.form.get('ref_no').strip()
     db = load_accessories_db()
-
     if ref_no in db:
         data = db[ref_no]
-        colors = data['colors']
-        style = data['style']
-        buyer = data['buyer']
+        colors, style, buyer = data['colors'], data['style'], data['buyer']
     else:
         api_data = fetch_closing_report_data(ref_no)
         if not api_data:
             flash(f"No booking data found for {ref_no}")
             return redirect(url_for('accessories_search_page'))
-        
         colors = sorted(list(set([item['color'] for item in api_data])))
-        style = api_data[0].get('style', 'N/A')
-        buyer = api_data[0].get('buyer', 'N/A')
-        
-        db[ref_no] = {
-            "style": style,
-            "buyer": buyer,
-            "colors": colors,
-            "item_type": "",
-            "challans": [] 
-        }
+        style, buyer = api_data[0].get('style', 'N/A'), api_data[0].get('buyer', 'N/A')
+        db[ref_no] = {"style": style, "buyer": buyer, "colors": colors, "item_type": "", "challans": []}
         save_accessories_db(db)
-
-    return render_template_string(ACCESSORIES_INPUT_TEMPLATE, ref=ref_no, colors=colors, style=style, buyer=buyer)
+    return render_template_string(f"""<!doctype html><html lang="en"><head><meta charset="utf-8"><title>New Challan</title>{COMMON_STYLES}</head><body><div class="center-container"><div class="glass-card"><h1>New Challan</h1><p class="subtitle">Booking: {ref_no}</p><div style="background:rgba(255,255,255,0.1);padding:10px;border-radius:8px;margin-bottom:20px;font-size:13px;text-align:left;"><div style="display:flex;justify-content:space-between;"><span><strong>Buyer:</strong> {buyer}</span><span><strong>Style:</strong> {style}</span></div></div><form action="/admin/accessories/save" method="post" id="challanForm"><input type="hidden" name="ref" value="{ref_no}"><div class="input-group"><label>Item Type</label><select name="item_type"><option value="" disabled selected>-- Select Item --</option><option value="Top">Top</option><option value="Bottom">Bottom</option></select></div><div class="input-group"><label>Color</label><select name="color" required><option value="" disabled selected>-- Choose Color --</option>{''.join([f'<option value="{c}">{c}</option>' for c in colors])}</select></div><div style="display:flex;gap:10px;"><div class="input-group" style="flex:1;"><label>Line No</label><input type="text" name="line_no" required></div><div class="input-group" style="flex:1;"><label>Size</label><input type="text" name="size" value="-"></div></div><div class="input-group"><label>Quantity</label><input type="number" name="qty" required></div><button type="submit">Save Entry</button></form><div style="margin-top:15px;display:flex;justify-content:space-between;"><a href="/admin/accessories/print?ref={ref_no}" style="color:#a29bfe;font-size:13px;">View Report</a><a href="/admin/accessories" style="color:white;font-size:13px;">Back</a></div><div class="footer-credit-login"><div style="margin-top:15px;">© Mehedi Hasan</div></div></div></div><script>document.getElementById('challanForm').addEventListener('submit', function(e){{e.preventDefault(); Swal.fire({{title:'Saving...', timer:1000, didOpen:()=>Swal.showLoading()}}).then(()=>{{e.target.submit()}});}});</script></body></html>""")
 
 @app.route('/admin/accessories/save', methods=['POST'])
 def accessories_save():
     if not session.get('logged_in'): return redirect(url_for('index'))
-    if 'accessories' not in session.get('permissions', []): return redirect(url_for('index'))
-    
     ref = request.form.get('ref')
-    color = request.form.get('color')
-    line = request.form.get('line_no')
-    size = request.form.get('size')
-    qty = request.form.get('qty')
-    item_type = request.form.get('item_type')
-    
     db = load_accessories_db()
     if ref in db:
-        if item_type: db[ref]['item_type'] = item_type
-        for item in db[ref]['challans']:
-            item['status'] = "✔"
-        
+        if request.form.get('item_type'): db[ref]['item_type'] = request.form.get('item_type')
+        for item in db[ref]['challans']: item['status'] = "✔"
         db[ref]['challans'].append({
             "date": datetime.now().strftime("%d-%m-%Y"),
-            "line": line,
-            "color": color,
-            "size": size,
-            "qty": qty,
-            "status": "" 
+            "line": request.form.get('line_no'), "color": request.form.get('color'),
+            "size": request.form.get('size'), "qty": request.form.get('qty'), "status": ""
         })
         save_accessories_db(db)
-    
     return redirect(url_for('accessories_print_view', ref=ref))
 
 @app.route('/admin/accessories/print', methods=['GET'])
 def accessories_print_view():
     if not session.get('logged_in'): return redirect(url_for('index'))
-    if 'accessories' not in session.get('permissions', []): return redirect(url_for('index'))
-    
     ref = request.args.get('ref')
     db = load_accessories_db()
-    
     if ref not in db: return redirect(url_for('accessories_search_page'))
-    
     data = db[ref]
     line_summary = {}
     for c in data['challans']:
@@ -1793,86 +1559,107 @@ def accessories_print_view():
         try: q = int(c['qty'])
         except: q = 0
         line_summary[ln] = line_summary.get(ln, 0) + q
-    
-    return render_template_string(ACCESSORIES_REPORT_TEMPLATE, 
-                                  ref=ref,
-                                  buyer=data['buyer'],
-                                  style=data['style'],
-                                  item_type=data.get('item_type', ''),
-                                  challans=data['challans'],
-                                  line_summary=dict(sorted(line_summary.items())),
-                                  count=len(data['challans']),
-                                  today=datetime.now().strftime("%d-%m-%Y"))
+    return render_template_string(ACCESSORIES_REPORT_TEMPLATE, ref=ref, buyer=data['buyer'], style=data['style'], item_type=data.get('item_type', ''), challans=data['challans'], line_summary=dict(sorted(line_summary.items())), count=len(data['challans']), today=datetime.now().strftime("%d-%m-%Y"))
 
-# --- RESTRICTED ROUTES (ADMIN ONLY) ---
 @app.route('/admin/accessories/delete', methods=['POST'])
 def accessories_delete():
-    if not session.get('logged_in') or session.get('role') != 'admin':
-        return "Unauthorized", 403
-    
+    if not session.get('logged_in') or session.get('role') != 'admin': return "Unauthorized", 403
     ref = request.form.get('ref')
     try: index = int(request.form.get('index'))
     except: return redirect(url_for('accessories_search_page'))
-
     db = load_accessories_db()
-    if ref in db:
-        if 0 <= index < len(db[ref]['challans']):
-            del db[ref]['challans'][index]
-            save_accessories_db(db)
-    
+    if ref in db and 0 <= index < len(db[ref]['challans']):
+        del db[ref]['challans'][index]
+        save_accessories_db(db)
     return redirect(url_for('accessories_print_view', ref=ref))
 
 @app.route('/admin/accessories/edit', methods=['GET'])
 def accessories_edit():
-    if not session.get('logged_in') or session.get('role') != 'admin':
-        return "Unauthorized", 403
-    
+    if not session.get('logged_in') or session.get('role') != 'admin': return "Unauthorized", 403
     ref = request.args.get('ref')
-    try: index = int(request.args.get('index'))
-    except: return redirect(url_for('accessories_search_page'))
-        
+    index = int(request.args.get('index'))
     db = load_accessories_db()
-    return render_template_string(ACCESSORIES_EDIT_TEMPLATE, ref=ref, index=index, item=db[ref]['challans'][index])
+    return render_template_string(f"""<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Edit Challan</title>{COMMON_STYLES}</head><body><div class="center-container"><div class="glass-card"><h1>Edit Challan</h1><form action="/admin/accessories/update" method="post"><input type="hidden" name="ref" value="{ref}"><input type="hidden" name="index" value="{index}"><div class="input-group"><label>Line No</label><input type="text" name="line_no" value="{db[ref]['challans'][index]['line']}" required></div><div class="input-group"><label>Color</label><input type="text" name="color" value="{db[ref]['challans'][index]['color']}" required></div><div class="input-group"><label>Size</label><input type="text" name="size" value="{db[ref]['challans'][index]['size']}" required></div><div class="input-group"><label>Quantity</label><input type="number" name="qty" value="{db[ref]['challans'][index]['qty']}" required></div><button type="submit">Update</button></form><br><a href="/admin/accessories/print?ref={ref}" style="color:white;font-size:12px;">Cancel</a></div></div></body></html>""")
 
 @app.route('/admin/accessories/update', methods=['POST'])
 def accessories_update():
-    if not session.get('logged_in') or session.get('role') != 'admin':
-        return "Unauthorized", 403
-    
+    if not session.get('logged_in') or session.get('role') != 'admin': return "Unauthorized", 403
     ref = request.form.get('ref')
     index = int(request.form.get('index'))
     db = load_accessories_db()
-    
     if ref in db:
-        db[ref]['challans'][index].update({
-            'qty': request.form.get('qty'),
-            'line': request.form.get('line_no'),
-            'color': request.form.get('color'),
-            'size': request.form.get('size')
-        })
+        db[ref]['challans'][index].update({'qty': request.form.get('qty'), 'line': request.form.get('line_no'), 'color': request.form.get('color'), 'size': request.form.get('size')})
         save_accessories_db(db)
-            
     return redirect(url_for('accessories_print_view', ref=ref))
 
-@app.route('/download-closing-excel', methods=['GET'])
-def download_closing_excel():
-    if not session.get('logged_in'): return redirect(url_for('index'))
-    internal_ref_no = request.args.get('ref_no')
-    report_data = fetch_closing_report_data(internal_ref_no)
-    
-    if report_data:
-        update_stats(internal_ref_no, session.get('user', 'Unknown'))
-        stream = create_formatted_excel_report(report_data, internal_ref_no)
-        return make_response(send_file(stream, as_attachment=True, download_name=f"Report-{internal_ref_no}.xlsx", mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'))
-    return redirect(url_for('index'))
-
-# PO Report Route (Simplified for brevity as no logic changed)
+# --- PO SHEET ROUTE ---
 @app.route('/generate-po-report', methods=['POST'])
 def generate_po_report():
     if not session.get('logged_in'): return redirect(url_for('index'))
-    # ... (Same logic as Part 1, omitted to save space as per user request to focus on fixes) ...
-    # For full functionality, ensure the Part 1 logic for this route is included here.
-    return "PO Report Logic Placeholder (Combine with Part 1 logic)"
+    if 'po_sheet' not in session.get('permissions', []):
+         flash("Permission Denied")
+         return redirect(url_for('index'))
+
+    if os.path.exists(UPLOAD_FOLDER): shutil.rmtree(UPLOAD_FOLDER)
+    os.makedirs(UPLOAD_FOLDER)
+
+    uploaded_files = request.files.getlist('pdf_files')
+    all_data = []
+    final_meta = {'buyer': 'N/A', 'booking': 'N/A', 'style': 'N/A', 'season': 'N/A', 'dept': 'N/A', 'item': 'N/A'}
+    
+    for file in uploaded_files:
+        if file.filename == '': continue
+        file_path = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
+        file.save(file_path)
+        data, meta = extract_data_dynamic(file_path)
+        if meta['buyer'] != 'N/A': final_meta = meta
+        if data: all_data.extend(data)
+    
+    if not all_data:
+        return render_template_string(PO_REPORT_TEMPLATE, tables=None, message="No PO table data found in files.")
+
+    df = pd.DataFrame(all_data)
+    df['Color'] = df['Color'].str.strip()
+    df = df[df['Color'] != ""]
+    unique_colors = df['Color'].unique()
+    
+    final_tables = []
+    grand_total_qty = 0
+
+    for color in unique_colors:
+        color_df = df[df['Color'] == color]
+        pivot = color_df.pivot_table(index='P.O NO', columns='Size', values='Quantity', aggfunc='sum', fill_value=0)
+        
+        existing_sizes = pivot.columns.tolist()
+        sorted_sizes = sort_sizes(existing_sizes)
+        pivot = pivot[sorted_sizes]
+        
+        pivot['Total'] = pivot.sum(axis=1)
+        grand_total_qty += pivot['Total'].sum()
+
+        actual_qty = pivot.sum()
+        actual_qty.name = 'Actual Qty'
+        qty_plus_3 = (actual_qty * 1.03).round().astype(int)
+        qty_plus_3.name = '3% Order Qty'
+        
+        pivot = pd.concat([pivot, actual_qty.to_frame().T, qty_plus_3.to_frame().T])
+        pivot = pivot.reset_index()
+        pivot = pivot.rename(columns={'index': 'P.O NO'})
+        
+        # HTML Table Construction with custom classes
+        table_html = pivot.to_html(classes='table', index=False, border=0)
+        table_html = table_html.replace('<th>Total</th>', '<th class="total-col">Total</th>')
+        table_html = table_html.replace('<td>Total</td>', '<td class="total-col">Total</td>')
+        table_html = table_html.replace('<td>Actual Qty</td>', '<td style="text-align:right; padding-right:15px;">Actual Qty</td>')
+        table_html = table_html.replace('<td>3% Order Qty</td>', '<td style="text-align:right; padding-right:15px;">3% Order Qty</td>')
+        
+        # Add summary row class
+        table_html = re.sub(r'<tr>\s*<td[^>]*>Actual Qty</td>', '<tr class="summary-row"><td style="text-align:right; padding-right:15px;">Actual Qty</td>', table_html)
+        table_html = re.sub(r'<tr>\s*<td[^>]*>3% Order Qty</td>', '<tr class="summary-row"><td style="text-align:right; padding-right:15px;">3% Order Qty</td>', table_html)
+
+        final_tables.append({'color': color, 'table': table_html})
+        
+    return render_template_string(PO_REPORT_TEMPLATE, tables=final_tables, meta=final_meta, grand_total=f"{grand_total_qty:,}")
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
