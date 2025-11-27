@@ -137,7 +137,7 @@ def save_accessories_db(data):
         json.dump(data, f, indent=4)
 
 # ==============================================================================
-# লজিক পার্ট: PURCHASE ORDER SHEET PARSER (PO Logic)
+# লজিক পার্ট: PURCHASE ORDER SHEET PARSER
 # ==============================================================================
 def is_potential_size(header):
     h = header.strip().upper()
@@ -389,376 +389,80 @@ def parse_report_data(html_content):
         return all_report_data
     except Exception as e:
         return None
-
-def create_formatted_excel_report(report_data, internal_ref_no=""):
-    if not report_data: return None
-    wb = openpyxl.Workbook()
-    ws = wb.active
-    ws.title = "Closing Report"
-    # Styles
-    bold_font = Font(bold=True)
-    title_font = Font(size=32, bold=True, color="7B261A") 
-    white_bold_font = Font(size=16.5, bold=True, color="FFFFFF")
-    center_align = Alignment(horizontal='center', vertical='center')
-    left_align = Alignment(horizontal='left', vertical='center')
-    color_align = Alignment(horizontal='center', vertical='center', wrap_text=True)
-    thin_border = Border(left=Side(style='thin'), right=Side(style='thin'), top=Side(style='thin'), bottom=Side(style='thin'))
-    medium_border = Border(left=Side(style='medium'), right=Side(style='medium'), top=Side(style='medium'), bottom=Side(style='medium'))
-    
-    ir_ib_fill = PatternFill(start_color="7B261A", end_color="7B261A", fill_type="solid") 
-    header_row_fill = PatternFill(start_color="DE7465", end_color="DE7465", fill_type="solid") 
-    light_brown_fill = PatternFill(start_color="DE7465", end_color="DE7465", fill_type="solid") 
-    light_blue_fill = PatternFill(start_color="B9C2DF", end_color="B9C2DF", fill_type="solid") 
-    light_green_fill = PatternFill(start_color="C4D09D", end_color="C4D09D", fill_type="solid") 
-    dark_green_fill = PatternFill(start_color="f1f2e8", end_color="f1f2e8", fill_type="solid") 
-
-    NUM_COLUMNS, TABLE_START_ROW = 9, 8
-    ws.merge_cells(start_row=1, start_column=1, end_row=1, end_column=NUM_COLUMNS)
-    ws['A1'].value = "COTTON CLOTHING BD LTD"
-    ws['A1'].font = title_font 
-    ws['A1'].alignment = center_align
-
-    ws.merge_cells(start_row=2, start_column=1, end_row=2, end_column=NUM_COLUMNS)
-    ws['A2'].value = "CLOSING REPORT [ INPUT SECTION ]"
-    ws['A2'].font = Font(size=15, bold=True) 
-    ws['A2'].alignment = center_align
-    ws.row_dimensions[3].height = 6
-
-    formatted_ref_no = internal_ref_no.upper()
-    current_date = datetime.now().strftime("%d/%m/%Y")
-    left_sub_headers = {'A4': 'BUYER', 'B4': report_data[0].get('buyer', ''), 'A5': 'IR/IB NO', 'B5': formatted_ref_no, 'A6': 'STYLE NO', 'B6': report_data[0].get('style', '')}
-    
-    for cell_ref, value in left_sub_headers.items():
-        cell = ws[cell_ref]
-        cell.value = value
-        cell.font = bold_font
-        cell.alignment = left_align
-        cell.border = thin_border
-        if cell_ref == 'B5':
-            cell.fill = ir_ib_fill      
-            cell.font = white_bold_font 
-        else:
-            cell.fill = dark_green_fill 
-
-    ws.merge_cells('B4:G4'); ws.merge_cells('B5:G5'); ws.merge_cells('B6:G6')
-    
-    right_sub_headers = {'H4': 'CLOSING DATE', 'I4': current_date, 'H5': 'SHIPMENT', 'I5': 'ALL', 'H6': 'PO NO', 'I6': 'ALL'}
-    for cell_ref, value in right_sub_headers.items():
-        cell = ws[cell_ref]
-        cell.value = value
-        cell.font = bold_font
-        cell.alignment = left_align
-        cell.border = thin_border
-        cell.fill = dark_green_fill 
-
-    for row in range(4, 7):
-        for col in range(3, 8): 
-            cell = ws.cell(row=row, column=col)
-            cell.border = thin_border
-       
-    current_row = TABLE_START_ROW
-    for block in report_data:
-        table_headers = ["COLOUR NAME", "SIZE", "ORDER QTY 3%", "ACTUAL QTY", "CUTTING QC", "INPUT QTY", "BALANCE", "SHORT/PLUS QTY", "Percentage %"]
-        for col_idx, header in enumerate(table_headers, 1):
-            cell = ws.cell(row=current_row, column=col_idx, value=header)
-            cell.font = bold_font
-            cell.alignment = center_align
-            cell.border = medium_border
-            cell.fill = header_row_fill 
-
-        current_row += 1
-        start_merge_row = current_row
-        full_color_name = block.get('color', 'N/A')
-
-        for i, size in enumerate(block['headers']):
-            color_to_write = full_color_name if i == 0 else ""
-            actual_qty = int(block['gmts_qty'][i].replace(',', '') or 0)
-            input_qty = int(block['sewing_input'][i].replace(',', '') or 0) if i < len(block['sewing_input']) else 0
-            cutting_qc_val = int(block.get('cutting_qc', [])[i].replace(',', '') or 0) if i < len(block.get('cutting_qc', [])) else 0
-            
-            ws.cell(row=current_row, column=1, value=color_to_write)
-            ws.cell(row=current_row, column=2, value=size)
-            ws.cell(row=current_row, column=4, value=actual_qty)
-            ws.cell(row=current_row, column=5, value=cutting_qc_val)
-            ws.cell(row=current_row, column=6, value=input_qty)
-            
-            ws.cell(row=current_row, column=3, value=f"=ROUND(D{current_row}*1.03, 0)")      
-            ws.cell(row=current_row, column=7, value=f"=E{current_row}-F{current_row}")      
-            ws.cell(row=current_row, column=8, value=f"=F{current_row}-C{current_row}")      
-            ws.cell(row=current_row, column=9, value=f'=IF(C{current_row}<>0, H{current_row}/C{current_row}, 0)') 
-            
-            for col_idx in range(1, NUM_COLUMNS + 1):
-                cell = ws.cell(row=current_row, column=col_idx)
-                cell.border = medium_border if col_idx == 2 else thin_border
-                cell.alignment = center_align
-                if col_idx in [1, 2, 3, 6, 9]: cell.font = bold_font
-                
-                if col_idx == 3: cell.fill = light_blue_fill      
-                elif col_idx == 6: cell.fill = light_green_fill   
-                else: cell.fill = dark_green_fill 
-
-                if col_idx == 9:
-                    cell.number_format = '0.00%' 
-            current_row += 1
-            
-        end_merge_row = current_row - 1
-        if start_merge_row <= end_merge_row:
-            ws.merge_cells(start_row=start_merge_row, start_column=1, end_row=end_merge_row, end_column=1)
-            merged_cell = ws.cell(row=start_merge_row, column=1)
-            merged_cell.alignment = color_align
-            if not merged_cell.font.bold: merged_cell.font = bold_font
-
-        total_row_str = str(current_row)
-        ws.merge_cells(start_row=current_row, start_column=1, end_row=current_row, end_column=2)
-        
-        totals_formulas = {
-            "A": "TOTAL",
-            "C": f"=SUM(C{start_merge_row}:C{end_merge_row})",
-            "D": f"=SUM(D{start_merge_row}:D{end_merge_row})",
-            "E": f"=SUM(E{start_merge_row}:E{end_merge_row})",
-            "F": f"=SUM(F{start_merge_row}:F{end_merge_row})",
-            "G": f"=SUM(G{start_merge_row}:G{end_merge_row})",
-            "H": f"=SUM(H{start_merge_row}:H{end_merge_row})",
-            "I": f"=IF(C{total_row_str}<>0, H{total_row_str}/C{total_row_str}, 0)"
-        }
-        
-        for col_letter, value_or_formula in totals_formulas.items():
-            cell = ws[f"{col_letter}{current_row}"]
-            cell.value = value_or_formula
-            cell.font = bold_font
-            cell.border = medium_border
-            cell.alignment = center_align
-            cell.fill = light_brown_fill 
-            if col_letter == 'I':
-                cell.number_format = '0.00%'
-        
-        for col_idx in range(2, NUM_COLUMNS + 1):
-            cell = ws.cell(row=current_row, column=col_idx)
-            if not cell.value: 
-                cell.fill = dark_green_fill 
-                cell.border = medium_border
-        current_row += 2
-       
-    image_row = current_row + 1
-   
-    try:
-        direct_image_url = 'https://i.ibb.co/v6bp0jQW/rockybilly-regular.webp'
-        image_response = requests.get(direct_image_url)
-        image_response.raise_for_status()
-        original_img = PILImage.open(BytesIO(image_response.content))
-        padded_img = PILImage.new('RGBA', (original_img.width + 400, original_img.height), (0, 0, 0, 0))
-        padded_img.paste(original_img, (400, 0))
-        padded_image_io = BytesIO()
-        padded_img.save(padded_image_io, format='PNG')
-        img = Image(padded_image_io)
-        aspect_ratio = padded_img.height / padded_img.width
-        img.width = 95
-        img.height = int(img.width * aspect_ratio)
-        ws.row_dimensions[image_row].height = img.height * 0.90
-        ws.add_image(img, f'A{image_row}')
-    except Exception:
-        pass
-
-    signature_row = image_row + 1
-    ws.merge_cells(start_row=signature_row, start_column=1, end_row=signature_row, end_column=NUM_COLUMNS)
-    titles = ["Prepared By", "Input Incharge", "Cutting Incharge", "IE & Planning", "Sewing Manager", "Cutting Manager"]
-    signature_cell = ws.cell(row=signature_row, column=1)
-    signature_cell.value = "                 ".join(titles)
-    signature_cell.font = Font(bold=True, size=15)
-    signature_cell.alignment = Alignment(horizontal='center', vertical='center')
-
-    last_data_row = current_row - 2
-    for row in ws.iter_rows(min_row=4, max_row=last_data_row):
-        for cell in row:
-            if cell.coordinate == 'B5': continue
-            if cell.font:
-                existing_font = cell.font
-                if cell.row != 1: 
-                    new_font = Font(name=existing_font.name, size=16.5, bold=existing_font.bold, italic=existing_font.italic, vertAlign=existing_font.vertAlign, underline=existing_font.underline, strike=existing_font.strike, color=existing_font.color)
-                    cell.font = new_font
-   
-    ws.column_dimensions['A'].width = 23
-    ws.column_dimensions['B'].width = 8.5
-    ws.column_dimensions['C'].width = 20
-    ws.column_dimensions['D'].width = 17
-    ws.column_dimensions['E'].width = 17
-    ws.column_dimensions['F'].width = 15
-    ws.column_dimensions['G'].width = 13.5
-    ws.column_dimensions['H'].width = 23
-    ws.column_dimensions['I'].width = 18
-   
-    ws.page_setup.orientation = ws.ORIENTATION_PORTRAIT
-    ws.page_setup.fitToPage = True
-    ws.page_setup.fitToWidth = 1
-    ws.page_setup.fitToHeight = 1 
-    ws.page_setup.horizontalCentered = True
-    ws.page_setup.verticalCentered = False 
-    ws.page_setup.left = 0.25
-    ws.page_setup.right = 0.25
-    ws.page_setup.top = 0.45
-    ws.page_setup.bottom = 0.45
-    ws.page_setup.header = 0
-    ws.page_setup.footer = 0
-   
-    file_stream = BytesIO()
-    wb.save(file_stream)
-    file_stream.seek(0)
-    return file_stream
 # ==============================================================================
-# CSS & HTML Templates (Part 2)
+# CSS & HTML Templates (Part 2: UI & Reports)
 # ==============================================================================
+
+# --- GLOBAL MODERN STYLES (For Dashboard & Forms) ---
 COMMON_STYLES = """
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
+        :root { --primary-color: #4e54c8; --secondary-color: #8f94fb; }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+        
         body {
-            background-color: #2c3e50; 
-            background-image: url('https://i.ibb.co.com/v64Lz1gj/Picsart-25-11-19-15-49-43-423.jpg');
-            background-repeat: no-repeat;
-            background-position: center center;
-            background-attachment: fixed;
-            background-size: cover;
+            background: #1a1a2e; /* Dark Modern Background */
+            background-image: linear-gradient(160deg, #1a1a2e 0%, #16213e 100%);
             min-height: 100vh;
+            color: #fff;
             overflow-x: hidden;
         }
-        body::before {
-            content: "";
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            z-index: -1;
-            position: fixed;
-        }
-        
+
+        /* Glassmorphism Card Style */
         .glass-card {
-            background: rgba(255, 255, 255, 0.15);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            padding: 45px 40px;
-            border-radius: 16px;
-            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
-            color: white;
-            animation: floatIn 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
         }
 
         .center-container {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            width: 100%;
-            padding: 20px;
+            display: flex; justify-content: center; align-items: center;
+            min-height: 100vh; padding: 20px;
         }
-        .center-container .glass-card {
-            width: 100%;
-            max-width: 450px;
-            text-align: center;
-        }
+        .center-container .glass-card { width: 100%; max-width: 450px; text-align: center; }
 
-        @keyframes floatIn {
-            from { opacity: 0; transform: translateY(30px) scale(0.95); }
-            to { opacity: 1; transform: translateY(0) scale(1); }
+        h1 { font-weight: 700; margin-bottom: 5px; background: -webkit-linear-gradient(#fff, #a2a8d3); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .subtitle { color: #a0a0a0; font-size: 13px; margin-bottom: 30px; }
+
+        .input-group { margin-bottom: 20px; text-align: left; }
+        .input-group label { display: block; font-size: 12px; color: #a2a8d3; margin-bottom: 8px; font-weight: 500; letter-spacing: 0.5px; }
+        
+        input, select {
+            width: 100%; padding: 12px 15px;
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px; color: #fff; outline: none; transition: 0.3s;
         }
-        
-        h1 { color: #ffffff; font-size: 26px; font-weight: 600; margin-bottom: 8px; text-shadow: 0 2px 4px rgba(0,0,0,0.2); }
-        p.subtitle { color: #e0e0e0; font-size: 13px; margin-bottom: 30px; font-weight: 300; letter-spacing: 0.5px; }
-        
-        .input-group { text-align: left; margin-bottom: 20px; }
-        .input-group label {
-            display: block;
-            font-size: 12px;
-            color: #ffffff;
-            font-weight: 500;
-            margin-bottom: 8px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            text-shadow: 0 1px 2px rgba(0,0,0,0.3);
-        }
-        
-        input[type="password"], input[type="text"], input[type="file"], select, input[type="number"] {
-            width: 100%;
-            padding: 12px 15px;
-            background: rgba(255, 255, 255, 0.2);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            border-radius: 8px;
-            font-size: 15px;
-            color: #fff;
-            transition: all 0.3s ease;
-            outline: none;
-            appearance: none;
-        }
-        
+        input:focus, select:focus { border-color: #8f94fb; background: rgba(0, 0, 0, 0.4); }
+
         button {
-            width: 100%;
-            padding: 14px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 15px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
-            margin-top: 10px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            width: 100%; padding: 14px;
+            background: linear-gradient(135deg, #4e54c8, #8f94fb);
+            border: none; border-radius: 10px;
+            color: white; font-weight: 600; cursor: pointer;
+            transition: 0.3s; box-shadow: 0 4px 15px rgba(78, 84, 200, 0.4);
         }
-        button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
-        }
-        
-        .footer-credit-login {
-            margin-top: 25px;
-            font-size: 11px;
-            color: rgba(255,255,255,0.5);
-            text-align: center;
-        }
+        button:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(78, 84, 200, 0.6); }
 
-        a.logout {
-            display: inline-block;
-            margin-top: 15px;
-            color: #ff7675;
-            text-decoration: none;
-            font-size: 14px;
-            font-weight: 600;
-            transition: 0.3s;
-        }
-        a.logout:hover { color: white; }
-
-        /* Admin Styles */
-        .admin-container { display: flex; width: 100%; height: 100vh; position: fixed; top: 0; left: 0;}
-        .admin-sidebar {
-            width: 280px;
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(15px);
-            border-right: 1px solid rgba(255, 255, 255, 0.1);
-            display: flex; flex-direction: column; padding: 25px;
-        }
-        .nav-link {
-            display: flex; align-items: center; padding: 12px 15px;
-            color: rgba(255, 255, 255, 0.7); text-decoration: none; border-radius: 10px;
-            transition: all 0.3s ease; font-size: 14px; cursor: pointer; margin-bottom: 10px;
-        }
-        .nav-link:hover, .nav-link.active {
-            background: linear-gradient(90deg, rgba(108, 92, 231, 0.8) 0%, rgba(118, 75, 162, 0.8) 100%);
-            color: white; box-shadow: 0 4px 15px rgba(0,0,0,0.2); transform: translateX(5px);
-        }
-        .admin-content { flex: 1; padding: 30px; overflow-y: auto; display: flex; flex-direction: column; }
+        /* Report Specific Styles Override (White Backgrounds) */
+        .report-body { background: white !important; color: black !important; }
         
-        .user-table { width: 100%; border-collapse: collapse; color: white; margin-top: 20px; }
-        .user-table th, .user-table td { padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.1); text-align: left; }
-        .user-table th { background: rgba(255,255,255,0.1); font-weight: 600; }
-        .user-btn { padding: 6px 12px; border-radius: 6px; border: none; font-size: 12px; cursor: pointer; color: white; margin-right: 5px; }
-        .btn-edit { background: #f39c12; }
-        .btn-delete { background: #e74c3c; }
-        .perm-group { display: flex; gap: 15px; margin-top: 5px; flex-wrap: wrap; }
+        /* Table Styles for Admin Dashboard */
+        .user-table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        .user-table th { text-align: left; color: #a2a8d3; font-weight: 500; padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .user-table td { padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); color: #ddd; }
+        
+        .footer-credit { margin-top: 20px; font-size: 11px; color: rgba(255,255,255,0.3); text-align: center; }
     </style>
 """
 
-# --- PO SHEET REPORT TEMPLATE ---
+# --- PO SHEET TEMPLATE (Classic Design Preserved) ---
 PO_REPORT_TEMPLATE = """
 <!DOCTYPE html>
 <html lang="en">
@@ -767,27 +471,34 @@ PO_REPORT_TEMPLATE = """
     <title>PO Summary Report</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        body { background-color: #f8f9fa; padding: 30px 0; font-family: 'Segoe UI', sans-serif; }
+        /* Force classic white paper look */
+        body { background-color: #f8f9fa; padding: 30px 0; font-family: 'Segoe UI', sans-serif; color: #000; }
         .container { max-width: 1200px; }
+        
+        /* Header Logic */
         .header { text-align: center; border-bottom: 2px solid #000; padding-bottom: 15px; margin-bottom: 20px; }
         .title { font-size: 2rem; font-weight: 800; color: #2c3e50; text-transform: uppercase; }
         
-        .info-box { background: white; padding: 15px; border-radius: 8px; border-left: 5px solid #2c3e50; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        /* Info Box - Classic Boxed Style */
+        .info-box { background: white; padding: 15px; border: 1px solid #ddd; border-left: 5px solid #2c3e50; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
         .info-item { font-size: 1.1rem; font-weight: 600; color: #555; }
         .info-val { color: #000; font-weight: 800; }
         
-        .table-card { background: white; margin-bottom: 30px; border: 1px solid #ddd; }
-        .color-header { background: #2c3e50; color: white; padding: 10px; font-weight: 800; font-size: 1.3rem; text-transform: uppercase; }
+        /* Tables - Keeping the Pandas Style structure */
+        .table-card { background: white; margin-bottom: 30px; border: 1px solid #999; }
+        .color-header { background: #2c3e50; color: white; padding: 8px 12px; font-weight: 800; font-size: 1.2rem; text-transform: uppercase; }
         
-        table { width: 100%; border-collapse: collapse; }
-        th, td { border: 1px solid #000; padding: 8px; text-align: center; font-weight: 700; }
-        th { background: #eee; }
-        .total-col { background: #d1ecff; }
+        table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+        th, td { border: 1px solid #000 !important; padding: 6px; text-align: center; vertical-align: middle; }
+        th { background-color: #eee !important; font-weight: 700; }
         
-        .summary-row td { background: #e2e6ea; border-top: 2px solid #000; font-weight: 900; }
+        /* Specific Columns from Pandas Logic */
+        .total-col { background-color: #d1ecff !important; font-weight: bold; }
+        .summary-row td { background-color: #e2e6ea !important; font-weight: 800; border-top: 2px solid #000 !important; }
         
         @media print {
             .no-print { display: none; }
+            body { background: white; }
             .color-header { background: #2c3e50 !important; color: white !important; -webkit-print-color-adjust: exact; }
             .total-col { background: #d1ecff !important; -webkit-print-color-adjust: exact; }
             .summary-row td { background: #e2e6ea !important; -webkit-print-color-adjust: exact; }
@@ -797,7 +508,7 @@ PO_REPORT_TEMPLATE = """
 <body>
     <div class="container">
         <div class="d-flex justify-content-end mb-3 no-print">
-            <a href="/" class="btn btn-secondary me-2">Back to Dashboard</a>
+            <a href="/" class="btn btn-secondary me-2">Back</a>
             <button onclick="window.print()" class="btn btn-dark">🖨️ Print Report</button>
         </div>
 
@@ -825,8 +536,8 @@ PO_REPORT_TEMPLATE = """
         </div>
         {% endfor %}
         
-        <div class="text-center mt-5" style="border-top:1px solid #ddd; padding-top:10px; font-size:12px;">
-            Report Created By <strong>Mehedi Hasan</strong>
+        <div class="text-center mt-5" style="border-top:1px solid #000; padding-top:10px; font-size:12px; width: 200px; margin-left: auto; margin-right: auto;">
+            <strong>Mehedi Hasan</strong>
         </div>
         {% else %}
         <div class="alert alert-warning text-center">{{ message }}</div>
@@ -842,66 +553,58 @@ CLOSING_REPORT_PREVIEW_TEMPLATE = """
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Closing Report Preview</title>
+    <title>Closing Report</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
-        body { background-color: #f8f9fa; padding: 30px 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: #fff; padding: 20px; font-family: 'Segoe UI', sans-serif; color: black; }
         .container { max-width: 1400px; }
-        .company-header { text-align: center; margin-bottom: 20px; border-bottom: 2px solid #000; padding-bottom: 10px; }
-        .company-name { font-size: 2.2rem; font-weight: 800; color: #2c3e50; text-transform: uppercase; }
-        .report-title { font-size: 1.1rem; color: #555; font-weight: 600; text-transform: uppercase; }
+        .company-name { font-size: 2.2rem; font-weight: 800; color: #7B261A; text-align: center; }
+        .report-title { font-size: 1.2rem; font-weight: 700; text-align: center; margin-bottom: 20px; text-decoration: underline; }
         
-        .table-card { background: white; border-radius: 0; margin-bottom: 30px; border: none; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
-        .color-header { background-color: #2c3e50; color: white; padding: 10px 15px; font-size: 1.4rem; font-weight: 800; text-transform: uppercase; }
+        .table-card { margin-bottom: 30px; border: 1px solid #000; }
+        .color-header { background-color: #DE7465; color: black; padding: 5px 10px; font-weight: bold; border-bottom: 1px solid #000; }
         
-        .table th { background-color: #fff; color: #000; text-align: center; border: 1px solid #000; font-weight: 900; }
-        .table td { text-align: center; border: 1px solid #000; padding: 6px; color: #000; font-weight: 600; }
+        .table-bordered th, .table-bordered td { border: 1px solid #000 !important; text-align: center; vertical-align: middle; padding: 4px; font-size: 0.9rem; font-weight: 600; }
         .col-3pct { background-color: #B9C2DF !important; }
         .col-input { background-color: #C4D09D !important; }
         
-        .action-bar { margin-bottom: 20px; display: flex; justify-content: flex-end; gap: 15px; }
-        .btn-custom { border-radius: 50px; padding: 10px 25px; font-weight: 600; transition: transform 0.2s; }
-        .btn-custom:hover { transform: translateY(-2px); }
-
         @media print {
             .no-print { display: none !important; }
-            .action-bar { display: none; }
-            .color-header { background-color: #2c3e50 !important; -webkit-print-color-adjust: exact; color: white !important; }
             .col-3pct { background-color: #B9C2DF !important; -webkit-print-color-adjust: exact; }
             .col-input { background-color: #C4D09D !important; -webkit-print-color-adjust: exact; }
+            .color-header { background-color: #DE7465 !important; -webkit-print-color-adjust: exact; }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="action-bar no-print">
-            <a href="/" class="btn btn-outline-secondary btn-custom">Back to Dashboard</a>
-            <button onclick="downloadExcel()" class="btn btn-success btn-custom">Download Excel</button>
-            <button onclick="window.print()" class="btn btn-dark btn-custom">🖨️ Print Report</button>
+        <div class="d-flex justify-content-end mb-3 no-print" style="gap:10px;">
+            <a href="/" class="btn btn-outline-dark btn-sm">Dashboard</a>
+            <button onclick="downloadExcel()" class="btn btn-success btn-sm">Download Excel</button>
+            <button onclick="window.print()" class="btn btn-dark btn-sm">Print</button>
         </div>
 
-        <div class="company-header">
-            <div class="company-name">Cotton Clothing BD Limited</div>
-            <div class="report-title">CLOSING REPORT [ INPUT SECTION ]</div>
-            <div>Date: <span id="date"></span></div>
-        </div>
+        <div class="company-name">COTTON CLOTHING BD LTD</div>
+        <div class="report-title">CLOSING REPORT [ INPUT SECTION ]</div>
 
         {% if report_data %}
-        <div style="background:white; padding:15px; margin-bottom:20px; border-left: 5px solid #2c3e50;">
+        <div style="border:1px solid #000; padding:10px; margin-bottom:15px; background:#f9f9f9;">
             <div class="row">
                 <div class="col-md-4"><strong>Buyer:</strong> {{ report_data[0].buyer }}</div>
                 <div class="col-md-4"><strong>Style:</strong> {{ report_data[0].style }}</div>
-                <div class="col-md-4 text-end"><strong>Booking:</strong> <span style="background:#2c3e50; color:white; padding:5px 10px; font-weight:bold;">{{ ref_no }}</span></div>
+                <div class="col-md-4 text-end"><strong>Ref No:</strong> {{ ref_no }}</div>
             </div>
         </div>
 
         {% for block in report_data %}
         <div class="table-card">
             <div class="color-header">COLOR: {{ block.color }}</div>
-            <table class="table table-bordered">
+            <table class="table table-bordered mb-0">
                 <thead>
-                    <tr><th>SIZE</th><th>ORDER QTY 3%</th><th>ACTUAL QTY</th><th>CUTTING QC</th><th>INPUT QTY</th><th>BALANCE</th><th>SHORT/PLUS</th><th>%</th></tr>
+                    <tr style="background:#DE7465;">
+                        <th>SIZE</th><th>ORDER QTY 3%</th><th>ACTUAL QTY</th><th>CUTTING QC</th><th>INPUT QTY</th><th>BALANCE</th><th>SHORT/PLUS</th><th>%</th>
+                    </tr>
                 </thead>
                 <tbody>
                     {% for i in range(block.headers|length) %}
@@ -918,7 +621,7 @@ CLOSING_REPORT_PREVIEW_TEMPLATE = """
                             <td>{{ cut_qc }}</td>
                             <td class="col-input">{{ inp_qty }}</td>
                             <td>{{ balance }}</td>
-                            <td style="color: {{ 'green' if short_plus >= 0 else 'red' }}">{{ short_plus }}</td>
+                            <td style="color: {{ 'red' if short_plus < 0 else 'black' }}">{{ short_plus }}</td>
                             <td>{{ "%.2f"|format((short_plus / qty_3)*100) if qty_3 > 0 else 0 }}%</td>
                         </tr>
                     {% endfor %}
@@ -926,27 +629,20 @@ CLOSING_REPORT_PREVIEW_TEMPLATE = """
             </table>
         </div>
         {% endfor %}
-        <div class="text-center mt-4 text-muted" style="font-size:12px;">Report Generated By Mehedi Hasan</div>
+        
+        <div style="margin-top: 40px; text-align: center; font-weight: bold; border-top: 1px solid #000; width: 200px; margin-left: auto; margin-right: auto; padding-top: 5px;">
+            Mehedi Hasan
+        </div>
         {% endif %}
     </div>
-
     <script>
-        document.getElementById('date').innerText = new Date().toLocaleDateString('en-GB');
         function downloadExcel() {
             Swal.fire({
-                title: 'Preparing Excel...',
-                html: 'Please wait while we generate the file.',
+                title: 'Downloading...',
                 timer: 2000,
-                timerProgressBar: true,
                 didOpen: () => { Swal.showLoading() }
             }).then(() => {
                 window.location.href = "/download-closing-excel?ref_no={{ ref_no }}";
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Downloaded!',
-                    showConfirmButton: false,
-                    timer: 1500
-                });
             });
         }
     </script>
@@ -954,7 +650,7 @@ CLOSING_REPORT_PREVIEW_TEMPLATE = """
 </html>
 """
 
-# --- ACCESSORIES REPORT TEMPLATE (With Edit/Delete Restrictions) ---
+# --- ACCESSORIES REPORT TEMPLATE (Specific Design Requirement) ---
 ACCESSORIES_REPORT_TEMPLATE = """
 <!DOCTYPE html>
 <html lang="en">
@@ -965,8 +661,9 @@ ACCESSORIES_REPORT_TEMPLATE = """
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
+        /* Classic White Paper Report Style */
         body { font-family: 'Poppins', sans-serif; background: #fff; padding: 20px; color: #000; }
-        .container { max-width: 1000px; margin: 0 auto; border: 2px solid #000; padding: 20px; min-height: 90vh; }
+        .container { max-width: 1000px; margin: 0 auto; border: 2px solid #000; padding: 20px; min-height: 90vh; position: relative; }
         
         .header { text-align: center; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 20px; }
         .company-name { font-size: 28px; font-weight: 800; text-transform: uppercase; color: #2c3e50; line-height: 1; }
@@ -975,34 +672,41 @@ ACCESSORIES_REPORT_TEMPLATE = """
         .info-grid { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; }
         .info-left { flex: 2; border: 1px dashed #555; padding: 15px; margin-right: 15px; }
         .info-right { flex: 1; border-left: 1px solid #ddd; padding-left: 15px; }
-        
-        .info-row { display: flex; margin-bottom: 5px; font-size: 14px; align-items: center; }
-        .info-label { font-weight: 800; width: 80px; color: #444; }
-        .info-val { font-weight: 700; font-size: 15px; color: #000; }
-        .booking-border { border: 2px solid #000; padding: 2px 8px; display: inline-block; font-weight: 900; }
+        .info-row { margin-bottom: 5px; font-size: 14px; }
+        .booking-border { border: 2px solid #000; padding: 2px 8px; font-weight: 900; }
 
         .summary-container { margin-bottom: 20px; border: 2px solid #000; padding: 10px; background: #f9f9f9; }
+        
         .main-table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 14px; }
         .main-table th { background: #2c3e50 !important; color: white !important; padding: 10px; border: 1px solid #000; }
-        .main-table td { border: 1px solid #000; padding: 6px; text-align: center; font-weight: 600; }
+        .main-table td { border: 1px solid #000; padding: 6px; text-align: center; font-weight: 600; color: black; }
         
-        .line-card { display: inline-block; padding: 4px 10px; border: 2px solid #000; font-weight: 900; border-radius: 4px; box-shadow: 2px 2px 0 #000; background: #fff; }
+        .status-cell { font-size: 18px; font-weight: 900; color: black !important; } /* Black Tick */
         
-        .action-btn { color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px; margin: 0 2px; cursor: pointer; border: none; }
-        .btn-edit-row { background-color: #f39c12; }
-        .btn-del-row { background-color: #e74c3c; }
-
+        .line-card { display: inline-block; padding: 4px 10px; border: 2px solid #000; font-weight: 900; background: #fff; }
         .footer-total { margin-top: 20px; display: flex; justify-content: flex-end; }
         .total-box { border: 3px solid #000; padding: 8px 30px; font-size: 20px; font-weight: 900; background: #ddd; -webkit-print-color-adjust: exact; }
 
         .no-print { margin-bottom: 20px; text-align: right; }
-        .btn { padding: 8px 20px; background: #2c3e50; color: white; border: none; cursor: pointer; border-radius: 4px; font-size: 14px; text-decoration: none; }
-        .btn-add { background: #27ae60; }
+        .btn { padding: 8px 20px; background: #2c3e50; color: white; border: none; cursor: pointer; text-decoration: none; border-radius: 4px; }
         
+        /* Action buttons */
+        .action-btn { background: none; border: none; cursor: pointer; font-size: 14px; margin: 0 5px; }
+        .edit-icon { color: orange; }
+        .del-icon { color: red; }
+
+        /* Signature Section */
+        .signatures { margin-top: 80px; display: flex; justify-content: space-between; padding: 0 50px; text-align: center; font-weight: bold; }
+        .sig-line { border-top: 2px solid #000; width: 180px; padding-top: 5px; }
+
+        /* Generator Name at Bottom Center */
+        .generator-name { position: absolute; bottom: 10px; width: 100%; text-align: center; font-size: 12px; font-weight: bold; color: #000; left: 0; }
+
         @media print {
             .no-print { display: none; }
             .action-col { display: none; }
-            .container { border: none; padding: 0; margin: 0; max-width: 100%; }
+            .container { border: none; padding: 0; margin: 0; max-width: 100%; min-height: auto; }
+            .generator-name { position: static; margin-top: 30px; }
         }
     </style>
 </head>
@@ -1012,7 +716,7 @@ ACCESSORIES_REPORT_TEMPLATE = """
     <a href="/admin/accessories" class="btn">Search Again</a>
     <form action="/admin/accessories/input" method="post" style="display:inline;">
         <input type="hidden" name="ref_no" value="{{ ref }}">
-        <button type="submit" class="btn btn-add">Add New Item</button>
+        <button type="submit" class="btn" style="background:#27ae60;">Add Item</button>
     </form>
     <button onclick="window.print()" class="btn">🖨️ Print</button>
 </div>
@@ -1020,26 +724,26 @@ ACCESSORIES_REPORT_TEMPLATE = """
 <div class="container">
     <div class="header">
         <div class="company-name">Cotton Clothing BD Limited</div>
-        <div style="font-size:12px; font-weight:600; margin:5px 0 10px;">Kazi Tower, 27 Road, Gazipura, Tongi, Gazipur.</div>
+        <div style="font-size:12px; font-weight:600; margin:5px 0;">Kazi Tower, 27 Road, Gazipura, Tongi, Gazipur.</div>
         <div class="report-title">ACCESSORIES DELIVERY REPORT</div>
     </div>
 
     <div class="info-grid">
         <div class="info-left">
-            <div class="info-row"><span class="info-label">Booking:</span> <span class="booking-border">{{ ref }}</span></div>
-            <div class="info-row"><span class="info-label">Buyer:</span> <span class="info-val">{{ buyer }}</span></div>
-            <div class="info-row"><span class="info-label">Style:</span> <span class="info-val">{{ style }}</span></div>
-            <div class="info-row"><span class="info-label">Date:</span> <span class="info-val">{{ today }}</span></div>
+            <div class="info-row"><strong>Booking:</strong> <span class="booking-border">{{ ref }}</span></div>
+            <div class="info-row"><strong>Buyer:</strong> {{ buyer }}</div>
+            <div class="info-row"><strong>Style:</strong> {{ style }}</div>
+            <div class="info-row"><strong>Date:</strong> {{ today }}</div>
         </div>
         <div class="info-right">
-            <div style="font-weight:700; margin-bottom:8px;">Store: Clothing General Store</div>
-            <div style="font-weight:700; margin-bottom:8px;">Send: Cutting</div>
-            <div style="font-weight:700;">Item: <span style="border:1px solid #000; padding:0 5px;">{{ item_type if item_type else 'Top/Btm' }}</span></div>
+            <div class="info-row"><strong>Store:</strong> Clothing General Store</div>
+            <div class="info-row"><strong>Send To:</strong> Cutting Section</div>
+            <div class="info-row"><strong>Item Type:</strong> {{ item_type if item_type else 'General' }}</div>
         </div>
     </div>
 
     <div class="summary-container">
-        <div style="font-weight:900; text-align:center; border-bottom:1px solid #000; margin-bottom:5px;">LINE-WISE SUMMARY</div>
+        <div style="text-align:center; font-weight:900; border-bottom:1px solid #000; margin-bottom:5px;">LINE-WISE SUMMARY</div>
         <table style="width:100%; font-size:13px; font-weight:700;">
             <tr>
             {% for line, qty in line_summary.items() %}
@@ -1048,7 +752,7 @@ ACCESSORIES_REPORT_TEMPLATE = """
             {% endfor %}
             </tr>
         </table>
-        <div style="text-align:right; margin-top:5px; font-weight:800; border-top:1px solid #ccc;">Entries: {{ count }}</div>
+        <div style="text-align:right; font-weight:800; margin-top:5px;">Total Deliveries: {{ count }}</div>
     </div>
 
     <table class="main-table">
@@ -1067,13 +771,15 @@ ACCESSORIES_REPORT_TEMPLATE = """
                     <td>{% if loop.index == count %}<div class="line-card">{{ item.line }}</div>{% else %}{{ item.line }}{% endif %}</td>
                     <td>{{ item.color }}</td>
                     <td>{{ item.size }}</td>
-                    <td style="color:green; font-size:18px; font-weight:900;">✔</td>
+                    <td class="status-cell">
+                        {% if item.status == '✔' %}✔{% endif %}
+                    </td>
                     <td style="font-size:16px; font-weight:800;">{{ item.qty }}</td>
                     
                     {% if session.role == 'admin' %}
                     <td class="action-col">
-                        <a href="/admin/accessories/edit?ref={{ ref }}&index={{ loop.index0 }}" class="action-btn btn-edit-row"><i class="fas fa-pencil-alt"></i></a>
-                        <button onclick="confirmDelete('{{ ref }}', {{ loop.index0 }})" class="action-btn btn-del-row"><i class="fas fa-trash"></i></button>
+                        <a href="/admin/accessories/edit?ref={{ ref }}&index={{ loop.index0 }}" class="action-btn edit-icon"><i class="fas fa-pencil-alt"></i></a>
+                        <button onclick="confirmDelete('{{ ref }}', {{ loop.index0 }})" class="action-btn del-icon"><i class="fas fa-trash"></i></button>
                     </td>
                     {% endif %}
                 </tr>
@@ -1081,27 +787,25 @@ ACCESSORIES_REPORT_TEMPLATE = """
         </tbody>
     </table>
 
-    <div class="footer-total"><div class="total-box">TOTAL QTY: {{ ns.grand_total }}</div></div>
+    <div class="footer-total"><div class="total-box">TOTAL: {{ ns.grand_total }}</div></div>
 
-    <div style="margin-top: 60px; display: flex; justify-content: space-between; text-align: center; font-weight: bold; padding: 0 50px;">
-        <div style="border-top: 2px solid #000; width: 180px;">Store Incharge</div>
-        <div style="border-top: 2px solid #000; width: 180px;">Received By</div>
-        <div style="border-top: 2px solid #000; width: 180px;">Cutting Incharge</div>
+    <div class="signatures">
+        <div class="sig-line">Store Incharge</div>
+        <div class="sig-line">Received By</div>
+        <div class="sig-line">Cutting Incharge</div>
     </div>
-    
-    <div class="text-center mt-5" style="font-size:12px; color:#555;">Report Generator: Mehedi Hasan</div>
+
+    <div class="generator-name">Mehedi Hasan</div>
 </div>
 
 <script>
     function confirmDelete(ref, index) {
         Swal.fire({
-            title: 'Are you sure?',
-            text: "You won't be able to revert this!",
+            title: 'Delete this entry?',
             icon: 'warning',
             showCancelButton: true,
             confirmButtonColor: '#d33',
-            cancelButtonColor: '#3085d6',
-            confirmButtonText: 'Yes, delete it!'
+            confirmButtonText: 'Yes, Delete'
         }).then((result) => {
             if (result.isConfirmed) {
                 const form = document.createElement('form');
@@ -1120,289 +824,367 @@ ACCESSORIES_REPORT_TEMPLATE = """
 </html>
 """
 
-# --- LOGIN TEMPLATE ---
+# --- DASHBOARD & FORM TEMPLATES (MODERN UI) ---
+
 LOGIN_TEMPLATE = f"""
 <!doctype html>
 <html lang="en">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>ERP Gateway Access</title>
+    <title>ERP Access</title>
     {COMMON_STYLES}
 </head>
 <body>
     <div class="center-container">
         <div class="glass-card">
-            <h1>System Login</h1>
-            <p class="subtitle">Secure Gateway for Cotton Clothing BD</p>
+            <div style="font-size: 40px; margin-bottom: 10px;">🔒</div>
+            <h1>System Access</h1>
+            <p class="subtitle">Cotton Clothing ERP Gateway</p>
             <form action="/login" method="post">
                 <div class="input-group">
-                    <label for="username">Username</label>
-                    <input type="text" id="username" name="username" placeholder="Enter Username" required>
+                    <label>User ID</label>
+                    <input type="text" name="username" placeholder="Username" required>
                 </div>
                 <div class="input-group">
-                    <label for="password">Authentication PIN</label>
-                    <input type="password" id="password" name="password" placeholder="Enter Password" required>
+                    <label>Access Pin</label>
+                    <input type="password" name="password" placeholder="Password" required>
                 </div>
-                <button type="submit">Verify & Enter</button>
+                <button type="submit">Authenticate</button>
             </form>
             {{% with messages = get_flashed_messages() %}}
                 {{% if messages %}}
-                    <div style="margin-top:15px; color:#ff7675; font-size:13px;">{{{{ messages[0] }}}}</div>
+                    <div style="margin-top:15px; color:#ff7675; font-size:13px;"><i class="fas fa-exclamation-circle"></i> {{{{ messages[0] }}}}</div>
                 {{% endif %}}
             {{% endwith %}}
-            
-            <div class="footer-credit-login">
-                © Mehedi Hasan
-            </div>
+            <div class="footer-credit">© Mehedi Hasan</div>
         </div>
     </div>
 </body>
 </html>
 """
 
-# --- USER DASHBOARD ---
 USER_DASHBOARD_TEMPLATE = f"""
 <!doctype html>
 <html lang="en">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Dashboard - User</title>
+    <title>User Workspace</title>
     {COMMON_STYLES}
 </head>
 <body>
     <div class="center-container">
-        <div class="glass-card" style="max-width: 500px;">
-            <h1>Dashboard</h1>
-            <p class="subtitle">Welcome back, {{{{ session.user }}}}</p>
-            
-            {{% if 'closing' in session.permissions %}}
-            <div style="margin-bottom: 25px; text-align:left;">
-                <label style="color:#a29bfe; font-size:12px; font-weight:600;">CLOSING REPORT</label>
-                <form action="/generate-report" method="post" onsubmit="showLoading()">
-                    <div class="input-group" style="margin-bottom:10px;">
-                        <input type="text" name="ref_no" placeholder="Enter Reference No" required>
-                    </div>
-                    <button type="submit"><i class="fas fa-file-export"></i> Generate Report</button>
-                </form>
+        <div class="glass-card" style="max-width: 500px; text-align: left;">
+            <div style="text-align:center;">
+                <h1>Workspace</h1>
+                <p class="subtitle">Hello, {{{{ session.user }}}}</p>
             </div>
-            {{% endif %}}
+            
+            <div style="display: flex; flex-direction: column; gap: 15px;">
+                {{% if 'closing' in session.permissions %}}
+                <div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1);">
+                    <div style="font-size: 14px; font-weight: 600; color: #a2a8d3; margin-bottom: 10px;"><i class="fas fa-file-invoice"></i> Closing Report</div>
+                    <form action="/generate-report" method="post" onsubmit="loadAlert()">
+                        <div style="display:flex; gap:10px;">
+                            <input type="text" name="ref_no" placeholder="Reference No" required>
+                            <button type="submit" style="width: auto; padding: 0 20px;"><i class="fas fa-arrow-right"></i></button>
+                        </div>
+                    </form>
+                </div>
+                {{% endif %}}
 
-            {{% if 'accessories' in session.permissions %}}
-            <div style="margin-bottom: 25px; text-align:left; border-top:1px solid rgba(255,255,255,0.1); padding-top:15px;">
-                <label style="color:#a29bfe; font-size:12px; font-weight:600;">ACCESSORIES STORE</label>
-                <a href="/admin/accessories" style="display:block;">
-                    <button style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);">
-                        <i class="fas fa-box-open"></i> Manage Challans
-                    </button>
+                {{% if 'accessories' in session.permissions %}}
+                <div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); display:flex; align-items:center; justify-content:space-between;">
+                    <div style="font-size: 14px; font-weight: 600; color: #a2a8d3;"><i class="fas fa-boxes"></i> Accessories Store</div>
+                    <a href="/admin/accessories" style="text-decoration:none;">
+                        <button style="width:auto; padding: 8px 15px; font-size:12px;">Open</button>
+                    </a>
+                </div>
+                {{% endif %}}
+
+                {{% if 'po_sheet' in session.permissions %}}
+                <div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1);">
+                    <div style="font-size: 14px; font-weight: 600; color: #a2a8d3; margin-bottom: 10px;"><i class="fas fa-file-pdf"></i> PO Generator</div>
+                    <form action="/generate-po-report" method="post" enctype="multipart/form-data" onsubmit="loadAlert()">
+                        <div style="display:flex; gap:10px;">
+                            <input type="file" name="pdf_files" multiple accept=".pdf" required>
+                            <button type="submit" style="width: auto;"><i class="fas fa-cog"></i></button>
+                        </div>
+                    </form>
+                </div>
+                {{% endif %}}
+            </div>
+
+            <div style="margin-top: 30px; text-align: center;">
+                <a href="/logout" style="color: #ff7675; text-decoration: none; font-size: 14px; font-weight: 500;">
+                    <i class="fas fa-sign-out-alt"></i> Sign Out
                 </a>
-            </div>
-            {{% endif %}}
-
-            {{% if 'po_sheet' in session.permissions %}}
-             <div style="margin-bottom: 20px; text-align:left; border-top:1px solid rgba(255,255,255,0.1); padding-top:15px;">
-                <label style="color:#a29bfe; font-size:12px; font-weight:600;">PO SHEET GENERATOR</label>
-                 <form action="/generate-po-report" method="post" enctype="multipart/form-data" onsubmit="showLoading()">
-                    <input type="file" name="pdf_files" multiple accept=".pdf" required style="margin-bottom:10px;">
-                    <button type="submit" style="background: linear-gradient(135deg, #ff9966 0%, #ff5e62 100%);">
-                        <i class="fas fa-file-pdf"></i> Create PO Sheet
-                    </button>
-                </form>
-            </div>
-            {{% endif %}}
-            
-            <div class="footer-credit-login">
-                <a href="/logout" style="color:#ff7675; text-decoration:none; font-weight:600; font-size:14px;">Sign Out</a>
-                <div style="margin-top:5px;">© Mehedi Hasan</div>
+                <div class="footer-credit">© Mehedi Hasan</div>
             </div>
         </div>
     </div>
     <script>
-        function showLoading() {{
-            Swal.fire({{ title: 'Processing...', html: 'Processing data.', allowOutsideClick: false, didOpen: () => {{ Swal.showLoading() }} }});
-        }}
+        function loadAlert() {{ Swal.fire({{ title: 'Processing...', didOpen: () => Swal.showLoading() }}); }}
     </script>
 </body>
 </html>
 """
 
-# --- ADMIN DASHBOARD ---
+ACCESSORIES_SEARCH_TEMPLATE = f"""
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Find Booking</title>
+    {COMMON_STYLES}
+</head>
+<body>
+    <div class="center-container">
+        <div class="glass-card">
+            <h1>Accessories Hub</h1>
+            <p class="subtitle">Search Booking to Manage Challans</p>
+            <form action="/admin/accessories/input" method="post">
+                <div class="input-group">
+                    <label>Booking Reference</label>
+                    <input type="text" name="ref_no" placeholder="e.g. Booking-123" required>
+                </div>
+                <button type="submit">Proceed <i class="fas fa-arrow-right"></i></button>
+            </form>
+            <div style="margin-top: 20px;">
+                <a href="/" style="color: rgba(255,255,255,0.5); font-size: 12px; text-decoration: none;">Back to Dashboard</a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+"""
+
+ACCESSORIES_INPUT_TEMPLATE = f"""
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>New Challan</title>
+    {COMMON_STYLES}
+</head>
+<body>
+    <div class="center-container">
+        <div class="glass-card">
+            <h1>New Challan</h1>
+            <p class="subtitle">Booking: {{{{ ref }}}}</p>
+            
+            <div style="text-align:left; background:rgba(0,0,0,0.2); padding:10px; border-radius:10px; margin-bottom:20px; font-size:13px; color:#ddd;">
+                <div><strong style="color:#a2a8d3;">Buyer:</strong> {{{{ buyer }}}}</div>
+                <div><strong style="color:#a2a8d3;">Style:</strong> {{{{ style }}}}</div>
+            </div>
+
+            <form action="/admin/accessories/save" method="post" id="form">
+                <input type="hidden" name="ref" value="{{{{ ref }}}}">
+                
+                <div class="input-group">
+                    <label>Item Type</label>
+                    <select name="item_type">
+                        <option value="" disabled selected>Select Type</option>
+                        <option value="Top">Top</option>
+                        <option value="Bottom">Bottom</option>
+                    </select>
+                </div>
+
+                <div class="input-group">
+                    <label>Color</label>
+                    <select name="color" required>
+                        {{% for c in colors %}}<option value="{{{{ c }}}}">{{{{ c }}}}</option>{{% endfor %}}
+                    </select>
+                </div>
+
+                <div style="display:flex; gap:10px;">
+                    <div class="input-group"><label>Line</label><input type="text" name="line_no" required></div>
+                    <div class="input-group"><label>Size</label><input type="text" name="size" value="-"></div>
+                </div>
+
+                <div class="input-group"><label>Qty</label><input type="number" name="qty" required></div>
+
+                <button type="submit">Save & View</button>
+            </form>
+            
+            <div style="margin-top:20px; display:flex; justify-content:space-between;">
+                <a href="/admin/accessories/print?ref={{{{ ref }}}}" style="font-size:12px; color:#8f94fb;">View Report</a>
+                <a href="/admin/accessories" style="font-size:12px; color:#aaa;">Back</a>
+            </div>
+            <div class="footer-credit">© Mehedi Hasan</div>
+        </div>
+    </div>
+    <script>
+        document.getElementById('form').addEventListener('submit', function(e){{
+            e.preventDefault(); Swal.fire({{title:'Saving...', didOpen:()=>Swal.showLoading()}}); e.target.submit();
+        }});
+    </script>
+</body>
+</html>
+"""
+
+ACCESSORIES_EDIT_TEMPLATE = f"""
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Edit Challan</title>
+    {COMMON_STYLES}
+</head>
+<body>
+    <div class="center-container">
+        <div class="glass-card">
+            <h1>Edit Challan</h1>
+            <form action="/admin/accessories/update" method="post">
+                <input type="hidden" name="ref" value="{{{{ ref }}}}">
+                <input type="hidden" name="index" value="{{{{ index }}}}">
+                <div class="input-group"><label>Line</label><input type="text" name="line_no" value="{{{{ item.line }}}}" required></div>
+                <div class="input-group"><label>Color</label><input type="text" name="color" value="{{{{ item.color }}}}" required></div>
+                <div class="input-group"><label>Size</label><input type="text" name="size" value="{{{{ item.size }}}}" required></div>
+                <div class="input-group"><label>Qty</label><input type="number" name="qty" value="{{{{ item.qty }}}}" required></div>
+                <button type="submit">Update</button>
+            </form>
+            <div style="margin-top:20px;"><a href="/admin/accessories/print?ref={{{{ ref }}}}" style="color:white; font-size:12px;">Cancel</a></div>
+        </div>
+    </div>
+</body>
+</html>
+"""
+
 ADMIN_DASHBOARD_TEMPLATE = f"""
 <!doctype html>
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Admin Console</title>
     {COMMON_STYLES}
+    <style>
+        .sidebar {{ width: 260px; background: rgba(0,0,0,0.3); padding: 30px; display: flex; flex-direction: column; border-right: 1px solid rgba(255,255,255,0.1); }}
+        .content {{ flex: 1; padding: 40px; overflow-y: auto; }}
+        .nav-item {{ padding: 12px 15px; margin-bottom: 5px; color: #a2a8d3; cursor: pointer; border-radius: 10px; transition: 0.3s; font-size: 14px; display: flex; align-items: center; gap: 10px; }}
+        .nav-item:hover, .nav-item.active {{ background: rgba(255,255,255,0.1); color: white; }}
+        .stat-grid {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px; }}
+        .stat-card {{ background: rgba(255,255,255,0.05); padding: 20px; border-radius: 15px; border: 1px solid rgba(255,255,255,0.05); }}
+    </style>
 </head>
 <body>
-    <div class="admin-container">
-        <div class="admin-sidebar">
-            <div style="margin-bottom: 40px; text-align: center;">
-                <h2 style="color: white; font-size: 22px; font-weight: 600;">Admin Panel</h2>
-                <p style="color: #a29bfe; font-size: 12px; letter-spacing: 1px;">SUPER ADMIN ACCESS</p>
-            </div>
+    <div style="display: flex; height: 100vh;">
+        <div class="sidebar">
+            <h2 style="color:white; font-size:20px; margin-bottom: 5px;">Admin Panel</h2>
+            <div style="font-size:10px; color:#a2a8d3; margin-bottom:40px;">SUPER USER ACCESS</div>
             
-            <ul style="list-style: none;">
-                <li><a class="nav-link active" onclick="showSection('closing', this)"><i class="fas fa-file-export" style="margin-right:10px;"></i> Closing Report</a></li>
-                <li><a class="nav-link" href="/admin/accessories"><i class="fas fa-box-open" style="margin-right:10px;"></i> Accessories Hub</a></li>
-                <li><a class="nav-link" onclick="showSection('po', this)"><i class="fas fa-file-pdf" style="margin-right:10px;"></i> PO Sheet</a></li>
-                <li><a class="nav-link" onclick="showSection('user-manage', this)"><i class="fas fa-users-cog" style="margin-right:10px;"></i> User Management</a></li>
-                <li><a class="nav-link" onclick="showSection('history', this)"><i class="fas fa-history" style="margin-right:10px;"></i> System Logs</a></li>
-            </ul>
+            <div class="nav-item active" onclick="show('closing', this)"><i class="fas fa-chart-line"></i> Closing Report</div>
+            <div class="nav-item" onclick="show('acc', this)"><i class="fas fa-boxes"></i> Accessories</div>
+            <div class="nav-item" onclick="show('po', this)"><i class="fas fa-file-contract"></i> PO Sheet</div>
+            <div class="nav-item" onclick="show('users', this)"><i class="fas fa-users"></i> Users</div>
+            <div class="nav-item" onclick="show('logs', this)"><i class="fas fa-history"></i> Logs</div>
             
-            <div style="margin-top: auto; border-top: 1px solid rgba(255, 255, 255, 0.1); padding-top: 20px; text-align:center;">
-                <a href="/logout" style="color: #ff7675; text-decoration:none; font-size:14px; font-weight:600;">Sign Out</a>
-                <div style="font-size:10px; color:rgba(255,255,255,0.4); margin-top:5px;">© Mehedi Hasan</div>
+            <div style="margin-top:auto; text-align:center;">
+                <a href="/logout" style="color:#ff7675; text-decoration:none; font-size:13px;">Sign Out</a>
+                <div style="font-size:10px; color:#555; margin-top:10px;">© Mehedi Hasan</div>
             </div>
         </div>
 
-        <div class="admin-content">
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px;">
-                <div class="glass-card" style="padding:20px; text-align:left; animation:none;">
-                    <h3 style="font-size:24px;">{{{{ stats.today }}}}</h3>
-                    <p style="margin:0; font-size:12px; color:#ddd;">Today's Reports</p>
-                </div>
-                <div class="glass-card" style="padding:20px; text-align:left; animation:none;">
-                    <h3 style="font-size:24px;">{{{{ stats.month }}}}</h3>
-                    <p style="margin:0; font-size:12px; color:#ddd;">Monthly Total</p>
+        <div class="content">
+            <div class="stat-grid">
+                <div class="stat-card"><h3>{{{{ stats.today }}}}</h3><p style="font-size:12px; color:#aaa;">Today's Reports</p></div>
+                <div class="stat-card"><h3>{{{{ stats.month }}}}</h3><p style="font-size:12px; color:#aaa;">Monthly Total</p></div>
+            </div>
+
+            <div id="closing-section" class="section">
+                <div class="glass-card" style="text-align:left;">
+                    <h2>Generate Closing Report</h2>
+                    <form action="/generate-report" method="post" onsubmit="load()">
+                        <div class="input-group"><input type="text" name="ref_no" placeholder="Ref No" required></div>
+                        <button type="submit">Generate</button>
+                    </form>
                 </div>
             </div>
 
-            <div id="work-area" style="flex: 1; background: rgba(0, 0, 0, 0.2); border-radius: 20px; padding: 30px; position: relative;">
-                
-                <div id="closing-section" class="work-section">
-                    <h2 style="color:white; margin-bottom:20px;">Generate Closing Report</h2>
-                    <div style="max-width:400px;">
-                        <form action="/generate-report" method="post" onsubmit="showLoading()">
-                            <input type="text" name="ref_no" placeholder="Enter Ref No" style="margin-bottom:10px;" required>
-                            <button type="submit">Generate</button>
-                        </form>
-                    </div>
+            <div id="acc-section" class="section" style="display:none;">
+                <div class="glass-card" style="text-align:left;">
+                    <h2>Accessories Hub</h2>
+                    <a href="/admin/accessories"><button>Enter Accessories Store</button></a>
                 </div>
+            </div>
 
-                <div id="po-section" class="work-section" style="display:none;">
-                    <h2 style="color:white; margin-bottom:20px;">PDF PO Sheet Generator</h2>
-                    <div style="max-width:400px;">
-                        <form action="/generate-po-report" method="post" enctype="multipart/form-data" onsubmit="showLoading()">
-                            <input type="file" name="pdf_files" multiple accept=".pdf" required style="margin-bottom:10px;">
-                            <button type="submit" style="background: linear-gradient(135deg, #ff9966 0%, #ff5e62 100%);">Process PDFs</button>
-                        </form>
-                    </div>
+            <div id="po-section" class="section" style="display:none;">
+                <div class="glass-card" style="text-align:left;">
+                    <h2>PO Sheet Generator</h2>
+                    <form action="/generate-po-report" method="post" enctype="multipart/form-data" onsubmit="load()">
+                        <div class="input-group"><input type="file" name="pdf_files" multiple accept=".pdf" required></div>
+                        <button type="submit">Process PDFs</button>
+                    </form>
                 </div>
+            </div>
 
-                <div id="user-manage-section" class="work-section" style="display:none;">
-                    <h2 style="color:white; margin-bottom:20px;">User Management</h2>
-                    <div style="background: rgba(255,255,255,0.05); padding: 20px; border-radius: 10px; margin-bottom: 20px;">
-                        <h4 style="color:#a29bfe; font-size:14px; margin-bottom:15px;">Add / Edit User</h4>
-                        <form id="userForm">
-                            <input type="hidden" id="action_type" value="create">
+            <div id="users-section" class="section" style="display:none;">
+                <div class="glass-card" style="text-align:left; max-width: 800px;">
+                    <h2>User Management</h2>
+                    <div style="background:rgba(0,0,0,0.2); padding:20px; border-radius:10px; margin-bottom:20px;">
+                        <form id="uForm">
+                            <input type="hidden" id="action" value="create">
                             <div style="display:flex; gap:10px; margin-bottom:10px;">
-                                <input type="text" id="new_username" placeholder="Username" required>
-                                <input type="text" id="new_password" placeholder="Password" required>
+                                <input type="text" id="uname" placeholder="Username" required>
+                                <input type="text" id="upass" placeholder="Password" required>
                             </div>
-                            <div style="margin-bottom:15px; color:white; font-size:13px;">
-                                <label style="display:block; margin-bottom:5px;">Modules Permission:</label>
-                                <div class="perm-group">
-                                    <label><input type="checkbox" id="perm_closing" checked> Closing Report</label>
-                                    <label><input type="checkbox" id="perm_acc"> Accessories</label>
-                                    <label><input type="checkbox" id="perm_po"> PO Sheet</label>
-                                </div>
+                            <div style="color:#aaa; font-size:12px; margin-bottom:10px;">
+                                <label><input type="checkbox" id="p_close" checked> Closing</label>
+                                <label><input type="checkbox" id="p_acc"> Accessories</label>
+                                <label><input type="checkbox" id="p_po"> PO Sheet</label>
                             </div>
-                            <button type="button" onclick="handleUserSubmit()" id="saveUserBtn">Create User</button>
-                            <button type="button" onclick="resetForm()" style="background:#95a5a6; margin-top:5px;">Reset</button>
+                            <button type="button" onclick="saveUser()" id="sBtn">Create User</button>
                         </form>
                     </div>
-                    <table class="user-table">
-                        <thead><tr><th>User</th><th>Role</th><th>Permissions</th><th>Action</th></tr></thead>
-                        <tbody id="userTableBody"></tbody>
-                    </table>
+                    <table class="user-table"><tbody id="uTable"></tbody></table>
                 </div>
-
-                <div id="history-section" class="work-section" style="display:none;">
-                    <h2 style="color:white; margin-bottom:20px;">System Logs</h2>
-                    <div style="overflow-y:auto; max-height:400px;">
-                        <table class="user-table">
-                            <thead><tr><th>Date</th><th>Time</th><th>User</th><th>Ref No</th></tr></thead>
-                            <tbody>
-                                {{% for log in stats.history %}}
-                                <tr>
-                                    <td>{{{{ log.date }}}}</td>
-                                    <td>{{{{ log.time }}}}</td>
-                                    <td>{{{{ log.user }}}}</td>
-                                    <td style="color:#a29bfe;">{{{{ log.ref }}}}</td>
-                                </tr>
-                                {{% endfor %}}
-                            </tbody>
-                        </table>
-                    </div>
+            </div>
+            
+            <div id="logs-section" class="section" style="display:none;">
+                <div class="glass-card" style="text-align:left; max-width: 800px;">
+                    <h2>System Logs</h2>
+                    <table class="user-table">
+                        <thead><tr><th>Time</th><th>User</th><th>Ref</th></tr></thead>
+                        <tbody>{{% for l in stats.history %}}<tr><td>{{{{ l.date }}}} {{{{ l.time }}}}</td><td>{{{{ l.user }}}}</td><td>{{{{ l.ref }}}}</td></tr>{{% endfor %}}</tbody>
+                    </table>
                 </div>
             </div>
         </div>
     </div>
-
     <script>
-        function showLoading() {{ Swal.fire({{ title: 'Processing...', didOpen: () => Swal.showLoading() }}); }}
-        function showSection(id, el) {{
-            document.querySelectorAll('.nav-link').forEach(e => e.classList.remove('active'));
-            el.classList.add('active');
-            document.querySelectorAll('.work-section').forEach(e => e.style.display = 'none');
-            document.getElementById(id + '-section').style.display = 'block';
-            if(id === 'user-manage') loadUsers();
+        function load() {{ Swal.fire({{title:'Processing...', didOpen:()=>Swal.showLoading()}}); }}
+        function show(id, el) {{
+            document.querySelectorAll('.nav-item').forEach(e=>e.classList.remove('active')); el.classList.add('active');
+            document.querySelectorAll('.section').forEach(e=>e.style.display='none');
+            document.getElementById(id+'-section').style.display='block';
+            if(id==='users') loadUsers();
         }}
         function loadUsers() {{
-            fetch('/admin/get-users').then(res => res.json()).then(data => {{
-                let html = '';
-                for (const [user, details] of Object.entries(data)) {{
-                    html += `<tr><td>${{user}}</td><td>${{details.role}}</td><td>${{details.permissions ? details.permissions.join(', ') : ''}}</td>
-                    <td>${{details.role !== 'admin' ? `<button class="user-btn btn-edit" onclick="editUser('${{user}}', '${{details.password}}', '${{details.permissions}}')">Edit</button><button class="user-btn btn-delete" onclick="deleteUser('${{user}}')">Delete</button>` : 'Admin'}}</td></tr>`;
-                }}
-                document.getElementById('userTableBody').innerHTML = html;
+            fetch('/admin/get-users').then(r=>r.json()).then(d=>{{
+                let h=''; for(let [u,v] of Object.entries(d)){{
+                    h+=`<tr><td>${{u}}</td><td>${{v.role}}</td><td>${{v.permissions}}</td><td>${{v.role!=='admin'?`<i class="fas fa-trash" style="color:red;cursor:pointer;" onclick="delUser('${{u}}')"></i>`:''}}</td></tr>`;
+                }} document.getElementById('uTable').innerHTML=h;
             }});
         }}
-        function handleUserSubmit() {{
-            const user = document.getElementById('new_username').value;
-            const pass = document.getElementById('new_password').value;
-            const action = document.getElementById('action_type').value;
-            let perms = [];
-            if(document.getElementById('perm_closing').checked) perms.push('closing');
-            if(document.getElementById('perm_acc').checked) perms.push('accessories');
-            if(document.getElementById('perm_po').checked) perms.push('po_sheet');
-            fetch('/admin/save-user', {{ method: 'POST', headers: {{'Content-Type': 'application/json'}}, body: JSON.stringify({{ username: user, password: pass, permissions: perms, action_type: action }}) }})
-            .then(res => res.json()).then(data => {{
-                if(data.status === 'success') {{ Swal.fire('Success', data.message, 'success'); loadUsers(); resetForm(); }}
-                else {{ Swal.fire('Error', data.message, 'error'); }}
-            }});
+        function saveUser() {{
+            let u=document.getElementById('uname').value, p=document.getElementById('upass').value, perms=[];
+            if(document.getElementById('p_close').checked) perms.push('closing');
+            if(document.getElementById('p_acc').checked) perms.push('accessories');
+            if(document.getElementById('p_po').checked) perms.push('po_sheet');
+            fetch('/admin/save-user', {{method:'POST', headers:{{'Content-Type':'application/json'}}, body:JSON.stringify({{username:u, password:p, permissions:perms, action_type:'create'}})}})
+            .then(r=>r.json()).then(d=>{{ Swal.fire(d.status, d.message, d.status); loadUsers(); }});
         }}
-        function editUser(user, pass, permsStr) {{
-            document.getElementById('new_username').value = user; document.getElementById('new_username').readOnly = true;
-            document.getElementById('new_password').value = pass; document.getElementById('action_type').value = 'update';
-            document.getElementById('saveUserBtn').innerText = 'Update User';
-            const perms = permsStr.split(',');
-            document.getElementById('perm_closing').checked = perms.includes('closing');
-            document.getElementById('perm_acc').checked = perms.includes('accessories');
-            document.getElementById('perm_po').checked = perms.includes('po_sheet');
-        }}
-        function resetForm() {{
-            document.getElementById('userForm').reset(); document.getElementById('action_type').value = 'create';
-            document.getElementById('saveUserBtn').innerText = 'Create User'; document.getElementById('new_username').readOnly = false;
-        }}
-        function deleteUser(user) {{
-            Swal.fire({{ title: 'Are you sure?', text: "Delete user " + user + "?", icon: 'warning', showCancelButton: true, confirmButtonText: 'Yes, delete it!' }})
-            .then((result) => {{ if (result.isConfirmed) {{
-                fetch('/admin/delete-user', {{ method: 'POST', headers: {{'Content-Type': 'application/json'}}, body: JSON.stringify({{ username: user }}) }})
-                .then(res => res.json()).then(data => {{ Swal.fire('Deleted!', 'User deleted.', 'success'); loadUsers(); }});
-            }} }});
+        function delUser(u) {{
+            fetch('/admin/delete-user', {{method:'POST', headers:{{'Content-Type':'application/json'}}, body:JSON.stringify({{username:u}})}})
+            .then(r=>r.json()).then(d=>{{ Swal.fire('Deleted', '', 'success'); loadUsers(); }});
         }}
     </script>
 </body>
 </html>
 """
-
 # ==============================================================================
-# FLASK ROUTES
+# FLASK ROUTES (Part 3: Logic & Connections)
 # ==============================================================================
 
 @app.route('/')
@@ -1422,6 +1204,7 @@ def login():
     username = request.form.get('username')
     password = request.form.get('password')
     users_db = load_users()
+
     if username in users_db and users_db[username]['password'] == password:
         session.permanent = True
         session['logged_in'] = True
@@ -1430,7 +1213,7 @@ def login():
         session['permissions'] = users_db[username].get('permissions', [])
         return redirect(url_for('index'))
     else:
-        flash('Incorrect Username or Password.')
+        flash('Invalid Credentials')
         return redirect(url_for('index'))
 
 @app.route('/logout')
@@ -1438,7 +1221,7 @@ def logout():
     session.clear()
     return redirect(url_for('index'))
 
-# --- USER API ---
+# --- USER MANAGEMENT API ---
 @app.route('/admin/get-users', methods=['GET'])
 def get_users():
     if not session.get('logged_in') or session.get('role') != 'admin': return jsonify({})
@@ -1446,112 +1229,156 @@ def get_users():
 
 @app.route('/admin/save-user', methods=['POST'])
 def save_user():
-    if not session.get('logged_in') or session.get('role') != 'admin': return jsonify({'status': 'error', 'message': 'Unauthorized'})
+    if not session.get('logged_in') or session.get('role') != 'admin':
+        return jsonify({'status': 'error', 'message': 'Unauthorized'})
+    
     data = request.json
     username = data.get('username', '').strip()
     password = data.get('password', '').strip()
     permissions = data.get('permissions', [])
-    action = data.get('action_type')
-    if not username or not password: return jsonify({'status': 'error', 'message': 'Invalid Data'})
+    
+    if not username or not password:
+         return jsonify({'status': 'error', 'message': 'Missing data'})
+
     users_db = load_users()
-    if action == 'create':
-        if username in users_db: return jsonify({'status': 'error', 'message': 'User already exists!'})
-        users_db[username] = {"password": password, "role": "user", "permissions": permissions}
-    elif action == 'update':
-        if username not in users_db: return jsonify({'status': 'error', 'message': 'User not found!'})
-        users_db[username]['password'] = password
-        users_db[username]['permissions'] = permissions
+    if username in users_db:
+        return jsonify({'status': 'error', 'message': 'User already exists'})
+        
+    users_db[username] = {
+        "password": password,
+        "role": "user",
+        "permissions": permissions
+    }
     save_users(users_db)
-    return jsonify({'status': 'success', 'message': 'User saved successfully!'})
+    return jsonify({'status': 'success', 'message': 'User created successfully'})
 
 @app.route('/admin/delete-user', methods=['POST'])
 def delete_user():
-    if not session.get('logged_in') or session.get('role') != 'admin': return jsonify({'status': 'error', 'message': 'Unauthorized'})
+    if not session.get('logged_in') or session.get('role') != 'admin':
+        return jsonify({'status': 'error', 'message': 'Unauthorized'})
+    
     username = request.json.get('username')
     users_db = load_users()
-    if username == 'Admin': return jsonify({'status': 'error', 'message': 'Cannot delete Main Admin!'})
+    
+    if username == 'Admin':
+         return jsonify({'status': 'error', 'message': 'Cannot delete Super Admin'})
+
     if username in users_db:
         del users_db[username]
         save_users(users_db)
-        return jsonify({'status': 'success', 'message': 'User deleted!'})
+        return jsonify({'status': 'success', 'message': 'User deleted'})
+    
     return jsonify({'status': 'error', 'message': 'User not found'})
 
-# --- CLOSING REPORT ---
+# --- CLOSING REPORT ROUTES ---
 @app.route('/generate-report', methods=['POST'])
 def generate_report():
     if not session.get('logged_in'): return redirect(url_for('index'))
     if 'closing' not in session.get('permissions', []):
-        flash("Permission Denied")
+        flash("Access Denied")
         return redirect(url_for('index'))
+
     internal_ref_no = request.form['ref_no']
     report_data = fetch_closing_report_data(internal_ref_no)
+
     if not report_data:
         flash(f"No data found for: {internal_ref_no}")
         return redirect(url_for('index'))
+
     return render_template_string(CLOSING_REPORT_PREVIEW_TEMPLATE, report_data=report_data, ref_no=internal_ref_no)
 
 @app.route('/download-closing-excel', methods=['GET'])
 def download_closing_excel():
     if not session.get('logged_in'): return redirect(url_for('index'))
+    
     internal_ref_no = request.args.get('ref_no')
     report_data = fetch_closing_report_data(internal_ref_no)
+    
     if report_data:
         update_stats(internal_ref_no, session.get('user', 'Unknown'))
         stream = create_formatted_excel_report(report_data, internal_ref_no)
         return make_response(send_file(stream, as_attachment=True, download_name=f"Report-{internal_ref_no}.xlsx", mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'))
+    
     return redirect(url_for('index'))
 
-# --- ACCESSORIES ROUTES ---
+# --- ACCESSORIES ROUTES (Logic Updated) ---
 @app.route('/admin/accessories', methods=['GET'])
 def accessories_search_page():
     if not session.get('logged_in'): return redirect(url_for('index'))
     if 'accessories' not in session.get('permissions', []):
-        flash("You do not have permission for Accessories.")
+        flash("Access Denied")
         return redirect(url_for('index'))
-    return render_template_string(f"""<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Find Booking</title>{COMMON_STYLES}</head><body><div class="center-container"><div class="glass-card"><h1>Accessories Hub</h1><p class="subtitle">Welcome, {session.get('user')}</p><form action="/admin/accessories/input" method="post"><div class="input-group"><label>Booking Reference No</label><input type="text" name="ref_no" required></div><button type="submit">Proceed</button></form><br><a href="/" style="color:white;font-size:12px;">Back to Dashboard</a><div class="footer-credit-login"><a href="/logout" style="color:#ff7675;">Sign Out</a><div style="margin-top:5px;">© Mehedi Hasan</div></div></div></div></body></html>""")
+    return render_template_string(ACCESSORIES_SEARCH_TEMPLATE)
 
 @app.route('/admin/accessories/input', methods=['POST'])
 def accessories_input_page():
     if not session.get('logged_in'): return redirect(url_for('index'))
-    if 'accessories' not in session.get('permissions', []): return redirect(url_for('index'))
+    
     ref_no = request.form.get('ref_no').strip()
     db = load_accessories_db()
+
     if ref_no in db:
         data = db[ref_no]
         colors, style, buyer = data['colors'], data['style'], data['buyer']
     else:
         api_data = fetch_closing_report_data(ref_no)
         if not api_data:
-            flash(f"No booking data found for {ref_no}")
+            flash(f"Booking not found: {ref_no}")
             return redirect(url_for('accessories_search_page'))
+        
         colors = sorted(list(set([item['color'] for item in api_data])))
-        style, buyer = api_data[0].get('style', 'N/A'), api_data[0].get('buyer', 'N/A')
-        db[ref_no] = {"style": style, "buyer": buyer, "colors": colors, "item_type": "", "challans": []}
+        style = api_data[0].get('style', 'N/A')
+        buyer = api_data[0].get('buyer', 'N/A')
+        
+        db[ref_no] = {
+            "style": style,
+            "buyer": buyer,
+            "colors": colors,
+            "item_type": "",
+            "challans": [] 
+        }
         save_accessories_db(db)
-    return render_template_string(f"""<!doctype html><html lang="en"><head><meta charset="utf-8"><title>New Challan</title>{COMMON_STYLES}</head><body><div class="center-container"><div class="glass-card"><h1>New Challan</h1><p class="subtitle">Booking: {ref_no}</p><div style="background:rgba(255,255,255,0.1);padding:10px;border-radius:8px;margin-bottom:20px;font-size:13px;text-align:left;"><div style="display:flex;justify-content:space-between;"><span><strong>Buyer:</strong> {buyer}</span><span><strong>Style:</strong> {style}</span></div></div><form action="/admin/accessories/save" method="post" id="challanForm"><input type="hidden" name="ref" value="{ref_no}"><div class="input-group"><label>Item Type</label><select name="item_type"><option value="" disabled selected>-- Select Item --</option><option value="Top">Top</option><option value="Bottom">Bottom</option></select></div><div class="input-group"><label>Color</label><select name="color" required><option value="" disabled selected>-- Choose Color --</option>{''.join([f'<option value="{c}">{c}</option>' for c in colors])}</select></div><div style="display:flex;gap:10px;"><div class="input-group" style="flex:1;"><label>Line No</label><input type="text" name="line_no" required></div><div class="input-group" style="flex:1;"><label>Size</label><input type="text" name="size" value="-"></div></div><div class="input-group"><label>Quantity</label><input type="number" name="qty" required></div><button type="submit">Save Entry</button></form><div style="margin-top:15px;display:flex;justify-content:space-between;"><a href="/admin/accessories/print?ref={ref_no}" style="color:#a29bfe;font-size:13px;">View Report</a><a href="/admin/accessories" style="color:white;font-size:13px;">Back</a></div><div class="footer-credit-login"><div style="margin-top:15px;">© Mehedi Hasan</div></div></div></div><script>document.getElementById('challanForm').addEventListener('submit', function(e){{e.preventDefault(); Swal.fire({{title:'Saving...', timer:1000, didOpen:()=>Swal.showLoading()}}).then(()=>{{e.target.submit()}});}});</script></body></html>""")
+
+    return render_template_string(ACCESSORIES_INPUT_TEMPLATE, ref=ref_no, colors=colors, style=style, buyer=buyer)
 
 @app.route('/admin/accessories/save', methods=['POST'])
 def accessories_save():
     if not session.get('logged_in'): return redirect(url_for('index'))
+    
     ref = request.form.get('ref')
     db = load_accessories_db()
+    
     if ref in db:
-        if request.form.get('item_type'): db[ref]['item_type'] = request.form.get('item_type')
-        for item in db[ref]['challans']: item['status'] = "✔"
-        db[ref]['challans'].append({
+        if request.form.get('item_type'):
+            db[ref]['item_type'] = request.form.get('item_type')
+
+        # Logic: Previous items get a BLACK TICK (✔), new item stays empty
+        for item in db[ref]['challans']:
+            item['status'] = "✔"
+        
+        new_entry = {
             "date": datetime.now().strftime("%d-%m-%Y"),
-            "line": request.form.get('line_no'), "color": request.form.get('color'),
-            "size": request.form.get('size'), "qty": request.form.get('qty'), "status": ""
-        })
+            "line": request.form.get('line_no'),
+            "color": request.form.get('color'),
+            "size": request.form.get('size'),
+            "qty": request.form.get('qty'),
+            "status": "" # New item has no status initially
+        }
+        
+        db[ref]['challans'].append(new_entry)
         save_accessories_db(db)
+    
     return redirect(url_for('accessories_print_view', ref=ref))
 
 @app.route('/admin/accessories/print', methods=['GET'])
 def accessories_print_view():
     if not session.get('logged_in'): return redirect(url_for('index'))
+    
     ref = request.args.get('ref')
     db = load_accessories_db()
+    
     if ref not in db: return redirect(url_for('accessories_search_page'))
+    
     data = db[ref]
     line_summary = {}
     for c in data['challans']:
@@ -1559,37 +1386,65 @@ def accessories_print_view():
         try: q = int(c['qty'])
         except: q = 0
         line_summary[ln] = line_summary.get(ln, 0) + q
-    return render_template_string(ACCESSORIES_REPORT_TEMPLATE, ref=ref, buyer=data['buyer'], style=data['style'], item_type=data.get('item_type', ''), challans=data['challans'], line_summary=dict(sorted(line_summary.items())), count=len(data['challans']), today=datetime.now().strftime("%d-%m-%Y"))
+    
+    return render_template_string(ACCESSORIES_REPORT_TEMPLATE, 
+                                  ref=ref,
+                                  buyer=data['buyer'],
+                                  style=data['style'],
+                                  item_type=data.get('item_type', ''),
+                                  challans=data['challans'],
+                                  line_summary=dict(sorted(line_summary.items())),
+                                  count=len(data['challans']),
+                                  today=datetime.now().strftime("%d-%m-%Y"))
 
+# RESTRICTED ROUTES (Admin Only)
 @app.route('/admin/accessories/delete', methods=['POST'])
 def accessories_delete():
-    if not session.get('logged_in') or session.get('role') != 'admin': return "Unauthorized", 403
+    if not session.get('logged_in') or session.get('role') != 'admin':
+        return "Unauthorized", 403
+    
     ref = request.form.get('ref')
     try: index = int(request.form.get('index'))
     except: return redirect(url_for('accessories_search_page'))
+
     db = load_accessories_db()
-    if ref in db and 0 <= index < len(db[ref]['challans']):
-        del db[ref]['challans'][index]
-        save_accessories_db(db)
+    if ref in db:
+        if 0 <= index < len(db[ref]['challans']):
+            del db[ref]['challans'][index]
+            save_accessories_db(db)
+    
     return redirect(url_for('accessories_print_view', ref=ref))
 
 @app.route('/admin/accessories/edit', methods=['GET'])
 def accessories_edit():
-    if not session.get('logged_in') or session.get('role') != 'admin': return "Unauthorized", 403
+    if not session.get('logged_in') or session.get('role') != 'admin':
+        return "Unauthorized", 403
+    
     ref = request.args.get('ref')
-    index = int(request.args.get('index'))
+    try: index = int(request.args.get('index'))
+    except: return redirect(url_for('accessories_search_page'))
+    
     db = load_accessories_db()
-    return render_template_string(f"""<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Edit Challan</title>{COMMON_STYLES}</head><body><div class="center-container"><div class="glass-card"><h1>Edit Challan</h1><form action="/admin/accessories/update" method="post"><input type="hidden" name="ref" value="{ref}"><input type="hidden" name="index" value="{index}"><div class="input-group"><label>Line No</label><input type="text" name="line_no" value="{db[ref]['challans'][index]['line']}" required></div><div class="input-group"><label>Color</label><input type="text" name="color" value="{db[ref]['challans'][index]['color']}" required></div><div class="input-group"><label>Size</label><input type="text" name="size" value="{db[ref]['challans'][index]['size']}" required></div><div class="input-group"><label>Quantity</label><input type="number" name="qty" value="{db[ref]['challans'][index]['qty']}" required></div><button type="submit">Update</button></form><br><a href="/admin/accessories/print?ref={ref}" style="color:white;font-size:12px;">Cancel</a></div></div></body></html>""")
+    return render_template_string(ACCESSORIES_EDIT_TEMPLATE, ref=ref, index=index, item=db[ref]['challans'][index])
 
 @app.route('/admin/accessories/update', methods=['POST'])
 def accessories_update():
-    if not session.get('logged_in') or session.get('role') != 'admin': return "Unauthorized", 403
+    if not session.get('logged_in') or session.get('role') != 'admin':
+        return "Unauthorized", 403
+        
     ref = request.form.get('ref')
     index = int(request.form.get('index'))
     db = load_accessories_db()
+    
     if ref in db:
-        db[ref]['challans'][index].update({'qty': request.form.get('qty'), 'line': request.form.get('line_no'), 'color': request.form.get('color'), 'size': request.form.get('size')})
+        db[ref]['challans'][index].update({
+            'qty': request.form.get('qty'),
+            'line': request.form.get('line_no'),
+            'color': request.form.get('color'),
+            'size': request.form.get('size')
+        })
         save_accessories_db(db)
+            
     return redirect(url_for('accessories_print_view', ref=ref))
 
 # --- PO SHEET ROUTE ---
@@ -1597,7 +1452,7 @@ def accessories_update():
 def generate_po_report():
     if not session.get('logged_in'): return redirect(url_for('index'))
     if 'po_sheet' not in session.get('permissions', []):
-         flash("Permission Denied")
+         flash("Access Denied")
          return redirect(url_for('index'))
 
     if os.path.exists(UPLOAD_FOLDER): shutil.rmtree(UPLOAD_FOLDER)
@@ -1616,8 +1471,9 @@ def generate_po_report():
         if data: all_data.extend(data)
     
     if not all_data:
-        return render_template_string(PO_REPORT_TEMPLATE, tables=None, message="No PO table data found in files.")
+        return render_template_string(PO_REPORT_TEMPLATE, tables=None, message="No PO data found in files.")
 
+    # Data Processing with Pandas
     df = pd.DataFrame(all_data)
     df['Color'] = df['Color'].str.strip()
     df = df[df['Color'] != ""]
@@ -1646,16 +1502,14 @@ def generate_po_report():
         pivot = pivot.reset_index()
         pivot = pivot.rename(columns={'index': 'P.O NO'})
         
-        # HTML Table Construction with custom classes
+        # Rendering HTML Table with Classes for CSS Styling
         table_html = pivot.to_html(classes='table', index=False, border=0)
+        
+        # Injecting CSS Classes for specific cells
         table_html = table_html.replace('<th>Total</th>', '<th class="total-col">Total</th>')
         table_html = table_html.replace('<td>Total</td>', '<td class="total-col">Total</td>')
-        table_html = table_html.replace('<td>Actual Qty</td>', '<td style="text-align:right; padding-right:15px;">Actual Qty</td>')
-        table_html = table_html.replace('<td>3% Order Qty</td>', '<td style="text-align:right; padding-right:15px;">3% Order Qty</td>')
-        
-        # Add summary row class
-        table_html = re.sub(r'<tr>\s*<td[^>]*>Actual Qty</td>', '<tr class="summary-row"><td style="text-align:right; padding-right:15px;">Actual Qty</td>', table_html)
-        table_html = re.sub(r'<tr>\s*<td[^>]*>3% Order Qty</td>', '<tr class="summary-row"><td style="text-align:right; padding-right:15px;">3% Order Qty</td>', table_html)
+        table_html = re.sub(r'<tr>\s*<td[^>]*>Actual Qty</td>', '<tr class="summary-row"><td>Actual Qty</td>', table_html)
+        table_html = re.sub(r'<tr>\s*<td[^>]*>3% Order Qty</td>', '<tr class="summary-row"><td>3% Order Qty</td>', table_html)
 
         final_tables.append({'color': color, 'table': table_html})
         
