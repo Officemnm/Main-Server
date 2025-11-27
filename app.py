@@ -28,13 +28,14 @@ if not os.path.exists(UPLOAD_FOLDER):
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 # --- ২ মিনিটের সেশন টাইমআউট কনফিগারেশন ---
-app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=2)
+app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=30) # কাজের সুবিধার্থে একটু বাড়িয়ে ৩০ মিনিট করা হলো
 
 # ==============================================================================
 # হেল্পার ফাংশন: পরিসংখ্যান ও হিস্ট্রি (JSON)
 # ==============================================================================
 STATS_FILE = 'stats.json'
 USERS_FILE = 'users.json'
+ACCESSORIES_DB_FILE = 'accessories_db.json' # চালানের ডাটা সেভ রাখার নতুন ফাইল
 
 # --- ইউজার ম্যানেজমেন্ট ফাংশন ---
 def load_users():
@@ -120,6 +121,20 @@ def get_dashboard_summary():
         "last_booking": last_booking,
         "history": downloads 
     }
+
+# --- এক্সেসরিজ ডাটাবেস ফাংশন (নতুন) ---
+def load_accessories_db():
+    if not os.path.exists(ACCESSORIES_DB_FILE):
+        return {}
+    try:
+        with open(ACCESSORIES_DB_FILE, 'r') as f:
+            return json.load(f)
+    except:
+        return {}
+
+def save_accessories_db(data):
+    with open(ACCESSORIES_DB_FILE, 'w') as f:
+        json.dump(data, f, indent=4)
 
 # ==============================================================================
 # লজিক পার্ট: PURCHASE ORDER SHEET PARSER
@@ -380,7 +395,6 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
     wb = openpyxl.Workbook()
     ws = wb.active
     ws.title = "Closing Report"
-    # (Styles removed for brevity, assuming standard imports exist)
     # Styles
     bold_font = Font(bold=True)
     title_font = Font(size=32, bold=True, color="7B261A") 
@@ -595,7 +609,7 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
 # CSS & HTML Templates
 # ==============================================================================
 COMMON_STYLES = """
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
@@ -606,8 +620,8 @@ COMMON_STYLES = """
             background-position: center center;
             background-attachment: fixed;
             background-size: cover;
-            height: 100vh;
-            overflow: hidden; 
+            min-height: 100vh;
+            overflow-x: hidden;
         }
         body::before {
             content: "";
@@ -615,6 +629,7 @@ COMMON_STYLES = """
             top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0, 0, 0, 0.4);
             z-index: -1;
+            position: fixed;
         }
         
         .glass-card {
@@ -633,8 +648,9 @@ COMMON_STYLES = """
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100%;
+            min-height: 100vh;
             width: 100%;
+            padding: 20px;
         }
         .center-container .glass-card {
             width: 100%;
@@ -770,7 +786,7 @@ COMMON_STYLES = """
         .loader-success #loading-text { color: #2ecc71; font-weight: 600; }
 
         /* Admin Dashboard CSS */
-        .admin-container { display: flex; width: 100%; height: 100vh; }
+        .admin-container { display: flex; width: 100%; height: 100vh; position: fixed; top: 0; left: 0;}
         .admin-sidebar {
             width: 280px;
             background: rgba(255, 255, 255, 0.1);
@@ -1019,49 +1035,28 @@ CLOSING_REPORT_PREVIEW_TEMPLATE = """
 </html>
 """
 
-# --- NEW: Accessories Selection Template ---
-ACCESSORIES_SELECT_TEMPLATE = f"""
+# --- NEW: ACCESSORIES SEARCH TEMPLATE ---
+ACCESSORIES_SEARCH_TEMPLATE = f"""
 <!doctype html>
 <html lang="en">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Select Color & Details</title>
+    <title>Find Booking</title>
     {COMMON_STYLES}
 </head>
 <body>
     <div class="center-container">
         <div class="glass-card" style="max-width: 500px;">
-            <h1>Accessories Details</h1>
-            <p class="subtitle">Booking: {{{{ ref }}}}</p>
-            <p style="font-size:12px; color:#ddd; margin-bottom:20px;">Style: {{{{ style }}}} | Buyer: {{{{ buyer }}}}</p>
+            <h1><i class="fas fa-search"></i> Find Booking</h1>
+            <p class="subtitle">Enter Booking Number to Create/Edit Challan</p>
             
-            <form action="/generate-accessories-challah" method="post">
-                <input type="hidden" name="ref" value="{{{{ ref }}}}">
-                <input type="hidden" name="style" value="{{{{ style }}}}">
-                <input type="hidden" name="buyer" value="{{{{ buyer }}}}">
-                
+            <form action="/admin/accessories/input" method="post">
                 <div class="input-group">
-                    <label for="color">Select Color</label>
-                    <select name="color" id="color" required>
-                        <option value="" disabled selected>-- Choose Color --</option>
-                        {{% for color in colors %}}
-                        <option value="{{{{ color }}}}">{{{{ color }}}}</option>
-                        {{% endfor %}}
-                    </select>
+                    <label for="ref_no">Booking Reference No</label>
+                    <input type="text" id="ref_no" name="ref_no" placeholder="e.g. Booking-123..." required>
                 </div>
-
-                <div class="input-group">
-                    <label for="line_no">Sewing Line Number</label>
-                    <input type="text" id="line_no" name="line_no" placeholder="e.g. Line-12" required>
-                </div>
-
-                <div class="input-group">
-                    <label for="qty">Quantity</label>
-                    <input type="number" id="qty" name="qty" placeholder="Enter Quantity" required>
-                </div>
-
-                <button type="submit">Generate Challah</button>
+                <button type="submit">Proceed</button>
             </form>
             <br>
             <a href="/" style="color:white; text-decoration:none; font-size:12px;">Back to Dashboard</a>
@@ -1071,123 +1066,205 @@ ACCESSORIES_SELECT_TEMPLATE = f"""
 </html>
 """
 
-# --- NEW: Challah Print Template ---
-CHALLAH_TEMPLATE = """
+# --- NEW: ACCESSORIES INPUT TEMPLATE ---
+ACCESSORIES_INPUT_TEMPLATE = f"""
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>New Challan Entry</title>
+    {COMMON_STYLES}
+</head>
+<body>
+    <div class="center-container">
+        <div class="glass-card" style="max-width: 500px;">
+            <h1><i class="fas fa-plus-circle"></i> New Challan</h1>
+            <p class="subtitle">Booking: {{{{ ref }}}}</p>
+            <div style="background: rgba(0,0,0,0.2); padding: 10px; border-radius: 8px; margin-bottom: 20px; font-size: 13px;">
+                <strong>Buyer:</strong> {{{{ buyer }}}} <br> <strong>Style:</strong> {{{{ style }}}}
+            </div>
+
+            <form action="/admin/accessories/save" method="post">
+                <input type="hidden" name="ref" value="{{{{ ref }}}}">
+                
+                <div class="input-group">
+                    <label>Select Color</label>
+                    <select name="color" required>
+                        <option value="" disabled selected>-- Choose Color --</option>
+                        {{% for color in colors %}}
+                        <option value="{{{{ color }}}}">{{{{ color }}}}</option>
+                        {{% endfor %}}
+                    </select>
+                </div>
+
+                <div class="input-group">
+                    <label>Sewing Line Number</label>
+                    <input type="text" name="line_no" placeholder="e.g. Line-12" required>
+                </div>
+                
+                <div class="input-group">
+                    <label>Size (Optional)</label>
+                    <input type="text" name="size" placeholder="e.g. XL or ALL" value="-">
+                </div>
+
+                <div class="input-group">
+                    <label>Quantity</label>
+                    <input type="number" name="qty" placeholder="Enter Qty" required>
+                </div>
+
+                <button type="submit">Save & View Report</button>
+            </form>
+            <div style="margin-top: 15px;">
+                <a href="/admin/accessories/print?ref={{{{ ref }}}}" style="color:#a29bfe; font-size:12px; margin-right: 15px;">View Report Only</a>
+                <a href="/" style="color:white; text-decoration:none; font-size:12px;">Back</a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+"""
+
+# --- NEW: ACCESSORIES REPORT (PRINT VIEW - 6 COLUMNS) ---
+ACCESSORIES_REPORT_TEMPLATE = """
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Accessories Challah</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <title>Accessories Delivery Report</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
     <style>
-        body { background-color: #f8f9fa; padding: 40px; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        .challah-container {
-            max-width: 800px; margin: 0 auto; background: white; padding: 40px;
-            border: 2px solid #000; position: relative;
-        }
-        .header { text-align: center; border-bottom: 2px solid #000; padding-bottom: 20px; margin-bottom: 30px; }
+        body { font-family: 'Poppins', sans-serif; background: #fff; padding: 20px; color: #000; }
+        .container { max-width: 1000px; margin: 0 auto; border: 2px solid #000; padding: 20px; min-height: 90vh; position: relative; }
+        .header { text-align: center; border-bottom: 2px solid #000; padding-bottom: 15px; margin-bottom: 20px; }
         .company-name { font-size: 28px; font-weight: 800; text-transform: uppercase; color: #2c3e50; }
-        .challah-title { 
-            background: #2c3e50; color: white; display: inline-block; 
-            padding: 5px 20px; font-size: 18px; font-weight: 600; 
-            margin-top: 10px; border-radius: 4px;
-        }
-        .details-grid {
-            display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 30px;
-        }
-        .detail-row {
-            display: flex; border-bottom: 1px dashed #ccc; padding: 8px 0;
-            font-size: 16px;
-        }
-        .detail-label { font-weight: 700; width: 140px; color: #555; }
-        .detail-value { font-weight: 600; color: #000; }
+        .report-title { background: #2c3e50; color: white; padding: 5px 25px; display: inline-block; font-weight: bold; margin-top: 10px; font-size: 18px; border-radius: 4px; }
         
-        .main-box {
-            border: 2px solid #000; padding: 20px; margin-bottom: 40px;
-            background: #fdfdfd;
-        }
+        .info-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; margin-bottom: 25px; }
+        .info-box { border: 1px dashed #555; padding: 15px; background: #fdfdfd; }
+        .info-row { display: flex; margin-bottom: 8px; font-size: 14px; align-items: center; }
+        .info-label { font-weight: 800; width: 100px; color: #444; }
+        .info-val { font-weight: 700; font-size: 16px; color: #000; }
+
+        /* Summary Box */
+        .summary-box { background: #eaeaea; border: 2px solid #000; padding: 10px; text-align: center; display: flex; flex-direction: column; justify-content: center; }
+        .summary-title { font-weight: 900; border-bottom: 2px solid #000; margin-bottom: 8px; padding-bottom: 5px; font-size: 16px; }
         
-        .signature-section {
-            display: flex; justify-content: space-between; margin-top: 100px;
+        /* The 6-Column Table */
+        .main-table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 14px; }
+        .main-table th { background: #2c3e50 !important; color: white !important; padding: 12px; border: 1px solid #000; font-size: 15px; text-transform: uppercase; -webkit-print-color-adjust: exact; }
+        .main-table td { border: 1px solid #000; padding: 8px; text-align: center; vertical-align: middle; color: #000; font-weight: 600; }
+        
+        /* Specific Styles Requested */
+        .line-card { 
+            display: inline-block; padding: 6px 15px; 
+            border: 2px solid #000; font-size: 18px; font-weight: 900; 
+            border-radius: 6px; box-shadow: 3px 3px 0 #000; background: #fff;
         }
-        .signature-line {
-            width: 200px; border-top: 1px solid #000; text-align: center; font-weight: 600; padding-top: 5px;
-        }
+        .line-text-bold { font-size: 16px; font-weight: 800; opacity: 0.7; }
+        .status-cell { font-size: 22px; color: green; font-weight: 900; }
+        .qty-cell { font-size: 16px; font-weight: 800; }
+        
+        /* Footer Total */
+        .footer-total { margin-top: 20px; display: flex; justify-content: flex-end; }
+        .total-box { border: 3px solid #000; padding: 10px 40px; font-size: 22px; font-weight: 900; background: #ddd; -webkit-print-color-adjust: exact; }
+
+        .no-print { margin-bottom: 20px; text-align: right; }
+        .btn { padding: 8px 20px; background: #2c3e50; color: white; border: none; cursor: pointer; text-decoration: none; display: inline-block; border-radius: 4px; font-size: 14px; }
+        .btn-add { background: #27ae60; }
         
         @media print {
-            body { background: white; padding: 0; }
-            .challah-container { border: none; }
             .no-print { display: none; }
+            .container { border: none; padding: 0; margin: 0; max-width: 100%; }
+            body { padding: 0; }
         }
     </style>
 </head>
 <body>
-    <div class="text-end mb-3 no-print" style="max-width:800px; margin:0 auto;">
-        <button onclick="window.print()" class="btn btn-dark">🖨️ Print Challah</button>
-        <a href="/" class="btn btn-outline-secondary">Back</a>
+
+<div class="no-print">
+    <a href="/admin/accessories" class="btn">Back</a>
+    <form action="/admin/accessories/input" method="post" style="display:inline;">
+        <input type="hidden" name="ref_no" value="{{ ref }}">
+        <button type="submit" class="btn btn-add">Add New Challan</button>
+    </form>
+    <button onclick="window.print()" class="btn">🖨️ Print</button>
+</div>
+
+<div class="container">
+    <div class="header">
+        <div class="company-name">Cotton Clothing BD Limited</div>
+        <div class="report-title">ACCESSORIES DELIVERY REPORT</div>
     </div>
 
-    <div class="challah-container">
-        <div class="header">
-            <div class="company-name">Cotton Clothing BD Limited</div>
-            <div class="challah-title">ACCESSORIES DELIVERY CHALLAN</div>
-            <div style="margin-top:10px; font-weight:bold;">Date: <span id="date"></span></div>
-        </div>
-
-        <div class="details-grid">
-            <div>
-                <div class="detail-row">
-                    <span class="detail-label">Booking No:</span>
-                    <span class="detail-value">{{ ref }}</span>
-                </div>
-                <div class="detail-row">
-                    <span class="detail-label">Buyer Name:</span>
-                    <span class="detail-value">{{ buyer }}</span>
-                </div>
-                <div class="detail-row">
-                    <span class="detail-label">Style Ref:</span>
-                    <span class="detail-value">{{ style }}</span>
-                </div>
-            </div>
-            <div>
-                <div class="detail-row">
-                    <span class="detail-label">Sewing Line:</span>
-                    <span class="detail-value" style="font-size:18px;">{{ line_no }}</span>
-                </div>
-            </div>
-        </div>
-
-        <div class="main-box">
-            <table class="table table-bordered text-center" style="border-color:#000;">
-                <thead class="table-dark">
-                    <tr>
-                        <th>ITEM COLOR</th>
-                        <th>QUANTITY (PCS)</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td style="font-size:20px; font-weight:bold; padding:20px;">{{ color }}</td>
-                        <td style="font-size:24px; font-weight:bold; padding:20px;">{{ qty }}</td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-
-        <div class="signature-section">
-            <div class="signature-line">Issued By</div>
-            <div class="signature-line">Received By</div>
+    <div class="info-grid">
+        <div class="info-box">
+            <div class="info-row"><span class="info-label">Booking No:</span> <span class="info-val">{{ ref }}</span></div>
+            <div class="info-row"><span class="info-label">Buyer:</span> <span class="info-val">{{ buyer }}</span></div>
+            <div class="info-row"><span class="info-label">Style:</span> <span class="info-val">{{ style }}</span></div>
+            <div class="info-row"><span class="info-label">Print Date:</span> <span class="info-val">{{ today }}</span></div>
         </div>
         
-        <div style="text-align:center; margin-top:30px; font-size:12px; color:#777;">
-            Generated by System | Cotton Clothing BD Ltd.
+        <div class="summary-box">
+            <div class="summary-title">SUMMARY</div>
+            <div style="font-size: 13px; margin-bottom: 5px; font-weight: 700;">Lines Covered:</div>
+            <div style="font-weight: 800; font-size: 14px; margin-bottom: 8px;">
+                {% for line in unique_lines %}
+                    {{ line }}{% if not loop.last %}, {% endif %}
+                {% endfor %}
+            </div>
+            <div style="border-top: 2px solid #000; padding-top: 5px; font-weight: 800;">
+                Total Deliveries: {{ count }}
+            </div>
         </div>
     </div>
 
-    <script>
-        document.getElementById('date').innerText = new Date().toLocaleDateString('en-GB');
-    </script>
+    <table class="main-table">
+        <thead>
+            <tr>
+                <th width="15%">DATE</th>
+                <th width="20%">LINE NO</th>
+                <th width="20%">COLOR</th>
+                <th width="15%">SIZE</th>
+                <th width="10%">STATUS</th>
+                <th width="20%">QTY</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% set ns = namespace(grand_total=0) %}
+            {% for item in challans %}
+                {% set ns.grand_total = ns.grand_total + item.qty|int %}
+                <tr>
+                    <td>{{ item.date }}</td>
+                    <td>
+                        {% if loop.index == count %}
+                            <div class="line-card">{{ item.line }}</div>
+                        {% else %}
+                            <span class="line-text-bold">{{ item.line }}</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ item.color }}</td>
+                    <td>{{ item.size }}</td>
+                    <td class="status-cell">{{ item.status }}</td>
+                    <td class="qty-cell">{{ item.qty }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="footer-total">
+        <div class="total-box">
+            TOTAL QTY: {{ ns.grand_total }}
+        </div>
+    </div>
+
+    <div style="margin-top: 80px; display: flex; justify-content: space-between; text-align: center; font-weight: bold; padding: 0 50px;">
+        <div style="border-top: 2px solid #000; width: 180px; padding-top: 5px;">Store Incharge</div>
+        <div style="border-top: 2px solid #000; width: 180px; padding-top: 5px;">Received By</div>
+        <div style="border-top: 2px solid #000; width: 180px; padding-top: 5px;">Authorized By</div>
+    </div>
+</div>
+
 </body>
 </html>
 """
@@ -1398,7 +1475,7 @@ USER_DASHBOARD_TEMPLATE = f"""
         </div>
     </div>
     <script>
-        let timeout; function resetTimer() {{ clearTimeout(timeout); timeout = setTimeout(function() {{ alert("Session expired due to inactivity."); window.location.href = "/logout"; }}, 120000); }}
+        let timeout; function resetTimer() {{ clearTimeout(timeout); timeout = setTimeout(function() {{ alert("Session expired due to inactivity."); window.location.href = "/logout"; }}, 1800000); }}
         document.onmousemove = resetTimer; document.onkeypress = resetTimer; document.onload = resetTimer; resetTimer();
         function getCookie(name) {{ let parts = document.cookie.split(name + "="); if (parts.length == 2) return parts.pop().split(";").shift(); return null; }}
         function startDownloadProcess() {{
@@ -1413,7 +1490,7 @@ USER_DASHBOARD_TEMPLATE = f"""
 </html>
 """
 
-# --- ADMIN DASHBOARD (UPDATED) ---
+# --- ADMIN DASHBOARD (UPDATED FOR ACCESSORIES) ---
 ADMIN_DASHBOARD_TEMPLATE = f"""
 <!doctype html>
 <html lang="en">
@@ -1445,7 +1522,7 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" onclick="showSection('accessories', this)">
+                    <a class="nav-link" href="/admin/accessories">
                         <i class="fas fa-box-open"></i> Accessories Challah
                     </a>
                 </li>
@@ -1510,19 +1587,6 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
                                 <input type="hidden" name="download_token" id="download_token">
                             </div>
                             <button type="submit">Generate Report</button>
-                        </form>
-                    </div>
-                </div>
-
-                <div id="accessories-section" class="work-section" style="display:none; width: 100%; max-width: 500px;">
-                    <div class="glass-card" style="background: rgba(255,255,255,0.05); box-shadow: none; border: none;">
-                        <h2 style="margin-bottom: 20px; font-weight: 500;"><i class="fas fa-box-open"></i> Accessories Challah</h2>
-                        <form action="/accessories-fetch" method="post" onsubmit="startDownloadProcess()">
-                            <div class="input-group">
-                                <label for="acc_ref_no">Booking Reference No</label>
-                                <input type="text" id="acc_ref_no" name="ref_no" placeholder="Enter Booking No..." required>
-                            </div>
-                            <button type="submit">Fetch Data & Create</button>
                         </form>
                     </div>
                 </div>
@@ -1740,8 +1804,6 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
 
             if (sectionId === 'closing') {{
                 document.getElementById('closing-section').style.display = 'block';
-            }} else if (sectionId === 'accessories') {{
-                document.getElementById('accessories-section').style.display = 'block';
             }} else if (sectionId === 'purchase-order') {{
                 document.getElementById('purchase-order-section').style.display = 'block';
             }} else if (sectionId === 'user-manage') {{
@@ -1754,7 +1816,7 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
 
         // --- Standard Scripts ---
         let timeout;
-        function resetTimer() {{ clearTimeout(timeout); timeout = setTimeout(function() {{ alert("Session expired."); window.location.href = "/logout"; }}, 120000); }}
+        function resetTimer() {{ clearTimeout(timeout); timeout = setTimeout(function() {{ alert("Session expired."); window.location.href = "/logout"; }}, 1800000); }}
         document.onmousemove = resetTimer; document.onkeypress = resetTimer; document.onload = resetTimer; resetTimer();
 
         function getCookie(name) {{ let parts = document.cookie.split(name + "="); if (parts.length == 2) return parts.pop().split(";").shift(); return null; }}
@@ -1887,44 +1949,117 @@ def generate_report():
     # Render Preview Template instead of downloading
     return render_template_string(CLOSING_REPORT_PREVIEW_TEMPLATE, report_data=report_data, ref_no=internal_ref_no)
 
-# --- ACCESSORIES CHALLAH ROUTES (NEW) ---
-@app.route('/accessories-fetch', methods=['POST'])
-def accessories_fetch():
+# ==============================================================================
+# UPDATED: ACCESSORIES CHALLAH ROUTES (Advanced Logic)
+# ==============================================================================
+
+# 1. Search Page (Entry Point)
+@app.route('/admin/accessories', methods=['GET'])
+def accessories_search_page():
+    if not session.get('logged_in'): return redirect(url_for('index'))
+    return render_template_string(ACCESSORIES_SEARCH_TEMPLATE)
+
+# 2. Input Form (Fetches Data from DB or API)
+@app.route('/admin/accessories/input', methods=['POST'])
+def accessories_input_page():
     if not session.get('logged_in'): return redirect(url_for('index'))
     
-    internal_ref_no = request.form['ref_no']
-    if not internal_ref_no: return redirect(url_for('index'))
+    ref_no = request.form.get('ref_no').strip()
+    if not ref_no: return redirect(url_for('accessories_search_page'))
 
-    # Reusing existing logic to fetch API data
-    report_data = fetch_closing_report_data(internal_ref_no)
+    db = load_accessories_db()
 
-    if not report_data:
-        flash(f"No data found for booking: {internal_ref_no}")
-        return redirect(url_for('index'))
+    # লজিক: যদি ডাটাবেসে থাকে, সেখান থেকে লোড করো। না থাকলে API কল করো।
+    if ref_no in db:
+        data = db[ref_no]
+        colors = data['colors']
+        style = data['style']
+        buyer = data['buyer']
+    else:
+        # API কল
+        api_data = fetch_closing_report_data(ref_no)
+        if not api_data:
+            flash(f"No booking data found for {ref_no}")
+            return redirect(url_for('accessories_search_page'))
+        
+        # ডাটা প্রসেস করে সেভ করো
+        colors = sorted(list(set([item['color'] for item in api_data])))
+        style = api_data[0].get('style', 'N/A')
+        buyer = api_data[0].get('buyer', 'N/A')
+        
+        db[ref_no] = {
+            "style": style,
+            "buyer": buyer,
+            "colors": colors,
+            "challans": [] # খালি হিস্ট্রি লিস্ট
+        }
+        save_accessories_db(db)
 
-    # Extract Unique Colors
-    colors = sorted(list(set([item['color'] for item in report_data])))
-    style = report_data[0].get('style', 'N/A')
-    buyer = report_data[0].get('buyer', 'N/A')
+    return render_template_string(ACCESSORIES_INPUT_TEMPLATE, ref=ref_no, colors=colors, style=style, buyer=buyer)
 
-    return render_template_string(ACCESSORIES_SELECT_TEMPLATE, colors=colors, ref=internal_ref_no, style=style, buyer=buyer)
-
-@app.route('/generate-accessories-challah', methods=['POST'])
-def generate_accessories_challah():
+# 3. Save Logic & Status Update
+@app.route('/admin/accessories/save', methods=['POST'])
+def accessories_save():
     if not session.get('logged_in'): return redirect(url_for('index'))
     
     ref = request.form.get('ref')
-    style = request.form.get('style')
-    buyer = request.form.get('buyer')
     color = request.form.get('color')
-    line_no = request.form.get('line_no')
+    line = request.form.get('line_no')
+    size = request.form.get('size')
     qty = request.form.get('qty')
     
-    if not color:
-        flash("Please select a color.")
-        return redirect(url_for('index'))
+    db = load_accessories_db()
+    
+    if ref not in db:
+        flash("Session Error. Please search again.")
+        return redirect(url_for('accessories_search_page'))
 
-    return render_template_string(CHALLAH_TEMPLATE, ref=ref, style=style, buyer=buyer, color=color, line_no=line_no, qty=qty)
+    # লজিক: নতুন চালান বানানোর আগে, পুরনো সব চালানের status টিক (✔) করে দেওয়া
+    history = db[ref]['challans']
+    for item in history:
+        item['status'] = "✔"
+    
+    # নতুন এন্ট্রি (Status ফাঁকা থাকবে)
+    new_entry = {
+        "date": datetime.now().strftime("%d-%m-%Y"),
+        "line": line,
+        "color": color,
+        "size": size,
+        "qty": qty,
+        "status": "" 
+    }
+    
+    history.append(new_entry)
+    db[ref]['challans'] = history
+    save_accessories_db(db)
+    
+    return redirect(url_for('accessories_print_view', ref=ref))
+
+# 4. Print View (6 Columns, Summary, Bold Card Line No)
+@app.route('/admin/accessories/print', methods=['GET'])
+def accessories_print_view():
+    if not session.get('logged_in'): return redirect(url_for('index'))
+    
+    ref = request.args.get('ref')
+    db = load_accessories_db()
+    
+    if ref not in db:
+        return redirect(url_for('accessories_search_page'))
+    
+    data = db[ref]
+    challans = data['challans']
+    
+    # Summary Data Calculation
+    unique_lines = sorted(list(set([c['line'] for c in challans])))
+    
+    return render_template_string(ACCESSORIES_REPORT_TEMPLATE, 
+                                  ref=ref,
+                                  buyer=data['buyer'],
+                                  style=data['style'],
+                                  challans=challans,
+                                  unique_lines=unique_lines,
+                                  count=len(challans),
+                                  today=datetime.now().strftime("%d-%m-%Y"))
 
 
 # --- EXCEL DOWNLOAD ROUTE ---
