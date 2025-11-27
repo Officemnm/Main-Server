@@ -1036,19 +1036,19 @@ CLOSING_REPORT_PREVIEW_TEMPLATE = """
 """
 
 # --- NEW: ACCESSORIES SEARCH TEMPLATE ---
-ACCESSORIES_SEARCH_TEMPLATE = f"""
+ACCESSORIES_SEARCH_TEMPLATE = """
 <!doctype html>
 <html lang="en">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Accessories Module</title>
-    {COMMON_STYLES}
+    <title>Find Booking</title>
+""" + COMMON_STYLES + """
 </head>
 <body>
     <div class="center-container">
         <div class="glass-card" style="max-width: 500px;">
-            <h1><i class="fas fa-search"></i> Accessories Module</h1>
+            <h1><i class="fas fa-search"></i> Find Booking</h1>
             <p class="subtitle">Enter Booking Number to Create/Edit Challan</p>
             
             <form action="/admin/accessories/input" method="post">
@@ -1067,26 +1067,26 @@ ACCESSORIES_SEARCH_TEMPLATE = f"""
 """
 
 # --- NEW: ACCESSORIES INPUT TEMPLATE ---
-ACCESSORIES_INPUT_TEMPLATE = f"""
+ACCESSORIES_INPUT_TEMPLATE = """
 <!doctype html>
 <html lang="en">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Accessories Challan Input</title>
-    {COMMON_STYLES}
+    <title>New Challan Entry</title>
+""" + COMMON_STYLES + """
 </head>
 <body>
     <div class="center-container">
         <div class="glass-card" style="max-width: 500px;">
-            <h1><i class="fas fa-plus-circle"></i> Accessories Challan Input</h1>
-            <p class="subtitle">Booking: {{{{ ref }}}}</p>
+            <h1><i class="fas fa-plus-circle"></i> New Challan</h1>
+            <p class="subtitle">Booking: {{ ref }}</p>
             <div style="background: rgba(0,0,0,0.2); padding: 10px; border-radius: 8px; margin-bottom: 20px; font-size: 13px;">
-                <strong>Buyer:</strong> {{{{ buyer }}}} <br> <strong>Style:</strong> {{{{ style }}}}
+                <strong>Buyer:</strong> {{ buyer }} <br> <strong>Style:</strong> {{ style }}
             </div>
 
             <form action="/admin/accessories/save" method="post">
-                <input type="hidden" name="ref" value="{{{{ ref }}}}">
+                <input type="hidden" name="ref" value="{{ ref }}">
                 
                 <div class="input-group">
                     <label>Select Item Type</label>
@@ -1101,9 +1101,9 @@ ACCESSORIES_INPUT_TEMPLATE = f"""
                     <label>Select Color</label>
                     <select name="color" required>
                         <option value="" disabled selected>-- Choose Color --</option>
-                        {{% for color in colors %}}
-                        <option value="{{{{ color }}}}">{{{{ color }}}}</option>
-                        {{% endfor %}}
+                        {% for color in colors %}
+                        <option value="{{ color }}">{{ color }}</option>
+                        {% endfor %}
                     </select>
                 </div>
 
@@ -1125,7 +1125,7 @@ ACCESSORIES_INPUT_TEMPLATE = f"""
                 <button type="submit">Save & View Report</button>
             </form>
             <div style="margin-top: 15px;">
-                <a href="/admin/accessories/print?ref={{{{ ref }}}}" style="color:#a29bfe; font-size:12px; margin-right: 15px;">View Report Only</a>
+                <a href="/admin/accessories/print?ref={{ ref }}" style="color:#a29bfe; font-size:12px; margin-right: 15px;">View Report Only</a>
                 <a href="/" style="color:white; text-decoration:none; font-size:12px;">Back</a>
             </div>
         </div>
@@ -1135,49 +1135,49 @@ ACCESSORIES_INPUT_TEMPLATE = f"""
 """
 
 # --- NEW: ACCESSORIES EDIT TEMPLATE ---
-ACCESSORIES_EDIT_TEMPLATE = f"""
+ACCESSORIES_EDIT_TEMPLATE = """
 <!doctype html>
 <html lang="en">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Edit Challan</title>
-    {COMMON_STYLES}
+""" + COMMON_STYLES + """
 </head>
 <body>
     <div class="center-container">
         <div class="glass-card" style="max-width: 500px;">
             <h1><i class="fas fa-edit"></i> Edit Challan</h1>
-            <p class="subtitle">Update entry for {{{{ ref }}}}</p>
+            <p class="subtitle">Update entry for {{ ref }}</p>
 
             <form action="/admin/accessories/update" method="post">
-                <input type="hidden" name="ref" value="{{{{ ref }}}}">
-                <input type="hidden" name="index" value="{{{{ index }}}}">
+                <input type="hidden" name="ref" value="{{ ref }}">
+                <input type="hidden" name="index" value="{{ index }}">
 
                 <div class="input-group">
                     <label>Sewing Line Number</label>
-                    <input type="text" name="line_no" value="{{{{ item.line }}}}" required>
+                    <input type="text" name="line_no" value="{{ item.line }}" required>
                 </div>
                 
                 <div class="input-group">
                     <label>Color</label>
-                    <input type="text" name="color" value="{{{{ item.color }}}}" required>
+                    <input type="text" name="color" value="{{ item.color }}" required>
                 </div>
 
                 <div class="input-group">
                     <label>Size</label>
-                    <input type="text" name="size" value="{{{{ item.size }}}}" required>
+                    <input type="text" name="size" value="{{ item.size }}" required>
                 </div>
 
                 <div class="input-group">
                     <label>Quantity</label>
-                    <input type="number" name="qty" value="{{{{ item.qty }}}}" required>
+                    <input type="number" name="qty" value="{{ item.qty }}" required>
                 </div>
 
                 <button type="submit">Update Entry</button>
             </form>
             <br>
-            <a href="/admin/accessories/print?ref={{{{ ref }}}}" style="color:white; text-decoration:none; font-size:12px;">Cancel</a>
+            <a href="/admin/accessories/print?ref={{ ref }}" style="color:white; text-decoration:none; font-size:12px;">Cancel</a>
         </div>
     </div>
 </body>
@@ -1260,10 +1260,12 @@ ACCESSORIES_REPORT_TEMPLATE = """
 
 <div class="no-print">
     <a href="/admin/accessories" class="btn">Back</a>
+    {% if is_admin %}
     <form action="/admin/accessories/input" method="post" style="display:inline;">
         <input type="hidden" name="ref_no" value="{{ ref }}">
         <button type="submit" class="btn btn-add">Add New Challan</button>
     </form>
+    {% endif %}
     <button onclick="window.print()" class="btn">🖨️ Print</button>
 </div>
 
@@ -1311,7 +1313,7 @@ ACCESSORIES_REPORT_TEMPLATE = """
                 <th width="10%">SIZE</th>
                 <th width="10%">STATUS</th>
                 <th width="15%">QTY</th>
-                <th width="15%" class="action-col">ACTION</th>
+                <th width="15%" class="action-col" {% if not is_admin %}style="display:none;"{% endif %}>ACTION</th>
             </tr>
         </thead>
         <tbody>
@@ -1331,7 +1333,7 @@ ACCESSORIES_REPORT_TEMPLATE = """
                     <td>{{ item.size }}</td>
                     <td class="status-cell">{{ item.status }}</td>
                     <td class="qty-cell">{{ item.qty }}</td>
-                    <td class="action-col">
+                    <td class="action-col" {% if not is_admin %}style="display:none;"{% endif %}>
                         <a href="/admin/accessories/edit?ref={{ ref }}&index={{ loop.index0 }}" class="action-btn btn-edit-row"><i class="fas fa-pencil-alt"></i></a>
                         <form action="/admin/accessories/delete" method="POST" style="display:inline;" onsubmit="return confirm('Delete this challan?');">
                             <input type="hidden" name="ref" value="{{ ref }}">
@@ -1476,14 +1478,14 @@ PO_REPORT_TEMPLATE = """
 """
 
 # --- LOGIN TEMPLATE ---
-LOGIN_TEMPLATE = f"""
+LOGIN_TEMPLATE = """
 <!doctype html>
 <html lang="en">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>MEHEDI HASAN</title>
-    {COMMON_STYLES}
+""" + COMMON_STYLES + """
 </head>
 <body>
     <div class="center-container">
@@ -1501,11 +1503,11 @@ LOGIN_TEMPLATE = f"""
                 </div>
                 <button type="submit">Verify & Enter</button>
             </form>
-            {{% with messages = get_flashed_messages() %}}
-                {{% if messages %}}
-                    <div class="flash">{{{{ messages[0] }}}}</div>
-                {{% endif %}}
-            {{% endwith %}}
+            {% with messages = get_flashed_messages() %}
+                {% if messages %}
+                    <div class="flash">{{ messages[0] }}</div>
+                {% endif %}
+            {% endwith %}
         </div>
     </div>
 </body>
@@ -1513,14 +1515,14 @@ LOGIN_TEMPLATE = f"""
 """
 
 # --- USER DASHBOARD ---
-USER_DASHBOARD_TEMPLATE = f"""
+USER_DASHBOARD_TEMPLATE = """
 <!doctype html>
 <html lang="en">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Dashboard - User</title>
-    {COMMON_STYLES}
+""" + COMMON_STYLES + """
 </head>
 <body>
     <div id="loading-overlay">
@@ -1530,10 +1532,10 @@ USER_DASHBOARD_TEMPLATE = f"""
     </div>
     <div class="center-container">
         <div class="glass-card" style="max-width: 500px;">
-            <h1>Welcome, {{{{ session.user }}}}</h1>
-            <p class="subtitle">Secure Gateway for ERP Reports</p>
+            <h1>(©) Mehedi Hasan</h1>
+            <p class="subtitle">Welcome, {{ session.user }}</p>
             
-            {{% if 'closing' in session.permissions %}}
+            {% if 'closing' in session.permissions %}
             <div style="margin-bottom: 30px;">
                 <h4 style="margin-bottom:10px; border-bottom:1px solid rgba(255,255,255,0.2); padding-bottom:5px;">Closing Report</h4>
                 <form action="/generate-report" method="post" id="reportForm" onsubmit="startDownloadProcess()">
@@ -1545,9 +1547,9 @@ USER_DASHBOARD_TEMPLATE = f"""
                     <button type="submit">Generate Report</button>
                 </form>
             </div>
-            {{% endif %}}
+            {% endif %}
 
-            {{% if 'po_sheet' in session.permissions %}}
+            {% if 'po_sheet' in session.permissions %}
              <div style="margin-bottom: 20px;">
                 <h4 style="margin-bottom:10px; border-bottom:1px solid rgba(255,255,255,0.2); padding-bottom:5px;">PO Sheet Generator</h4>
                  <form action="/generate-po-report" method="post" enctype="multipart/form-data">
@@ -1558,7 +1560,7 @@ USER_DASHBOARD_TEMPLATE = f"""
                     <button type="submit" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);">Generate Report</button>
                 </form>
             </div>
-            {{% endif %}}
+            {% endif %}
 
             {% if 'accessories' in session.permissions %}
             <div style="margin-bottom: 30px;">
@@ -1573,40 +1575,40 @@ USER_DASHBOARD_TEMPLATE = f"""
             </div>
             {% endif %}
 
-            {{% with messages = get_flashed_messages() %}}
-                {{% if messages %}}
-                    <div class="flash">{{{{ messages[0] }}}}</div>
-                {{% endif %}}
-            {{% endwith %}}
+            {% with messages = get_flashed_messages() %}
+                {% if messages %}
+                    <div class="flash">{{ messages[0] }}</div>
+                {% endif %}
+            {% endwith %}
             <a href="/logout" class="logout">Exit Session</a>
             <p style="text-align:center; font-size:12px; color:rgba(255,255,255,0.5); margin-top:10px;">© Mehedi Hasan</p>
         </div>
     </div>
     <script>
-        let timeout; function resetTimer() {{ clearTimeout(timeout); timeout = setTimeout(function() {{ alert("Session expired due to inactivity."); window.location.href = "/logout"; }}, 1800000); }}
+        let timeout; function resetTimer() { clearTimeout(timeout); timeout = setTimeout(function() { alert("Session expired due to inactivity."); window.location.href = "/logout"; }, 1800000); }
         document.onmousemove = resetTimer; document.onkeypress = resetTimer; document.onload = resetTimer; resetTimer();
-        function getCookie(name) {{ let parts = document.cookie.split(name + "="); if (parts.length == 2) return parts.pop().split(";").shift(); return null; }}
-        function startDownloadProcess() {{
+        function getCookie(name) { let parts = document.cookie.split(name + "="); if (parts.length == 2) return parts.pop().split(";").shift(); return null; }
+        function startDownloadProcess() {
             const overlay = document.getElementById('loading-overlay'); const loadingText = document.getElementById('loading-text'); const spinner = document.querySelector('.spinner'); const successIcon = document.querySelector('.success-icon'); const tokenInput = document.getElementById('download_token');
             const token = new Date().getTime(); tokenInput.value = token;
             overlay.style.display = 'flex'; overlay.className = ''; loadingText.innerHTML = "Processing data...<br><span style='font-size:12px; opacity:0.8'>Fetching Preview...</span>"; spinner.style.display = 'block'; successIcon.style.display = 'none';
             // Simple timeout for preview mode as it's not a direct file download stream
-            setTimeout(() => {{ overlay.classList.add('loader-success'); loadingText.innerHTML = "Success!"; successIcon.style.display = 'block'; spinner.style.display = 'none'; setTimeout(() => {{ overlay.style.display = 'none'; }}, 1500); }}, 2000);
-        }}
+            setTimeout(() => { overlay.classList.add('loader-success'); loadingText.innerHTML = "Success!"; successIcon.style.display = 'block'; spinner.style.display = 'none'; setTimeout(() => { overlay.style.display = 'none'; }, 1500); }, 2000);
+        }
     </script>
 </body>
 </html>
 """
 
 # --- ADMIN DASHBOARD ---
-ADMIN_DASHBOARD_TEMPLATE = f"""
+ADMIN_DASHBOARD_TEMPLATE = """
 <!doctype html>
 <html lang="en">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Admin Console</title>
-    {COMMON_STYLES}
+""" + COMMON_STYLES + """
     <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
 </head>
 <body>
@@ -1664,21 +1666,21 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
                 <div class="stat-card">
                     <div class="stat-icon bg-purple"><i class="fas fa-calendar-day"></i></div>
                     <div class="stat-info">
-                        <h3>{{{{ stats.today }}}}</h3>
+                        <h3>{{ stats.today }}</h3>
                         <p>Today's Downloads</p>
                     </div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-icon bg-orange"><i class="fas fa-calendar-alt"></i></div>
                     <div class="stat-info">
-                        <h3>{{{{ stats.month }}}}</h3>
+                        <h3>{{ stats.month }}</h3>
                         <p>Monthly Downloads</p>
                     </div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-icon bg-green"><i class="fas fa-history"></i></div>
                     <div class="stat-info">
-                        <h3 style="font-size: 16px; word-break: break-all;">{{{{ stats.last_booking }}}}</h3>
+                        <h3 style="font-size: 16px; word-break: break-all;">{{ stats.last_booking }}</h3>
                         <p>Last Generated Booking</p>
                     </div>
                 </div>
@@ -1688,7 +1690,7 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
                 
                 <div id="closing-section" class="work-section" style="width: 100%; max-width: 500px;">
                     <div class="glass-card" style="background: rgba(255,255,255,0.05); box-shadow: none; border: none;">
-                        <h2 style="margin-bottom: 20px; font-weight: 500;"><i class="fas fa-file-export"></i> Closing Report</h2>
+                        <h2 style="margin-bottom: 20px; font-weight: 500;"><i class="fas fa-file-export"></i> Generate Closing Report</h2>
                         <form action="/generate-report" method="post" onsubmit="startDownloadProcess()">
                             <div class="input-group">
                                 <label for="ref_no">Internal Reference No</label>
@@ -1702,7 +1704,7 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
 
                 <div id="purchase-order-section" class="work-section" style="display:none; width: 100%; max-width: 500px;">
                     <div class="glass-card" style="background: rgba(255,255,255,0.05); box-shadow: none; border: none;">
-                        <h2 style="margin-bottom: 20px; font-weight: 500;"><i class="fas fa-file-invoice"></i> PO Sheet Generator</h2>
+                        <h2 style="margin-bottom: 20px; font-weight: 500;"><i class="fas fa-file-invoice"></i> PDF Report Generator</h2>
                         <form action="/generate-po-report" method="post" enctype="multipart/form-data">
                             <div class="input-group">
                                 <label for="pdf_files">Select PDF Files (Booking & PO)</label>
@@ -1782,14 +1784,14 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {{% for log in stats.history %}}
+                                    {% for log in stats.history %}
                                     <tr>
-                                        <td>{{{{ log.date }}}}</td>
-                                        <td>{{{{ log.time }}}}</td>
-                                        <td>{{{{ log.user }}}}</td>
-                                        <td style="font-weight:bold; color:#a29bfe;">{{{{ log.ref }}}}</td>
+                                        <td>{{ log.date }}</td>
+                                        <td>{{ log.time }}</td>
+                                        <td>{{ log.user }}</td>
+                                        <td style="font-weight:bold; color:#a29bfe;">{{ log.ref }}</td>
                                     </tr>
-                                    {{% endfor %}}
+                                    {% endfor %}
                                 </tbody>
                             </table>
                         </div>
@@ -1802,65 +1804,72 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
 
     <script>
         // --- Fetch Users ---
-        function loadUsers() {{
+        function loadUsers() {
             fetch('/admin/get-users')
                 .then(response => response.json())
-                .then(data => {{
+                .then(data => {
                     const tbody = document.getElementById('userTableBody');
                     tbody.innerHTML = '';
-                    for (const [user, details] of Object.entries(data)) {{
+                    for (const [user, details] of Object.entries(data)) {
                         let perms = details.permissions ? details.permissions.join(', ') : '';
                         let row = `<tr>
-                            <td>${{user}}</td>
-                            <td>${{details.role}}</td>
-                            <td>${{perms}}</td>
+                            <td>${user}</td>
+                            <td>${details.role}</td>
+                            <td>${perms}</td>
                             <td>
-                                ${{details.role !== 'admin' ? 
-                                    `<button class="user-btn btn-edit" onclick="editUser('\( {{user}}', ' \){{details.password}}', '${{perms}}')">Edit</button>
-                                     <button class="user-btn btn-delete" onclick="deleteUser('${{user}}')">Delete</button>` : 
-                                    '<span style="font-size:10px; opacity:0.7">System Admin</span>'}}
+                                ${details.role !== 'admin' ? 
+                                    `<button class="user-btn btn-edit" onclick="editUser('\( {user}', ' \){details.password}', '${perms}')">Edit</button>
+                                     <button class="user-btn btn-delete" onclick="deleteUser('${user}')">Delete</button>` : 
+                                    '<span style="font-size:10px; opacity:0.7">System Admin</span>'}
                             </td>
                         </tr>`;
                         tbody.innerHTML += row;
-                    }}
-                }});
-        }}
+                    }
+                });
+        }
 
-        function handleUserSubmit(e) {{
+        function handleUserSubmit(e) {
             if(e) e.preventDefault();
             
             const username = document.getElementById('new_username').value;
             const password = document.getElementById('new_password').value;
             const action = document.getElementById('action_type').value;
             
-            if(!username || !password) {{
+            if(!username || !password) {
                 swal("Error", "Username and Password required!", "warning");
                 return;
-            }}
+            }
             
             let permissions = [];
             if(document.getElementById('perm_closing').checked) permissions.push('closing');
             if(document.getElementById('perm_po').checked) permissions.push('po_sheet');
             if(document.getElementById('perm_acc').checked) permissions.push('accessories');
 
-            fetch('/admin/save-user', {{
+            fetch('/admin/save-user', {
                 method: 'POST',
-                headers: {{'Content-Type': 'application/json'}},
-                body: JSON.stringify({{ username, password, permissions, action_type: action }})
-            }})
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ username, password, permissions, action_type: action })
+            })
             .then(res => res.json())
-            .then(data => {{
-                if(data.status === 'success') {{
-                    swal("Success", data.message, "success");
+            .then(data => {
+                if(data.status === 'success') {
+                    swal("Success", data.message, "success").then(() => {
+                        document.getElementById('loading-overlay').classList.add('loader-success');
+                        document.getElementById('loading-overlay').style.display = 'flex';
+                        document.getElementById('loading-text').innerHTML = "User Created Successfully!";
+                        document.querySelector('.success-icon').style.display = 'block';
+                        document.querySelector('.spinner').style.display = 'none';
+                        setTimeout(() => { document.getElementById('loading-overlay').style.display = 'none'; }, 2000);
+                    });
                     loadUsers();
                     resetForm();
-                }} else {{
+                } else {
                     swal("Error", data.message, "error");
-                }}
-            }});
-        }}
+                }
+            });
+        }
 
-        function editUser(user, pass, permsStr) {{
+        function editUser(user, pass, permsStr) {
             document.getElementById('new_username').value = user;
             document.getElementById('new_username').readOnly = true; 
             document.getElementById('new_password').value = pass;
@@ -1871,9 +1880,9 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
             document.getElementById('perm_closing').checked = perms.includes('closing');
             document.getElementById('perm_po').checked = perms.includes('po_sheet');
             document.getElementById('perm_acc').checked = perms.includes('accessories');
-        }}
+        }
 
-        function resetForm() {{
+        function resetForm() {
             document.getElementById('userForm').reset();
             document.getElementById('action_type').value = 'create';
             document.getElementById('saveUserBtn').innerText = 'Create User';
@@ -1881,66 +1890,66 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
             document.getElementById('perm_closing').checked = true; // Default
             document.getElementById('perm_po').checked = false;
             document.getElementById('perm_acc').checked = false;
-        }}
+        }
 
-        function deleteUser(user) {{
-            swal({{
+        function deleteUser(user) {
+            swal({
                 title: "Are you sure?",
                 text: "Once deleted, you will not be able to recover this user!",
                 icon: "warning",
                 buttons: true,
                 dangerMode: true,
-            }})
-            .then((willDelete) => {{
-                if (willDelete) {{
-                    fetch('/admin/delete-user', {{
+            })
+            .then((willDelete) => {
+                if (willDelete) {
+                    fetch('/admin/delete-user', {
                         method: 'POST',
-                        headers: {{'Content-Type': 'application/json'}},
-                        body: JSON.stringify({{ username: user }})
-                    }})
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({ username: user })
+                    })
                     .then(res => res.json())
-                    .then(data => {{
-                        if(data.status === 'success') {{
-                            swal("Poof! User has been deleted!", {{ icon: "success", }});
+                    .then(data => {
+                        if(data.status === 'success') {
+                            swal("Poof! User has been deleted!", { icon: "success", });
                             loadUsers();
-                        }} else {{
+                        } else {
                             swal("Error", data.message, "error");
-                        }}
-                    }});
-                }}
-            }});
-        }}
+                        }
+                    });
+                }
+            });
+        }
 
         // --- Toggle Sections ---
-        function showSection(sectionId, element) {{
+        function showSection(sectionId, element) {
             document.querySelectorAll('.nav-link').forEach(el => el.classList.remove('active'));
             element.classList.add('active');
             document.querySelectorAll('.work-section').forEach(el => el.style.display = 'none');
 
-            if (sectionId === 'closing') {{
+            if (sectionId === 'closing') {
                 document.getElementById('closing-section').style.display = 'block';
-            }} else if (sectionId === 'purchase-order') {{
+            } else if (sectionId === 'purchase-order') {
                 document.getElementById('purchase-order-section').style.display = 'block';
-            }} else if (sectionId === 'user-manage') {{
+            } else if (sectionId === 'user-manage') {
                 document.getElementById('user-manage-section').style.display = 'block';
                 loadUsers(); 
-            }} else if (sectionId === 'history') {{
+            } else if (sectionId === 'history') {
                 document.getElementById('history-section').style.display = 'block';
-            }}
-        }}
+            }
+        }
 
         // --- Standard Scripts ---
         let timeout;
-        function resetTimer() {{ clearTimeout(timeout); timeout = setTimeout(function() {{ alert("Session expired."); window.location.href = "/logout"; }}, 1800000); }}
+        function resetTimer() { clearTimeout(timeout); timeout = setTimeout(function() { alert("Session expired."); window.location.href = "/logout"; }, 1800000); }
         document.onmousemove = resetTimer; document.onkeypress = resetTimer; document.onload = resetTimer; resetTimer();
 
-        function getCookie(name) {{ let parts = document.cookie.split(name + "="); if (parts.length == 2) return parts.pop().split(";").shift(); return null; }}
-        function startDownloadProcess() {{
+        function getCookie(name) { let parts = document.cookie.split(name + "="); if (parts.length == 2) return parts.pop().split(";").shift(); return null; }
+        function startDownloadProcess() {
             const overlay = document.getElementById('loading-overlay'); const loadingText = document.getElementById('loading-text'); const spinner = document.querySelector('.spinner'); const successIcon = document.querySelector('.success-icon'); const tokenInput = document.getElementById('download_token');
             const token = new Date().getTime(); tokenInput.value = token;
             overlay.style.display = 'flex'; overlay.className = ''; loadingText.innerHTML = "Processing data...<br><span style='font-size:12px; opacity:0.8'>Fetching...</span>"; spinner.style.display = 'block'; successIcon.style.display = 'none';
-            setTimeout(() => {{ overlay.classList.add('loader-success'); loadingText.innerHTML = "Success!"; successIcon.style.display = 'block'; spinner.style.display = 'none'; setTimeout(() => {{ overlay.style.display = 'none'; }}, 1500); }}, 2000);
-        }}
+            setTimeout(() => { overlay.classList.add('loader-success'); loadingText.innerHTML = "Success!"; successIcon.style.display = 'block'; spinner.style.display = 'none'; setTimeout(() => { overlay.style.display = 'none'; }, 1500); }, 2000);
+        }
     </script>
 </body>
 </html>
@@ -2170,6 +2179,7 @@ def accessories_print_view():
     data = db[ref]
     challans = data['challans']
     item_type = data.get('item_type', '')
+    is_admin = session.get('role') == 'admin'
 
     # --- Line-wise Summary Logic (Summing Qty) ---
     line_summary = {}
@@ -2194,12 +2204,13 @@ def accessories_print_view():
                                   challans=challans,
                                   line_summary=sorted_line_summary,
                                   count=len(challans),
-                                  today=datetime.now().strftime("%d-%m-%Y"))
+                                  today=datetime.now().strftime("%d-%m-%Y"),
+                                  is_admin=is_admin)
 
 # 5. Delete Route
 @app.route('/admin/accessories/delete', methods=['POST'])
 def accessories_delete():
-    if not session.get('logged_in'): return redirect(url_for('index'))
+    if not session.get('logged_in') or session.get('role') != 'admin': return redirect(url_for('index'))
     
     ref = request.form.get('ref')
     try:
@@ -2220,7 +2231,7 @@ def accessories_delete():
 # 6. Edit Page (GET)
 @app.route('/admin/accessories/edit', methods=['GET'])
 def accessories_edit():
-    if not session.get('logged_in'): return redirect(url_for('index'))
+    if not session.get('logged_in') or session.get('role') != 'admin': return redirect(url_for('index'))
     
     ref = request.args.get('ref')
     try:
@@ -2242,7 +2253,7 @@ def accessories_edit():
 # 7. Update Logic (POST)
 @app.route('/admin/accessories/update', methods=['POST'])
 def accessories_update():
-    if not session.get('logged_in'): return redirect(url_for('index'))
+    if not session.get('logged_in') or session.get('role') != 'admin': return redirect(url_for('index'))
     
     ref = request.form.get('ref')
     try:
