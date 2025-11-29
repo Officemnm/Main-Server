@@ -14,7 +14,7 @@ import pandas as pd
 import re
 import shutil
 import numpy as np
-from pymongo import MongoClient  # MongoDB লাইব্রেরি ইম্পোর্ট
+from pymongo import MongoClient 
 
 # --- Flask লাইব্রেরি ইম্পোর্ট ---
 from flask import Flask, request, render_template_string, send_file, flash, session, redirect, url_for, make_response, jsonify
@@ -32,16 +32,28 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=30) 
 
 # ==============================================================================
+# Browser Cache Control (ব্যাক বাটন ফিক্স)
+# ==============================================================================
+@app.after_request
+def add_header(response):
+    """
+    লগআউট করার পর ব্যাক বাটন চাপলে যেন আগের পেজ না দেখায়,
+    তার জন্য ব্রাউজার ক্যাশ ক্লিয়ার করার নির্দেশ।
+    """
+    response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, post-check=0, pre-check=0, max-age=0'
+    response.headers['Pragma'] = 'no-cache'
+    response.headers['Expires'] = '-1'
+    return response
+
+# ==============================================================================
 # MongoDB কানেকশন সেটআপ (JSON ফাইলের পরিবর্তে)
 # ==============================================================================
-# আপনার দেওয়া কানেকশন স্ট্রিং
 MONGO_URI = "mongodb+srv://Mehedi:Mehedi123@office.jxdnuaj.mongodb.net/?appName=Office"
 
 try:
     client = MongoClient(MONGO_URI)
-    db = client['office_db']  # ডাটাবেসের নাম
+    db = client['office_db']
     
-    # কালেকশন (টেবিল) সমূহ
     users_col = db['users']
     stats_col = db['stats']
     accessories_col = db['accessories']
@@ -53,11 +65,8 @@ except Exception as e:
 # হেল্পার ফাংশন: পরিসংখ্যান ও হিস্ট্রি (MongoDB ব্যবহার করে)
 # ==============================================================================
 
-# --- ইউজার ম্যানেজমেন্ট ফাংশন ---
 def load_users():
-    # ডাটাবেস থেকে ইউজার খোঁজা
     record = users_col.find_one({"_id": "global_users"})
-    
     default_users = {
         "Admin": {
             "password": "@Nijhum@12", 
@@ -65,23 +74,19 @@ def load_users():
             "permissions": ["closing", "po_sheet", "user_manage", "view_history", "accessories"]
         }
     }
-    
     if record:
         return record['data']
     else:
-        # প্রথমবার ডিফল্ট ইউজার তৈরি করা
         users_col.insert_one({"_id": "global_users", "data": default_users})
         return default_users
 
 def save_users(users_data):
-    # ডাটাবেসে ইউজার আপডেট করা
     users_col.replace_one(
         {"_id": "global_users"}, 
         {"_id": "global_users", "data": users_data}, 
         upsert=True
     )
 
-# --- স্ট্যাটিসটিক্স ফাংশন ---
 def load_stats():
     record = stats_col.find_one({"_id": "dashboard_stats"})
     if record:
@@ -109,7 +114,6 @@ def update_stats(ref_no, username):
         "iso_time": now.isoformat()
     }
     data['downloads'].insert(0, new_record)
-    # ডাটাবেস লোড কমাতে সর্বোচ্চ ১০০০ রেকর্ড রাখা হবে
     if len(data['downloads']) > 1000:
         data['downloads'] = data['downloads'][:1000]
         
@@ -144,7 +148,6 @@ def get_dashboard_summary():
         "history": downloads 
     }
 
-# --- এক্সেসরিজ ডাটাবেস ফাংশন ---
 def load_accessories_db():
     record = accessories_col.find_one({"_id": "accessories_data"})
     if record:
@@ -985,8 +988,7 @@ CLOSING_REPORT_PREVIEW_TEMPLATE = """
 </body>
 </html>
 """
-
-# --- NEW: ACCESSORIES SEARCH TEMPLATE ---
+# --- NEW: ACCESSORIES SEARCH TEMPLATE (Updated with Logout) ---
 ACCESSORIES_SEARCH_TEMPLATE = f"""
 <!doctype html>
 <html lang="en">
@@ -1009,9 +1011,17 @@ ACCESSORIES_SEARCH_TEMPLATE = f"""
                 </div>
                 <button type="submit">Proceed</button>
             </form>
-            <div style="margin-top: 20px;">
-                <a href="/" style="color:white; text-decoration:none; font-size:12px; opacity:0.8;">Back to Dashboard</a>
+            
+            <div style="margin-top: 25px; display: flex; justify-content: center; gap: 20px; align-items: center;">
+                {{% if session.role == 'admin' %}}
+                <a href="/" style="color:white; text-decoration:none; font-size:13px; opacity:0.8;"><i class="fas fa-arrow-left"></i> Admin Dashboard</a>
+                {{% endif %}}
+                
+                <a href="/logout" style="color:#ff7675; text-decoration:none; font-size:13px; border: 1px solid rgba(255, 118, 117, 0.5); padding: 8px 15px; border-radius: 20px; transition: all 0.3s ease;">
+                    <i class="fas fa-sign-out-alt"></i> Sign Out
+                </a>
             </div>
+
             <div class="footer-credit">© Mehedi Hasan</div>
         </div>
     </div>
