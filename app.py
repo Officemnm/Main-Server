@@ -1062,7 +1062,7 @@ ACCESSORIES_INPUT_TEMPLATE = f"""
         <div class="glass-card" style="max-width: 500px;">
             <h1><i class="fas fa-plus-circle"></i> New Challan</h1>
             <p class="subtitle">Booking: {{{{ ref }}}}</p>
-            <div style="background: rgba(255,255,255,0.1); padding: 15px; border-radius: 12px; margin-bottom: 25px; font-size: 13px; border: 1px solid rgba(255,255,255,0.1);">
+            <div style="background: rgba(255,255,255,0.1); padding: 15px; border-radius: 12px; margin-bottom: 25px; font-size: 18px; border: 1px solid rgba(255,255,255,0.1);">
                 <strong>Buyer:</strong> {{{{ buyer }}}} <br> <strong>Style:</strong> {{{{ style }}}}
             </div>
 
@@ -1095,7 +1095,7 @@ ACCESSORIES_INPUT_TEMPLATE = f"""
                 
                 <div class="input-group">
                     <label>Size (Optional)</label>
-                    <input type="text" name="size" placeholder="e.g. XL or ALL" value="-">
+                    <input type="text" name="size" placeholder="e.g. XL or ALL" value="ALL">
                 </div>
 
                 <div class="input-group">
@@ -2477,4 +2477,5 @@ def generate_po_report():
 
 if __name__ == '__main__':
     app.run(debug=True)
+
 
