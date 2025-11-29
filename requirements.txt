@@ -1,12 +1,12 @@
+Flask
+gunicorn
 requests
 openpyxl
 beautifulsoup4
 lxml
 Pillow
-Flask
-gunicorn
-Flask
 pypdf
 pandas
 numpy
-gunicorn
+pymongo
+dnspython
