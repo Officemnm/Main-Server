@@ -1,78 +1,161 @@
-# ==============================================================================
-# হেল্পার ফাংশন: এক্সেসরিজ (MongoDB Native - Fixed & Fast)
-# ==============================================================================
+import requests
+import openpyxl
+from openpyxl.styles import Font, Alignment, Border, Side, PatternFill
+from bs4 import BeautifulSoup
+from datetime import datetime, timedelta
+from io import BytesIO
+from openpyxl.drawing.image import Image
+from PIL import Image as PILImage
+import time
+import json
+import os
+import pypdf
+import pandas as pd
+import re
+import shutil
+import numpy as np
+from pymongo import MongoClient # মঙ্গোডিবি ইম্পোর্ট
 
-def get_accessory_doc(ref_no):
-    """নির্দিষ্ট একটি বুকিং এর ডাটা নিয়ে আসে"""
-    if db is None: return None
-    try:
-        acc_collection = db["accessories_data"]
-        # সরাসরি ওই বুকিং এর আইডি দিয়ে খুঁজবে (পুরো ডাটাবেস নয়)
-        return acc_collection.find_one({"_id": ref_no})
-    except: return None
+# --- Flask লাইব্রেরি ইম্পোর্ট ---
+from flask import Flask, request, render_template_string, send_file, flash, session, redirect, url_for, make_response, jsonify
 
-def create_new_accessory_doc(ref_no, data):
-    """নতুন বুকিং ডাটাবেসে তৈরি করে"""
-    if db is None: return
+app = Flask(__name__)
+app.secret_key = 'super-secret-secure-key-bd' 
+
+# --- MongoDB কানেকশন (শুধুমাত্র এইটুকু নতুন) ---
+MONGO_URL = os.environ.get("MONGO_URL")
+client = None
+db = None
+
+if MONGO_URL:
     try:
-        acc_collection = db["accessories_data"]
-        data["_id"] = ref_no  # বুকিং নাম্বারই হবে আইডি
-        acc_collection.insert_one(data)
+        client = MongoClient(MONGO_URL)
+        db = client["CottonERP_DB"]
+        print("✅ Database Connected!")
     except Exception as e:
-        print(f"Error creating doc: {e}")
+        print("❌ Database Error:", e)
 
-def add_challan_to_db(ref_no, challan_entry):
-    """বিদ্যমান বুকিংয়ে নতুন চালান যোগ করে (Push Method)"""
-    if db is None: return
-    try:
-        acc_collection = db["accessories_data"]
-        # আগের সব চালানের স্ট্যাটাস 'Done' বা টিক মার্ক করে দেব
-        acc_collection.update_one(
-            {"_id": ref_no, "challans.status": ""},
-            {"$set": {"challans.$[elem].status": "✔"}},
-            array_filters=[{"elem.status": ""}]
-        )
-        
-        # এরপর নতুন চালানটি পুশ করব (পুরো ডাটা লোড না করেই)
-        acc_collection.update_one(
-            {"_id": ref_no},
-            {"$push": {"challans": challan_entry}}
-        )
-    except Exception as e:
-        print(f"Error adding challan: {e}")
+# কনফিগারেশন (PO ফাইলের জন্য)
+UPLOAD_FOLDER = 'uploads'
+if not os.path.exists(UPLOAD_FOLDER):
+    os.makedirs(UPLOAD_FOLDER)
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
-def update_challan_in_db(ref_no, index, updated_entry):
-    """নির্দিষ্ট চালান আপডেট করা"""
-    if db is None: return
-    try:
-        acc_collection = db["accessories_data"]
-        # MongoDB তে অ্যারের নির্দিষ্ট ইনডেক্স আপডেট করা
-        update_query = {}
-        for key, value in updated_entry.items():
-            update_query[f"challans.{index}.{key}"] = value
+# --- ২ মিনিটের সেশন টাইমআউট কনফিগারেশন ---
+app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=30) 
+
+# ==============================================================================
+# হেল্পার ফাংশন: ডাটাবেস (আগের JSON এর বদলে MongoDB)
+# ==============================================================================
+
+# --- ইউজার ম্যানেজমেন্ট ফাংশন ---
+def load_users():
+    default_users = {
+        "Admin": {
+            "password": "@Nijhum@12", 
+            "role": "admin", 
+            "permissions": ["closing", "po_sheet", "user_manage", "view_history", "accessories"]
+        }
+    }
+    
+    if db is None: return default_users # লোকাল ফলব্যাক
+
+    # ডাটাবেস থেকে ইউজার ডাটা আনা
+    data_doc = db.config_store.find_one({"_id": "users_file"})
+    if data_doc and "data" in data_doc:
+        return data_doc["data"]
+    else:
+        # প্রথমবার ডিফল্ট ইউজার সেভ করা
+        db.config_store.insert_one({"_id": "users_file", "data": default_users})
+        return default_users
+
+def save_users(users_data):
+    if db is not None:
+        db.config_store.update_one(
+            {"_id": "users_file"}, 
+            {"$set": {"data": users_data}}, 
+            upsert=True
+        )
+
+# --- স্ট্যাটিসটিক্স ফাংশন ---
+def load_stats():
+    default_stats = {"downloads": [], "last_booking": "None"}
+    if db is None: return default_stats
+
+    data_doc = db.config_store.find_one({"_id": "stats_file"})
+    if data_doc and "data" in data_doc:
+        return data_doc["data"]
+    return default_stats
+
+def save_stats(data):
+    if db is not None:
+        db.config_store.update_one(
+            {"_id": "stats_file"}, 
+            {"$set": {"data": data}}, 
+            upsert=True
+        )
+
+def update_stats(ref_no, username):
+    data = load_stats()
+    now = datetime.now()
+    new_record = {
+        "ref": ref_no,
+        "user": username,
+        "date": now.strftime('%Y-%m-%d'),
+        "time": now.strftime('%I:%M %p'),
+        "iso_time": now.isoformat()
+    }
+    data['downloads'].insert(0, new_record)
+    data['last_booking'] = ref_no
+    save_stats(data)
+
+def get_dashboard_summary():
+    data = load_stats()
+    downloads = data.get('downloads', [])
+    last_booking = data.get('last_booking', 'N/A')
+    
+    now = datetime.now()
+    today_str = now.strftime('%Y-%m-%d')
+    month_str = now.strftime('%Y-%m')
+    
+    today_count = 0
+    month_count = 0
+    
+    for d in downloads:
+        try:
+            dt = datetime.fromisoformat(d.get('iso_time', datetime.now().isoformat()))
+            if dt.strftime('%Y-%m-%d') == today_str:
+                today_count += 1
+            if dt.strftime('%Y-%m') == month_str:
+                month_count += 1
+        except: pass
             
-        acc_collection.update_one(
-            {"_id": ref_no},
-            {"$set": update_query}
-        )
-    except: pass
+    return {
+        "today": today_count,
+        "month": month_count,
+        "last_booking": last_booking,
+        "history": downloads 
+    }
 
-def delete_challan_from_db(ref_no, index):
-    """নির্দিষ্ট চালান ডিলেট করা"""
-    if db is None: return
-    try:
-        acc_collection = db["accessories_data"]
-        # আনসেট করে রিমুভ করতে হয় যাতে ইনডেক্স ঠিক থাকে, অথবা Pull ব্যবহার করা যায়
-        # সহজ উপায়ে আমরা পুরো অ্যারেটা নামিয়ে ডিলেট করে আবার সেভ করতে পারি (শুধুমাত্র ডিলেটের ক্ষেত্রে)
-        doc = acc_collection.find_one({"_id": ref_no})
-        if doc and "challans" in doc:
-            challans = doc["challans"]
-            if 0 <= index < len(challans):
-                del challans[index]
-                acc_collection.update_one({"_id": ref_no}, {"$set": {"challans": challans}})
-    except: pass
+# --- এক্সেসরিজ ডাটাবেস ফাংশন ---
+def load_accessories_db():
+    if db is None: return {}
+    # পুরো ডাটাবেস একটা ডকুমেন্ট হিসেবে লোড হবে (আগের লজিক ঠিক রাখতে)
+    data_doc = db.config_store.find_one({"_id": "accessories_file"})
+    if data_doc and "data" in data_doc:
+        return data_doc["data"]
+    return {}
+
+def save_accessories_db(data):
+    if db is not None:
+        db.config_store.update_one(
+            {"_id": "accessories_file"}, 
+            {"$set": {"data": data}}, 
+            upsert=True
+        )
+
 # ==============================================================================
-# লজিক পার্ট: PURCHASE ORDER SHEET PARSER
+# লজিক পার্ট: PURCHASE ORDER SHEET PARSER (NO CHANGE)
 # ==============================================================================
 def is_potential_size(header):
     h = header.strip().upper()
@@ -230,9 +313,8 @@ def extract_data_dynamic(file_path):
                             })
     except Exception as e: print(f"Error processing file: {e}")
     return extracted_data, metadata
-
 # ==============================================================================
-# লজিক পার্ট: CLOSING REPORT API
+# লজিক পার্ট: CLOSING REPORT API (NO CHANGE)
 # ==============================================================================
 def get_authenticated_session(username, password):
     login_url = 'http://180.92.235.190:8022/erp/login.php'
@@ -539,7 +621,6 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
     wb.save(file_stream)
     file_stream.seek(0)
     return file_stream
-
 # ==============================================================================
 # CSS & HTML Templates (Updated with Modern Animations & Branding)
 # ==============================================================================
@@ -1918,13 +1999,12 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
 </body>
 </html>
 """
+
 # --- Flask রুট ---
 
 @app.route('/')
 def index():
-    # অ্যাপ চালু হওয়ার সময় ইউজার ডাটা চেক/তৈরি করে নেয়
     load_users()
-    
     if not session.get('logged_in'):
         return render_template_string(LOGIN_TEMPLATE)
     else:
@@ -2039,19 +2119,21 @@ def generate_report():
     return render_template_string(CLOSING_REPORT_PREVIEW_TEMPLATE, report_data=report_data, ref_no=internal_ref_no)
 
 # ==============================================================================
-# FIXED & OPTIMIZED: ACCESSORIES ROUTES (MongoDB Native)
+# UPDATED: ACCESSORIES CHALLAH ROUTES (Advanced Logic)
 # ==============================================================================
 
-# 1. Search Page
+# 1. Search Page (Entry Point)
 @app.route('/admin/accessories', methods=['GET'])
 def accessories_search_page():
     if not session.get('logged_in'): return redirect(url_for('index'))
+    # Check permissions
     if 'accessories' not in session.get('permissions', []):
         flash("You do not have permission to access Accessories Dashboard.")
         return redirect(url_for('index'))
+        
     return render_template_string(ACCESSORIES_SEARCH_TEMPLATE)
 
-# 2. Input Form (Fast Loading)
+# 2. Input Form (Fetches Data from DB or API)
 @app.route('/admin/accessories/input', methods=['POST'])
 def accessories_input_page():
     if not session.get('logged_in'): return redirect(url_for('index'))
@@ -2059,145 +2141,207 @@ def accessories_input_page():
     ref_no = request.form.get('ref_no').strip()
     if not ref_no: return redirect(url_for('accessories_search_page'))
 
-    # ১. প্রথমে ডাটাবেসে খুঁজব (Optimized)
-    doc = get_accessory_doc(ref_no)
+    db = load_accessories_db()
 
-    if doc:
-        colors = doc.get('colors', [])
-        style = doc.get('style', 'N/A')
-        buyer = doc.get('buyer', 'N/A')
+    # লজিক: যদি ডাটাবেসে থাকে, সেখান থেকে লোড করো। না থাকলে API কল করো।
+    if ref_no in db:
+        data = db[ref_no]
+        colors = data['colors']
+        style = data['style']
+        buyer = data['buyer']
     else:
-        # ২. না থাকলে API কল করব
+        # API কল
         api_data = fetch_closing_report_data(ref_no)
         if not api_data:
             flash(f"No booking data found for {ref_no}")
             return redirect(url_for('accessories_search_page'))
         
-        # ৩. নতুন ডাটা তৈরি করে ডাটাবেসে সেভ করব
+        # ডাটা প্রসেস করে সেভ করো
         colors = sorted(list(set([item['color'] for item in api_data])))
         style = api_data[0].get('style', 'N/A')
         buyer = api_data[0].get('buyer', 'N/A')
         
-        new_data = {
+        db[ref_no] = {
             "style": style,
             "buyer": buyer,
             "colors": colors,
-            "item_type": "",
+            "item_type": "", # Default empty
             "challans": [] 
         }
-        create_new_accessory_doc(ref_no, new_data)
+        save_accessories_db(db)
 
     return render_template_string(ACCESSORIES_INPUT_TEMPLATE, ref=ref_no, colors=colors, style=style, buyer=buyer)
 
-# 3. Save Logic (Super Fast Push)
+# 3. Save Logic & Status Update
 @app.route('/admin/accessories/save', methods=['POST'])
 def accessories_save():
     if not session.get('logged_in'): return redirect(url_for('index'))
-    if 'accessories' not in session.get('permissions', []): return redirect(url_for('index'))
+    
+    # Permission Check
+    if 'accessories' not in session.get('permissions', []):
+        flash("Permission Denied")
+        return redirect(url_for('index'))
 
     ref = request.form.get('ref')
+    color = request.form.get('color')
+    line = request.form.get('line_no')
+    size = request.form.get('size')
+    qty = request.form.get('qty')
+    item_type = request.form.get('item_type') # Top or Bottom
     
-    # নতুন এন্ট্রি তৈরি
+    db = load_accessories_db()
+    
+    if ref not in db:
+        flash("Session Error. Please search again.")
+        return redirect(url_for('accessories_search_page'))
+
+    # Update global item type for this booking if selected
+    if item_type:
+        db[ref]['item_type'] = item_type
+
+    # লজিক: নতুন চালান বানানোর আগে, পুরনো সব চালানের status টিক (✔) করে দেওয়া
+    history = db[ref]['challans']
+    for item in history:
+        item['status'] = "✔"
+    
+    # নতুন এন্ট্রি (Status ফাঁকা থাকবে)
     new_entry = {
         "date": datetime.now().strftime("%d-%m-%Y"),
-        "line": request.form.get('line_no'),
-        "color": request.form.get('color'),
-        "size": request.form.get('size'),
-        "qty": request.form.get('qty'),
+        "line": line,
+        "color": color,
+        "size": size,
+        "qty": qty,
         "status": "" 
     }
-
-    # Item Type আপডেট (যদি থাকে)
-    item_type = request.form.get('item_type')
-    if item_type and db:
-         db["accessories_data"].update_one({"_id": ref}, {"$set": {"item_type": item_type}})
-
-    # ডাটাবেসে পুশ করা (Fast Method)
-    add_challan_to_db(ref, new_entry)
+    
+    history.append(new_entry)
+    db[ref]['challans'] = history
+    save_accessories_db(db)
     
     return redirect(url_for('accessories_print_view', ref=ref))
 
-# 4. Print View (Fast Retrieve)
+# 4. Print View (With Edit/Delete & Summary Logic)
 @app.route('/admin/accessories/print', methods=['GET'])
 def accessories_print_view():
     if not session.get('logged_in'): return redirect(url_for('index'))
     
     ref = request.args.get('ref')
-    doc = get_accessory_doc(ref) # সরাসরি ডাটাবেস থেকে আনা
+    db = load_accessories_db()
     
-    if not doc:
+    if ref not in db:
         return redirect(url_for('accessories_search_page'))
     
-    challans = doc.get('challans', [])
-    item_type = doc.get('item_type', '')
+    data = db[ref]
+    challans = data['challans']
+    item_type = data.get('item_type', '')
 
-    # Summary Logic
+    # --- Line-wise Summary Logic (Summing Qty) ---
     line_summary = {}
     for c in challans:
         ln = c['line']
         try: q = int(c['qty'])
         except: q = 0
-        line_summary[ln] = line_summary.get(ln, 0) + q
+        
+        if ln in line_summary:
+            line_summary[ln] += q
+        else:
+            line_summary[ln] = q
     
+    # Sort lines
     sorted_line_summary = dict(sorted(line_summary.items()))
 
     return render_template_string(ACCESSORIES_REPORT_TEMPLATE, 
                                   ref=ref,
-                                  buyer=doc.get('buyer', ''),
-                                  style=doc.get('style', ''),
+                                  buyer=data['buyer'],
+                                  style=data['style'],
                                   item_type=item_type,
                                   challans=challans,
                                   line_summary=sorted_line_summary,
                                   count=len(challans),
                                   today=datetime.now().strftime("%d-%m-%Y"))
 
-# 5. Delete Route
+# 5. Delete Route (RESTRICTED TO ADMIN)
 @app.route('/admin/accessories/delete', methods=['POST'])
 def accessories_delete():
-    if not session.get('logged_in') or session.get('role') != 'admin':
+    if not session.get('logged_in'): return redirect(url_for('index'))
+    
+    # Strict Admin Check
+    if session.get('role') != 'admin':
+        flash("Only Admin can delete records.")
         return redirect(url_for('index'))
     
     ref = request.form.get('ref')
-    try: index = int(request.form.get('index'))
-    except: return redirect(url_for('accessories_print_view', ref=ref))
+    try:
+        index = int(request.form.get('index'))
+    except:
+        return redirect(url_for('accessories_search_page'))
 
-    delete_challan_from_db(ref, index)
+    db = load_accessories_db()
+    if ref in db:
+        challans = db[ref]['challans']
+        if 0 <= index < len(challans):
+            del challans[index]
+            db[ref]['challans'] = challans
+            save_accessories_db(db)
+    
     return redirect(url_for('accessories_print_view', ref=ref))
 
-# 6. Edit Page
+# 6. Edit Page (GET) (RESTRICTED TO ADMIN)
 @app.route('/admin/accessories/edit', methods=['GET'])
 def accessories_edit():
-    if not session.get('logged_in') or session.get('role') != 'admin':
+    if not session.get('logged_in'): return redirect(url_for('index'))
+
+    # Strict Admin Check
+    if session.get('role') != 'admin':
+        flash("Only Admin can edit records.")
         return redirect(url_for('index'))
     
     ref = request.args.get('ref')
-    try: index = int(request.args.get('index'))
-    except: return redirect(url_for('accessories_search_page'))
+    try:
+        index = int(request.args.get('index'))
+    except:
+        return redirect(url_for('accessories_search_page'))
         
-    doc = get_accessory_doc(ref)
-    if not doc or index >= len(doc['challans']):
+    db = load_accessories_db()
+    if ref not in db: return redirect(url_for('accessories_search_page'))
+    
+    challans = db[ref]['challans']
+    if index < 0 or index >= len(challans):
          return redirect(url_for('accessories_print_view', ref=ref))
          
-    return render_template_string(ACCESSORIES_EDIT_TEMPLATE, ref=ref, index=index, item=doc['challans'][index])
+    item_to_edit = challans[index]
+    
+    return render_template_string(ACCESSORIES_EDIT_TEMPLATE, ref=ref, index=index, item=item_to_edit)
 
-# 7. Update Logic
+# 7. Update Logic (POST) (RESTRICTED TO ADMIN)
 @app.route('/admin/accessories/update', methods=['POST'])
 def accessories_update():
-    if not session.get('logged_in') or session.get('role') != 'admin':
+    if not session.get('logged_in'): return redirect(url_for('index'))
+    
+    if session.get('role') != 'admin':
         return redirect(url_for('index'))
 
     ref = request.form.get('ref')
     try:
         index = int(request.form.get('index'))
-        updated_entry = {
-            "qty": request.form.get('qty'),
-            "line": request.form.get('line_no'),
-            "color": request.form.get('color'),
-            "size": request.form.get('size')
-        }
-        update_challan_in_db(ref, index, updated_entry)
-    except: pass
+        qty = request.form.get('qty')
+        line = request.form.get('line_no')
+        color = request.form.get('color')
+        size = request.form.get('size')
+    except:
+        return redirect(url_for('accessories_search_page'))
 
+    db = load_accessories_db()
+    if ref in db:
+        challans = db[ref]['challans']
+        if 0 <= index < len(challans):
+            challans[index]['qty'] = qty
+            challans[index]['line'] = line
+            challans[index]['color'] = color
+            challans[index]['size'] = size
+            db[ref]['challans'] = challans
+            save_accessories_db(db)
+            
     return redirect(url_for('accessories_print_view', ref=ref))
 
 
@@ -2218,7 +2362,7 @@ def download_closing_excel():
     excel_file_stream = create_formatted_excel_report(report_data, internal_ref_no)
     
     if excel_file_stream:
-        # Update stats with USERNAME
+        # Update stats with USERNAME here
         update_stats(internal_ref_no, session.get('user', 'Unknown'))
         return make_response(send_file(excel_file_stream, as_attachment=True, download_name=f"Closing-Report-{internal_ref_no.replace('/', '_')}.xlsx", mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'))
     else:
