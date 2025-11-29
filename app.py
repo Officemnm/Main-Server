@@ -14,6 +14,7 @@ import pandas as pd
 import re
 import shutil
 import numpy as np
+from pymongo import MongoClient  # MongoDB লাইব্রেরি ইম্পোর্ট
 
 # --- Flask লাইব্রেরি ইম্পোর্ট ---
 from flask import Flask, request, render_template_string, send_file, flash, session, redirect, url_for, make_response, jsonify
@@ -31,14 +32,32 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=30) 
 
 # ==============================================================================
-# হেল্পার ফাংশন: পরিসংখ্যান ও হিস্ট্রি (JSON)
+# MongoDB কানেকশন সেটআপ (JSON ফাইলের পরিবর্তে)
 # ==============================================================================
-STATS_FILE = 'stats.json'
-USERS_FILE = 'users.json'
-ACCESSORIES_DB_FILE = 'accessories_db.json' 
+# আপনার দেওয়া কানেকশন স্ট্রিং
+MONGO_URI = "mongodb+srv://Mehedi:Mehedi123@office.jxdnuaj.mongodb.net/?appName=Office"
+
+try:
+    client = MongoClient(MONGO_URI)
+    db = client['office_db']  # ডাটাবেসের নাম
+    
+    # কালেকশন (টেবিল) সমূহ
+    users_col = db['users']
+    stats_col = db['stats']
+    accessories_col = db['accessories']
+    print("MongoDB Connected Successfully!")
+except Exception as e:
+    print(f"MongoDB Connection Error: {e}")
+
+# ==============================================================================
+# হেল্পার ফাংশন: পরিসংখ্যান ও হিস্ট্রি (MongoDB ব্যবহার করে)
+# ==============================================================================
 
 # --- ইউজার ম্যানেজমেন্ট ফাংশন ---
 def load_users():
+    # ডাটাবেস থেকে ইউজার খোঁজা
+    record = users_col.find_one({"_id": "global_users"})
+    
     default_users = {
         "Admin": {
             "password": "@Nijhum@12", 
@@ -47,33 +66,37 @@ def load_users():
         }
     }
     
-    if not os.path.exists(USERS_FILE):
-        with open(USERS_FILE, 'w') as f:
-            json.dump(default_users, f, indent=4)
-        return default_users
-    
-    try:
-        with open(USERS_FILE, 'r') as f:
-            return json.load(f)
-    except:
+    if record:
+        return record['data']
+    else:
+        # প্রথমবার ডিফল্ট ইউজার তৈরি করা
+        users_col.insert_one({"_id": "global_users", "data": default_users})
         return default_users
 
 def save_users(users_data):
-    with open(USERS_FILE, 'w') as f:
-        json.dump(users_data, f, indent=4)
+    # ডাটাবেসে ইউজার আপডেট করা
+    users_col.replace_one(
+        {"_id": "global_users"}, 
+        {"_id": "global_users", "data": users_data}, 
+        upsert=True
+    )
 
+# --- স্ট্যাটিসটিক্স ফাংশন ---
 def load_stats():
-    if not os.path.exists(STATS_FILE):
-        return {"downloads": [], "last_booking": "None"}
-    try:
-        with open(STATS_FILE, 'r') as f:
-            return json.load(f)
-    except:
-        return {"downloads": [], "last_booking": "None"}
+    record = stats_col.find_one({"_id": "dashboard_stats"})
+    if record:
+        return record['data']
+    else:
+        default_stats = {"downloads": [], "last_booking": "None"}
+        stats_col.insert_one({"_id": "dashboard_stats", "data": default_stats})
+        return default_stats
 
 def save_stats(data):
-    with open(STATS_FILE, 'w') as f:
-        json.dump(data, f, indent=4)
+    stats_col.replace_one(
+        {"_id": "dashboard_stats"},
+        {"_id": "dashboard_stats", "data": data},
+        upsert=True
+    )
 
 def update_stats(ref_no, username):
     data = load_stats()
@@ -86,6 +109,10 @@ def update_stats(ref_no, username):
         "iso_time": now.isoformat()
     }
     data['downloads'].insert(0, new_record)
+    # ডাটাবেস লোড কমাতে সর্বোচ্চ ১০০০ রেকর্ড রাখা হবে
+    if len(data['downloads']) > 1000:
+        data['downloads'] = data['downloads'][:1000]
+        
     data['last_booking'] = ref_no
     save_stats(data)
 
@@ -119,17 +146,18 @@ def get_dashboard_summary():
 
 # --- এক্সেসরিজ ডাটাবেস ফাংশন ---
 def load_accessories_db():
-    if not os.path.exists(ACCESSORIES_DB_FILE):
-        return {}
-    try:
-        with open(ACCESSORIES_DB_FILE, 'r') as f:
-            return json.load(f)
-    except:
+    record = accessories_col.find_one({"_id": "accessories_data"})
+    if record:
+        return record['data']
+    else:
         return {}
 
 def save_accessories_db(data):
-    with open(ACCESSORIES_DB_FILE, 'w') as f:
-        json.dump(data, f, indent=4)
+    accessories_col.replace_one(
+        {"_id": "accessories_data"},
+        {"_id": "accessories_data", "data": data},
+        upsert=True
+    )
 
 # ==============================================================================
 # লজিক পার্ট: PURCHASE ORDER SHEET PARSER
