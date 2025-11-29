@@ -14,12 +14,28 @@ import pandas as pd
 import re
 import shutil
 import numpy as np
+from pymongo import MongoClient  # <--- MongoDB লাইব্রেরি
 
 # --- Flask লাইব্রেরি ইম্পোর্ট ---
 from flask import Flask, request, render_template_string, send_file, flash, session, redirect, url_for, make_response, jsonify
 
 app = Flask(__name__)
 app.secret_key = 'super-secret-secure-key-bd' 
+
+# --- MongoDB কানেকশন সেটআপ ---
+# Render Environment থেকে লিংক নেবে। লোকাল পিসিতে থাকলে এরর এড়াতে try-except রাখা হলো।
+MONGO_URL = os.environ.get("MONGO_URL")
+db = None
+
+if MONGO_URL:
+    try:
+        client = MongoClient(MONGO_URL)
+        db = client["CottonERP_DB"] # ডাটাবেসের নাম
+        print("✅ Connected to MongoDB Atlas Successfully!")
+    except Exception as e:
+        print(f"❌ Database Connection Failed: {e}")
+else:
+    print("⚠️ Warning: MONGO_URL not found in environment variables. Using local fallback/mock if needed.")
 
 # কনফিগারেশন (PO ফাইলের জন্য)
 UPLOAD_FOLDER = 'uploads'
@@ -31,13 +47,10 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=30) 
 
 # ==============================================================================
-# হেল্পার ফাংশন: পরিসংখ্যান ও হিস্ট্রি (JSON)
+# হেল্পার ফাংশন: পরিসংখ্যান ও হিস্ট্রি (MongoDB Integration)
 # ==============================================================================
-STATS_FILE = 'stats.json'
-USERS_FILE = 'users.json'
-ACCESSORIES_DB_FILE = 'accessories_db.json' 
 
-# --- ইউজার ম্যানেজমেন্ট ফাংশন ---
+# --- ইউজার ম্যানেজমেন্ট ফাংশন (MongoDB) ---
 def load_users():
     default_users = {
         "Admin": {
@@ -47,33 +60,62 @@ def load_users():
         }
     }
     
-    if not os.path.exists(USERS_FILE):
-        with open(USERS_FILE, 'w') as f:
-            json.dump(default_users, f, indent=4)
-        return default_users
-    
+    # যদি ডাটাবেস কানেক্ট না থাকে, তবে ডিফল্ট রিটার্ন করবে
+    if db is None: return default_users
+
     try:
-        with open(USERS_FILE, 'r') as f:
-            return json.load(f)
-    except:
+        users_collection = db["users_config"]
+        # আমরা পুরো ইউজার লিস্ট একটা ডকুমেন্টেই রাখব যাতে আগের কোড লজিক ঠিক থাকে
+        user_doc = users_collection.find_one({"_id": "main_users_list"})
+        
+        if not user_doc:
+            # প্রথমবার রান করার সময় ডাটাবেসে ডিফল্ট ইউজার তৈরি করে নেবে
+            users_collection.insert_one({"_id": "main_users_list", "data": default_users})
+            return default_users
+        
+        return user_doc.get("data", default_users)
+    except Exception as e:
+        print(f"Error loading users: {e}")
         return default_users
 
 def save_users(users_data):
-    with open(USERS_FILE, 'w') as f:
-        json.dump(users_data, f, indent=4)
-
-def load_stats():
-    if not os.path.exists(STATS_FILE):
-        return {"downloads": [], "last_booking": "None"}
+    if db is None: return
     try:
-        with open(STATS_FILE, 'r') as f:
-            return json.load(f)
+        users_collection = db["users_config"]
+        users_collection.update_one(
+            {"_id": "main_users_list"},
+            {"$set": {"data": users_data}},
+            upsert=True
+        )
+    except Exception as e:
+        print(f"Error saving users: {e}")
+
+# --- স্ট্যাটিসটিক্স ফাংশন (MongoDB) ---
+def load_stats():
+    default_stats = {"downloads": [], "last_booking": "None"}
+    if db is None: return default_stats
+
+    try:
+        stats_collection = db["app_stats"]
+        stats_doc = stats_collection.find_one({"_id": "download_history"})
+        
+        if not stats_doc:
+            return default_stats
+        
+        return stats_doc.get("data", default_stats)
     except:
-        return {"downloads": [], "last_booking": "None"}
+        return default_stats
 
 def save_stats(data):
-    with open(STATS_FILE, 'w') as f:
-        json.dump(data, f, indent=4)
+    if db is None: return
+    try:
+        stats_collection = db["app_stats"]
+        stats_collection.update_one(
+            {"_id": "download_history"},
+            {"$set": {"data": data}},
+            upsert=True
+        )
+    except: pass
 
 def update_stats(ref_no, username):
     data = load_stats()
@@ -85,7 +127,12 @@ def update_stats(ref_no, username):
         "time": now.strftime('%I:%M %p'),
         "iso_time": now.isoformat()
     }
+    # লেটেস্ট ডাউনলোড সবার উপরে থাকবে
     data['downloads'].insert(0, new_record)
+    # হিস্ট্রি বেশি বড় হয়ে গেলে শেষের গুলো কেটে দেব (অপশনাল, ডাটাবেস হালকা রাখার জন্য)
+    if len(data['downloads']) > 200: 
+        data['downloads'] = data['downloads'][:200]
+        
     data['last_booking'] = ref_no
     save_stats(data)
 
@@ -117,21 +164,32 @@ def get_dashboard_summary():
         "history": downloads 
     }
 
-# --- এক্সেসরিজ ডাটাবেস ফাংশন ---
+# --- এক্সেসরিজ ডাটাবেস ফাংশন (MongoDB) ---
 def load_accessories_db():
-    if not os.path.exists(ACCESSORIES_DB_FILE):
-        return {}
+    if db is None: return {}
     try:
-        with open(ACCESSORIES_DB_FILE, 'r') as f:
-            return json.load(f)
-    except:
-        return {}
+        acc_collection = db["accessories_data"]
+        # এখানে আমরা বুকিং ওয়াইজ ডকুমেন্ট লোড না করে পুরো ডিকশনারি লোড করছি
+        # কারণ আপনার আগের কোডে পুরো JSON লোড করে মেমোরিতে কাজ হতো
+        acc_doc = acc_collection.find_one({"_id": "all_challans"})
+        
+        if not acc_doc:
+            return {}
+            
+        return acc_doc.get("data", {})
+    except: return {}
 
 def save_accessories_db(data):
-    with open(ACCESSORIES_DB_FILE, 'w') as f:
-        json.dump(data, f, indent=4)
-
-# ==============================================================================
+    if db is None: return
+    try:
+        acc_collection = db["accessories_data"]
+        acc_collection.update_one(
+            {"_id": "all_challans"},
+            {"$set": {"data": data}},
+            upsert=True
+        )
+    except: pass
+    # ==============================================================================
 # লজিক পার্ট: PURCHASE ORDER SHEET PARSER
 # ==============================================================================
 def is_potential_size(header):
@@ -599,6 +657,7 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
     wb.save(file_stream)
     file_stream.seek(0)
     return file_stream
+
 # ==============================================================================
 # CSS & HTML Templates (Updated with Modern Animations & Branding)
 # ==============================================================================
@@ -1977,12 +2036,13 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
 </body>
 </html>
 """
-
 # --- Flask রুট ---
 
 @app.route('/')
 def index():
+    # অ্যাপ চালু হওয়ার সময় ইউজার ডাটা চেক/তৈরি করে নেয়
     load_users()
+    
     if not session.get('logged_in'):
         return render_template_string(LOGIN_TEMPLATE)
     else:
@@ -2340,7 +2400,7 @@ def download_closing_excel():
     excel_file_stream = create_formatted_excel_report(report_data, internal_ref_no)
     
     if excel_file_stream:
-        # Update stats with USERNAME here
+        # Update stats with USERNAME here (এখন এটি ডাটাবেসে সেভ হবে)
         update_stats(internal_ref_no, session.get('user', 'Unknown'))
         return make_response(send_file(excel_file_stream, as_attachment=True, download_name=f"Closing-Report-{internal_ref_no.replace('/', '_')}.xlsx", mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'))
     else:
