@@ -161,8 +161,7 @@ def save_accessories_db(data):
         {"_id": "accessories_data", "data": data},
         upsert=True
     )
-
-# ==============================================================================
+    # ==============================================================================
 # লজিক পার্ট: PURCHASE ORDER SHEET PARSER
 # ==============================================================================
 def is_potential_size(header):
@@ -647,7 +646,7 @@ COMMON_STYLES = """
         
         body {
             background-color: #2c3e50; 
-            background-image: url('https://i.ibb.co.com/GvbwphjV/90595.jpg');
+            background-image: url('https://i.ibb.co.com/v64Lz1gj/Picsart-25-11-19-15-49-43-423.jpg');
             background-repeat: no-repeat;
             background-position: center center;
             background-attachment: fixed;
@@ -2022,7 +2021,6 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
 </body>
 </html>
 """
-
 # --- Flask রুট ---
 
 @app.route('/')
@@ -2035,11 +2033,7 @@ def index():
             stats = get_dashboard_summary()
             return render_template_string(ADMIN_DASHBOARD_TEMPLATE, stats=stats)
         else:
-            # FIX: Infinite Loop সমস্যার সমাধান
-            # শুধুমাত্র যদি ইউজারের "accessories" ছাড়া আর কোনো পারমিশন না থাকে, তবেই অটোমেটিক রিডাইরেক্ট হবে
-            # অন্যথায় ইউজার ড্যাশবোর্ডে যাবে, যেখানে সে বাটন ক্লিক করে যেতে পারবে
             perms = session.get('permissions', [])
-            
             if len(perms) == 1 and 'accessories' in perms:
                 return redirect(url_for('accessories_search_page'))
             else:
@@ -2146,11 +2140,10 @@ def generate_report():
         flash(f"No data found for: {internal_ref_no}")
         return redirect(url_for('index'))
 
-    # Render Preview Template instead of downloading
     return render_template_string(CLOSING_REPORT_PREVIEW_TEMPLATE, report_data=report_data, ref_no=internal_ref_no)
 
 # ==============================================================================
-# UPDATED: ACCESSORIES CHALLAH ROUTES (Advanced Logic)
+# UPDATED: ACCESSORIES CHALLAN ROUTES (Modified for Case Insensitivity)
 # ==============================================================================
 
 # 1. Search Page (Entry Point)
@@ -2169,7 +2162,9 @@ def accessories_search_page():
 def accessories_input_page():
     if not session.get('logged_in'): return redirect(url_for('index'))
     
-    ref_no = request.form.get('ref_no').strip()
+    # MODIFICATION: Added .upper() to ensure input is always Uppercase
+    ref_no = request.form.get('ref_no').strip().upper()
+    
     if not ref_no: return redirect(url_for('accessories_search_page'))
 
     db = load_accessories_db()
@@ -2213,7 +2208,9 @@ def accessories_save():
         flash("Permission Denied")
         return redirect(url_for('index'))
 
-    ref = request.form.get('ref')
+    # MODIFICATION: Added .upper() here as well
+    ref = request.form.get('ref').strip().upper()
+    
     color = request.form.get('color')
     line = request.form.get('line_no')
     size = request.form.get('size')
@@ -2256,7 +2253,9 @@ def accessories_save():
 def accessories_print_view():
     if not session.get('logged_in'): return redirect(url_for('index'))
     
-    ref = request.args.get('ref')
+    # MODIFICATION: Added .upper() to ensure URL parameter matches stored Key
+    ref = request.args.get('ref').strip().upper()
+    
     db = load_accessories_db()
     
     if ref not in db:
@@ -2301,7 +2300,8 @@ def accessories_delete():
         flash("Only Admin can delete records.")
         return redirect(url_for('index'))
     
-    ref = request.form.get('ref')
+    # MODIFICATION: Added .upper()
+    ref = request.form.get('ref').strip().upper()
     try:
         index = int(request.form.get('index'))
     except:
@@ -2327,7 +2327,8 @@ def accessories_edit():
         flash("Only Admin can edit records.")
         return redirect(url_for('index'))
     
-    ref = request.args.get('ref')
+    # MODIFICATION: Added .upper()
+    ref = request.args.get('ref').strip().upper()
     try:
         index = int(request.args.get('index'))
     except:
@@ -2352,7 +2353,8 @@ def accessories_update():
     if session.get('role') != 'admin':
         return redirect(url_for('index'))
 
-    ref = request.form.get('ref')
+    # MODIFICATION: Added .upper()
+    ref = request.form.get('ref').strip().upper()
     try:
         index = int(request.form.get('index'))
         qty = request.form.get('qty')
@@ -2477,6 +2479,3 @@ def generate_po_report():
 
 if __name__ == '__main__':
     app.run(debug=True)
-
-
-
