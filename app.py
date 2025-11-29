@@ -1013,8 +1013,8 @@ ACCESSORIES_SEARCH_TEMPLATE = f"""
             </form>
             
             <div style="margin-top: 25px; display: flex; justify-content: center; gap: 20px; align-items: center;">
-                {{% if session.role == 'admin' %}}
-                <a href="/" style="color:white; text-decoration:none; font-size:13px; opacity:0.8;"><i class="fas fa-arrow-left"></i> Admin Dashboard</a>
+                {{% if session.role == 'admin' or (session.permissions and session.permissions|length > 1) %}}
+                <a href="/" style="color:white; text-decoration:none; font-size:13px; opacity:0.8;"><i class="fas fa-arrow-left"></i> Dashboard</a>
                 {{% endif %}}
                 
                 <a href="/logout" style="color:#ff7675; text-decoration:none; font-size:13px; border: 1px solid rgba(255, 118, 117, 0.5); padding: 8px 15px; border-radius: 20px; transition: all 0.3s ease;">
@@ -2035,9 +2035,15 @@ def index():
             stats = get_dashboard_summary()
             return render_template_string(ADMIN_DASHBOARD_TEMPLATE, stats=stats)
         else:
-            # CHANGED: সাধারণ ইউজারদের সরাসরি Accessories Search পেজে নিয়ে যাওয়া হবে
-            # ড্যাশবোর্ড টেমপ্লেট আর রেন্ডার হবে না
-            return redirect(url_for('accessories_search_page'))
+            # FIX: Infinite Loop সমস্যার সমাধান
+            # শুধুমাত্র যদি ইউজারের "accessories" ছাড়া আর কোনো পারমিশন না থাকে, তবেই অটোমেটিক রিডাইরেক্ট হবে
+            # অন্যথায় ইউজার ড্যাশবোর্ডে যাবে, যেখানে সে বাটন ক্লিক করে যেতে পারবে
+            perms = session.get('permissions', [])
+            
+            if len(perms) == 1 and 'accessories' in perms:
+                return redirect(url_for('accessories_search_page'))
+            else:
+                return render_template_string(USER_DASHBOARD_TEMPLATE)
 
 @app.route('/login', methods=['POST'])
 def login():
