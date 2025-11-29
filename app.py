@@ -647,7 +647,7 @@ COMMON_STYLES = """
         
         body {
             background-color: #2c3e50; 
-            background-image: url('https://i.ibb.co.com/v64Lz1gj/Picsart-25-11-19-15-49-43-423.jpg');
+            background-image: url('https://i.ibb.co.com/GvbwphjV/90595.jpg');
             background-repeat: no-repeat;
             background-position: center center;
             background-attachment: fixed;
@@ -2477,5 +2477,6 @@ def generate_po_report():
 
 if __name__ == '__main__':
     app.run(debug=True)
+
 
 
