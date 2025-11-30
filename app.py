@@ -3,7 +3,7 @@ import openpyxl
 from openpyxl.styles import Font, Alignment, Border, Side, PatternFill
 from bs4 import BeautifulSoup
 from datetime import datetime, timedelta
-import pytz # টাইমজোনের জন্য নতুন ইম্পোর্ট
+import pytz # নতুন: টাইমজোন
 from io import BytesIO
 from openpyxl.drawing.image import Image
 from PIL import Image as PILImage
@@ -29,10 +29,10 @@ if not os.path.exists(UPLOAD_FOLDER):
     os.makedirs(UPLOAD_FOLDER)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
-# --- সেশন টাইমআউট কনফিগারেশন ---
+# --- ২ মিনিটের সেশন টাইমআউট কনফিগারেশন ---
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=30) 
 
-# --- টাইমজোন কনফিগারেশন (বাংলাদেশ) ---
+# --- নতুন: টাইমজোন কনফিগারেশন (বাংলাদেশ) ---
 bd_tz = pytz.timezone('Asia/Dhaka')
 
 def get_bd_time():
@@ -46,13 +46,17 @@ def get_bd_date_str():
 # ==============================================================================
 @app.after_request
 def add_header(response):
+    """
+    লগআউট করার পর ব্যাক বাটন চাপলে যেন আগের পেজ না দেখায়,
+    তার জন্য ব্রাউজার ক্যাশ ক্লিয়ার করার নির্দেশ।
+    """
     response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, post-check=0, pre-check=0, max-age=0'
     response.headers['Pragma'] = 'no-cache'
     response.headers['Expires'] = '-1'
     return response
 
 # ==============================================================================
-# MongoDB কানেকশন সেটআপ
+# MongoDB কানেকশন সেটআপ (JSON ফাইলের পরিবর্তে)
 # ==============================================================================
 MONGO_URI = "mongodb+srv://Mehedi:Mehedi123@office.jxdnuaj.mongodb.net/?appName=Office"
 
@@ -101,7 +105,7 @@ def load_stats():
     if record:
         return record['data']
     else:
-        default_stats = {"downloads": [], "po_generations": [], "last_booking": "None"}
+        default_stats = {"downloads": [], "last_booking": "None"}
         stats_col.insert_one({"_id": "dashboard_stats", "data": default_stats})
         return default_stats
 
@@ -112,10 +116,9 @@ def save_stats(data):
         upsert=True
     )
 
-# Closing Report Update
 def update_stats(ref_no, username):
     data = load_stats()
-    now = get_bd_time()
+    now = get_bd_time() # BD Time
     new_record = {
         "ref": ref_no,
         "user": username,
@@ -131,7 +134,7 @@ def update_stats(ref_no, username):
     data['last_booking'] = ref_no
     save_stats(data)
 
-# PO Sheet Update (New Helper)
+# নতুন: PO Stats আপডেট করার হেল্পার
 def update_po_stats(username, file_count):
     data = load_stats()
     now = get_bd_time()
@@ -143,18 +146,14 @@ def update_po_stats(username, file_count):
         "type": "PO Sheet",
         "iso_time": now.isoformat()
     }
-    # We can store this in the same downloads list or a new one. Using downloads for unified history.
     if 'downloads' not in data: data['downloads'] = []
-    
     data['downloads'].insert(0, new_record)
     if len(data['downloads']) > 1000:
         data['downloads'] = data['downloads'][:1000]
     save_stats(data)
 
+# নতুন: ড্যাশবোর্ড সামারি (ডিটেইলস পেজ এবং চার্টের জন্য)
 def get_dashboard_summary_v2():
-    """
-    নতুন ড্যাশবোর্ডের জন্য অ্যাডভান্সড ডেটা ফেচিং
-    """
     stats_data = load_stats()
     acc_db = load_accessories_db()
     users_data = load_users()
@@ -163,7 +162,6 @@ def get_dashboard_summary_v2():
     today_str = now.strftime('%d-%m-%Y')
     
     # 1. User Stats
-    total_users = len(users_data)
     user_details = []
     for u, d in users_data.items():
         user_details.append({
@@ -185,23 +183,20 @@ def get_dashboard_summary_v2():
                     "ref": ref,
                     "buyer": data.get('buyer'),
                     "style": data.get('style'),
-                    "time": "Recorded Today", 
+                    "time": "Today", 
                     "qty": challan.get('qty')
                 })
 
-    # 3. Closing & PO Today (From Stats History)
+    # 3. Closing & PO Today (From History)
     closing_today_count = 0
     po_today_count = 0
     closing_list = []
     po_list = []
     
     history = stats_data.get('downloads', [])
-    
     for item in history:
-        # Check Date Format (Handle legacy YYYY-MM-DD vs new DD-MM-YYYY)
         item_date = item.get('date', '')
-        # Convert item_date to comparable format if needed, simplistic check:
-        if item_date == today_str or item_date == now.strftime('%Y-%m-%d'):
+        if item_date == today_str:
             if item.get('type') == 'PO Sheet':
                 po_today_count += 1
                 po_list.append(item)
@@ -211,7 +206,7 @@ def get_dashboard_summary_v2():
 
     return {
         "users": {
-            "count": total_users,
+            "count": len(users_data),
             "details": user_details
         },
         "accessories": {
@@ -226,7 +221,8 @@ def get_dashboard_summary_v2():
             "count": po_today_count,
             "details": po_list
         },
-        "chart_data": [closing_today_count, acc_today_count, po_today_count]
+        "chart_data": [closing_today_count, acc_today_count, po_today_count],
+        "history": history
     }
 
 def load_accessories_db():
@@ -243,8 +239,9 @@ def save_accessories_db(data):
         upsert=True
     )
 # ==============================================================================
-# লজিক পার্ট: PURCHASE ORDER SHEET PARSER
+# লজিক পার্ট: PURCHASE ORDER SHEET PARSER (PDF)
 # ==============================================================================
+
 def is_potential_size(header):
     h = header.strip().upper()
     if h in ["COLO", "SIZE", "TOTAL", "QUANTITY", "PRICE", "AMOUNT", "CURRENCY", "ORDER NO", "P.O NO"]:
@@ -403,7 +400,7 @@ def extract_data_dynamic(file_path):
     return extracted_data, metadata
 
 # ==============================================================================
-# লজিক পার্ট: CLOSING REPORT API
+# লজিক পার্ট: CLOSING REPORT API & EXCEL GENERATION
 # ==============================================================================
 def get_authenticated_session(username, password):
     login_url = 'http://180.92.235.190:8022/erp/login.php'
@@ -531,7 +528,7 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
     ws.row_dimensions[3].height = 6
 
     formatted_ref_no = internal_ref_no.upper()
-    # Updated: Using Bangladesh Time
+    # UPDATED: Using BD Timezone function
     current_date = get_bd_time().strftime("%d/%m/%Y")
     
     left_sub_headers = {'A4': 'BUYER', 'B4': report_data[0].get('buyer', ''), 'A5': 'IR/IB NO', 'B5': formatted_ref_no, 'A6': 'STYLE NO', 'B6': report_data[0].get('style', '')}
@@ -712,8 +709,8 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
     wb.save(file_stream)
     file_stream.seek(0)
     return file_stream
-    # ==============================================================================
-# CSS & HTML Templates (Updated with Modern Animations & Dashboard Features)
+# ==============================================================================
+# CSS & HTML Templates (Updated)
 # ==============================================================================
 COMMON_STYLES = """
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -828,46 +825,59 @@ COMMON_STYLES = """
             letter-spacing: 1px;
         }
 
-        /* Loading & Success */
+        /* Success & Loading Animation Overlay */
         #loading-overlay {
-            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(15, 23, 42, 0.9); backdrop-filter: blur(10px); z-index: 9999;
-            flex-direction: column; justify-content: center; align-items: center; color: white;
+            display: none;
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(15, 23, 42, 0.9);
+            backdrop-filter: blur(10px);
+            z-index: 9999;
+            flex-direction: column; justify-content: center; align-items: center;
+            color: white; transition: opacity 0.4s ease;
         }
+        
+        /* Animated Spinner */
         .spinner {
-            width: 70px; height: 70px; border: 4px solid rgba(255, 255, 255, 0.1);
-            border-left-color: #00cec9; border-right-color: #6c5ce7; border-radius: 50%;
-            animation: spin 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite; margin-bottom: 25px;
+            width: 70px; height: 70px;
+            border: 4px solid rgba(255, 255, 255, 0.1);
+            border-left-color: #00cec9; border-right-color: #6c5ce7;
+            border-radius: 50%;
+            animation: spin 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite;
+            margin-bottom: 25px;
         }
         @keyframes spin { 100% { transform: rotate(360deg); } }
-        .success-checkmark { display: none; width: 80px; height: 80px; margin-bottom: 20px; }
+
+        /* Success Checkmark Animation */
+        .success-checkmark {
+            display: none; width: 80px; height: 80px;
+            border-radius: 50%; display: block;
+            stroke-width: 2; stroke: #00b894; stroke-miterlimit: 10;
+            box-shadow: inset 0px 0px 0px #00b894;
+            animation: fill .4s ease-in-out .4s forwards, scale .3s ease-in-out .9s both;
+            margin-bottom: 20px;
+        }
+        .checkmark__circle { stroke-dasharray: 166; stroke-dashoffset: 166; stroke-width: 2; stroke-miterlimit: 10; stroke: #00b894; fill: none; animation: stroke 0.6s cubic-bezier(0.65, 0, 0.45, 1) forwards; }
+        .checkmark__check { transform-origin: 50% 50%; stroke-dasharray: 48; stroke-dashoffset: 48; animation: stroke 0.3s cubic-bezier(0.65, 0, 0.45, 1) 0.8s forwards; }
+        @keyframes stroke { 100% { stroke-dashoffset: 0; } }
+        @keyframes scale { 0%, 100% { transform: none; } 50% { transform: scale3d(1.1, 1.1, 1); } }
+        @keyframes fill { 100% { box-shadow: inset 0px 0px 0px 30px rgba(0, 184, 148, 0.1); } }
+
+        #loading-text { font-size: 20px; font-weight: 600; letter-spacing: 1px; text-align: center; opacity: 0.9; }
         .loader-success .spinner { display: none; }
         .loader-success .success-container { display: block; }
         .success-container { display: none; text-align: center; }
 
-        /* --- ADMIN PANEL UPDATED STYLES --- */
-        .admin-container { display: flex; width: 100%; height: 100vh; position: fixed; top: 0; left: 0; transition: all 0.3s ease; }
-        
-        /* Sidebar */
+        /* Navigation & Sidebar (Admin) */
+        .admin-container { display: flex; width: 100%; height: 100vh; position: fixed; top: 0; left: 0;}
         .admin-sidebar {
-            width: 280px; background: rgba(30, 39, 46, 0.95);
+            width: 280px; background: rgba(30, 39, 46, 0.90);
             backdrop-filter: blur(20px); border-right: 1px solid rgba(255,255,255,0.05);
             display: flex; flex-direction: column; padding: 30px 20px;
-            position: relative; transition: transform 0.3s ease; z-index: 1000;
-        }
-        .admin-sidebar.collapsed { transform: translateX(-100%); position: absolute; height: 100%; }
-        
-        /* Sidebar Toggle Button */
-        .sidebar-toggle {
-            position: absolute; top: 20px; left: 20px; font-size: 24px; color: white;
-            cursor: pointer; z-index: 1001; display: none; background: rgba(0,0,0,0.5);
-            padding: 5px 10px; border-radius: 5px;
+            transition: transform 0.3s ease; z-index: 1000;
         }
         
         .sidebar-header { margin-bottom: 40px; text-align: center; }
         .sidebar-header h2 { color: white; font-size: 20px; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; }
-        .sidebar-header p { color: #ffffff !important; font-weight: 600; opacity: 1 !important; letter-spacing: 1px; }
-
         .nav-link {
             display: flex; align-items: center; padding: 14px 18px;
             color: rgba(255,255,255,0.7); text-decoration: none; border-radius: 12px;
@@ -879,55 +889,41 @@ COMMON_STYLES = """
         }
         .nav-link i { width: 25px; text-align: center; margin-right: 10px; font-size: 16px; }
 
-        .admin-content { flex: 1; padding: 30px; overflow-y: auto; width: 100%; }
-        
-        /* Dashboard Cards */
-        .dashboard-card {
-            background: var(--glass-bg); border: 1px solid var(--glass-border);
-            padding: 25px; border-radius: 15px; cursor: pointer;
-            transition: all 0.3s ease; position: relative; overflow: hidden;
-            display: flex; align-items: center; justify-content: space-between;
-        }
-        .dashboard-card:hover { transform: translateY(-5px); box-shadow: 0 10px 30px rgba(0,0,0,0.3); background: rgba(255,255,255,0.2); }
-        .card-icon { font-size: 40px; opacity: 0.8; }
-        .card-info h3 { font-size: 32px; font-weight: 700; margin: 0; }
-        .card-info p { margin: 0; font-size: 14px; opacity: 0.8; text-transform: uppercase; letter-spacing: 1px; }
+        .admin-content { flex: 1; padding: 30px; overflow-y: auto; }
+        .work-section { animation: fadeIn 0.5s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* Modal Styles */
-        .modal-overlay {
-            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.8); z-index: 2000; justify-content: center; align-items: center;
+        /* Dashboard Cards Updated */
+        .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 30px; }
+        .dashboard-card { 
+            background: var(--glass-bg); border: 1px solid rgba(255,255,255,0.2); padding: 25px; 
+            border-radius: 15px; cursor: pointer; transition: 0.3s; display: flex; align-items: center; 
+            justify-content: space-between; text-decoration: none; position: relative; overflow: hidden;
         }
-        .modal-content {
-            background: #2d3436; width: 90%; max-width: 800px; max-height: 80vh;
-            border-radius: 15px; padding: 30px; overflow-y: auto; color: white;
-            animation: slideUp 0.3s ease; position: relative; border: 1px solid rgba(255,255,255,0.1);
-        }
-        @keyframes slideUp { from { transform: translateY(50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-        .close-modal { position: absolute; top: 20px; right: 20px; font-size: 24px; cursor: pointer; color: #ff7675; }
-        
-        /* Custom Table in Modal */
-        .detail-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        .detail-table th { background: rgba(255,255,255,0.1); padding: 12px; text-align: left; font-size: 13px; }
-        .detail-table td { border-bottom: 1px solid rgba(255,255,255,0.05); padding: 12px; font-size: 13px; }
-        .detail-table tr:hover { background: rgba(255,255,255,0.05); }
+        .dashboard-card:hover { transform: translateY(-5px); background: rgba(255,255,255,0.25); }
+        .card-info h3 { font-size: 32px; font-weight: 700; margin: 0; color: white; }
+        .card-info p { margin: 0; font-size: 14px; color: #dfe6e9; text-transform: uppercase; letter-spacing: 1px; }
 
-        /* Chart Container */
-        .chart-wrapper {
-            background: var(--glass-bg); border-radius: 20px; padding: 30px; margin-top: 30px;
-            display: flex; justify-content: center; align-items: center; flex-direction: column;
-        }
+        /* Details Table */
+        .detail-table { width: 100%; border-collapse: separate; border-spacing: 0 8px; margin-top: 20px; }
+        .detail-table th { text-align: left; padding: 15px; color: rgba(255,255,255,0.7); font-weight: 600; font-size: 13px; text-transform: uppercase; }
+        .detail-table td { background: rgba(255,255,255,0.05); padding: 15px; color: white; font-size: 14px; }
+        .detail-table tr:hover td { background: rgba(255,255,255,0.1); }
+        .detail-table tr td:first-child { border-radius: 10px 0 0 10px; }
+        .detail-table tr td:last-child { border-radius: 0 10px 10px 0; }
 
-        @media (max-width: 768px) {
-            .admin-sidebar { position: absolute; left: 0; height: 100%; transform: translateX(-100%); }
+        /* Sidebar Toggle */
+        .sidebar-toggle { display: none; position: fixed; top: 20px; left: 20px; z-index: 1001; color: white; font-size: 24px; cursor: pointer; background: rgba(0,0,0,0.5); padding: 5px 10px; border-radius: 5px; }
+        @media (max-width: 900px) {
+            .admin-sidebar { transform: translateX(-100%); position: fixed; height: 100vh; }
             .admin-sidebar.active { transform: translateX(0); }
+            .admin-content { padding-top: 70px; }
             .sidebar-toggle { display: block; }
-            .admin-content { padding: 60px 20px 20px 20px; }
         }
     </style>
 """
 
-# --- NEW: Report Preview Template for Closing Report (UNCHANGED) ---
+# --- Report Preview Template for Closing Report (UNCHANGED) ---
 CLOSING_REPORT_PREVIEW_TEMPLATE = """
 <!DOCTYPE html>
 <html lang="en">
@@ -943,39 +939,27 @@ CLOSING_REPORT_PREVIEW_TEMPLATE = """
         .company-name { font-size: 2.2rem; font-weight: 800; color: #2c3e50; text-transform: uppercase; letter-spacing: 1px; line-height: 1; }
         .report-title { font-size: 1.1rem; color: #555; font-weight: 600; text-transform: uppercase; margin-top: 5px; }
         .date-section { font-size: 1.2rem; font-weight: 800; color: #000; margin-top: 5px; }
-        
         .info-container { margin-bottom: 15px; background: white; padding: 15px; display: flex; justify-content: space-between; align-items: flex-end;}
         .info-row { display: flex; flex-direction: column; gap: 5px; }
         .info-item { font-size: 1.2rem; font-weight: 600; color: #444; }
         .info-value { color: #000; font-weight: 800; }
-
-        .booking-box { 
-            background: #2c3e50; color: white; padding: 10px 20px; border-radius: 5px; 
-            text-align: right; box-shadow: 0 4px 10px rgba(44, 62, 80, 0.3); 
-            display: flex; flex-direction: column; justify-content: center; min-width: 200px;
-        }
+        .booking-box { background: #2c3e50; color: white; padding: 10px 20px; border-radius: 5px; text-align: right; box-shadow: 0 4px 10px rgba(44, 62, 80, 0.3); display: flex; flex-direction: column; justify-content: center; min-width: 200px; }
         .booking-label { font-size: 1.1rem; opacity: 0.9; text-transform: uppercase; letter-spacing: 1px; font-weight: 700; }
         .booking-value { font-size: 1.8rem; font-weight: 800; line-height: 1.1; }
-
         .table-card { background: white; border-radius: 0; margin-bottom: 30px; border: none; }
         .color-header { background-color: #2c3e50 !important; color: white; padding: 10px 15px; font-size: 1.4rem; font-weight: 800; text-transform: uppercase; border: 1px solid #000;}
-        
         .table { margin-bottom: 0; width: 100%; border-collapse: collapse; font-size: 1rem; }
         .table th { background-color: #fff !important; color: #000 !important; text-align: center; border: 1px solid #000; padding: 8px; vertical-align: middle; font-weight: 900; font-size: 1.2rem; }
         .table td { text-align: center; vertical-align: middle; border: 1px solid #000; padding: 6px; color: #000; font-weight: 600; font-size: 1.1rem; }
-        
         .col-3pct { background-color: #B9C2DF !important; font-weight: 700; }
         .col-input { background-color: #C4D09D !important; font-weight: 700; }
         .col-balance { font-weight: 700; color: #c0392b; }
         .total-row td { background-color: #fff !important; color: #000 !important; font-weight: 900; font-size: 1.2rem; border-top: 2px solid #000; }
-        
         .action-bar { margin-bottom: 20px; display: flex; justify-content: flex-end; gap: 15px; position: sticky; top: 0; z-index: 1000; background: #f8f9fa; padding: 10px 0; }
         .btn-print { background-color: #2c3e50; color: white; border-radius: 50px; padding: 10px 30px; font-weight: 600; }
         .btn-excel { background-color: #27ae60; color: white; border-radius: 50px; padding: 10px 30px; font-weight: 600; text-decoration: none; display: inline-block; }
         .btn-excel:hover { color: white; background-color: #219150; }
-
         .footer-credit { text-align: center; margin-top: 40px; margin-bottom: 20px; font-size: 1rem; color: #2c3e50; padding-top: 10px; border-top: 1px solid #000; font-weight: 600;}
-
         @media print {
             @page { margin: 5mm; size: portrait; } 
             body { background-color: white; padding: 0; }
@@ -997,13 +981,11 @@ CLOSING_REPORT_PREVIEW_TEMPLATE = """
             <a href="/download-closing-excel?ref_no={{ ref_no }}" class="btn btn-excel"><i class="fas fa-file-excel"></i> Download Excel</a>
             <button onclick="window.print()" class="btn btn-print">🖨️ Print Report</button>
         </div>
-
         <div class="company-header">
             <div class="company-name">Cotton Clothing BD Limited</div>
             <div class="report-title">CLOSING REPORT [ INPUT SECTION ]</div>
             <div class="date-section">Date: <span id="date"></span></div>
         </div>
-
         {% if report_data %}
         <div class="info-container">
             <div class="info-row">
@@ -1015,7 +997,6 @@ CLOSING_REPORT_PREVIEW_TEMPLATE = """
                 <div class="booking-value">{{ ref_no }}</div>
             </div>
         </div>
-
         {% for block in report_data %}
         <div class="table-card">
             <div class="color-header">COLOR: {{ block.color }}</div>
@@ -1045,21 +1026,18 @@ CLOSING_REPORT_PREVIEW_TEMPLATE = """
                         {% if i < block.sewing_input|length %}
                             {% set inp_qty = block.sewing_input[i]|replace(',', '')|int %}
                         {% endif %}
-                        
                         {% set balance = cut_qc - inp_qty %}
                         {% set short_plus = inp_qty - qty_3 %}
                         {% set percentage = 0 %}
                         {% if qty_3 > 0 %}
                             {% set percentage = (short_plus / qty_3) * 100 %}
                         {% endif %}
-
                         {% set ns.tot_3 = ns.tot_3 + qty_3 %}
                         {% set ns.tot_act = ns.tot_act + actual %}
                         {% set ns.tot_cut = ns.tot_cut + cut_qc %}
                         {% set ns.tot_inp = ns.tot_inp + inp_qty %}
                         {% set ns.tot_bal = ns.tot_bal + balance %}
                         {% set ns.tot_sp = ns.tot_sp + short_plus %}
-
                         <tr>
                             <td>{{ block.headers[i] }}</td>
                             <td class="col-3pct">{{ qty_3 }}</td>
@@ -1091,13 +1069,454 @@ CLOSING_REPORT_PREVIEW_TEMPLATE = """
             </table>
         </div>
         {% endfor %}
-        
         <div class="footer-credit">Report Generated By <span style="color: #000; font-weight: 900;">Mehedi Hasan</span></div>
         {% endif %}
     </div>
     <script>
         const dateObj = new Date();
         document.getElementById('date').innerText = dateObj.toLocaleDateString('en-GB');
+    </script>
+</body>
+</html>
+"""
+
+# --- ACCESSORIES SEARCH TEMPLATE (UNCHANGED) ---
+ACCESSORIES_SEARCH_TEMPLATE = f"""
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Accessories Dashboard</title>
+    {COMMON_STYLES}
+</head>
+<body>
+    <div class="center-container">
+        <div class="glass-card" style="max-width: 500px;">
+            <h1><i class="fas fa-boxes"></i> Accessories Dashboard</h1>
+            <p class="subtitle">Find Booking to Manage Challan</p>
+            <form action="/admin/accessories/input" method="post">
+                <div class="input-group">
+                    <label for="ref_no">Booking Reference No</label>
+                    <input type="text" id="ref_no" name="ref_no" placeholder="e.g. Booking-123..." required>
+                </div>
+                <button type="submit">Proceed</button>
+            </form>
+            <div style="margin-top: 25px; display: flex; justify-content: center; gap: 20px; align-items: center;">
+                {{% if session.role == 'admin' or (session.permissions and session.permissions|length > 1) %}}
+                <a href="/" style="color:white; text-decoration:none; font-size:13px; opacity:0.8;"><i class="fas fa-arrow-left"></i> Dashboard</a>
+                {{% endif %}}
+                <a href="/logout" style="color:#ff7675; text-decoration:none; font-size:13px; border: 1px solid rgba(255, 118, 117, 0.5); padding: 8px 15px; border-radius: 20px; transition: all 0.3s ease;">
+                    <i class="fas fa-sign-out-alt"></i> Sign Out
+                </a>
+            </div>
+            <div class="footer-credit">© Mehedi Hasan</div>
+        </div>
+    </div>
+</body>
+</html>
+"""
+
+# --- ACCESSORIES INPUT TEMPLATE (UNCHANGED) ---
+ACCESSORIES_INPUT_TEMPLATE = f"""
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>New Challan Entry</title>
+    {COMMON_STYLES}
+    <style>
+        option {{ color: #000; background: #fff; }}
+    </style>
+</head>
+<body>
+    <div id="loading-overlay">
+        <div class="spinner"></div>
+        <div class="success-container">
+             <svg class="success-checkmark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
+                <circle class="checkmark__circle" cx="26" cy="26" r="25" fill="none"/>
+                <path class="checkmark__check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
+            </svg>
+        </div>
+        <div id="loading-text">Saving Record...</div>
+    </div>
+    <div class="center-container">
+        <div class="glass-card" style="max-width: 500px;">
+            <h1><i class="fas fa-plus-circle"></i> New Challan</h1>
+            <p class="subtitle">Booking: {{{{ ref }}}}</p>
+            <div style="background: rgba(255,255,255,0.1); padding: 15px; border-radius: 12px; margin-bottom: 25px; font-size: 18px; border: 1px solid rgba(255,255,255,0.1);">
+                <strong>Buyer:</strong> {{{{ buyer }}}} <br> <strong>Style:</strong> {{{{ style }}}}
+            </div>
+            <form action="/admin/accessories/save" method="post" onsubmit="showSuccessAnim()">
+                <input type="hidden" name="ref" value="{{{{ ref }}}}">
+                <div class="input-group">
+                    <label>Select Item Type</label>
+                    <select name="item_type">
+                        <option value="" disabled selected>-- Select Item (Top/Btm) --</option>
+                        <option value="Top">Top</option>
+                        <option value="Bottom">Bottom</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label>Select Color</label>
+                    <select name="color" required>
+                        <option value="" disabled selected>-- Choose Color --</option>
+                        {{% for color in colors %}}
+                        <option value="{{{{ color }}}}">{{{{ color }}}}</option>
+                        {{% endfor %}}
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label>Sewing Line Number</label>
+                    <input type="text" name="line_no" placeholder="e.g. Line-12" required>
+                </div>
+                <div class="input-group">
+                    <label>Size (Optional)</label>
+                    <input type="text" name="size" placeholder="e.g. XL or ALL" value="ALL">
+                </div>
+                <div class="input-group">
+                    <label>Quantity</label>
+                    <input type="number" name="qty" placeholder="Enter Qty" required>
+                </div>
+                <button type="submit">Save & View Report</button>
+            </form>
+            <div style="margin-top: 15px;">
+                <a href="/admin/accessories/print?ref={{{{ ref }}}}" style="color:#a29bfe; font-size:12px; margin-right: 15px; font-weight:600;">View Report Only</a>
+                <a href="/admin/accessories" style="color:white; text-decoration:none; font-size:12px;">Back</a>
+            </div>
+             <div class="footer-credit">© Mehedi Hasan</div>
+        </div>
+    </div>
+    <script>
+        function showSuccessAnim() {{
+            const overlay = document.getElementById('loading-overlay');
+            const spinner = document.querySelector('.spinner');
+            const successContainer = document.querySelector('.success-container');
+            const text = document.getElementById('loading-text');
+            overlay.style.display = 'flex';
+            spinner.style.display = 'block';
+            successContainer.style.display = 'none';
+            text.innerText = 'Processing...';
+            setTimeout(() => {{
+                spinner.style.display = 'none';
+                successContainer.style.display = 'block';
+                overlay.classList.add('loader-success');
+                text.innerText = 'Saved Successfully!';
+            }}, 800);
+            return true;
+        }}
+    </script>
+</body>
+</html>
+"""
+
+# --- ACCESSORIES EDIT TEMPLATE (UNCHANGED) ---
+ACCESSORIES_EDIT_TEMPLATE = f"""
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Edit Challan</title>
+    {COMMON_STYLES}
+</head>
+<body>
+    <div class="center-container">
+        <div class="glass-card" style="max-width: 500px;">
+            <h1><i class="fas fa-edit"></i> Edit Challan</h1>
+            <p class="subtitle">Update entry for {{{{ ref }}}}</p>
+            <form action="/admin/accessories/update" method="post">
+                <input type="hidden" name="ref" value="{{{{ ref }}}}">
+                <input type="hidden" name="index" value="{{{{ index }}}}">
+                <div class="input-group">
+                    <label>Sewing Line Number</label>
+                    <input type="text" name="line_no" value="{{{{ item.line }}}}" required>
+                </div>
+                <div class="input-group">
+                    <label>Color</label>
+                    <input type="text" name="color" value="{{{{ item.color }}}}" required>
+                </div>
+                <div class="input-group">
+                    <label>Size</label>
+                    <input type="text" name="size" value="{{{{ item.size }}}}" required>
+                </div>
+                <div class="input-group">
+                    <label>Quantity</label>
+                    <input type="number" name="qty" value="{{{{ item.qty }}}}" required>
+                </div>
+                <button type="submit">Update Entry</button>
+            </form>
+            <br>
+            <a href="/admin/accessories/print?ref={{{{ ref }}}}" style="color:white; text-decoration:none; font-size:12px;">Cancel</a>
+            <div class="footer-credit">© Mehedi Hasan</div>
+        </div>
+    </div>
+</body>
+</html>
+"""
+
+# --- ACCESSORIES REPORT TEMPLATE (UNCHANGED) ---
+ACCESSORIES_REPORT_TEMPLATE = """
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Accessories Delivery Report</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body { font-family: 'Poppins', sans-serif; background: #fff; padding: 20px; color: #000; }
+        .container { max-width: 1000px; margin: 0 auto; border: 2px solid #000; padding: 20px; min-height: 90vh; position: relative; }
+        .header { text-align: center; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 20px; position: relative; }
+        .company-name { font-size: 28px; font-weight: 800; text-transform: uppercase; color: #2c3e50; line-height: 1; }
+        .company-address { font-size: 12px; font-weight: 600; color: #444; margin-top: 5px; margin-bottom: 10px; }
+        .report-title { background: #2c3e50; color: white; padding: 5px 25px; display: inline-block; font-weight: bold; font-size: 18px; border-radius: 4px; }
+        .info-grid { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; }
+        .info-left { flex: 2; border: 1px dashed #555; padding: 15px; margin-right: 15px; }
+        .info-row { display: flex; margin-bottom: 5px; font-size: 14px; align-items: center; }
+        .info-label { font-weight: 800; width: 80px; color: #444; }
+        .info-val { font-weight: 700; font-size: 15px; color: #000; }
+        .booking-border { border: 2px solid #000; padding: 2px 8px; display: inline-block; font-weight: 900; }
+        .info-right { flex: 1; display: flex; flex-direction: column; justify-content: space-between; height: 100%; border-left: 1px solid #ddd; padding-left: 15px; }
+        .right-item { font-size: 14px; margin-bottom: 8px; font-weight: 700; }
+        .right-label { color: #555; }
+        .summary-container { margin-bottom: 20px; border: 2px solid #000; padding: 10px; background: #f9f9f9; }
+        .summary-header { font-weight: 900; text-align: center; border-bottom: 1px solid #000; margin-bottom: 5px; text-transform: uppercase; }
+        .summary-table { width: 100%; font-size: 13px; font-weight: 700; }
+        .summary-table td { padding: 2px 5px; }
+        .main-table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 14px; }
+        .main-table th { background: #2c3e50 !important; color: white !important; padding: 10px; border: 1px solid #000; font-size: 14px; text-transform: uppercase; -webkit-print-color-adjust: exact; }
+        .main-table td { border: 1px solid #000; padding: 6px; text-align: center; vertical-align: middle; color: #000; font-weight: 600; }
+        .line-card { display: inline-block; padding: 4px 10px; border: 2px solid #000; font-size: 16px; font-weight: 900; border-radius: 4px; box-shadow: 2px 2px 0 #000; background: #fff; }
+        .line-text-bold { font-size: 14px; font-weight: 800; opacity: 0.7; }
+        .status-cell { font-size: 20px; color: green; font-weight: 900; }
+        .qty-cell { font-size: 16px; font-weight: 800; }
+        .action-btn { color: white; padding: 4px 8px; border-radius: 4px; text-decoration: none; font-size: 12px; margin: 0 2px; display: inline-block; }
+        .btn-edit-row { background-color: #f39c12; }
+        .btn-del-row { background-color: #e74c3c; }
+        .footer-total { margin-top: 20px; display: flex; justify-content: flex-end; }
+        .total-box { border: 3px solid #000; padding: 8px 30px; font-size: 20px; font-weight: 900; background: #ddd; -webkit-print-color-adjust: exact; }
+        .no-print { margin-bottom: 20px; text-align: right; }
+        .btn { padding: 8px 20px; background: #2c3e50; color: white; border: none; cursor: pointer; text-decoration: none; display: inline-block; border-radius: 4px; font-size: 14px; }
+        .btn-add { background: #27ae60; }
+        .generator-sig { text-align: right; font-size: 10px; margin-top: 5px; color: #555; }
+        @media print {
+            .no-print { display: none; }
+            .action-col { display: none; }
+            .container { border: none; padding: 0; margin: 0; max-width: 100%; }
+            body { padding: 0; }
+        }
+    </style>
+</head>
+<body>
+<div class="no-print">
+    <a href="/admin/accessories" class="btn">Back</a>
+    <form action="/admin/accessories/input" method="post" style="display:inline;">
+        <input type="hidden" name="ref_no" value="{{ ref }}">
+        <button type="submit" class="btn btn-add">Add New Challan</button>
+    </form>
+    <button onclick="window.print()" class="btn">🖨️ Print</button>
+</div>
+<div class="container">
+    <div class="header">
+        <div class="company-name">Cotton Clothing BD Limited</div>
+        <div class="company-address">Kazi Tower, 27 Road, Gazipura, Tongi, Gazipur.</div>
+        <div class="report-title">ACCESSORIES DELIVERY CHALLAN</div>
+    </div>
+    <div class="info-grid">
+        <div class="info-left">
+            <div class="info-row"><span class="info-label">Booking:</span> <span class="booking-border">{{ ref }}</span></div>
+            <div class="info-row"><span class="info-label">Buyer:</span> <span class="info-val">{{ buyer }}</span></div>
+            <div class="info-row"><span class="info-label">Style:</span> <span class="info-val">{{ style }}</span></div>
+            <div class="info-row"><span class="info-label">Date:</span> <span class="info-val">{{ today }}</span></div>
+        </div>
+        <div class="info-right">
+            <div class="right-item"><span class="right-label">Store:</span> Clothing General Store</div>
+            <div class="right-item"><span class="right-label">Send:</span> Cutting</div>
+            <div class="right-item"><span class="right-label">Item:</span> <span style="border: 1px solid #000; padding: 0 5px;">{{ item_type if item_type else 'Top/Btm' }}</span></div>
+        </div>
+    </div>
+    <div class="summary-container">
+        <div class="summary-header">Line-wise Summary</div>
+        <table class="summary-table">
+            <tr>
+            {% for line, qty in line_summary.items() %}
+                <td>{{ line }}: {{ qty }} pcs</td>
+                {% if loop.index % 4 == 0 %}</tr><tr>{% endif %}
+            {% endfor %}
+            </tr>
+        </table>
+        <div style="text-align: right; margin-top: 5px; font-weight: 800; border-top: 1px solid #ccc;">Total Deliveries: {{ count }}</div>
+    </div>
+    <table class="main-table">
+        <thead>
+            <tr>
+                <th width="15%">DATE</th>
+                <th width="15%">LINE NO</th>
+                <th width="20%">COLOR</th>
+                <th width="10%">SIZE</th>
+                <th width="10%">STATUS</th>
+                <th width="15%">QTY</th>
+                {% if session.role == 'admin' %}
+                <th width="15%" class="action-col">ACTION</th>
+                {% endif %}
+            </tr>
+        </thead>
+        <tbody>
+            {% set ns = namespace(grand_total=0) %}
+            {% for item in challans %}
+                {% set ns.grand_total = ns.grand_total + item.qty|int %}
+                <tr>
+                    <td>{{ item.date }}</td>
+                    <td>
+                        {% if loop.index == count %}
+                            <div class="line-card">{{ item.line }}</div>
+                        {% else %}
+                            <span class="line-text-bold">{{ item.line }}</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ item.color }}</td>
+                    <td>{{ item.size }}</td>
+                    <td class="status-cell">{{ item.status }}</td>
+                    <td class="qty-cell">{{ item.qty }}</td>
+                    {% if session.role == 'admin' %}
+                    <td class="action-col">
+                        <a href="/admin/accessories/edit?ref={{ ref }}&index={{ loop.index0 }}" class="action-btn btn-edit-row"><i class="fas fa-pencil-alt"></i></a>
+                        <form action="/admin/accessories/delete" method="POST" style="display:inline;" onsubmit="return confirm('Delete this challan?');">
+                            <input type="hidden" name="ref" value="{{ ref }}">
+                            <input type="hidden" name="index" value="{{ loop.index0 }}">
+                            <button type="submit" class="action-btn btn-del-row" style="border:none; cursor:pointer;"><i class="fas fa-trash"></i></button>
+                        </form>
+                    </td>
+                    {% endif %}
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <div class="footer-total">
+        <div class="total-box">
+            TOTAL QTY: {{ ns.grand_total }}
+        </div>
+    </div>
+    <div class="generator-sig">Report Generated By Mehedi Hasan</div>
+    <div style="margin-top: 60px; display: flex; justify-content: space-between; text-align: center; font-weight: bold; padding: 0 50px;">
+        <div style="border-top: 2px solid #000; width: 180px; padding-top: 5px;">Received By</div>
+        <div style="border-top: 2px solid #000; width: 180px; padding-top: 5px;">Input Incharge</div>
+        <div style="border-top: 2px solid #000; width: 180px; padding-top: 5px;">Store</div>
+    </div>
+</div>
+</body>
+</html>
+"""
+
+# --- PO REPORT TEMPLATE (UNCHANGED) ---
+PO_REPORT_TEMPLATE = """
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PO Report - Cotton Clothing BD</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background-color: #f8f9fa; padding: 30px 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .container { max-width: 1200px; }
+        .company-header { text-align: center; margin-bottom: 20px; border-bottom: 2px solid #000; padding-bottom: 10px; }
+        .company-name { font-size: 2.2rem; font-weight: 800; color: #2c3e50; text-transform: uppercase; letter-spacing: 1px; line-height: 1; }
+        .report-title { font-size: 1.1rem; color: #555; font-weight: 600; text-transform: uppercase; margin-top: 5px; }
+        .date-section { font-size: 1.2rem; font-weight: 800; color: #000; margin-top: 5px; }
+        .info-container { display: flex; justify-content: space-between; margin-bottom: 15px; gap: 15px; }
+        .info-box { background: white; border: 1px solid #ddd; border-left: 5px solid #2c3e50; padding: 10px 15px; border-radius: 5px; flex: 2; box-shadow: 0 2px 5px rgba(0,0,0,0.05); display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .total-box { background: #2c3e50; color: white; padding: 10px 15px; border-radius: 5px; width: 240px; text-align: right; display: flex; flex-direction: column; justify-content: center; box-shadow: 0 4px 10px rgba(44, 62, 80, 0.3); }
+        .info-item { margin-bottom: 6px; font-size: 1.3rem; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .info-label { font-weight: 800; color: #444; width: 90px; display: inline-block; }
+        .info-value { font-weight: 800; color: #000; }
+        .total-label { font-size: 1.1rem; opacity: 0.9; text-transform: uppercase; letter-spacing: 1px; font-weight: 700; }
+        .total-value { font-size: 2.5rem; font-weight: 800; line-height: 1.1; }
+        .table-card { background: white; border-radius: 0; margin-bottom: 20px; overflow: hidden; border: 1px solid #dee2e6; }
+        .color-header { background-color: #e9ecef; color: #2c3e50; padding: 10px 12px; font-size: 1.5rem; font-weight: 900; border-bottom: 1px solid #dee2e6; text-transform: uppercase; }
+        .table { margin-bottom: 0; width: 100%; border-collapse: collapse; }
+        .table th { background-color: #2c3e50; color: white; font-weight: 900; font-size: 1.2rem; text-align: center; border: 1px solid #34495e; padding: 8px 4px; vertical-align: middle; }
+        .table td { text-align: center; vertical-align: middle; border: 1px solid #dee2e6; padding: 6px 3px; color: #000; font-weight: 800; font-size: 1.15rem; }
+        .table-striped tbody tr:nth-of-type(odd) { background-color: #f8f9fa; }
+        .order-col { font-weight: 900 !important; text-align: center !important; background-color: #fdfdfd; white-space: nowrap; width: 1%; }
+        .total-col { font-weight: 900; background-color: #e8f6f3 !important; color: #16a085; border-left: 2px solid #1abc9c !important; }
+        .total-col-header { background-color: #e8f6f3 !important; color: #000 !important; font-weight: 900 !important; border: 1px solid #34495e !important; }
+        .table-striped tbody tr.summary-row, .table-striped tbody tr.summary-row td { background-color: #d1ecff !important; --bs-table-accent-bg: #d1ecff !important; color: #000 !important; font-weight: 900 !important; border-top: 2px solid #aaa !important; font-size: 1.2rem !important; }
+        .summary-label { text-align: right !important; padding-right: 15px !important; color: #000 !important; }
+        .action-bar { margin-bottom: 20px; display: flex; justify-content: flex-end; gap: 10px; }
+        .btn-print { background-color: #2c3e50; color: white; border-radius: 50px; padding: 8px 30px; font-weight: 600; }
+        .footer-credit { text-align: center; margin-top: 30px; margin-bottom: 20px; font-size: 0.8rem; color: #2c3e50; padding-top: 10px; border-top: 1px solid #ddd; }
+        @media print {
+            @page { margin: 5mm; size: portrait; }
+            body { background-color: white; padding: 0; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; color-adjust: exact !important; }
+            .container { max-width: 100% !important; width: 100% !important; padding: 0; margin: 0; }
+            .no-print { display: none !important; }
+            .company-header { border-bottom: 2px solid #000; margin-bottom: 5px; padding-bottom: 5px; }
+            .company-name { font-size: 1.8rem; } 
+            .info-container { margin-bottom: 10px; }
+            .info-box { border: 1px solid #000 !important; border-left: 5px solid #000 !important; padding: 5px 10px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+            .total-box { border: 2px solid #000 !important; background: white !important; color: black !important; padding: 5px 10px; }
+            .info-item { font-size: 13pt !important; font-weight: 800 !important; }
+            .table th, .table td { border: 1px solid #000 !important; padding: 2px !important; font-size: 13pt !important; font-weight: 800 !important; }
+            .table-striped tbody tr.summary-row td { background-color: #d1ecff !important; box-shadow: inset 0 0 0 9999px #d1ecff !important; color: #000 !important; font-weight: 900 !important; }
+            .color-header { background-color: #f1f1f1 !important; border: 1px solid #000 !important; font-size: 1.4rem !important; font-weight: 900; padding: 5px; margin-top: 10px; box-shadow: inset 0 0 0 9999px #f1f1f1 !important; }
+            .total-col-header { background-color: #e8f6f3 !important; box-shadow: inset 0 0 0 9999px #e8f6f3 !important; color: #000 !important; }
+            .table-card { border: none; margin-bottom: 10px; break-inside: avoid; }
+            .footer-credit { display: block !important; color: black; border-top: 1px solid #000; margin-top: 10px; font-size: 8pt !important; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="action-bar no-print">
+            <a href="/" class="btn btn-outline-secondary rounded-pill px-4">Back to Dashboard</a>
+            <button onclick="window.print()" class="btn btn-print">🖨️ Print Report</button>
+        </div>
+        <div class="company-header">
+            <div class="company-name">Cotton Clothing BD Limited</div>
+            <div class="report-title">Purchase Order Summary</div>
+            <div class="date-section">Date: <span id="date"></span></div>
+        </div>
+        {% if message %}
+            <div class="alert alert-warning text-center no-print">{{ message }}</div>
+        {% endif %}
+        {% if tables %}
+            <div class="info-container">
+                <div class="info-box">
+                    <div>
+                        <div class="info-item"><span class="info-label">Buyer:</span> <span class="info-value">{{ meta.buyer }}</span></div>
+                        <div class="info-item"><span class="info-label">Booking:</span> <span class="info-value">{{ meta.booking }}</span></div>
+                        <div class="info-item"><span class="info-label">Style:</span> <span class="info-value">{{ meta.style }}</span></div>
+                    </div>
+                    <div>
+                        <div class="info-item"><span class="info-label">Season:</span> <span class="info-value">{{ meta.season }}</span></div>
+                        <div class="info-item"><span class="info-label">Dept:</span> <span class="info-value">{{ meta.dept }}</span></div>
+                        <div class="info-item"><span class="info-label">Item:</span> <span class="info-value">{{ meta.item }}</span></div>
+                    </div>
+                </div>
+                <div class="total-box">
+                    <div class="total-label">Grand Total</div>
+                    <div class="total-value">{{ grand_total }}</div>
+                    <small>Pieces</small>
+                </div>
+            </div>
+            {% for item in tables %}
+                <div class="table-card">
+                    <div class="color-header">COLOR: {{ item.color }}</div>
+                    <div class="table-responsive">{{ item.table | safe }}</div>
+                </div>
+            {% endfor %}
+            <div class="footer-credit">Report Created By <strong>Mehedi Hasan</strong></div>
+        {% endif %}
+    </div>
+    <script>
+        const dateObj = new Date();
+        const day = String(dateObj.getDate()).padStart(2, '0');
+        const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+        const year = dateObj.getFullYear();
+        document.getElementById('date').innerText = `${day}-${month}-${year}`;
     </script>
 </body>
 </html>
@@ -1175,6 +1594,7 @@ USER_DASHBOARD_TEMPLATE = f"""
                     <div class="input-group">
                         <label for="ref_no">Internal Reference No</label>
                         <input type="text" id="ref_no" name="ref_no" placeholder="Booking-123/456.." required>
+                        <input type="hidden" name="download_token" id="download_token">
                     </div>
                     <button type="submit">Generate Report</button>
                 </form>
@@ -1225,6 +1645,7 @@ USER_DASHBOARD_TEMPLATE = f"""
             successContainer.style.display = 'none';
             text.innerText = 'Processing...';
             
+            // Allow form to submit, but keep overlay for visual effect
             setTimeout(() => {{
                 spinner.style.display = 'none';
                 successContainer.style.display = 'block';
@@ -1239,7 +1660,110 @@ USER_DASHBOARD_TEMPLATE = f"""
 </html>
 """
 
-# --- NEW: ADMIN DASHBOARD TEMPLATE (UPDATED REQUIREMENT) ---
+# --- 1. NEW: DETAILS PAGE TEMPLATE (For Viewing Lists on Separate Page) ---
+DETAILS_PAGE_TEMPLATE = f"""
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{{{ title }}}}</title>
+    {COMMON_STYLES}
+    <style>
+        .details-container {{ padding: 30px; max-width: 1200px; margin: 0 auto; margin-left: 280px; }}
+        @media (max-width: 900px) {{ .details-container {{ margin-left: 0; padding-top: 70px; }} }}
+    </style>
+</head>
+<body>
+    <div class="sidebar-toggle" onclick="toggleSidebar()"><i class="fas fa-bars"></i></div>
+    
+    <div class="admin-container">
+        <div class="admin-sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h2>Admin Panel</h2>
+                <p style="color: #ffffff; font-size: 11px; font-weight: bold; letter-spacing: 1px; opacity: 1;">SUPER ADMIN ACCESS</p>
+            </div>
+            <div class="nav-menu">
+                <a href="/" class="nav-link"><i class="fas fa-home"></i> Dashboard</a>
+            </div>
+            <div style="margin-top: auto; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 20px;">
+                <a href="/logout" class="nav-link" style="color: #ff7675; justify-content: center;"><i class="fas fa-sign-out-alt"></i> Sign Out</a>
+            </div>
+        </div>
+
+        <div class="admin-content">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+                <div>
+                    <h1 style="font-size: 28px; color: white;">{{{{ title }}}}</h1>
+                    <p style="color: #dfe6e9; opacity: 0.7;">Detailed view of today's records</p>
+                </div>
+                <a href="/" style="background: rgba(255,255,255,0.1); padding: 10px 25px; border-radius: 50px; color: white; text-decoration: none; border: 1px solid rgba(255,255,255,0.2);">
+                    <i class="fas fa-arrow-left"></i> Back to Dashboard
+                </a>
+            </div>
+
+            <div class="glass-card">
+                <div style="overflow-x: auto;">
+                    <table class="detail-table">
+                        <thead>
+                            <tr>
+                                {{% for col in columns %}}
+                                <th>{{{{ col }}}}</th>
+                                {{% endfor %}}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {{% for row in data %}}
+                            <tr>
+                                {{% if type == 'accessories' %}}
+                                    <td>{{{{ row.ref }}}}</td>
+                                    <td>{{{{ row.buyer }}}}</td>
+                                    <td>{{{{ row.style }}}}</td>
+                                    <td>{{{{ row.qty }}}}</td>
+                                    <td>{{{{ row.time }}}}</td>
+                                    <td>
+                                        <a href="/admin/accessories/print?ref={{ row.ref }}" target="_blank" 
+                                           style="background: #0984e3; padding: 5px 15px; border-radius: 4px; color: white; text-decoration: none; font-size: 12px; font-weight: 600;">
+                                           <i class="fas fa-eye"></i> View Challan
+                                        </a>
+                                    </td>
+                                {{% elif type == 'users' %}}
+                                    <td>{{{{ row.username }}}}</td>
+                                    <td>{{{{ row.role }}}}</td>
+                                    <td>{{{{ row.created_at }}}}</td>
+                                    <td>{{{{ row.last_login }}}}</td>
+                                    <td>{{{{ row.last_duration }}}}</td>
+                                {{% elif type == 'closing' %}}
+                                    <td>{{{{ row.ref }}}}</td>
+                                    <td>{{{{ row.user }}}}</td>
+                                    <td>{{{{ row.date }}}}</td>
+                                    <td>{{{{ row.time }}}}</td>
+                                {{% elif type == 'po' %}}
+                                    <td>{{{{ row.user }}}}</td>
+                                    <td>{{{{ row.file_count }}}} Files</td>
+                                    <td>{{{{ row.date }}}}</td>
+                                    <td>{{{{ row.time }}}}</td>
+                                {{% endif %}}
+                            </tr>
+                            {{% else %}}
+                            <tr>
+                                <td colspan="{{{{ columns|length }}}}" style="text-align:center; opacity:0.6; padding: 20px;">No records found for today.</td>
+                            </tr>
+                            {{% endfor %}}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        function toggleSidebar() {{ document.getElementById('sidebar').classList.toggle('active'); }}
+    </script>
+</body>
+</html>
+"""
+
+# --- 2. UPDATED ADMIN DASHBOARD TEMPLATE ---
 ADMIN_DASHBOARD_TEMPLATE = f"""
 <!doctype html>
 <html lang="en">
@@ -1251,330 +1775,6 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
     <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
 </head>
 <body>
-    <div class="sidebar-toggle" onclick="toggleSidebar()">
-        <i class="fas fa-bars"></i>
-    </div>
-
-    <div class="admin-container">
-        <div class="admin-sidebar" id="sidebar">
-            <div class="sidebar-header">
-                <h2>Admin Panel</h2>
-                <p>SUPER ADMIN ACCESS</p>
-            </div>
-            
-            <ul class="nav-menu">
-                <li class="nav-item">
-                    <a class="nav-link active" onclick="showDashboard()">
-                        <i class="fas fa-home"></i> Dashboard
-                    </a>
-                </li>
-                 <li class="nav-item">
-                    <a class="nav-link" onclick="showSection('user-manage')">
-                        <i class="fas fa-users-cog"></i> User Management
-                    </a>
-                </li>
-            </ul>
-            
-            <div style="margin-top: auto; border-top: 1px solid rgba(255, 255, 255, 0.1); padding-top: 20px; text-align: center;">
-                <a href="/logout" class="nav-link" style="color: #ff7675; justify-content: center;">
-                    <i class="fas fa-sign-out-alt"></i> Sign Out
-                </a>
-                <div class="footer-credit">© Mehedi Hasan</div>
-            </div>
-        </div>
-
-        <div class="admin-content">
-            
-            <div id="dashboard-section">
-                <h2 style="color:white; margin-bottom:20px;">Today's Overview <span style="font-size:14px; opacity:0.6;">(Time: BD/Dhaka)</span></h2>
-                
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px;">
-                    
-                    <div class="dashboard-card" style="border-left: 5px solid #a29bfe;" onclick="openModal('userModal')">
-                        <div class="card-info">
-                            <h3>{{{{ stats.users.count }}}}</h3>
-                            <p>Active Users</p>
-                        </div>
-                        <div class="card-icon" style="color: #a29bfe;"><i class="fas fa-users"></i></div>
-                    </div>
-
-                    <div class="dashboard-card" style="border-left: 5px solid #fab1a0;" onclick="openModal('accModal')">
-                         <div class="card-info">
-                            <h3>{{{{ stats.accessories.count }}}}</h3>
-                            <p>Accessories Challan</p>
-                        </div>
-                        <div class="card-icon" style="color: #fab1a0;"><i class="fas fa-boxes"></i></div>
-                    </div>
-
-                    <div class="dashboard-card" style="border-left: 5px solid #55efc4;" onclick="openModal('closingModal')">
-                        <div class="card-info">
-                            <h3>{{{{ stats.closing.count }}}}</h3>
-                            <p>Closing Reports</p>
-                        </div>
-                        <div class="card-icon" style="color: #55efc4;"><i class="fas fa-file-export"></i></div>
-                    </div>
-
-                    <div class="dashboard-card" style="border-left: 5px solid #74b9ff;" onclick="openModal('poModal')">
-                        <div class="card-info">
-                            <h3>{{{{ stats.po.count }}}}</h3>
-                            <p>PO Generated</p>
-                        </div>
-                        <div class="card-icon" style="color: #74b9ff;"><i class="fas fa-file-invoice"></i></div>
-                    </div>
-                </div>
-
-                <div class="chart-wrapper">
-                    <h3 style="color: white; margin-bottom: 20px;">Module Usage Distribution</h3>
-                    <div style="width: 300px; height: 300px;">
-                        <canvas id="usageChart"></canvas>
-                    </div>
-                </div>
-            </div>
-
-            <div id="user-manage-section" style="display:none;">
-                <div class="glass-card" style="width: 100%; max-width: 100%;">
-                    <h2>User Management</h2>
-                    <p class="subtitle">Add, Edit or Delete Users</p>
-                    <p style="color:white;">(User Management Logic Loaded Dynamically)</p>
-                     <button onclick="loadUsers()">Load User Data</button>
-                     <div id="userTableContainer"></div>
-                </div>
-            </div>
-
-        </div>
-    </div>
-
-    <div id="userModal" class="modal-overlay">
-        <div class="modal-content">
-            <span class="close-modal" onclick="closeModal('userModal')">&times;</span>
-            <h2>Active Users Details</h2>
-            <table class="detail-table">
-                <thead>
-                    <tr>
-                        <th>Username</th>
-                        <th>Role</th>
-                        <th>Created At</th>
-                        <th>Last Login</th>
-                        <th>Duration</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {{% for u in stats.users.details %}}
-                    <tr>
-                        <td>{{{{ u.username }}}}</td>
-                        <td>{{{{ u.role }}}}</td>
-                        <td>{{{{ u.created_at }}}}</td>
-                        <td>{{{{ u.last_login }}}}</td>
-                        <td>{{{{ u.last_duration }}}}</td>
-                    </tr>
-                    {{% endfor %}}
-                </tbody>
-            </table>
-        </div>
-    </div>
-
-    <div id="accModal" class="modal-overlay">
-        <div class="modal-content">
-            <span class="close-modal" onclick="closeModal('accModal')">&times;</span>
-            <h2>Today's Accessories Challans</h2>
-            <table class="detail-table">
-                <thead>
-                    <tr>
-                        <th>Booking Ref</th>
-                        <th>Buyer</th>
-                        <th>Style</th>
-                        <th>Time</th>
-                        <th>Qty</th>
-                        <th>Action</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {{% for a in stats.accessories.details %}}
-                    <tr>
-                        <td>{{{{ a.ref }}}}</td>
-                        <td>{{{{ a.buyer }}}}</td>
-                        <td>{{{{ a.style }}}}</td>
-                        <td>{{{{ a.time }}}}</td>
-                        <td>{{{{ a.qty }}}}</td>
-                        <td>
-                            <a href="/admin/accessories/print?ref={{ a.ref }}" target="_blank" style="color:#74b9ff; text-decoration:none;">View</a>
-                        </td>
-                    </tr>
-                    {{% endfor %}}
-                </tbody>
-            </table>
-        </div>
-    </div>
-
-    <div id="closingModal" class="modal-overlay">
-        <div class="modal-content">
-            <span class="close-modal" onclick="closeModal('closingModal')">&times;</span>
-            <h2>Today's Closing Reports</h2>
-             <table class="detail-table">
-                <thead>
-                    <tr>
-                        <th>Ref No</th>
-                        <th>Generated By</th>
-                        <th>Time</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {{% for c in stats.closing.details %}}
-                    <tr>
-                        <td>{{{{ c.ref }}}}</td>
-                        <td>{{{{ c.user }}}}</td>
-                        <td>{{{{ c.time }}}}</td>
-                    </tr>
-                    {{% endfor %}}
-                </tbody>
-            </table>
-        </div>
-    </div>
-
-    <div id="poModal" class="modal-overlay">
-        <div class="modal-content">
-            <span class="close-modal" onclick="closeModal('poModal')">&times;</span>
-            <h2>Today's PO Sheets</h2>
-             <table class="detail-table">
-                <thead>
-                    <tr>
-                        <th>Generated By</th>
-                        <th>Files Processed</th>
-                        <th>Time</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {{% for p in stats.po.details %}}
-                    <tr>
-                        <td>{{{{ p.user }}}}</td>
-                        <td>{{{{ p.file_count }}}}</td>
-                        <td>{{{{ p.time }}}}</td>
-                    </tr>
-                    {{% endfor %}}
-                </tbody>
-            </table>
-        </div>
-    </div>
-
-    <script>
-        // Sidebar Toggle
-        function toggleSidebar() {{
-            document.getElementById('sidebar').classList.toggle('active');
-        }}
-
-        // Navigation
-        function showDashboard() {{
-            document.getElementById('dashboard-section').style.display = 'block';
-            document.getElementById('user-manage-section').style.display = 'none';
-        }}
-        
-        function showSection(id) {{
-            document.getElementById('dashboard-section').style.display = 'none';
-            document.getElementById(id).style.display = 'block';
-            if(id === 'user-manage') loadUsers(); // Placeholder for existing user logic
-        }}
-
-        // Modal Logic
-        function openModal(id) {{
-            document.getElementById(id).style.display = 'flex';
-        }}
-        function closeModal(id) {{
-            document.getElementById(id).style.display = 'none';
-        }}
-
-        // Chart JS
-        const ctx = document.getElementById('usageChart').getContext('2d');
-        const dataValues = {{{{ stats.chart_data | tojson }}}}; // [Closing, Acc, PO]
-        
-        new Chart(ctx, {{
-            type: 'doughnut',
-            data: {{
-                labels: ['Closing Report', 'Accessories', 'PO Sheet'],
-                datasets: [{{
-                    data: dataValues,
-                    backgroundColor: ['#55efc4', '#fab1a0', '#74b9ff'],
-                    borderWidth: 0
-                }}]
-            }},
-            options: {{
-                responsive: true,
-                plugins: {{
-                    legend: {{ position: 'bottom', labels: {{ color: 'white' }} }}
-                }}
-            }}
-        }});
-
-        // --- User Management Logic (Re-implemented for compatibility) ---
-        function loadUsers() {{
-             // Use the existing logic from Part 1/2 JS
-             fetch('/admin/get-users')
-                .then(res => res.json())
-                .then(data => {{
-                     let html = '<table class="detail-table"><thead><tr><th>User</th><th>Role</th></tr></thead><tbody>';
-                     for (const [user, details] of Object.entries(data)) {{
-                         html += `<tr><td>${{user}}</td><td>${{details.role}}</td></tr>`;
-                     }}
-                     html += '</tbody></table>';
-                     document.getElementById('userTableContainer').innerHTML = html;
-                }});
-        }}
-    </script>
-</body>
-</html>
-"""
-# ==============================================================================
-# REMAINING TEMPLATES (ACCESSORIES & PO)
-# ==============================================================================
-
-# --- ACCESSORIES SEARCH TEMPLATE ---
-ACCESSORIES_SEARCH_TEMPLATE = f"""
-<!doctype html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Accessories Dashboard</title>
-    {COMMON_STYLES}
-</head>
-<body>
-    <div class="center-container">
-        <div class="glass-card" style="max-width: 500px;">
-            <h1><i class="fas fa-boxes"></i> Accessories Dashboard</h1>
-            <p class="subtitle">Find Booking to Manage Challan</p>
-            
-            <form action="/admin/accessories/input" method="post">
-                <div class="input-group">
-                    <label for="ref_no">Booking Reference No</label>
-                    <input type="text" id="ref_no" name="ref_no" placeholder="e.g. Booking-123..." required>
-                </div>
-                <button type="submit">Proceed</button>
-            </form>
-            
-            <div style="margin-top: 25px; display: flex; justify-content: center; gap: 20px; align-items: center;">
-                <a href="/" style="color:white; text-decoration:none; font-size:13px; opacity:0.8;"><i class="fas fa-arrow-left"></i> Dashboard</a>
-                <a href="/logout" style="color:#ff7675; text-decoration:none; font-size:13px; border: 1px solid rgba(255, 118, 117, 0.5); padding: 8px 15px; border-radius: 20px;">
-                    <i class="fas fa-sign-out-alt"></i> Sign Out
-                </a>
-            </div>
-            <div class="footer-credit">© Mehedi Hasan</div>
-        </div>
-    </div>
-</body>
-</html>
-"""
-
-# --- ACCESSORIES INPUT TEMPLATE ---
-ACCESSORIES_INPUT_TEMPLATE = f"""
-<!doctype html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>New Challan Entry</title>
-    {COMMON_STYLES}
-    <style> option {{ color: #000; background: #fff; }} </style>
-</head>
-<body>
     <div id="loading-overlay">
         <div class="spinner"></div>
         <div class="success-container">
@@ -1583,418 +1783,353 @@ ACCESSORIES_INPUT_TEMPLATE = f"""
                 <path class="checkmark__check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
             </svg>
         </div>
-        <div id="loading-text">Saving Record...</div>
+        <div id="loading-text">Processing...</div>
     </div>
 
-    <div class="center-container">
-        <div class="glass-card" style="max-width: 500px;">
-            <h1><i class="fas fa-plus-circle"></i> New Challan</h1>
-            <p class="subtitle">Booking: {{{{ ref }}}}</p>
-            <div style="background: rgba(255,255,255,0.1); padding: 15px; border-radius: 12px; margin-bottom: 25px; font-size: 18px; border: 1px solid rgba(255,255,255,0.1);">
-                <strong>Buyer:</strong> {{{{ buyer }}}} <br> <strong>Style:</strong> {{{{ style }}}}
+    <div class="sidebar-toggle" onclick="toggleSidebar()"><i class="fas fa-bars"></i></div>
+
+    <div class="admin-container">
+        <div class="admin-sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h2>Admin Panel</h2>
+                <p style="color: #ffffff; font-size: 11px; font-weight: bold; letter-spacing: 1px; opacity: 1;">SUPER ADMIN ACCESS</p>
+            </div>
+            
+            <div class="nav-menu">
+                <a class="nav-link active" onclick="showSection('dashboard', this)"><i class="fas fa-home"></i> Dashboard</a>
+                <a class="nav-link" onclick="showSection('closing', this)"><i class="fas fa-file-export"></i> Closing Report</a>
+                <a class="nav-link" href="/admin/accessories"><i class="fas fa-box-open"></i> Accessories</a>
+                <a class="nav-link" onclick="showSection('po', this)"><i class="fas fa-file-invoice"></i> PO Sheet</a>
+                <a class="nav-link" onclick="showSection('users', this)"><i class="fas fa-users-cog"></i> User Management</a>
+                <a class="nav-link" onclick="showSection('history', this)"><i class="fas fa-history"></i> Closing History</a>
+            </div>
+            
+            <div style="margin-top: auto; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 20px;">
+                <a href="/logout" class="nav-link" style="color: #ff7675; justify-content: center;"><i class="fas fa-sign-out-alt"></i> Sign Out</a>
+                <div class="footer-credit">© Mehedi Hasan</div>
+            </div>
+        </div>
+
+        <div class="admin-content">
+            
+            <div id="section-dashboard">
+                <h2 style="color: white; margin-bottom: 25px;">Today's Overview <span style="font-size: 14px; opacity: 0.6; font-weight: 400;">(Asia/Dhaka)</span></h2>
+                
+                <div class="dashboard-grid">
+                    <a href="/admin/details/users" class="dashboard-card" style="border-left: 5px solid #a29bfe;">
+                        <div class="card-info"><h3>{{{{ stats.users.count }}}}</h3><p>Active Users</p></div>
+                        <div style="color: #a29bfe; font-size: 35px;"><i class="fas fa-users"></i></div>
+                    </a>
+                    
+                    <a href="/admin/details/accessories" class="dashboard-card" style="border-left: 5px solid #fab1a0;">
+                         <div class="card-info"><h3>{{{{ stats.accessories.count }}}}</h3><p>Accessories Today</p></div>
+                         <div style="color: #fab1a0; font-size: 35px;"><i class="fas fa-boxes"></i></div>
+                    </a>
+                    
+                    <a href="/admin/details/closing" class="dashboard-card" style="border-left: 5px solid #55efc4;">
+                        <div class="card-info"><h3>{{{{ stats.closing.count }}}}</h3><p>Closing Reports</p></div>
+                        <div style="color: #55efc4; font-size: 35px;"><i class="fas fa-file-export"></i></div>
+                    </a>
+                    
+                    <a href="/admin/details/po" class="dashboard-card" style="border-left: 5px solid #74b9ff;">
+                        <div class="card-info"><h3>{{{{ stats.po.count }}}}</h3><p>PO Generated</p></div>
+                        <div style="color: #74b9ff; font-size: 35px;"><i class="fas fa-file-invoice"></i></div>
+                    </a>
+                </div>
+
+                <div class="glass-card" style="display: flex; justify-content: center; align-items: center; flex-direction: column;">
+                    <h3 style="margin-bottom: 20px;">Module Usage Stats</h3>
+                    <div style="width: 100%; max-width: 400px;">
+                        <canvas id="usageChart"></canvas>
+                    </div>
+                </div>
             </div>
 
-            <form action="/admin/accessories/save" method="post" onsubmit="showSuccessAnim()">
-                <input type="hidden" name="ref" value="{{{{ ref }}}}">
-                
-                <div class="input-group">
-                    <label>Select Item Type</label>
-                    <select name="item_type">
-                        <option value="" disabled selected>-- Select Item (Top/Btm) --</option>
-                        <option value="Top">Top</option>
-                        <option value="Bottom">Bottom</option>
-                    </select>
+            <div id="section-closing" style="display:none; max-width: 600px; margin: 0 auto;">
+                <div class="glass-card">
+                    <h2 style="margin-bottom: 25px; font-weight: 600;"><i class="fas fa-file-export"></i> Closing Report</h2>
+                    <form action="/generate-report" method="post" onsubmit="startDownloadProcess()">
+                        <div class="input-group">
+                            <label for="ref_no">Internal Reference No</label>
+                            <input type="text" id="ref_no" name="ref_no" placeholder="Enter Ref No (e.g. DFL/24/..)" required>
+                            <input type="hidden" name="download_token" id="download_token">
+                        </div>
+                        <button type="submit">Generate Report</button>
+                    </form>
                 </div>
-
-                <div class="input-group">
-                    <label>Select Color</label>
-                    <select name="color" required>
-                        <option value="" disabled selected>-- Choose Color --</option>
-                        {{% for color in colors %}}
-                        <option value="{{{{ color }}}}">{{{{ color }}}}</option>
-                        {{% endfor %}}
-                    </select>
-                </div>
-
-                <div class="input-group">
-                    <label>Sewing Line Number</label>
-                    <input type="text" name="line_no" placeholder="e.g. Line-12" required>
-                </div>
-                
-                <div class="input-group">
-                    <label>Size (Optional)</label>
-                    <input type="text" name="size" placeholder="e.g. XL or ALL" value="ALL">
-                </div>
-
-                <div class="input-group">
-                    <label>Quantity</label>
-                    <input type="number" name="qty" placeholder="Enter Qty" required>
-                </div>
-
-                <button type="submit">Save & View Report</button>
-            </form>
-            <div style="margin-top: 15px;">
-                <a href="/admin/accessories/print?ref={{{{ ref }}}}" style="color:#a29bfe; font-size:12px; margin-right: 15px; font-weight:600;">View Report Only</a>
-                <a href="/admin/accessories" style="color:white; text-decoration:none; font-size:12px;">Back</a>
             </div>
-             <div class="footer-credit">© Mehedi Hasan</div>
+
+            <div id="section-po" style="display:none; max-width: 600px; margin: 0 auto;">
+                 <div class="glass-card">
+                    <h2 style="margin-bottom: 25px; font-weight: 600;"><i class="fas fa-file-invoice"></i> PDF Report Generator</h2>
+                    <form action="/generate-po-report" method="post" enctype="multipart/form-data" onsubmit="startDownloadProcess()">
+                        <div class="input-group">
+                            <label for="pdf_files">Select PDF Files (Booking & PO)</label>
+                            <input type="file" id="pdf_files" name="pdf_files" multiple accept=".pdf" required style="height: auto;">
+                        </div>
+                        <button type="submit" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);">Generate Report</button>
+                    </form>
+                     <div style="margin-top: 15px; font-size: 12px; color: #a29bfe; text-align: center;">
+                        Select both Booking File & PO Files together
+                    </div>
+                </div>
+            </div>
+
+            <div id="section-history" style="display:none;">
+                <div class="glass-card">
+                    <h2 style="margin-bottom: 25px; font-weight: 600;"><i class="fas fa-history"></i> Report Generation Log</h2>
+                    <div style="overflow-y: auto; max-height: 500px;">
+                        <table class="detail-table">
+                            <thead><tr><th>Date</th><th>Time</th><th>User</th><th>Type/Ref</th></tr></thead>
+                            <tbody>
+                                {{% for log in stats.history %}}
+                                <tr>
+                                    <td>{{{{ log.date }}}}</td>
+                                    <td>{{{{ log.time }}}}</td>
+                                    <td>{{{{ log.user }}}}</td>
+                                    <td style="color: #a29bfe;">{{{{ log.ref if log.ref else log.type }}}}</td>
+                                </tr>
+                                {{% endfor %}}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="section-users" style="display:none;">
+                <div class="glass-card">
+                    <h2 style="margin-bottom: 25px; font-weight: 600;"><i class="fas fa-users-cog"></i> User Management</h2>
+                    
+                    <div style="background: rgba(0,0,0,0.2); padding: 20px; border-radius: 15px; margin-bottom: 25px;">
+                        <h4 style="font-size: 14px; margin-bottom: 15px; color: #a29bfe; text-transform: uppercase; letter-spacing: 1px;">Create / Update User</h4>
+                        <form id="userForm">
+                            <input type="hidden" id="action_type" name="action_type" value="create">
+                            <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+                                <div class="input-group" style="flex: 1; min-width: 200px; margin-bottom: 15px;">
+                                    <input type="text" id="new_username" name="username" placeholder="Username" required>
+                                </div>
+                                <div class="input-group" style="flex: 1; min-width: 200px; margin-bottom: 15px;">
+                                    <input type="text" id="new_password" name="password" placeholder="Password" required>
+                                </div>
+                            </div>
+                            <div class="input-group" style="margin-bottom: 20px;">
+                                <label>Permissions:</label>
+                                <div style="display: flex; gap: 15px; margin-top: 5px; flex-wrap: wrap;">
+                                    <div style="display: flex; align-items: center;"><input type="checkbox" name="permissions" value="closing" id="perm_closing" checked style="width: auto; margin-right: 5px;"> Closing</div>
+                                    <div style="display: flex; align-items: center;"><input type="checkbox" name="permissions" value="po_sheet" id="perm_po" style="width: auto; margin-right: 5px;"> PO Sheet</div>
+                                     <div style="display: flex; align-items: center;"><input type="checkbox" name="permissions" value="accessories" id="perm_acc" style="width: auto; margin-right: 5px;"> Accessories</div>
+                                </div>
+                            </div>
+                            <div style="display: flex; gap: 10px;">
+                                <button type="button" onclick="handleUserSubmit(event)" id="saveUserBtn" style="flex: 2;">Create User</button>
+                                <button type="button" onclick="resetForm()" class="btn-reset" style="flex: 1; background: #636e72;">Reset</button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <button onclick="loadUsers()" style="width: auto; padding: 10px 25px; margin-bottom: 20px;">Reload List</button>
+                    <div id="userTableContainer"></div>
+                </div>
+            </div>
+
         </div>
     </div>
-    <script>
-        function showSuccessAnim() {{
-            const overlay = document.getElementById('loading-overlay');
-            const spinner = document.querySelector('.spinner');
-            const successContainer = document.querySelector('.success-container');
-            const text = document.getElementById('loading-text');
-            
-            overlay.style.display = 'flex';
-            spinner.style.display = 'block';
-            successContainer.style.display = 'none';
-            text.innerText = 'Processing...';
 
-            setTimeout(() => {{
-                spinner.style.display = 'none';
-                successContainer.style.display = 'block';
-                overlay.classList.add('loader-success');
-                text.innerText = 'Saved Successfully!';
-            }}, 800);
-            return true;
+    <script>
+        function toggleSidebar() {{ document.getElementById('sidebar').classList.toggle('active'); }}
+        
+        function showSection(id, element) {{
+            document.querySelectorAll('[id^="section-"]').forEach(el => el.style.display = 'none');
+            document.getElementById('section-'+id).style.display = 'block';
+            if(element) {{
+                document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+                element.classList.add('active');
+            }}
+            if(id === 'users') loadUsers();
+        }}
+
+        // Chart Initialization
+        const ctx = document.getElementById('usageChart').getContext('2d');
+        new Chart(ctx, {{
+            type: 'doughnut',
+            data: {{
+                labels: ['Closing Report', 'Accessories', 'PO Sheet'],
+                datasets: [{{
+                    data: {{{{ stats.chart_data | tojson }}}},
+                    backgroundColor: ['#55efc4', '#fab1a0', '#74b9ff'],
+                    borderWidth: 0
+                }}]
+            }},
+            options: {{ responsive: true, plugins: {{ legend: {{ labels: {{ color: 'white' }} }} }} }}
+        }});
+
+        // --- USER MANAGEMENT LOGIC (Restored) ---
+        function loadUsers() {{
+             fetch('/admin/get-users')
+                .then(res => res.json())
+                .then(data => {{
+                     let html = '<table class="detail-table"><thead><tr><th>Username</th><th>Role</th><th>Permissions</th><th>Action</th></tr></thead><tbody>';
+                     for (const [user, details] of Object.entries(data)) {{
+                         let perms = details.permissions ? details.permissions.join(', ') : '';
+                         html += `<tr>
+                            <td>${{user}}</td>
+                            <td>${{details.role}}</td>
+                            <td>${{perms}}</td>
+                            <td>
+                                ${{details.role !== 'admin' ? 
+                                    `<button onclick="editUser('${{user}}', '${{details.password}}', '${{perms}}')" style="background: #f39c12; padding: 5px 10px; font-size: 12px; width: auto; margin-right: 5px;">Edit</button>
+                                     <button onclick="deleteUser('${{user}}')" style="background: #e74c3c; padding: 5px 10px; font-size: 12px; width: auto;">Delete</button>` : 
+                                    '<span style="font-size:10px; opacity:0.7">Admin</span>'}}
+                            </td>
+                        </tr>`;
+                     }}
+                     html += '</tbody></table>';
+                     document.getElementById('userTableContainer').innerHTML = html;
+                }});
+        }}
+
+        function handleUserSubmit(e) {{
+            if(e) e.preventDefault();
+            const username = document.getElementById('new_username').value;
+            const password = document.getElementById('new_password').value;
+            const action = document.getElementById('action_type').value;
+            
+            if(!username || !password) {{ swal("Error", "Username and Password required!", "warning"); return; }}
+            
+            let permissions = [];
+            if(document.getElementById('perm_closing').checked) permissions.push('closing');
+            if(document.getElementById('perm_po').checked) permissions.push('po_sheet');
+            if(document.getElementById('perm_acc').checked) permissions.push('accessories');
+
+            // Loading
+            document.getElementById('loading-overlay').style.display = 'flex';
+
+            fetch('/admin/save-user', {{
+                method: 'POST',
+                headers: {{'Content-Type': 'application/json'}},
+                body: JSON.stringify({{ username, password, permissions, action_type: action }})
+            }})
+            .then(res => res.json())
+            .then(data => {{
+                document.getElementById('loading-overlay').style.display = 'none';
+                if(data.status === 'success') {{
+                    swal("Success", "User saved successfully!", "success");
+                    loadUsers();
+                    resetForm();
+                }} else {{
+                    swal("Error", data.message, "error");
+                }}
+            }});
+        }}
+
+        function editUser(user, pass, permsStr) {{
+            document.getElementById('new_username').value = user;
+            document.getElementById('new_username').readOnly = true; 
+            document.getElementById('new_password').value = pass;
+            document.getElementById('action_type').value = 'update';
+            document.getElementById('saveUserBtn').innerText = 'Update User';
+            document.getElementById('saveUserBtn').style.background = 'linear-gradient(135deg, #f39c12 0%, #e67e22 100%)';
+            
+            let perms = permsStr.split(', ');
+            document.getElementById('perm_closing').checked = perms.includes('closing');
+            document.getElementById('perm_po').checked = perms.includes('po_sheet');
+            document.getElementById('perm_acc').checked = perms.includes('accessories');
+        }}
+
+        function resetForm() {{
+            document.getElementById('userForm').reset();
+            document.getElementById('action_type').value = 'create';
+            document.getElementById('saveUserBtn').innerText = 'Create User';
+            document.getElementById('saveUserBtn').style.background = '';
+            document.getElementById('new_username').readOnly = false;
+            document.getElementById('perm_closing').checked = true;
+        }}
+
+        function deleteUser(user) {{
+            swal({{ title: "Are you sure?", icon: "warning", buttons: true, dangerMode: true }})
+            .then((willDelete) => {{
+                if (willDelete) {{
+                    fetch('/admin/delete-user', {{
+                        method: 'POST',
+                        headers: {{'Content-Type': 'application/json'}},
+                        body: JSON.stringify({{ username: user }})
+                    }}).then(res => res.json()).then(data => {{
+                        if(data.status === 'success') {{ swal("Deleted!", "User removed.", "success"); loadUsers(); }}
+                        else {{ swal("Error", data.message, "error"); }}
+                    }});
+                }}
+            }});
+        }}
+
+        function startDownloadProcess() {{
+            const overlay = document.getElementById('loading-overlay'); 
+            overlay.style.display = 'flex';
+            setTimeout(() => {{ overlay.style.display = 'none'; }}, 3000);
         }}
     </script>
 </body>
 </html>
 """
-
-# --- ACCESSORIES EDIT TEMPLATE ---
-ACCESSORIES_EDIT_TEMPLATE = f"""
-<!doctype html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Edit Challan</title>
-    {COMMON_STYLES}
-</head>
-<body>
-    <div class="center-container">
-        <div class="glass-card" style="max-width: 500px;">
-            <h1><i class="fas fa-edit"></i> Edit Challan</h1>
-            <p class="subtitle">Update entry for {{{{ ref }}}}</p>
-
-            <form action="/admin/accessories/update" method="post">
-                <input type="hidden" name="ref" value="{{{{ ref }}}}">
-                <input type="hidden" name="index" value="{{{{ index }}}}">
-
-                <div class="input-group">
-                    <label>Sewing Line Number</label>
-                    <input type="text" name="line_no" value="{{{{ item.line }}}}" required>
-                </div>
-                
-                <div class="input-group">
-                    <label>Color</label>
-                    <input type="text" name="color" value="{{{{ item.color }}}}" required>
-                </div>
-
-                <div class="input-group">
-                    <label>Size</label>
-                    <input type="text" name="size" value="{{{{ item.size }}}}" required>
-                </div>
-
-                <div class="input-group">
-                    <label>Quantity</label>
-                    <input type="number" name="qty" value="{{{{ item.qty }}}}" required>
-                </div>
-
-                <button type="submit">Update Entry</button>
-            </form>
-            <br>
-            <a href="/admin/accessories/print?ref={{{{ ref }}}}" style="color:white; text-decoration:none; font-size:12px;">Cancel</a>
-            <div class="footer-credit">© Mehedi Hasan</div>
-        </div>
-    </div>
-</body>
-</html>
-"""
-
-# --- ACCESSORIES REPORT TEMPLATE (PRINT VIEW) ---
-ACCESSORIES_REPORT_TEMPLATE = """
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Accessories Delivery Report</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <style>
-        body { font-family: 'Poppins', sans-serif; background: #fff; padding: 20px; color: #000; }
-        .container { max-width: 1000px; margin: 0 auto; border: 2px solid #000; padding: 20px; min-height: 90vh; position: relative; }
-        .header { text-align: center; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 20px; position: relative; }
-        .company-name { font-size: 28px; font-weight: 800; text-transform: uppercase; color: #2c3e50; line-height: 1; }
-        .company-address { font-size: 12px; font-weight: 600; color: #444; margin-top: 5px; margin-bottom: 10px; }
-        .report-title { background: #2c3e50; color: white; padding: 5px 25px; display: inline-block; font-weight: bold; font-size: 18px; border-radius: 4px; }
-        .info-grid { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; }
-        .info-left { flex: 2; border: 1px dashed #555; padding: 15px; margin-right: 15px; }
-        .info-row { display: flex; margin-bottom: 5px; font-size: 14px; align-items: center; }
-        .info-label { font-weight: 800; width: 80px; color: #444; }
-        .info-val { font-weight: 700; font-size: 15px; color: #000; }
-        .booking-border { border: 2px solid #000; padding: 2px 8px; display: inline-block; font-weight: 900; }
-        .info-right { flex: 1; display: flex; flex-direction: column; justify-content: space-between; height: 100%; border-left: 1px solid #ddd; padding-left: 15px; }
-        .right-item { font-size: 14px; margin-bottom: 8px; font-weight: 700; }
-        
-        /* Summary Table */
-        .summary-container { margin-bottom: 20px; border: 2px solid #000; padding: 10px; background: #f9f9f9; }
-        .summary-header { font-weight: 900; text-align: center; border-bottom: 1px solid #000; margin-bottom: 5px; text-transform: uppercase; }
-        .summary-table { width: 100%; font-size: 13px; font-weight: 700; }
-        .summary-table td { padding: 2px 5px; }
-        
-        .main-table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 14px; }
-        .main-table th { background: #2c3e50 !important; color: white !important; padding: 10px; border: 1px solid #000; font-size: 14px; text-transform: uppercase; -webkit-print-color-adjust: exact; }
-        .main-table td { border: 1px solid #000; padding: 6px; text-align: center; vertical-align: middle; color: #000; font-weight: 600; }
-        .line-card { display: inline-block; padding: 4px 10px; border: 2px solid #000; font-size: 16px; font-weight: 900; border-radius: 4px; box-shadow: 2px 2px 0 #000; background: #fff; }
-        .status-cell { font-size: 20px; color: green; font-weight: 900; }
-        .qty-cell { font-size: 16px; font-weight: 800; }
-        
-        .action-btn { color: white; padding: 4px 8px; border-radius: 4px; text-decoration: none; font-size: 12px; margin: 0 2px; display: inline-block; }
-        .btn-edit-row { background-color: #f39c12; }
-        .btn-del-row { background-color: #e74c3c; }
-
-        .footer-total { margin-top: 20px; display: flex; justify-content: flex-end; }
-        .total-box { border: 3px solid #000; padding: 8px 30px; font-size: 20px; font-weight: 900; background: #ddd; -webkit-print-color-adjust: exact; }
-
-        .no-print { margin-bottom: 20px; text-align: right; }
-        .btn { padding: 8px 20px; background: #2c3e50; color: white; border: none; cursor: pointer; text-decoration: none; display: inline-block; border-radius: 4px; font-size: 14px; }
-        .btn-add { background: #27ae60; }
-        .generator-sig { text-align: right; font-size: 10px; margin-top: 5px; color: #555; }
-
-        @media print {
-            .no-print { display: none; }
-            .action-col { display: none; }
-            .container { border: none; padding: 0; margin: 0; max-width: 100%; }
-            body { padding: 0; }
-        }
-    </style>
-</head>
-<body>
-
-<div class="no-print">
-    <a href="/admin/accessories" class="btn">Back</a>
-    <form action="/admin/accessories/input" method="post" style="display:inline;">
-        <input type="hidden" name="ref_no" value="{{ ref }}">
-        <button type="submit" class="btn btn-add">Add New Challan</button>
-    </form>
-    <button onclick="window.print()" class="btn">🖨️ Print</button>
-</div>
-
-<div class="container">
-    <div class="header">
-        <div class="company-name">Cotton Clothing BD Limited</div>
-        <div class="company-address">Kazi Tower, 27 Road, Gazipura, Tongi, Gazipur.</div>
-        <div class="report-title">ACCESSORIES DELIVERY CHALLAN</div>
-    </div>
-
-    <div class="info-grid">
-        <div class="info-left">
-            <div class="info-row"><span class="info-label">Booking:</span> <span class="booking-border">{{ ref }}</span></div>
-            <div class="info-row"><span class="info-label">Buyer:</span> <span class="info-val">{{ buyer }}</span></div>
-            <div class="info-row"><span class="info-label">Style:</span> <span class="info-val">{{ style }}</span></div>
-            <div class="info-row"><span class="info-label">Date:</span> <span class="info-val">{{ today }}</span></div>
-        </div>
-        <div class="info-right">
-            <div class="right-item"><span class="right-label">Store:</span> Clothing General Store</div>
-            <div class="right-item"><span class="right-label">Send:</span> Cutting</div>
-            <div class="right-item"><span class="right-label">Item:</span> <span style="border: 1px solid #000; padding: 0 5px;">{{ item_type if item_type else 'Top/Btm' }}</span></div>
-        </div>
-    </div>
-
-    <div class="summary-container">
-        <div class="summary-header">Line-wise Summary</div>
-        <table class="summary-table">
-            <tr>
-            {% for line, qty in line_summary.items() %}
-                <td>{{ line }}: {{ qty }} pcs</td>
-                {% if loop.index % 4 == 0 %}</tr><tr>{% endif %}
-            {% endfor %}
-            </tr>
-        </table>
-        <div style="text-align: right; margin-top: 5px; font-weight: 800; border-top: 1px solid #ccc;">Total Deliveries: {{ count }}</div>
-    </div>
-
-    <table class="main-table">
-        <thead>
-            <tr>
-                <th width="15%">DATE</th>
-                <th width="15%">LINE NO</th>
-                <th width="20%">COLOR</th>
-                <th width="10%">SIZE</th>
-                <th width="10%">STATUS</th>
-                <th width="15%">QTY</th>
-                {% if session.role == 'admin' %}
-                <th width="15%" class="action-col">ACTION</th>
-                {% endif %}
-            </tr>
-        </thead>
-        <tbody>
-            {% set ns = namespace(grand_total=0) %}
-            {% for item in challans %}
-                {% set ns.grand_total = ns.grand_total + item.qty|int %}
-                <tr>
-                    <td>{{ item.date }}</td>
-                    <td>
-                        {% if loop.index == count %}
-                            <div class="line-card">{{ item.line }}</div>
-                        {% else %}
-                            <span>{{ item.line }}</span>
-                        {% endif %}
-                    </td>
-                    <td>{{ item.color }}</td>
-                    <td>{{ item.size }}</td>
-                    <td class="status-cell">{{ item.status }}</td>
-                    <td class="qty-cell">{{ item.qty }}</td>
-                    {% if session.role == 'admin' %}
-                    <td class="action-col">
-                        <a href="/admin/accessories/edit?ref={{ ref }}&index={{ loop.index0 }}" class="action-btn btn-edit-row"><i class="fas fa-pencil-alt"></i></a>
-                        <form action="/admin/accessories/delete" method="POST" style="display:inline;" onsubmit="return confirm('Delete this challan?');">
-                            <input type="hidden" name="ref" value="{{ ref }}">
-                            <input type="hidden" name="index" value="{{ loop.index0 }}">
-                            <button type="submit" class="action-btn btn-del-row" style="border:none; cursor:pointer;"><i class="fas fa-trash"></i></button>
-                        </form>
-                    </td>
-                    {% endif %}
-                </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-
-    <div class="footer-total">
-        <div class="total-box">
-            TOTAL QTY: {{ ns.grand_total }}
-        </div>
-    </div>
-    <div class="generator-sig">Report Generated By Mehedi Hasan</div>
-
-    <div style="margin-top: 60px; display: flex; justify-content: space-between; text-align: center; font-weight: bold; padding: 0 50px;">
-        <div style="border-top: 2px solid #000; width: 180px; padding-top: 5px;">Received By</div>
-        <div style="border-top: 2px solid #000; width: 180px; padding-top: 5px;">Input Incharge</div>
-        <div style="border-top: 2px solid #000; width: 180px; padding-top: 5px;">Store</div>
-    </div>
-</div>
-</body>
-</html>
-"""
-
-# --- PO REPORT TEMPLATE ---
-PO_REPORT_TEMPLATE = """
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PO Report - Cotton Clothing BD</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-        body { background-color: #f8f9fa; padding: 30px 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        .container { max-width: 1200px; }
-        .company-header { text-align: center; margin-bottom: 20px; border-bottom: 2px solid #000; padding-bottom: 10px; }
-        .company-name { font-size: 2.2rem; font-weight: 800; color: #2c3e50; text-transform: uppercase; letter-spacing: 1px; line-height: 1; }
-        .report-title { font-size: 1.1rem; color: #555; font-weight: 600; text-transform: uppercase; margin-top: 5px; }
-        .info-container { display: flex; justify-content: space-between; margin-bottom: 15px; gap: 15px; }
-        .info-box { background: white; border: 1px solid #ddd; border-left: 5px solid #2c3e50; padding: 10px 15px; border-radius: 5px; flex: 2; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-        .total-box { background: #2c3e50; color: white; padding: 10px 15px; border-radius: 5px; width: 240px; text-align: right; display: flex; flex-direction: column; justify-content: center; }
-        .info-item { margin-bottom: 6px; font-size: 1.3rem; font-weight: 700; }
-        .info-label { font-weight: 800; color: #444; width: 90px; display: inline-block; }
-        .total-value { font-size: 2.5rem; font-weight: 800; line-height: 1.1; }
-        .color-header { background-color: #e9ecef; color: #2c3e50; padding: 10px 12px; font-size: 1.5rem; font-weight: 900; border-bottom: 1px solid #dee2e6; text-transform: uppercase; }
-        .table th { background-color: #2c3e50; color: white; font-weight: 900; font-size: 1.2rem; text-align: center; border: 1px solid #34495e; padding: 8px 4px; vertical-align: middle; }
-        .table td { text-align: center; vertical-align: middle; border: 1px solid #dee2e6; padding: 6px 3px; color: #000; font-weight: 800; font-size: 1.15rem; }
-        .order-col { font-weight: 900 !important; background-color: #fdfdfd; width: 1%; white-space: nowrap; }
-        .total-col { font-weight: 900; background-color: #e8f6f3 !important; color: #16a085; }
-        .summary-row td { background-color: #d1ecff !important; font-weight: 900 !important; border-top: 2px solid #aaa !important; font-size: 1.2rem !important; }
-        .action-bar { margin-bottom: 20px; display: flex; justify-content: flex-end; gap: 10px; }
-        .btn-print { background-color: #2c3e50; color: white; border-radius: 50px; padding: 8px 30px; font-weight: 600; }
-        .footer-credit { text-align: center; margin-top: 30px; border-top: 1px solid #ddd; padding-top: 10px; }
-
-        @media print {
-            @page { margin: 5mm; size: portrait; }
-            body { background-color: white; padding: 0; -webkit-print-color-adjust: exact !important; }
-            .container { max-width: 100% !important; margin: 0; }
-            .no-print { display: none !important; }
-            .table th, .table td { border: 1px solid #000 !important; }
-            .summary-row td { background-color: #d1ecff !important; }
-            .total-col { background-color: #e8f6f3 !important; }
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <div class="action-bar no-print">
-            <a href="/" class="btn btn-outline-secondary rounded-pill px-4">Back to Dashboard</a>
-            <button onclick="window.print()" class="btn btn-print">🖨️ Print Report</button>
-        </div>
-        <div class="company-header">
-            <div class="company-name">Cotton Clothing BD Limited</div>
-            <div class="report-title">Purchase Order Summary</div>
-            <div class="date-section">Date: <span id="date"></span></div>
-        </div>
-        {% if message %}
-            <div class="alert alert-warning text-center no-print">{{ message }}</div>
-        {% endif %}
-        {% if tables %}
-            <div class="info-container">
-                <div class="info-box">
-                    <div>
-                        <div class="info-item"><span class="info-label">Buyer:</span> {{ meta.buyer }}</div>
-                        <div class="info-item"><span class="info-label">Booking:</span> {{ meta.booking }}</div>
-                        <div class="info-item"><span class="info-label">Style:</span> {{ meta.style }}</div>
-                    </div>
-                    <div>
-                        <div class="info-item"><span class="info-label">Season:</span> {{ meta.season }}</div>
-                        <div class="info-item"><span class="info-label">Dept:</span> {{ meta.dept }}</div>
-                        <div class="info-item"><span class="info-label">Item:</span> {{ meta.item }}</div>
-                    </div>
-                </div>
-                <div class="total-box">
-                    <div class="total-label">Grand Total</div>
-                    <div class="total-value">{{ grand_total }}</div>
-                    <small>Pieces</small>
-                </div>
-            </div>
-            {% for item in tables %}
-                <div class="table-card" style="margin-bottom: 20px;">
-                    <div class="color-header">COLOR: {{ item.color }}</div>
-                    <div class="table-responsive">{{ item.table | safe }}</div>
-                </div>
-            {% endfor %}
-            <div class="footer-credit">Report Created By <strong>Mehedi Hasan</strong></div>
-        {% endif %}
-    </div>
-    <script>
-        const dateObj = new Date();
-        document.getElementById('date').innerText = dateObj.toLocaleDateString('en-GB');
-    </script>
-</body>
-</html>
-"""
-
 # ==============================================================================
 # FLASK ROUTES (Main Logic)
 # ==============================================================================
 
 @app.route('/')
 def index():
-    load_users() # Ensure users are loaded/created
+    load_users() # Ensure users exist
     if not session.get('logged_in'):
         return render_template_string(LOGIN_TEMPLATE)
     else:
         if session.get('role') == 'admin':
-            # NEW: Call v2 stats for new dashboard
+            # নতুন ড্যাশবোর্ড লজিক কল করা হচ্ছে
             stats = get_dashboard_summary_v2()
             return render_template_string(ADMIN_DASHBOARD_TEMPLATE, stats=stats)
         else:
+            # User Dashboard Logic
             perms = session.get('permissions', [])
             if len(perms) == 1 and 'accessories' in perms:
                 return redirect(url_for('accessories_search_page'))
             else:
                 return render_template_string(USER_DASHBOARD_TEMPLATE)
+
+# --- NEW: DETAILS PAGE ROUTE (Direct Page View instead of Modal) ---
+@app.route('/admin/details/<data_type>')
+def admin_details_view(data_type):
+    if not session.get('logged_in') or session.get('role') != 'admin':
+        return redirect(url_for('index'))
+    
+    # Get fresh data
+    stats = get_dashboard_summary_v2()
+    
+    if data_type == 'users':
+        return render_template_string(DETAILS_PAGE_TEMPLATE, 
+                                      title="Active Users Directory", 
+                                      type="users",
+                                      columns=["Username", "Role", "Created At", "Last Login", "Last Duration"], 
+                                      data=stats['users']['details'])
+    
+    elif data_type == 'accessories':
+        return render_template_string(DETAILS_PAGE_TEMPLATE, 
+                                      title="Today's Accessories Challans", 
+                                      type="accessories",
+                                      columns=["Booking Ref", "Buyer", "Style", "Quantity", "Time", "Action"], 
+                                      data=stats['accessories']['details'])
+    
+    elif data_type == 'closing':
+        return render_template_string(DETAILS_PAGE_TEMPLATE, 
+                                      title="Today's Closing Reports", 
+                                      type="closing",
+                                      columns=["Ref No", "Generated By", "Date", "Time"], 
+                                      data=stats['closing']['details'])
+    
+    elif data_type == 'po':
+        return render_template_string(DETAILS_PAGE_TEMPLATE, 
+                                      title="Today's PO Sheets", 
+                                      type="po",
+                                      columns=["Generated By", "Files Processed", "Date", "Time"], 
+                                      data=stats['po']['details'])
+    
+    return redirect(url_for('index'))
 
 @app.route('/login', methods=['POST'])
 def login():
@@ -2010,7 +2145,7 @@ def login():
         session['role'] = users_db[username]['role']
         session['permissions'] = users_db[username].get('permissions', [])
         
-        # --- NEW: Login Time Tracking ---
+        # --- Login Time Tracking (BD Time) ---
         now = get_bd_time()
         session['login_start'] = now.isoformat()
         
@@ -2025,21 +2160,19 @@ def login():
 
 @app.route('/logout')
 def logout():
-    # --- NEW: Duration Calculation ---
+    # --- Duration Calculation ---
     if session.get('logged_in') and 'login_start' in session:
         try:
             start_time = datetime.fromisoformat(session['login_start'])
             end_time = get_bd_time()
             duration = end_time - start_time
             
-            # Format duration (e.g., 2h 15m)
             minutes = int(duration.total_seconds() / 60)
             if minutes < 60:
                 dur_str = f"{minutes} mins"
             else:
                 dur_str = f"{minutes // 60}h {minutes % 60}m"
 
-            # Update DB
             username = session.get('user')
             users_db = load_users()
             if username in users_db:
@@ -2052,8 +2185,7 @@ def logout():
     flash('Session terminated.')
     return redirect(url_for('index'))
 
-# --- USER MANAGEMENT ROUTES (API) ---
-
+# --- USER MANAGEMENT API ---
 @app.route('/admin/get-users', methods=['GET'])
 def get_users():
     if not session.get('logged_in') or session.get('role') != 'admin':
@@ -2083,7 +2215,7 @@ def save_user():
             "password": password,
             "role": "user",
             "permissions": permissions,
-            "created_at": get_bd_date_str(), # NEW: Track creation date
+            "created_at": get_bd_date_str(), # Save Creation Date
             "last_login": "Never",
             "last_duration": "N/A"
         }
@@ -2119,10 +2251,6 @@ def delete_user():
 def generate_report():
     if not session.get('logged_in'): return redirect(url_for('index'))
     
-    if 'closing' not in session.get('permissions', []):
-        flash("You do not have permission to access Closing Report.")
-        return redirect(url_for('index'))
-
     internal_ref_no = request.form['ref_no']
     if not internal_ref_no: return redirect(url_for('index'))
 
@@ -2134,11 +2262,9 @@ def generate_report():
 
     return render_template_string(CLOSING_REPORT_PREVIEW_TEMPLATE, report_data=report_data, ref_no=internal_ref_no)
 
-# ==============================================================================
-# UPDATED: ACCESSORIES CHALLAN ROUTES (Modified for Case Insensitivity)
-# ==============================================================================
+# --- ACCESSORIES ROUTES ---
 
-# 1. Search Page (Entry Point)
+# 1. Search Page
 @app.route('/admin/accessories', methods=['GET'])
 def accessories_search_page():
     if not session.get('logged_in'): return redirect(url_for('index'))
@@ -2149,7 +2275,7 @@ def accessories_search_page():
         
     return render_template_string(ACCESSORIES_SEARCH_TEMPLATE)
 
-# 2. Input Form (Fetches Data from DB or API)
+# 2. Input Form
 @app.route('/admin/accessories/input', methods=['POST'])
 def accessories_input_page():
     if not session.get('logged_in'): return redirect(url_for('index'))
@@ -2185,7 +2311,7 @@ def accessories_input_page():
 
     return render_template_string(ACCESSORIES_INPUT_TEMPLATE, ref=ref_no, colors=colors, style=style, buyer=buyer)
 
-# 3. Save Logic & Status Update
+# 3. Save Logic
 @app.route('/admin/accessories/save', methods=['POST'])
 def accessories_save():
     if not session.get('logged_in'): return redirect(url_for('index'))
@@ -2195,41 +2321,34 @@ def accessories_save():
         return redirect(url_for('index'))
 
     ref = request.form.get('ref').strip().upper()
-    color = request.form.get('color')
-    line = request.form.get('line_no')
-    size = request.form.get('size')
-    qty = request.form.get('qty')
-    item_type = request.form.get('item_type') 
-    
     db_acc = load_accessories_db()
     
     if ref not in db_acc:
         flash("Session Error. Please search again.")
         return redirect(url_for('accessories_search_page'))
 
-    if item_type: db_acc[ref]['item_type'] = item_type
+    if request.form.get('item_type'): 
+        db_acc[ref]['item_type'] = request.form.get('item_type')
 
-    # Logic: Mark previous as checked
-    history = db_acc[ref]['challans']
-    for item in history: item['status'] = "✔"
+    # Mark previous as checked
+    for item in db_acc[ref]['challans']: 
+        item['status'] = "✔"
     
-    # New Entry
     new_entry = {
         "date": get_bd_date_str(), # Using BD Date
-        "line": line,
-        "color": color,
-        "size": size,
-        "qty": qty,
+        "line": request.form.get('line_no'),
+        "color": request.form.get('color'),
+        "size": request.form.get('size'),
+        "qty": request.form.get('qty'),
         "status": "" 
     }
     
-    history.append(new_entry)
-    db_acc[ref]['challans'] = history
+    db_acc[ref]['challans'].append(new_entry)
     save_accessories_db(db_acc)
     
     return redirect(url_for('accessories_print_view', ref=ref))
 
-# 4. Print View (With Edit/Delete & Summary Logic)
+# 4. Print/View Page
 @app.route('/admin/accessories/print', methods=['GET'])
 def accessories_print_view():
     if not session.get('logged_in'): return redirect(url_for('index'))
@@ -2248,8 +2367,7 @@ def accessories_print_view():
         ln = c['line']
         try: q = int(c['qty'])
         except: q = 0
-        if ln in line_summary: line_summary[ln] += q
-        else: line_summary[ln] = q
+        line_summary[ln] = line_summary.get(ln, 0) + q
     
     sorted_line_summary = dict(sorted(line_summary.items()))
 
@@ -2263,10 +2381,11 @@ def accessories_print_view():
                                   count=len(challans),
                                   today=get_bd_date_str())
 
-# 5. Delete Route
+# 5. Delete Logic
 @app.route('/admin/accessories/delete', methods=['POST'])
 def accessories_delete():
     if not session.get('logged_in'): return redirect(url_for('index'))
+    
     if session.get('role') != 'admin':
         flash("Only Admin can delete records.")
         return redirect(url_for('index'))
@@ -2277,10 +2396,8 @@ def accessories_delete():
 
     db_acc = load_accessories_db()
     if ref in db_acc:
-        challans = db_acc[ref]['challans']
-        if 0 <= index < len(challans):
-            del challans[index]
-            db_acc[ref]['challans'] = challans
+        if 0 <= index < len(db_acc[ref]['challans']):
+            del db_acc[ref]['challans'][index]
             save_accessories_db(db_acc)
     
     return redirect(url_for('accessories_print_view', ref=ref))
@@ -2289,6 +2406,7 @@ def accessories_delete():
 @app.route('/admin/accessories/edit', methods=['GET'])
 def accessories_edit():
     if not session.get('logged_in'): return redirect(url_for('index'))
+
     if session.get('role') != 'admin':
         flash("Only Admin can edit records.")
         return redirect(url_for('index'))
@@ -2300,17 +2418,18 @@ def accessories_edit():
     db_acc = load_accessories_db()
     if ref not in db_acc: return redirect(url_for('accessories_search_page'))
     
-    challans = db_acc[ref]['challans']
-    if index < 0 or index >= len(challans):
+    if index < 0 or index >= len(db_acc[ref]['challans']):
          return redirect(url_for('accessories_print_view', ref=ref))
          
-    item_to_edit = challans[index]
+    item_to_edit = db_acc[ref]['challans'][index]
     return render_template_string(ACCESSORIES_EDIT_TEMPLATE, ref=ref, index=index, item=item_to_edit)
 
 # 7. Update Logic
 @app.route('/admin/accessories/update', methods=['POST'])
 def accessories_update():
-    if not session.get('logged_in') or session.get('role') != 'admin':
+    if not session.get('logged_in'): return redirect(url_for('index'))
+    
+    if session.get('role') != 'admin':
         return redirect(url_for('index'))
 
     ref = request.form.get('ref').strip().upper()
@@ -2324,13 +2443,11 @@ def accessories_update():
 
     db_acc = load_accessories_db()
     if ref in db_acc:
-        challans = db_acc[ref]['challans']
-        if 0 <= index < len(challans):
-            challans[index]['qty'] = qty
-            challans[index]['line'] = line
-            challans[index]['color'] = color
-            challans[index]['size'] = size
-            db_acc[ref]['challans'] = challans
+        if 0 <= index < len(db_acc[ref]['challans']):
+            db_acc[ref]['challans'][index]['qty'] = qty
+            db_acc[ref]['challans'][index]['line'] = line
+            db_acc[ref]['challans'][index]['color'] = color
+            db_acc[ref]['challans'][index]['size'] = size
             save_accessories_db(db_acc)
             
     return redirect(url_for('accessories_print_view', ref=ref))
@@ -2352,9 +2469,13 @@ def download_closing_excel():
     excel_file_stream = create_formatted_excel_report(report_data, internal_ref_no)
     
     if excel_file_stream:
-        # Update stats
         update_stats(internal_ref_no, session.get('user', 'Unknown'))
-        return make_response(send_file(excel_file_stream, as_attachment=True, download_name=f"Closing-Report-{internal_ref_no.replace('/', '_')}.xlsx", mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'))
+        return make_response(send_file(
+            excel_file_stream, 
+            as_attachment=True, 
+            download_name=f"Closing-Report-{internal_ref_no.replace('/', '_')}.xlsx", 
+            mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        ))
     else:
         return redirect(url_for('index'))
 
@@ -2390,7 +2511,7 @@ def generate_po_report():
     if not all_data:
         return render_template_string(PO_REPORT_TEMPLATE, tables=None, message="No PO table data found in files.")
 
-    # --- NEW: Update Stats Logic ---
+    # Update PO Stats
     update_po_stats(session.get('user', 'Unknown'), len(uploaded_files))
 
     df = pd.DataFrame(all_data)
