@@ -23,20 +23,16 @@ from flask import Flask, request, render_template_string, send_file, flash, sess
 app = Flask(__name__)
 app.secret_key = 'super-secret-secure-key-bd' 
 
-# ==============================================================================
-# কনফিগারেশন এবং সেটআপ
-# ==============================================================================
-
-# PO ফাইলের জন্য আপলোড ফোল্ডার
+# কনফিগারেশন (PO ফাইলের জন্য)
 UPLOAD_FOLDER = 'uploads'
 if not os.path.exists(UPLOAD_FOLDER):
     os.makedirs(UPLOAD_FOLDER)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
-# সেশন টাইমআউট কনফিগারেশন (৩০ মিনিট)
+# --- ২ মিনিটের সেশন টাইমআউট কনফিগারেশন ---
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=30) 
 
-# টাইমজোন কনফিগারেশন (বাংলাদেশ)
+# --- নতুন: টাইমজোন কনফিগারেশন (বাংলাদেশ) ---
 bd_tz = pytz.timezone('Asia/Dhaka')
 
 def get_bd_time():
@@ -71,11 +67,9 @@ try:
 except Exception as e:
     print(f"MongoDB Connection Error: {e}")
 
-
 # ==============================================================================
-# CSS STYLES (DASHBOARD ONLY - DARK THEME)
+# CSS STYLES (DARK THEME - RESTORED FROM FIRST CODE)
 # ==============================================================================
-# এই স্টাইলটি শুধুমাত্র ড্যাশবোর্ড এবং ইনপুট পেজের জন্য। রিপোর্টের জন্য নয়।
 COMMON_STYLES = """
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -169,7 +163,7 @@ COMMON_STYLES = """
     </style>
 """
 # ==============================================================================
-# হেল্পার ফাংশন: ডাটাবেস ও ড্যাশবোর্ড লজিক
+# হেল্পার ফাংশন: পরিসংখ্যান ও হিস্ট্রি (MongoDB ব্যবহার করে)
 # ==============================================================================
 
 def load_users():
@@ -248,21 +242,7 @@ def update_po_stats(username, file_count):
         data['downloads'] = data['downloads'][:1000]
     save_stats(data)
 
-def load_accessories_db():
-    record = accessories_col.find_one({"_id": "accessories_data"})
-    if record:
-        return record['data']
-    else:
-        return {}
-
-def save_accessories_db(data):
-    accessories_col.replace_one(
-        {"_id": "accessories_data"},
-        {"_id": "accessories_data", "data": data},
-        upsert=True
-    )
-
-# ড্যাশবোর্ডের চার্ট এবং স্ট্যাটাস ডাটা তৈরি করার লজিক
+# ড্যাশবোর্ড সামারি (Admin Dashboard এর জন্য ডাটা প্রিপারেশন)
 def get_dashboard_summary_v2():
     stats_data = load_stats()
     acc_db = load_accessories_db()
@@ -335,8 +315,22 @@ def get_dashboard_summary_v2():
         "history": history
     }
 
+def load_accessories_db():
+    record = accessories_col.find_one({"_id": "accessories_data"})
+    if record:
+        return record['data']
+    else:
+        return {}
+
+def save_accessories_db(data):
+    accessories_col.replace_one(
+        {"_id": "accessories_data"},
+        {"_id": "accessories_data", "data": data},
+        upsert=True
+    )
+
 # ==============================================================================
-# লজিক পার্ট: PURCHASE ORDER SHEET PARSER (PDF) - FULL LOGIC
+# লজিক পার্ট: PURCHASE ORDER SHEET PARSER (PDF)
 # ==============================================================================
 
 def is_potential_size(header):
@@ -497,7 +491,7 @@ def extract_data_dynamic(file_path):
     return extracted_data, metadata
 
 # ==============================================================================
-# লজিক পার্ট: CLOSING REPORT API & EXCEL GENERATION - FULL LOGIC
+# লজিক পার্ট: CLOSING REPORT API & EXCEL GENERATION
 # ==============================================================================
 def get_authenticated_session(username, password):
     login_url = 'http://180.92.235.190:8022/erp/login.php'
@@ -625,6 +619,7 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
     ws.row_dimensions[3].height = 6
 
     formatted_ref_no = internal_ref_no.upper()
+    # UPDATED: Using BD Timezone function
     current_date = get_bd_time().strftime("%d/%m/%Y")
     
     left_sub_headers = {'A4': 'BUYER', 'B4': report_data[0].get('buyer', ''), 'A5': 'IR/IB NO', 'B5': formatted_ref_no, 'A6': 'STYLE NO', 'B6': report_data[0].get('style', '')}
@@ -806,7 +801,7 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
     file_stream.seek(0)
     return file_stream
 # ==============================================================================
-# HTML TEMPLATES: LOGIN, DASHBOARD & UI (DARK THEME)
+# HTML TEMPLATES: LOGIN, DASHBOARD & UI (DARK THEME RESTORED)
 # ==============================================================================
 
 LOGIN_TEMPLATE = f"""
@@ -901,10 +896,10 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
                 <div class="section-header"><span>Recent History</span></div>
                 <div style="overflow-x: auto;">
                     <table class="dark-table">
-                        <thead><tr><th>Time</th><th>User</th><th>Action</th><th>Status</th></tr></thead>
+                        <thead><tr><th>Time</th><th>User</th><th>Action</th><th>Ref/Type</th></tr></thead>
                         <tbody>
                             {{% for log in stats.history %}}
-                            <tr><td>{{{{ log.time }}}}</td><td style="font-weight:600;">{{{{ log.user }}}}</td><td>{{{{ log.type }}}}</td><td><span style="color:var(--accent-green)">Completed</span></td></tr>
+                            <tr><td>{{{{ log.time }}}}</td><td style="font-weight:600;">{{{{ log.user }}}}</td><td>{{{{ log.type }}}}</td><td>{{{{ log.ref if log.ref else '-' }}}}</td></tr>
                             {{% else %}}<tr><td colspan="4" style="text-align:center; padding:20px; color:var(--text-secondary);">No activity found.</td></tr>
                             {{% endfor %}}
                         </tbody>
@@ -1028,10 +1023,6 @@ USER_DASHBOARD_TEMPLATE = f"""
 </html>
 """
 
-# ==============================================================================
-# ACCESSORIES PAGES (DARK THEME) WITH HISTORY TABLE
-# ==============================================================================
-
 ACCESSORIES_SEARCH_TEMPLATE = f"""
 <!doctype html><html lang="en"><head><title>Search</title>{COMMON_STYLES}</head><body style="justify-content:center; align-items:center;">
 <div class="card" style="width:100%; max-width:450px; padding:30px;"><div class="section-header" style="justify-content:center; margin-bottom:30px;">Accessories DB</div>
@@ -1039,7 +1030,7 @@ ACCESSORIES_SEARCH_TEMPLATE = f"""
 <div style="text-align:center; margin-top:20px;"><a href="/" style="color:var(--text-secondary); text-decoration:none; font-size:13px;">&larr; Back</a></div></div></body></html>
 """
 
-# Updated Input Template: Contains Input Form AND Previous Challans Table
+# ACCESSORIES INPUT TEMPLATE (WITH HISTORY TABLE RESTORED)
 ACCESSORIES_INPUT_TEMPLATE = f"""
 <!doctype html>
 <html lang="en">
@@ -1125,78 +1116,164 @@ ACCESSORIES_EDIT_TEMPLATE = f"""<!doctype html><html lang="en"><head><title>Edit
 <button type="submit" style="background:var(--accent-purple)">Update</button></form>
 <div style="text-align:center; margin-top:15px;"><a href="/admin/accessories/input_direct?ref={{{{ ref }}}}" style="color:white; font-size:13px; text-decoration:none;">Cancel</a></div></div></body></html>"""
 
+
 # ==============================================================================
-# REPORT TEMPLATES (ORIGINAL WHITE DESIGN - AS REQUESTED)
+# REPORT TEMPLATES (ORIGINAL WHITE DESIGN - FROM MAIN CODE)
 # ==============================================================================
+# এই টেম্পলেটগুলো হুবহু আপনার 'Dashboard Updated.py' থেকে নেওয়া হয়েছে।
 
 CLOSING_REPORT_PREVIEW_TEMPLATE = """
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Closing Report</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Closing Report Preview</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        body { background-color: #fff; padding: 20px; color: #000; font-family: sans-serif; }
-        .container { max-width: 100%; }
-        .company-header { text-align: center; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 20px; }
-        .company-name { font-size: 24px; font-weight: 800; text-transform: uppercase; }
-        .table th, .table td { border: 1px solid #000 !important; text-align: center; vertical-align: middle; padding: 5px; font-weight: 600; font-size: 14px; }
-        .table th { background-color: #eee !important; color: #000; }
-        .col-3pct { background-color: #B9C2DF !important; -webkit-print-color-adjust: exact; }
-        .col-input { background-color: #C4D09D !important; -webkit-print-color-adjust: exact; }
-        .no-print { margin-bottom: 20px; }
-        @media print { .no-print { display: none; } }
+        body { background-color: #f8f9fa; padding: 30px 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; font-size: 1.1rem; }
+        .container { max-width: 1400px; }
+        .company-header { text-align: center; margin-bottom: 20px; border-bottom: 2px solid #000; padding-bottom: 10px; }
+        .company-name { font-size: 2.2rem; font-weight: 800; color: #2c3e50; text-transform: uppercase; letter-spacing: 1px; line-height: 1; }
+        .report-title { font-size: 1.1rem; color: #555; font-weight: 600; text-transform: uppercase; margin-top: 5px; }
+        .date-section { font-size: 1.2rem; font-weight: 800; color: #000; margin-top: 5px; }
+        .info-container { margin-bottom: 15px; background: white; padding: 15px; display: flex; justify-content: space-between; align-items: flex-end;}
+        .info-row { display: flex; flex-direction: column; gap: 5px; }
+        .info-item { font-size: 1.2rem; font-weight: 600; color: #444; }
+        .info-value { color: #000; font-weight: 800; }
+        .booking-box { background: #2c3e50; color: white; padding: 10px 20px; border-radius: 5px; text-align: right; box-shadow: 0 4px 10px rgba(44, 62, 80, 0.3); display: flex; flex-direction: column; justify-content: center; min-width: 200px; }
+        .booking-label { font-size: 1.1rem; opacity: 0.9; text-transform: uppercase; letter-spacing: 1px; font-weight: 700; }
+        .booking-value { font-size: 1.8rem; font-weight: 800; line-height: 1.1; }
+        .table-card { background: white; border-radius: 0; margin-bottom: 30px; border: none; }
+        .color-header { background-color: #2c3e50 !important; color: white; padding: 10px 15px; font-size: 1.4rem; font-weight: 800; text-transform: uppercase; border: 1px solid #000;}
+        .table { margin-bottom: 0; width: 100%; border-collapse: collapse; font-size: 1rem; }
+        .table th { background-color: #fff !important; color: #000 !important; text-align: center; border: 1px solid #000; padding: 8px; vertical-align: middle; font-weight: 900; font-size: 1.2rem; }
+        .table td { text-align: center; vertical-align: middle; border: 1px solid #000; padding: 6px; color: #000; font-weight: 600; font-size: 1.1rem; }
+        .col-3pct { background-color: #B9C2DF !important; font-weight: 700; }
+        .col-input { background-color: #C4D09D !important; font-weight: 700; }
+        .col-balance { font-weight: 700; color: #c0392b; }
+        .total-row td { background-color: #fff !important; color: #000 !important; font-weight: 900; font-size: 1.2rem; border-top: 2px solid #000; }
+        .action-bar { margin-bottom: 20px; display: flex; justify-content: flex-end; gap: 15px; position: sticky; top: 0; z-index: 1000; background: #f8f9fa; padding: 10px 0; }
+        .btn-print { background-color: #2c3e50; color: white; border-radius: 50px; padding: 10px 30px; font-weight: 600; }
+        .btn-excel { background-color: #27ae60; color: white; border-radius: 50px; padding: 10px 30px; font-weight: 600; text-decoration: none; display: inline-block; }
+        .btn-excel:hover { color: white; background-color: #219150; }
+        .footer-credit { text-align: center; margin-top: 40px; margin-bottom: 20px; font-size: 1rem; color: #2c3e50; padding-top: 10px; border-top: 1px solid #000; font-weight: 600;}
+        @media print {
+            @page { margin: 5mm; size: portrait; } 
+            body { background-color: white; padding: 0; }
+            .no-print { display: none !important; }
+            .action-bar { display: none; }
+            .table th, .table td { border: 1px solid #000 !important; }
+            .color-header { background-color: #2c3e50 !important; -webkit-print-color-adjust: exact; color: white !important;}
+            .col-3pct { background-color: #B9C2DF !important; -webkit-print-color-adjust: exact; }
+            .col-input { background-color: #C4D09D !important; -webkit-print-color-adjust: exact; }
+            .booking-box { background-color: #2c3e50 !important; -webkit-print-color-adjust: exact; color: white !important; border: 1px solid #000;}
+            .total-row td { font-weight: 900 !important; color: #000 !important; }
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="no-print text-end">
-            <a href="/" class="btn btn-secondary">Back</a>
-            <button onclick="window.print()" class="btn btn-primary">Print</button>
-            <a href="/download-closing-excel?ref_no={{ ref_no }}" class="btn btn-success">Excel</a>
+        <div class="action-bar no-print">
+            <a href="/" class="btn btn-outline-secondary rounded-pill px-4">Back to Dashboard</a>
+            <a href="/download-closing-excel?ref_no={{ ref_no }}" class="btn btn-excel"><i class="fas fa-file-excel"></i> Download Excel</a>
+            <button onclick="window.print()" class="btn btn-print">🖨️ Print Report</button>
         </div>
         <div class="company-header">
             <div class="company-name">Cotton Clothing BD Limited</div>
-            <div>CLOSING REPORT [ INPUT SECTION ]</div>
-            <div>Date: <span id="date"></span></div>
+            <div class="report-title">CLOSING REPORT [ INPUT SECTION ]</div>
+            <div class="date-section">Date: <span id="date"></span></div>
         </div>
         {% if report_data %}
-        <div style="display:flex; justify-content:space-between; margin-bottom:15px; border:1px solid #000; padding:10px;">
-            <div><strong>Buyer:</strong> {{ report_data[0].buyer }} <br> <strong>Style:</strong> {{ report_data[0].style }}</div>
-            <div style="text-align:right;"><strong>IR/IB NO:</strong> {{ ref_no }}</div>
+        <div class="info-container">
+            <div class="info-row">
+                <div class="info-item">Buyer: <span class="info-value">{{ report_data[0].buyer }}</span></div>
+                <div class="info-item">Style: <span class="info-value">{{ report_data[0].style }}</span></div>
+            </div>
+            <div class="booking-box">
+                <div class="booking-label">IR/IB NO</div>
+                <div class="booking-value">{{ ref_no }}</div>
+            </div>
         </div>
         {% for block in report_data %}
-        <div style="margin-bottom:20px;">
-            <div style="background:#333; color:white; padding:5px; font-weight:bold; -webkit-print-color-adjust: exact;">COLOR: {{ block.color }}</div>
-            <table class="table table-sm">
+        <div class="table-card">
+            <div class="color-header">COLOR: {{ block.color }}</div>
+            <table class="table">
                 <thead>
-                    <tr><th>SIZE</th><th>ORDER QTY 3%</th><th>ACTUAL QTY</th><th>CUTTING QC</th><th>INPUT QTY</th><th>BALANCE</th><th>SHORT/PLUS</th><th>%</th></tr>
+                    <tr>
+                        <th>SIZE</th>
+                        <th>ORDER QTY 3%</th>
+                        <th>ACTUAL QTY</th>
+                        <th>CUTTING QC</th>
+                        <th>INPUT QTY</th>
+                        <th>BALANCE</th>
+                        <th>SHORT/PLUS</th>
+                        <th>PERCENTAGE %</th>
+                    </tr>
                 </thead>
                 <tbody>
+                    {% set ns = namespace(tot_3=0, tot_act=0, tot_cut=0, tot_inp=0, tot_bal=0, tot_sp=0) %}
                     {% for i in range(block.headers|length) %}
                         {% set actual = block.gmts_qty[i]|replace(',', '')|int %}
                         {% set qty_3 = (actual * 1.03)|round|int %}
-                        {% set cut_qc = block.cutting_qc[i]|replace(',', '')|int if i < block.cutting_qc|length else 0 %}
-                        {% set inp_qty = block.sewing_input[i]|replace(',', '')|int if i < block.sewing_input|length else 0 %}
+                        {% set cut_qc = 0 %}
+                        {% if i < block.cutting_qc|length %}
+                            {% set cut_qc = block.cutting_qc[i]|replace(',', '')|int %}
+                        {% endif %}
+                        {% set inp_qty = 0 %}
+                        {% if i < block.sewing_input|length %}
+                            {% set inp_qty = block.sewing_input[i]|replace(',', '')|int %}
+                        {% endif %}
+                        {% set balance = cut_qc - inp_qty %}
+                        {% set short_plus = inp_qty - qty_3 %}
+                        {% set percentage = 0 %}
+                        {% if qty_3 > 0 %}
+                            {% set percentage = (short_plus / qty_3) * 100 %}
+                        {% endif %}
+                        {% set ns.tot_3 = ns.tot_3 + qty_3 %}
+                        {% set ns.tot_act = ns.tot_act + actual %}
+                        {% set ns.tot_cut = ns.tot_cut + cut_qc %}
+                        {% set ns.tot_inp = ns.tot_inp + inp_qty %}
+                        {% set ns.tot_bal = ns.tot_bal + balance %}
+                        {% set ns.tot_sp = ns.tot_sp + short_plus %}
                         <tr>
                             <td>{{ block.headers[i] }}</td>
                             <td class="col-3pct">{{ qty_3 }}</td>
                             <td>{{ actual }}</td>
                             <td>{{ cut_qc }}</td>
                             <td class="col-input">{{ inp_qty }}</td>
-                            <td>{{ cut_qc - inp_qty }}</td>
-                            <td>{{ inp_qty - qty_3 }}</td>
-                            <td>{{ "%.2f"|format((inp_qty - qty_3)/qty_3*100) if qty_3 > 0 else 0 }}%</td>
+                            <td class="col-balance">{{ balance }}</td>
+                            <td style="color: {{ 'green' if short_plus >= 0 else 'red' }}">{{ short_plus }}</td>
+                            <td>{{ "%.2f"|format(percentage) }}%</td>
                         </tr>
                     {% endfor %}
+                    <tr class="total-row">
+                        <td>TOTAL</td>
+                        <td>{{ ns.tot_3 }}</td>
+                        <td>{{ ns.tot_act }}</td>
+                        <td>{{ ns.tot_cut }}</td>
+                        <td>{{ ns.tot_inp }}</td>
+                        <td>{{ ns.tot_bal }}</td>
+                        <td>{{ ns.tot_sp }}</td>
+                        <td>
+                            {% if ns.tot_3 > 0 %}
+                                {{ "%.2f"|format((ns.tot_sp / ns.tot_3) * 100) }}%
+                            {% else %}
+                                0.00%
+                            {% endif %}
+                        </td>
+                    </tr>
                 </tbody>
             </table>
         </div>
         {% endfor %}
+        <div class="footer-credit">Report Generated By <span style="color: #000; font-weight: 900;">Mehedi Hasan</span></div>
         {% endif %}
     </div>
-    <script>document.getElementById('date').innerText = new Date().toLocaleDateString('en-GB');</script>
+    <script>
+        const dateObj = new Date();
+        document.getElementById('date').innerText = dateObj.toLocaleDateString('en-GB');
+    </script>
 </body>
 </html>
 """
@@ -1206,85 +1283,146 @@ ACCESSORIES_REPORT_TEMPLATE = """
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Challan Report</title>
+    <title>Accessories Delivery Report</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        body { background: #fff; padding: 20px; font-family: 'Courier New', monospace; color: #000; }
-        .container { border: 2px solid #000; padding: 20px; max-width: 800px; margin: 0 auto; }
-        .header { text-align: center; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 20px; }
-        .title { font-size: 20px; font-weight: 900; }
-        .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
-        .table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        .table th, .table td { border: 1px solid #000; padding: 5px; text-align: center; }
-        .table th { background: #ddd; -webkit-print-color-adjust: exact; }
-        .no-print { text-align: right; margin-bottom: 20px; }
-        @media print { .no-print { display: none; } .container { border: none; } }
+        body { font-family: 'Poppins', sans-serif; background: #fff; padding: 20px; color: #000; }
+        .container { max-width: 1000px; margin: 0 auto; border: 2px solid #000; padding: 20px; min-height: 90vh; position: relative; }
+        .header { text-align: center; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 20px; position: relative; }
+        .company-name { font-size: 28px; font-weight: 800; text-transform: uppercase; color: #2c3e50; line-height: 1; }
+        .company-address { font-size: 12px; font-weight: 600; color: #444; margin-top: 5px; margin-bottom: 10px; }
+        .report-title { background: #2c3e50; color: white; padding: 5px 25px; display: inline-block; font-weight: bold; font-size: 18px; border-radius: 4px; }
+        .info-grid { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; }
+        .info-left { flex: 2; border: 1px dashed #555; padding: 15px; margin-right: 15px; }
+        .info-row { display: flex; margin-bottom: 5px; font-size: 14px; align-items: center; }
+        .info-label { font-weight: 800; width: 80px; color: #444; }
+        .info-val { font-weight: 700; font-size: 15px; color: #000; }
+        .booking-border { border: 2px solid #000; padding: 2px 8px; display: inline-block; font-weight: 900; }
+        .info-right { flex: 1; display: flex; flex-direction: column; justify-content: space-between; height: 100%; border-left: 1px solid #ddd; padding-left: 15px; }
+        .right-item { font-size: 14px; margin-bottom: 8px; font-weight: 700; }
+        .right-label { color: #555; }
+        .summary-container { margin-bottom: 20px; border: 2px solid #000; padding: 10px; background: #f9f9f9; }
+        .summary-header { font-weight: 900; text-align: center; border-bottom: 1px solid #000; margin-bottom: 5px; text-transform: uppercase; }
+        .summary-table { width: 100%; font-size: 13px; font-weight: 700; }
+        .summary-table td { padding: 2px 5px; }
+        .main-table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 14px; }
+        .main-table th { background: #2c3e50 !important; color: white !important; padding: 10px; border: 1px solid #000; font-size: 14px; text-transform: uppercase; -webkit-print-color-adjust: exact; }
+        .main-table td { border: 1px solid #000; padding: 6px; text-align: center; vertical-align: middle; color: #000; font-weight: 600; }
+        .line-card { display: inline-block; padding: 4px 10px; border: 2px solid #000; font-size: 16px; font-weight: 900; border-radius: 4px; box-shadow: 2px 2px 0 #000; background: #fff; }
+        .line-text-bold { font-size: 14px; font-weight: 800; opacity: 0.7; }
+        .status-cell { font-size: 20px; color: green; font-weight: 900; }
+        .qty-cell { font-size: 16px; font-weight: 800; }
+        .action-btn { color: white; padding: 4px 8px; border-radius: 4px; text-decoration: none; font-size: 12px; margin: 0 2px; display: inline-block; }
+        .btn-edit-row { background-color: #f39c12; }
+        .btn-del-row { background-color: #e74c3c; }
+        .footer-total { margin-top: 20px; display: flex; justify-content: flex-end; }
+        .total-box { border: 3px solid #000; padding: 8px 30px; font-size: 20px; font-weight: 900; background: #ddd; -webkit-print-color-adjust: exact; }
+        .no-print { margin-bottom: 20px; text-align: right; }
+        .btn { padding: 8px 20px; background: #2c3e50; color: white; border: none; cursor: pointer; text-decoration: none; display: inline-block; border-radius: 4px; font-size: 14px; }
+        .btn-add { background: #27ae60; }
+        .generator-sig { text-align: right; font-size: 10px; margin-top: 5px; color: #555; }
+        @media print {
+            .no-print { display: none; }
+            .action-col { display: none; }
+            .container { border: none; padding: 0; margin: 0; max-width: 100%; }
+            body { padding: 0; }
+        }
     </style>
 </head>
 <body>
-    <div class="no-print">
-        <a href="/admin/accessories" style="margin-right:10px;">Back</a>
-        <form action="/admin/accessories/input" method="post" style="display:inline;">
-            <input type="hidden" name="ref_no" value="{{ ref }}">
-            <button>Add New</button>
-        </form>
-        <button onclick="window.print()">Print</button>
+<div class="no-print">
+    <a href="/admin/accessories/input_direct?ref={{ ref }}" class="btn">Back</a>
+    <button onclick="window.print()" class="btn">🖨️ Print</button>
+</div>
+<div class="container">
+    <div class="header">
+        <div class="company-name">Cotton Clothing BD Limited</div>
+        <div class="company-address">Kazi Tower, 27 Road, Gazipura, Tongi, Gazipur.</div>
+        <div class="report-title">ACCESSORIES DELIVERY CHALLAN</div>
     </div>
-    <div class="container">
-        <div class="header">
-            <div class="title">ACCESSORIES DELIVERY CHALLAN</div>
-            <div>Cotton Clothing BD Limited</div>
+    <div class="info-grid">
+        <div class="info-left">
+            <div class="info-row"><span class="info-label">Booking:</span> <span class="booking-border">{{ ref }}</span></div>
+            <div class="info-row"><span class="info-label">Buyer:</span> <span class="info-val">{{ buyer }}</span></div>
+            <div class="info-row"><span class="info-label">Style:</span> <span class="info-val">{{ style }}</span></div>
+            <div class="info-row"><span class="info-label">Date:</span> <span class="info-val">{{ today }}</span></div>
         </div>
-        <div class="info-grid">
-            <div>
-                <strong>Booking:</strong> {{ ref }}<br>
-                <strong>Buyer:</strong> {{ buyer }}<br>
-                <strong>Style:</strong> {{ style }}
-            </div>
-            <div style="text-align:right;">
-                <strong>Date:</strong> {{ today }}<br>
-                <strong>Item:</strong> {{ item_type if item_type else 'General' }}
-            </div>
+        <div class="info-right">
+            <div class="right-item"><span class="right-label">Store:</span> Clothing General Store</div>
+            <div class="right-item"><span class="right-label">Send:</span> Cutting</div>
+            <div class="right-item"><span class="right-label">Item:</span> <span style="border: 1px solid #000; padding: 0 5px;">{{ item_type if item_type else 'Top/Btm' }}</span></div>
         </div>
-        <table class="table">
-            <thead>
-                <tr><th>DATE</th><th>LINE</th><th>COLOR</th><th>SIZE</th><th>QTY</th>
-                {% if session.role == 'admin' %}<th class="no-print">ACTION</th>{% endif %}
-                </tr>
-            </thead>
-            <tbody>
-                {% set ns = namespace(total=0) %}
-                {% for item in challans %}
-                {% set ns.total = ns.total + item.qty|int %}
+    </div>
+    <div class="summary-container">
+        <div class="summary-header">Line-wise Summary</div>
+        <table class="summary-table">
+            <tr>
+            {% for line, qty in line_summary.items() %}
+                <td>{{ line }}: {{ qty }} pcs</td>
+                {% if loop.index % 4 == 0 %}</tr><tr>{% endif %}
+            {% endfor %}
+            </tr>
+        </table>
+        <div style="text-align: right; margin-top: 5px; font-weight: 800; border-top: 1px solid #ccc;">Total Deliveries: {{ count }}</div>
+    </div>
+    <table class="main-table">
+        <thead>
+            <tr>
+                <th width="15%">DATE</th>
+                <th width="15%">LINE NO</th>
+                <th width="20%">COLOR</th>
+                <th width="10%">SIZE</th>
+                <th width="10%">STATUS</th>
+                <th width="15%">QTY</th>
+                {% if session.role == 'admin' %}
+                <th width="15%" class="action-col">ACTION</th>
+                {% endif %}
+            </tr>
+        </thead>
+        <tbody>
+            {% set ns = namespace(grand_total=0) %}
+            {% for item in challans %}
+                {% set ns.grand_total = ns.grand_total + item.qty|int %}
                 <tr>
                     <td>{{ item.date }}</td>
-                    <td>{{ item.line }}</td>
+                    <td>
+                        {% if loop.index == count %}
+                            <div class="line-card">{{ item.line }}</div>
+                        {% else %}
+                            <span class="line-text-bold">{{ item.line }}</span>
+                        {% endif %}
+                    </td>
                     <td>{{ item.color }}</td>
                     <td>{{ item.size }}</td>
-                    <td>{{ item.qty }}</td>
+                    <td class="status-cell">{{ item.status }}</td>
+                    <td class="qty-cell">{{ item.qty }}</td>
                     {% if session.role == 'admin' %}
-                    <td class="no-print">
-                        <a href="/admin/accessories/edit?ref={{ ref }}&index={{ loop.index0 }}">Edit</a>
-                        <form action="/admin/accessories/delete" method="POST" style="display:inline;" onsubmit="return confirm('Del?');">
+                    <td class="action-col">
+                        <a href="/admin/accessories/edit?ref={{ ref }}&index={{ loop.index0 }}" class="action-btn btn-edit-row"><i class="fas fa-pencil-alt"></i></a>
+                        <form action="/admin/accessories/delete" method="POST" style="display:inline;" onsubmit="return confirm('Delete this challan?');">
                             <input type="hidden" name="ref" value="{{ ref }}">
                             <input type="hidden" name="index" value="{{ loop.index0 }}">
-                            <button type="submit">Del</button>
+                            <button type="submit" class="action-btn btn-del-row" style="border:none; cursor:pointer;"><i class="fas fa-trash"></i></button>
                         </form>
                     </td>
                     {% endif %}
                 </tr>
-                {% endfor %}
-                <tr style="font-weight:bold; background:#eee;">
-                    <td colspan="4">TOTAL</td>
-                    <td>{{ ns.total }}</td>
-                    {% if session.role == 'admin' %}<td class="no-print"></td>{% endif %}
-                </tr>
-            </tbody>
-        </table>
-        <div style="margin-top: 50px; display: flex; justify-content: space-between;">
-            <div style="border-top:1px solid #000; width:150px; text-align:center;">Received By</div>
-            <div style="border-top:1px solid #000; width:150px; text-align:center;">Authorized By</div>
+            {% endfor %}
+        </tbody>
+    </table>
+    <div class="footer-total">
+        <div class="total-box">
+            TOTAL QTY: {{ ns.grand_total }}
         </div>
     </div>
+    <div class="generator-sig">Report Generated By Mehedi Hasan</div>
+    <div style="margin-top: 60px; display: flex; justify-content: space-between; text-align: center; font-weight: bold; padding: 0 50px;">
+        <div style="border-top: 2px solid #000; width: 180px; padding-top: 5px;">Received By</div>
+        <div style="border-top: 2px solid #000; width: 180px; padding-top: 5px;">Input Incharge</div>
+        <div style="border-top: 2px solid #000; width: 180px; padding-top: 5px;">Store</div>
+    </div>
+</div>
 </body>
 </html>
 """
@@ -1294,40 +1432,108 @@ PO_REPORT_TEMPLATE = """
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>PO Summary</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PO Report - Cotton Clothing BD</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        body { padding: 20px; background: white; color: black; }
-        .header { text-align: center; border-bottom: 2px solid #000; margin-bottom: 20px; }
-        .table th { background: #333 !important; color: white !important; -webkit-print-color-adjust: exact; }
-        .summary-row { background: #d1ecff !important; font-weight: bold; -webkit-print-color-adjust: exact; }
-        @media print { .no-print { display: none; } }
+        body { background-color: #f8f9fa; padding: 30px 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .container { max-width: 1200px; }
+        .company-header { text-align: center; margin-bottom: 20px; border-bottom: 2px solid #000; padding-bottom: 10px; }
+        .company-name { font-size: 2.2rem; font-weight: 800; color: #2c3e50; text-transform: uppercase; letter-spacing: 1px; line-height: 1; }
+        .report-title { font-size: 1.1rem; color: #555; font-weight: 600; text-transform: uppercase; margin-top: 5px; }
+        .date-section { font-size: 1.2rem; font-weight: 800; color: #000; margin-top: 5px; }
+        .info-container { display: flex; justify-content: space-between; margin-bottom: 15px; gap: 15px; }
+        .info-box { background: white; border: 1px solid #ddd; border-left: 5px solid #2c3e50; padding: 10px 15px; border-radius: 5px; flex: 2; box-shadow: 0 2px 5px rgba(0,0,0,0.05); display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .total-box { background: #2c3e50; color: white; padding: 10px 15px; border-radius: 5px; width: 240px; text-align: right; display: flex; flex-direction: column; justify-content: center; box-shadow: 0 4px 10px rgba(44, 62, 80, 0.3); }
+        .info-item { margin-bottom: 6px; font-size: 1.3rem; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .info-label { font-weight: 800; color: #444; width: 90px; display: inline-block; }
+        .info-value { font-weight: 800; color: #000; }
+        .total-label { font-size: 1.1rem; opacity: 0.9; text-transform: uppercase; letter-spacing: 1px; font-weight: 700; }
+        .total-value { font-size: 2.5rem; font-weight: 800; line-height: 1.1; }
+        .table-card { background: white; border-radius: 0; margin-bottom: 20px; overflow: hidden; border: 1px solid #dee2e6; }
+        .color-header { background-color: #e9ecef; color: #2c3e50; padding: 10px 12px; font-size: 1.5rem; font-weight: 900; border-bottom: 1px solid #dee2e6; text-transform: uppercase; }
+        .table { margin-bottom: 0; width: 100%; border-collapse: collapse; }
+        .table th { background-color: #2c3e50; color: white; font-weight: 900; font-size: 1.2rem; text-align: center; border: 1px solid #34495e; padding: 8px 4px; vertical-align: middle; }
+        .table td { text-align: center; vertical-align: middle; border: 1px solid #dee2e6; padding: 6px 3px; color: #000; font-weight: 800; font-size: 1.15rem; }
+        .table-striped tbody tr:nth-of-type(odd) { background-color: #f8f9fa; }
+        .order-col { font-weight: 900 !important; text-align: center !important; background-color: #fdfdfd; white-space: nowrap; width: 1%; }
+        .total-col { font-weight: 900; background-color: #e8f6f3 !important; color: #16a085; border-left: 2px solid #1abc9c !important; }
+        .total-col-header { background-color: #e8f6f3 !important; color: #000 !important; font-weight: 900 !important; border: 1px solid #34495e !important; }
+        .table-striped tbody tr.summary-row, .table-striped tbody tr.summary-row td { background-color: #d1ecff !important; --bs-table-accent-bg: #d1ecff !important; color: #000 !important; font-weight: 900 !important; border-top: 2px solid #aaa !important; font-size: 1.2rem !important; }
+        .summary-label { text-align: right !important; padding-right: 15px !important; color: #000 !important; }
+        .action-bar { margin-bottom: 20px; display: flex; justify-content: flex-end; gap: 10px; }
+        .btn-print { background-color: #2c3e50; color: white; border-radius: 50px; padding: 8px 30px; font-weight: 600; }
+        .footer-credit { text-align: center; margin-top: 30px; margin-bottom: 20px; font-size: 0.8rem; color: #2c3e50; padding-top: 10px; border-top: 1px solid #ddd; }
+        @media print {
+            @page { margin: 5mm; size: portrait; }
+            body { background-color: white; padding: 0; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; color-adjust: exact !important; }
+            .container { max-width: 100% !important; width: 100% !important; padding: 0; margin: 0; }
+            .no-print { display: none !important; }
+            .company-header { border-bottom: 2px solid #000; margin-bottom: 5px; padding-bottom: 5px; }
+            .company-name { font-size: 1.8rem; } 
+            .info-container { margin-bottom: 10px; }
+            .info-box { border: 1px solid #000 !important; border-left: 5px solid #000 !important; padding: 5px 10px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+            .total-box { border: 2px solid #000 !important; background: white !important; color: black !important; padding: 5px 10px; }
+            .info-item { font-size: 13pt !important; font-weight: 800 !important; }
+            .table th, .table td { border: 1px solid #000 !important; padding: 2px !important; font-size: 13pt !important; font-weight: 800 !important; }
+            .table-striped tbody tr.summary-row td { background-color: #d1ecff !important; box-shadow: inset 0 0 0 9999px #d1ecff !important; color: #000 !important; font-weight: 900 !important; }
+            .color-header { background-color: #f1f1f1 !important; border: 1px solid #000 !important; font-size: 1.4rem !important; font-weight: 900; padding: 5px; margin-top: 10px; box-shadow: inset 0 0 0 9999px #f1f1f1 !important; }
+            .total-col-header { background-color: #e8f6f3 !important; box-shadow: inset 0 0 0 9999px #e8f6f3 !important; color: #000 !important; }
+            .table-card { border: none; margin-bottom: 10px; break-inside: avoid; }
+            .footer-credit { display: block !important; color: black; border-top: 1px solid #000; margin-top: 10px; font-size: 8pt !important; }
+        }
     </style>
 </head>
 <body>
-    <div class="container-fluid">
-        <div class="no-print mb-3">
-            <a href="/" class="btn btn-secondary">Back</a>
-            <button onclick="window.print()" class="btn btn-primary">Print</button>
+    <div class="container">
+        <div class="action-bar no-print">
+            <a href="/" class="btn btn-outline-secondary rounded-pill px-4">Back to Dashboard</a>
+            <button onclick="window.print()" class="btn btn-print">🖨️ Print Report</button>
         </div>
-        <div class="header">
-            <h3>Cotton Clothing BD Limited</h3>
-            <h5>Purchase Order Summary</h5>
+        <div class="company-header">
+            <div class="company-name">Cotton Clothing BD Limited</div>
+            <div class="report-title">Purchase Order Summary</div>
+            <div class="date-section">Date: <span id="date"></span></div>
         </div>
+        {% if message %}
+            <div class="alert alert-warning text-center no-print">{{ message }}</div>
+        {% endif %}
         {% if tables %}
-            <div class="row mb-3 border p-2">
-                <div class="col-md-4"><strong>Buyer:</strong> {{ meta.buyer }}</div>
-                <div class="col-md-4"><strong>Booking:</strong> {{ meta.booking }}</div>
-                <div class="col-md-4"><strong>Total Qty:</strong> {{ grand_total }}</div>
+            <div class="info-container">
+                <div class="info-box">
+                    <div>
+                        <div class="info-item"><span class="info-label">Buyer:</span> <span class="info-value">{{ meta.buyer }}</span></div>
+                        <div class="info-item"><span class="info-label">Booking:</span> <span class="info-value">{{ meta.booking }}</span></div>
+                        <div class="info-item"><span class="info-label">Style:</span> <span class="info-value">{{ meta.style }}</span></div>
+                    </div>
+                    <div>
+                        <div class="info-item"><span class="info-label">Season:</span> <span class="info-value">{{ meta.season }}</span></div>
+                        <div class="info-item"><span class="info-label">Dept:</span> <span class="info-value">{{ meta.dept }}</span></div>
+                        <div class="info-item"><span class="info-label">Item:</span> <span class="info-value">{{ meta.item }}</span></div>
+                    </div>
+                </div>
+                <div class="total-box">
+                    <div class="total-label">Grand Total</div>
+                    <div class="total-value">{{ grand_total }}</div>
+                    <small>Pieces</small>
+                </div>
             </div>
             {% for item in tables %}
-                <div class="mb-4">
-                    <h5 style="background:#eee; padding:5px; border:1px solid #000;">COLOR: {{ item.color }}</h5>
-                    {{ item.table | safe }}
+                <div class="table-card">
+                    <div class="color-header">COLOR: {{ item.color }}</div>
+                    <div class="table-responsive">{{ item.table | safe }}</div>
                 </div>
             {% endfor %}
+            <div class="footer-credit">Report Created By <strong>Mehedi Hasan</strong></div>
         {% endif %}
     </div>
+    <script>
+        const dateObj = new Date();
+        const day = String(dateObj.getDate()).padStart(2, '0');
+        const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+        const year = dateObj.getFullYear();
+        document.getElementById('date').innerText = `${day}-${month}-${year}`;
+    </script>
 </body>
 </html>
 """
@@ -1342,10 +1548,16 @@ def index():
         return render_template_string(LOGIN_TEMPLATE)
     else:
         if session.get('role') == 'admin':
+            # ড্যাশবোর্ড ডাটা লোড (চার্ট এবং স্ট্যাটাস এর জন্য)
             stats = get_dashboard_summary_v2()
             return render_template_string(ADMIN_DASHBOARD_TEMPLATE, stats=stats)
         else:
-            return render_template_string(USER_DASHBOARD_TEMPLATE)
+            # User Dashboard Logic
+            perms = session.get('permissions', [])
+            if len(perms) == 1 and 'accessories' in perms:
+                return redirect(url_for('accessories_search_page'))
+            else:
+                return render_template_string(USER_DASHBOARD_TEMPLATE)
 
 @app.route('/login', methods=['POST'])
 def login():
@@ -1457,7 +1669,10 @@ def generate_report():
         flash(f"No data found for: {internal_ref_no}")
         return redirect(url_for('index'))
     
+    # Update Stats
     update_stats(internal_ref_no, session.get('user', 'Unknown'))
+    
+    # Render with ORIGINAL White Template
     return render_template_string(CLOSING_REPORT_PREVIEW_TEMPLATE, report_data=report_data, ref_no=internal_ref_no)
 
 @app.route('/download-closing-excel', methods=['GET'])
@@ -1476,7 +1691,7 @@ def download_closing_excel():
         ))
     return redirect(url_for('index'))
 
-# --- ACCESSORIES ROUTES (FIXED: SHOW HISTORY BELOW INPUT) ---
+# --- ACCESSORIES ROUTES ---
 @app.route('/admin/accessories', methods=['GET'])
 def accessories_search_page():
     if not session.get('logged_in'): return redirect(url_for('index'))
@@ -1489,7 +1704,7 @@ def accessories_search_page():
 def accessories_input_page():
     if not session.get('logged_in'): return redirect(url_for('index'))
     
-    # ref_no রিসিভ করা (form থেকে বা args থেকে - এডিট ক্যানসেল করলে args থেকে আসবে)
+    # ref_no রিসিভ করা (form থেকে বা args থেকে)
     ref_no = request.form.get('ref_no') or request.args.get('ref')
     if ref_no: ref_no = ref_no.strip().upper()
     
@@ -1503,7 +1718,7 @@ def accessories_input_page():
         colors = data['colors']
         style = data['style']
         buyer = data['buyer']
-        challans = data['challans'] # হিস্ট্রি দেখানোর জন্য
+        challans = data['challans'] # হিস্ট্রি টেবিলের জন্য ডাটা
     else:
         api_data = fetch_closing_report_data(ref_no)
         if not api_data:
@@ -1513,14 +1728,14 @@ def accessories_input_page():
         colors = sorted(list(set([item['color'] for item in api_data])))
         style = api_data[0].get('style', 'N/A')
         buyer = api_data[0].get('buyer', 'N/A')
-        challans = []
+        challans = [] # নতুন এন্ট্রি তাই খালি লিস্ট
         
         db_acc[ref_no] = {
             "style": style, "buyer": buyer, "colors": colors, "item_type": "", "challans": challans
         }
         save_accessories_db(db_acc)
 
-    # challans লিস্ট টেমপ্লেটে পাঠানো হচ্ছে যাতে নিচে টেবিল শো করে
+    # challans লিস্ট টেমপ্লেটে পাঠানো হচ্ছে যাতে নিচে টেবিল শো করে (আপনার রিকোয়ারমেন্ট অনুযায়ী)
     return render_template_string(ACCESSORIES_INPUT_TEMPLATE, ref=ref_no, colors=colors, style=style, buyer=buyer, challans=challans)
 
 # ডাইরেক্ট ইনপুট পেজে যাওয়ার জন্য (এডিট ক্যানসেল করার পর)
@@ -1543,12 +1758,13 @@ def accessories_save():
             "line": request.form.get('line_no'),
             "color": request.form.get('color'),
             "size": request.form.get('size'),
-            "qty": request.form.get('qty')
+            "qty": request.form.get('qty'),
+            "status": "✔" # Status for internal tracking
         }
         db_acc[ref]['challans'].append(new_entry)
         save_accessories_db(db_acc)
     
-    # সেভ করার পর রিপোর্ট পেজে পাঠানো হবে (আপনার অরিজিনাল ফ্লো অনুযায়ী)
+    # সেভ করার পর রিপোর্ট পেজে পাঠানো (অরিজিনাল ডিজাইন)
     return redirect(url_for('accessories_print_view', ref=ref))
 
 @app.route('/admin/accessories/print', methods=['GET'])
@@ -1561,9 +1777,22 @@ def accessories_print_view():
     if ref not in db_acc: return redirect(url_for('accessories_search_page'))
     
     data = db_acc[ref]
+    challans = data['challans']
+    
+    # লাইন সামারি তৈরি (রিপোর্টের জন্য)
+    line_summary = {}
+    for c in challans:
+        ln = c['line']
+        try: q = int(c['qty'])
+        except: q = 0
+        line_summary[ln] = line_summary.get(ln, 0) + q
+    sorted_line_summary = dict(sorted(line_summary.items()))
+
+    # Render with ORIGINAL White Template
     return render_template_string(ACCESSORIES_REPORT_TEMPLATE, 
                                   ref=ref, buyer=data['buyer'], style=data['style'],
-                                  item_type=data.get('item_type', ''), challans=data['challans'],
+                                  item_type=data.get('item_type', ''), challans=challans,
+                                  line_summary=sorted_line_summary, count=len(challans),
                                   today=get_bd_date_str())
 
 @app.route('/admin/accessories/edit', methods=['GET'])
@@ -1577,7 +1806,6 @@ def accessories_edit():
     db_acc = load_accessories_db()
     if ref in db_acc and 0 <= index < len(db_acc[ref]['challans']):
         item = db_acc[ref]['challans'][index]
-        # এডিট পেজে পাঠানো
         return render_template_string(ACCESSORIES_EDIT_TEMPLATE, ref=ref, index=index, item=item)
     
     return redirect(url_for('accessories_print_view', ref=ref))
@@ -1616,7 +1844,7 @@ def accessories_delete():
     # ডিলিট শেষে ইনপুট পেজে ফেরত (হিস্ট্রি আপডেট হবে)
     return redirect(url_for('accessories_input_direct', ref=ref))
 
-# --- PO SHEET ROUTE (ORIGINAL LOGIC PRESERVED) ---
+# --- PO SHEET ROUTE ---
 @app.route('/generate-po-report', methods=['POST'])
 def generate_po_report():
     if not session.get('logged_in'): return redirect(url_for('index'))
@@ -1637,7 +1865,7 @@ def generate_po_report():
         if data: all_data.extend(data)
     
     if not all_data:
-        return render_template_string(PO_REPORT_TEMPLATE, tables=None)
+        return render_template_string(PO_REPORT_TEMPLATE, tables=None, message="No PO data found.")
 
     update_po_stats(session.get('user', 'Unknown'), len(uploaded_files))
 
@@ -1664,13 +1892,33 @@ def generate_po_report():
         actual = pivot.sum()
         plus_3 = (actual * 1.03).round().astype(int)
         
-        pivot.loc['Actual Qty'] = actual
-        pivot.loc['3% Order Qty'] = plus_3
+        # Add summary rows
+        pivot_reset = pivot.reset_index()
+        # Create HTML manually or via pandas with classes
+        pivot_reset.loc['Actual Qty'] = pivot_reset.sum(numeric_only=True)
+        pivot_reset.at['Actual Qty', 'P.O NO'] = 'Actual Qty'
         
-        pivot = pivot.reset_index()
-        html_table = pivot.to_html(classes='table table-bordered table-striped', index=False)
-        html_table = html_table.replace('<td>Actual Qty</td>', '<td class="summary-row">Actual Qty</td>')
-        html_table = html_table.replace('<td>3% Order Qty</td>', '<td class="summary-row">3% Order Qty</td>')
+        # HTML Rendering Logic specifically for PO Template
+        # Using the same logic as Main Code for table structure
+        actual_qty = pivot.sum()
+        actual_qty.name = 'Actual Qty'
+        qty_plus_3 = (actual_qty * 1.03).round().astype(int)
+        qty_plus_3.name = '3% Order Qty'
+        
+        pivot_final = pd.concat([pivot, actual_qty.to_frame().T, qty_plus_3.to_frame().T])
+        pivot_final = pivot_final.reset_index()
+        pivot_final = pivot_final.rename(columns={'index': 'P.O NO'})
+        
+        pd.set_option('colheader_justify', 'center')
+        html_table = pivot_final.to_html(classes='table table-bordered table-striped', index=False, border=0)
+        
+        # Inject styles for summary rows (Main Code Style)
+        html_table = re.sub(r'<tr>\s*<td>', '<tr><td class="order-col">', html_table)
+        html_table = html_table.replace('<th>Total</th>', '<th class="total-col-header">Total</th>')
+        html_table = html_table.replace('<td>Total</td>', '<td class="total-col">Total</td>')
+        html_table = html_table.replace('<td>Actual Qty</td>', '<td class="summary-label">Actual Qty</td>')
+        html_table = html_table.replace('<td>3% Order Qty</td>', '<td class="summary-label">3% Order Qty</td>')
+        html_table = re.sub(r'<tr>\s*<td class="summary-label">', '<tr class="summary-row"><td class="summary-label">', html_table)
 
         final_tables.append({'color': color, 'table': html_table})
         
