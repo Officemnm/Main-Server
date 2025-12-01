@@ -169,7 +169,7 @@ COMMON_STYLES = """
     </style>
 """
 # ==============================================================================
-# হেল্পার ফাংশন: ডাটাবেস ও পরিসংখ্যান (MongoDB)
+# হেল্পার ফাংশন: ডাটাবেস ও ড্যাশবোর্ড লজিক
 # ==============================================================================
 
 def load_users():
@@ -231,7 +231,6 @@ def update_stats(ref_no, username):
     data['last_booking'] = ref_no
     save_stats(data)
 
-# PO Stats আপডেট করার হেল্পার
 def update_po_stats(username, file_count):
     data = load_stats()
     now = get_bd_time()
@@ -249,7 +248,21 @@ def update_po_stats(username, file_count):
         data['downloads'] = data['downloads'][:1000]
     save_stats(data)
 
-# ড্যাশবোর্ড সামারি (ডিটেইলস পেজ এবং চার্টের জন্য)
+def load_accessories_db():
+    record = accessories_col.find_one({"_id": "accessories_data"})
+    if record:
+        return record['data']
+    else:
+        return {}
+
+def save_accessories_db(data):
+    accessories_col.replace_one(
+        {"_id": "accessories_data"},
+        {"_id": "accessories_data", "data": data},
+        upsert=True
+    )
+
+# ড্যাশবোর্ডের চার্ট এবং স্ট্যাটাস ডাটা তৈরি করার লজিক
 def get_dashboard_summary_v2():
     stats_data = load_stats()
     acc_db = load_accessories_db()
@@ -322,22 +335,8 @@ def get_dashboard_summary_v2():
         "history": history
     }
 
-def load_accessories_db():
-    record = accessories_col.find_one({"_id": "accessories_data"})
-    if record:
-        return record['data']
-    else:
-        return {}
-
-def save_accessories_db(data):
-    accessories_col.replace_one(
-        {"_id": "accessories_data"},
-        {"_id": "accessories_data", "data": data},
-        upsert=True
-    )
-
 # ==============================================================================
-# লজিক পার্ট: PURCHASE ORDER SHEET PARSER (PDF)
+# লজিক পার্ট: PURCHASE ORDER SHEET PARSER (PDF) - FULL LOGIC
 # ==============================================================================
 
 def is_potential_size(header):
@@ -498,7 +497,7 @@ def extract_data_dynamic(file_path):
     return extracted_data, metadata
 
 # ==============================================================================
-# লজিক পার্ট: CLOSING REPORT API & EXCEL GENERATION
+# লজিক পার্ট: CLOSING REPORT API & EXCEL GENERATION - FULL LOGIC
 # ==============================================================================
 def get_authenticated_session(username, password):
     login_url = 'http://180.92.235.190:8022/erp/login.php'
@@ -1034,30 +1033,10 @@ USER_DASHBOARD_TEMPLATE = f"""
 # ==============================================================================
 
 ACCESSORIES_SEARCH_TEMPLATE = f"""
-<!doctype html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Accessories Search</title>
-    {COMMON_STYLES}
-</head>
-<body style="justify-content:center; align-items:center;">
-    <div class="card" style="width:100%; max-width:450px; padding:30px;">
-        <div class="section-header" style="justify-content:center; margin-bottom:30px;">Accessories DB</div>
-        <form action="/admin/accessories/input" method="post">
-            <div class="input-group">
-                <label>BOOKING REFERENCE NO</label>
-                <input type="text" name="ref_no" required placeholder="e.g. Booking-123">
-            </div>
-            <button type="submit">Proceed</button>
-        </form>
-        <div style="text-align:center; margin-top:20px;">
-            <a href="/" style="color:var(--text-secondary); text-decoration:none; font-size:13px;">&larr; Back to Home</a>
-        </div>
-    </div>
-</body>
-</html>
+<!doctype html><html lang="en"><head><title>Search</title>{COMMON_STYLES}</head><body style="justify-content:center; align-items:center;">
+<div class="card" style="width:100%; max-width:450px; padding:30px;"><div class="section-header" style="justify-content:center; margin-bottom:30px;">Accessories DB</div>
+<form action="/admin/accessories/input" method="post"><div class="input-group"><label>BOOKING REFERENCE</label><input type="text" name="ref_no" required></div><button>Proceed</button></form>
+<div style="text-align:center; margin-top:20px;"><a href="/" style="color:var(--text-secondary); text-decoration:none; font-size:13px;">&larr; Back</a></div></div></body></html>
 """
 
 # Updated Input Template: Contains Input Form AND Previous Challans Table
@@ -1090,7 +1069,7 @@ ACCESSORIES_INPUT_TEMPLATE = f"""
                 <form action="/admin/accessories/save" method="post">
                     <input type="hidden" name="ref" value="{{{{ ref }}}}">
                     <div class="input-group"><label>TYPE</label><select name="item_type"><option value="Top">Top</option><option value="Bottom">Bottom</option></select></div>
-                    <div class="input-group"><label>COLOR</label><select name="color" required><option value="" disabled selected>Select Color</option>{{% for c in colors %}}<option value="{{{{ c }}}}">{{{{ c }}}}</option>{{% endfor %}}</select></div>
+                    <div class="input-group"><label>COLOR</label><select name="color" required><option value="" disabled selected>Select</option>{{% for c in colors %}}<option value="{{{{ c }}}}">{{{{ c }}}}</option>{{% endfor %}}</select></div>
                     <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px;">
                         <div class="input-group"><label>LINE</label><input type="text" name="line_no" required></div>
                         <div class="input-group"><label>SIZE</label><input type="text" name="size" value="ALL"></div>
@@ -1222,7 +1201,6 @@ CLOSING_REPORT_PREVIEW_TEMPLATE = """
 </html>
 """
 
-# 2. Accessories Report (Original White + Fix: Show List with Edit/Delete)
 ACCESSORIES_REPORT_TEMPLATE = """
 <!DOCTYPE html>
 <html lang="en">
@@ -1239,27 +1217,23 @@ ACCESSORIES_REPORT_TEMPLATE = """
         .table th, .table td { border: 1px solid #000; padding: 5px; text-align: center; }
         .table th { background: #ddd; -webkit-print-color-adjust: exact; }
         .no-print { text-align: right; margin-bottom: 20px; }
-        .btn-link { color: blue; text-decoration: underline; cursor: pointer; border: none; background: none; font-family: inherit; font-size: inherit; }
-        .btn-link:hover { color: red; }
         @media print { .no-print { display: none; } .container { border: none; } }
     </style>
 </head>
 <body>
     <div class="no-print">
-        <a href="/admin/accessories" style="margin-right:10px; color:black; text-decoration:none;">&larr; Back</a>
+        <a href="/admin/accessories" style="margin-right:10px;">Back</a>
         <form action="/admin/accessories/input" method="post" style="display:inline;">
             <input type="hidden" name="ref_no" value="{{ ref }}">
-            <button style="cursor:pointer;">+ Add New Challan</button>
+            <button>Add New</button>
         </form>
-        <button onclick="window.print()" style="cursor:pointer;">Print Report</button>
+        <button onclick="window.print()">Print</button>
     </div>
-    
     <div class="container">
         <div class="header">
             <div class="title">ACCESSORIES DELIVERY CHALLAN</div>
             <div>Cotton Clothing BD Limited</div>
         </div>
-        
         <div class="info-grid">
             <div>
                 <strong>Booking:</strong> {{ ref }}<br>
@@ -1271,18 +1245,10 @@ ACCESSORIES_REPORT_TEMPLATE = """
                 <strong>Item:</strong> {{ item_type if item_type else 'General' }}
             </div>
         </div>
-        
         <table class="table">
             <thead>
-                <tr>
-                    <th>DATE</th>
-                    <th>LINE</th>
-                    <th>COLOR</th>
-                    <th>SIZE</th>
-                    <th>QTY</th>
-                    {% if session.role == 'admin' %}
-                    <th class="no-print">ACTION</th>
-                    {% endif %}
+                <tr><th>DATE</th><th>LINE</th><th>COLOR</th><th>SIZE</th><th>QTY</th>
+                {% if session.role == 'admin' %}<th class="no-print">ACTION</th>{% endif %}
                 </tr>
             </thead>
             <tbody>
@@ -1297,12 +1263,11 @@ ACCESSORIES_REPORT_TEMPLATE = """
                     <td>{{ item.qty }}</td>
                     {% if session.role == 'admin' %}
                     <td class="no-print">
-                        <a href="/admin/accessories/edit?ref={{ ref }}&index={{ loop.index0 }}" style="color:blue;">Edit</a>
-                        |
-                        <form action="/admin/accessories/delete" method="POST" style="display:inline;" onsubmit="return confirm('Are you sure you want to delete this challan?');">
+                        <a href="/admin/accessories/edit?ref={{ ref }}&index={{ loop.index0 }}">Edit</a>
+                        <form action="/admin/accessories/delete" method="POST" style="display:inline;" onsubmit="return confirm('Del?');">
                             <input type="hidden" name="ref" value="{{ ref }}">
                             <input type="hidden" name="index" value="{{ loop.index0 }}">
-                            <button type="submit" class="btn-link">Del</button>
+                            <button type="submit">Del</button>
                         </form>
                     </td>
                     {% endif %}
@@ -1315,7 +1280,6 @@ ACCESSORIES_REPORT_TEMPLATE = """
                 </tr>
             </tbody>
         </table>
-        
         <div style="margin-top: 50px; display: flex; justify-content: space-between;">
             <div style="border-top:1px solid #000; width:150px; text-align:center;">Received By</div>
             <div style="border-top:1px solid #000; width:150px; text-align:center;">Authorized By</div>
@@ -1325,7 +1289,6 @@ ACCESSORIES_REPORT_TEMPLATE = """
 </html>
 """
 
-# 3. PO Report (Original White)
 PO_REPORT_TEMPLATE = """
 <!DOCTYPE html>
 <html lang="en">
@@ -1513,7 +1476,7 @@ def download_closing_excel():
         ))
     return redirect(url_for('index'))
 
-# --- ACCESSORIES ROUTES (UPDATED FOR HISTORY VIEW) ---
+# --- ACCESSORIES ROUTES (FIXED: SHOW HISTORY BELOW INPUT) ---
 @app.route('/admin/accessories', methods=['GET'])
 def accessories_search_page():
     if not session.get('logged_in'): return redirect(url_for('index'))
@@ -1526,8 +1489,8 @@ def accessories_search_page():
 def accessories_input_page():
     if not session.get('logged_in'): return redirect(url_for('index'))
     
-    # ref_no রিসিভ করা (form থেকে)
-    ref_no = request.form.get('ref_no')
+    # ref_no রিসিভ করা (form থেকে বা args থেকে - এডিট ক্যানসেল করলে args থেকে আসবে)
+    ref_no = request.form.get('ref_no') or request.args.get('ref')
     if ref_no: ref_no = ref_no.strip().upper()
     
     if not ref_no: return redirect(url_for('accessories_search_page'))
@@ -1560,21 +1523,10 @@ def accessories_input_page():
     # challans লিস্ট টেমপ্লেটে পাঠানো হচ্ছে যাতে নিচে টেবিল শো করে
     return render_template_string(ACCESSORIES_INPUT_TEMPLATE, ref=ref_no, colors=colors, style=style, buyer=buyer, challans=challans)
 
-# ডাইরেক্ট ইনপুট পেজে যাওয়ার জন্য (এডিট/ডিলিট ক্যানসেল বা সেভ করার পর)
+# ডাইরেক্ট ইনপুট পেজে যাওয়ার জন্য (এডিট ক্যানসেল করার পর)
 @app.route('/admin/accessories/input_direct')
 def accessories_input_direct():
-    if not session.get('logged_in'): return redirect(url_for('index'))
-    
-    ref_no = request.args.get('ref')
-    if ref_no: ref_no = ref_no.strip().upper()
-    else: return redirect(url_for('accessories_search_page'))
-
-    db_acc = load_accessories_db()
-    if ref_no in db_acc:
-        data = db_acc[ref_no]
-        return render_template_string(ACCESSORIES_INPUT_TEMPLATE, ref=ref_no, colors=data['colors'], style=data['style'], buyer=data['buyer'], challans=data['challans'])
-    
-    return redirect(url_for('accessories_search_page'))
+    return accessories_input_page() 
 
 @app.route('/admin/accessories/save', methods=['POST'])
 def accessories_save():
@@ -1596,8 +1548,8 @@ def accessories_save():
         db_acc[ref]['challans'].append(new_entry)
         save_accessories_db(db_acc)
     
-    # সেভ করার পর এখন সরাসরি ইনপুট পেজেই থাকবে (যাতে হিস্ট্রি দেখা যায়), প্রিন্টে যাবে না
-    return redirect(url_for('accessories_input_direct', ref=ref))
+    # সেভ করার পর রিপোর্ট পেজে পাঠানো হবে (আপনার অরিজিনাল ফ্লো অনুযায়ী)
+    return redirect(url_for('accessories_print_view', ref=ref))
 
 @app.route('/admin/accessories/print', methods=['GET'])
 def accessories_print_view():
@@ -1625,9 +1577,10 @@ def accessories_edit():
     db_acc = load_accessories_db()
     if ref in db_acc and 0 <= index < len(db_acc[ref]['challans']):
         item = db_acc[ref]['challans'][index]
+        # এডিট পেজে পাঠানো
         return render_template_string(ACCESSORIES_EDIT_TEMPLATE, ref=ref, index=index, item=item)
     
-    return redirect(url_for('accessories_input_direct', ref=ref))
+    return redirect(url_for('accessories_print_view', ref=ref))
 
 @app.route('/admin/accessories/update', methods=['POST'])
 def accessories_update():
@@ -1644,7 +1597,7 @@ def accessories_update():
         db_acc[ref]['challans'][index]['qty'] = request.form.get('qty')
         save_accessories_db(db_acc)
     
-    # আপডেট শেষে আবার ইনপুট পেজে ফেরত পাঠানো (যাতে হিস্ট্রি আপডেট হয়)
+    # আপডেট শেষে আবার ইনপুট পেজে ফেরত পাঠানো (যাতে হিস্ট্রি দেখা যায়)
     return redirect(url_for('accessories_input_direct', ref=ref))
 
 @app.route('/admin/accessories/delete', methods=['POST'])
@@ -1660,7 +1613,7 @@ def accessories_delete():
         del db_acc[ref]['challans'][index]
         save_accessories_db(db_acc)
     
-    # ডিলিট শেষে ইনপুট পেজে ফেরত
+    # ডিলিট শেষে ইনপুট পেজে ফেরত (হিস্ট্রি আপডেট হবে)
     return redirect(url_for('accessories_input_direct', ref=ref))
 
 # --- PO SHEET ROUTE (ORIGINAL LOGIC PRESERVED) ---
