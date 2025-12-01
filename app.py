@@ -841,7 +841,7 @@ LOGIN_TEMPLATE = f"""
 <body style="justify-content:center; align-items:center;">
     <div class="card" style="width: 100%; max-width: 400px; padding: 40px;">
         <div style="text-align: center; margin-bottom: 40px;">
-            <div style="font-size: 26px; font-weight: 800; color: white; letter-spacing: -0.5px;">Cotton<span style="color:var(--accent-orange)">Solutions</span></div>
+            <div style="font-size: 26px; font-weight: 800; color: white; letter-spacing: -0.5px;">MNM<span style="color:var(--accent-orange)">Development</span></div>
             <div style="color: var(--text-secondary); font-size: 12px; letter-spacing: 2px; margin-top: 5px; font-weight: 600;">SECURE ACCESS</div>
         </div>
         <form action="/login" method="post">
@@ -882,7 +882,7 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
     <div class="mobile-toggle" onclick="document.querySelector('.sidebar').classList.toggle('active')"><i class="fas fa-bars"></i></div>
 
     <div class="sidebar">
-        <div class="brand-logo"><i class="fas fa-layer-group"></i> Cotton<span>Solutions</span></div>
+        <div class="brand-logo"><i class="fas fa-layer-group"></i> MNM<span>Development</span></div>
         <div class="nav-menu">
             <div class="nav-link active" onclick="showSection('dashboard', this)"><i class="fas fa-home"></i> Dashboard</div>
             <div class="nav-link" onclick="showSection('analytics', this)"><i class="fas fa-chart-pie"></i> Closing Report</div>
@@ -1037,7 +1037,7 @@ USER_DASHBOARD_TEMPLATE = f"""
 <body>
     <div id="loading-overlay"><div class="spinner"></div><div style="color:white; margin-top:15px; font-weight:600;">Generating...</div></div>
     <div class="sidebar">
-        <div class="brand-logo"><i class="fas fa-layer-group"></i> Cotton<span>Solutions</span></div>
+        <div class="brand-logo"><i class="fas fa-layer-group"></i>MNM<span>Development</span></div>
         <div class="nav-menu"><div class="nav-link active"><i class="fas fa-home"></i> Home</div></div>
         <a href="/logout" class="nav-link logout-btn" style="color:var(--accent-red);"><i class="fas fa-sign-out-alt"></i> Log Out</a>
         <div class="sidebar-footer">© Mehedi Hasan</div>
@@ -1964,3 +1964,4 @@ def generate_po_report():
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
+
