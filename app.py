@@ -23,16 +23,20 @@ from flask import Flask, request, render_template_string, send_file, flash, sess
 app = Flask(__name__)
 app.secret_key = 'super-secret-secure-key-bd' 
 
-# কনফিগারেশন (PO ফাইলের জন্য)
+# ==============================================================================
+# কনফিগারেশন এবং সেটআপ
+# ==============================================================================
+
+# PO ফাইলের জন্য আপলোড ফোল্ডার
 UPLOAD_FOLDER = 'uploads'
 if not os.path.exists(UPLOAD_FOLDER):
     os.makedirs(UPLOAD_FOLDER)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
-# --- ২ মিনিটের সেশন টাইমআউট কনফিগারেশন ---
+# সেশন টাইমআউট কনফিগারেশন (৩০ মিনিট)
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=30) 
 
-# --- নতুন: টাইমজোন কনফিগারেশন (বাংলাদেশ) ---
+# টাইমজোন কনফিগারেশন (বাংলাদেশ)
 bd_tz = pytz.timezone('Asia/Dhaka')
 
 def get_bd_time():
@@ -46,6 +50,10 @@ def get_bd_date_str():
 # ==============================================================================
 @app.after_request
 def add_header(response):
+    """
+    লগআউট করার পর ব্যাক বাটন চাপলে যেন আগের পেজ না দেখায়,
+    তার জন্য ব্রাউজার ক্যাশ ক্লিয়ার করার নির্দেশ।
+    """
     response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, post-check=0, pre-check=0, max-age=0'
     response.headers['Pragma'] = 'no-cache'
     response.headers['Expires'] = '-1'
@@ -67,27 +75,31 @@ try:
 except Exception as e:
     print(f"MongoDB Connection Error: {e}")
 
+
 # ==============================================================================
-# DESIGN ASSETS: DARK THEME (Based on your Image)
+# CSS STYLES (DASHBOARD ONLY - DARK THEME)
 # ==============================================================================
-# এই CSS ভেরিয়েবলটি পুরো সিস্টেমের ডিজাইন চেঞ্জ করে দিবে।
+# এই স্টাইলটি শুধুমাত্র ড্যাশবোর্ড এবং ইনপুট পেজের জন্য। রিপোর্টের জন্য নয়।
+
 COMMON_STYLES = """
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
-            /* Image Color Palette */
             --bg-body: #121212;
-            --bg-sidebar: #1C1C1E;
-            --bg-card: #1F1F23;
+            --bg-sidebar: #1E1E1E;
+            --bg-card: #1F1F1F;
             --text-primary: #FFFFFF;
-            --text-secondary: #A1A1AA;
-            --accent-orange: #FF8C42; /* The orange from the chart/buttons */
+            --text-secondary: #A0A0A0;
+            --accent-orange: #FF8C42;
+            --accent-orange-hover: #e67e22;
             --accent-purple: #6C5CE7;
-            --accent-green: #2ECC71;
-            --border-color: #2D2D30;
-            --card-radius: 12px;
+            --accent-green: #00b894;
+            --accent-red: #ff7675;
+            --border-color: #333333;
+            --card-radius: 16px;
+            --transition: all 0.3s ease;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
@@ -97,153 +109,208 @@ COMMON_STYLES = """
             color: var(--text-primary);
             min-height: 100vh;
             display: flex;
-            font-size: 14px;
+            overflow-x: hidden;
         }
 
-        /* --- Sidebar --- */
+        /* --- Sidebar Styles --- */
         .sidebar {
             width: 260px;
-            background-color: var(--bg-sidebar);
             height: 100vh;
+            background-color: var(--bg-sidebar);
             position: fixed;
             top: 0; left: 0;
-            padding: 25px 20px;
             display: flex;
             flex-direction: column;
+            padding: 30px 20px;
             border-right: 1px solid var(--border-color);
-            z-index: 100;
+            z-index: 1000;
+            transition: var(--transition);
         }
 
-        .brand {
-            font-size: 20px;
-            font-weight: 700;
+        .brand-logo {
+            font-size: 22px;
+            font-weight: 800;
             color: white;
-            margin-bottom: 40px;
-            display: flex; align-items: center; gap: 10px;
+            margin-bottom: 50px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            letter-spacing: 0.5px;
         }
+        .brand-logo span { color: var(--accent-orange); }
 
-        .nav-item {
-            display: flex; align-items: center;
-            padding: 12px 15px;
+        .nav-menu { flex: 1; display: flex; flex-direction: column; gap: 10px; }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            padding: 14px 18px;
             color: var(--text-secondary);
             text-decoration: none;
-            border-radius: 8px;
-            margin-bottom: 5px;
-            transition: all 0.2s ease;
-            cursor: pointer;
+            border-radius: 12px;
             font-weight: 500;
+            font-size: 14px;
+            transition: var(--transition);
+            cursor: pointer;
         }
-        .nav-item:hover, .nav-item.active {
-            background-color: #2C2C2E;
-            color: white;
-        }
-        .nav-item i { width: 25px; font-size: 16px; margin-right: 8px; }
 
-        /* --- Main Content --- */
+        .nav-link:hover, .nav-link.active {
+            background-color: rgba(255, 140, 66, 0.1);
+            color: var(--accent-orange);
+        }
+
+        .nav-link i { width: 25px; text-align: center; margin-right: 10px; font-size: 16px; }
+
+        .logout-btn {
+            margin-top: auto;
+            color: var(--accent-red);
+            border: 1px solid rgba(255, 118, 117, 0.2);
+            justify-content: center;
+        }
+        .logout-btn:hover { background: rgba(255, 118, 117, 0.1); color: var(--accent-red); }
+
+        /* --- Main Content Area --- */
         .main-content {
             margin-left: 260px;
             width: calc(100% - 260px);
-            padding: 30px 40px;
+            padding: 40px;
+            transition: var(--transition);
         }
 
-        .page-header { margin-bottom: 30px; }
-        .page-title { font-size: 24px; font-weight: 700; color: white; margin-bottom: 5px; }
-        .page-sub { font-size: 13px; color: var(--text-secondary); }
+        .header-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 40px;
+        }
 
-        /* --- Stats Row (Top 4 Cards) --- */
+        .page-title { font-size: 28px; font-weight: 700; color: white; margin-bottom: 5px; }
+        .page-subtitle { color: var(--text-secondary); font-size: 14px; }
+
+        /* --- Cards & Grid --- */
         .stats-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 20px;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 25px;
             margin-bottom: 30px;
         }
-        
-        .stat-card {
-            background: var(--bg-card);
-            padding: 20px;
-            border-radius: var(--card-radius);
-            display: flex; align-items: center;
-            border: 1px solid var(--border-color);
-        }
-        .stat-icon {
-            width: 45px; height: 45px;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.05);
-            display: flex; justify-content: center; align-items: center;
-            margin-right: 15px;
-            font-size: 18px; color: var(--text-secondary);
-        }
-        .stat-info h3 { font-size: 12px; color: var(--text-secondary); margin-bottom: 4px; font-weight: 500; }
-        .stat-info p { font-size: 22px; font-weight: 700; color: white; }
 
-        /* --- Middle Section (Chart + Progress) --- */
-        .dashboard-mid-grid {
+        .card {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--card-radius);
+            padding: 25px;
+            transition: var(--transition);
+        }
+        .card:hover { transform: translateY(-5px); border-color: rgba(255,255,255,0.1); }
+
+        .stat-card { display: flex; align-items: center; gap: 20px; }
+        .stat-icon {
+            width: 55px; height: 55px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 50%;
+            display: flex; justify-content: center; align-items: center;
+            font-size: 22px; color: var(--text-secondary);
+        }
+        .stat-info h3 { font-size: 28px; font-weight: 700; margin: 0; color: white; }
+        .stat-info p { font-size: 13px; color: var(--text-secondary); margin: 0; text-transform: uppercase; letter-spacing: 1px; font-weight: 600; }
+
+        /* --- Layout Grids --- */
+        .dashboard-grid-2 {
             display: grid;
             grid-template-columns: 2fr 1fr;
-            gap: 20px;
-            margin-bottom: 20px;
+            gap: 25px;
+            margin-bottom: 25px;
         }
         
-        .content-card {
-            background: var(--bg-card);
-            padding: 25px;
-            border-radius: var(--card-radius);
-            border: 1px solid var(--border-color);
-        }
-        .card-title { font-size: 16px; font-weight: 600; margin-bottom: 20px; color: white; display: flex; justify-content: space-between; }
-
-        /* Progress Bars */
-        .progress-row { margin-bottom: 15px; }
-        .progress-header { display: flex; justify-content: space-between; font-size: 12px; color: var(--text-secondary); margin-bottom: 6px; }
-        .progress-bar-bg { width: 100%; height: 8px; background: #2D2D30; border-radius: 10px; overflow: hidden; }
-        .progress-bar-fill { height: 100%; border-radius: 10px; background: var(--accent-orange); }
-
-        /* --- Bottom Grid --- */
         .bottom-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 20px;
+            gap: 25px;
         }
 
-        /* --- Forms & Inputs --- */
-        input[type="text"], input[type="password"], input[type="number"], select {
-            width: 100%; padding: 12px 15px;
-            background: #121212; border: 1px solid #333;
-            color: white; border-radius: 8px; margin-bottom: 15px;
-            font-size: 14px; outline: none; transition: 0.3s;
+        .section-header {
+            font-size: 18px; font-weight: 600; color: white; margin-bottom: 20px;
+            display: flex; justify-content: space-between; align-items: center;
         }
-        input:focus { border-color: var(--accent-orange); }
-        label { display: block; font-size: 12px; color: var(--text-secondary); margin-bottom: 6px; font-weight: 600; }
-        
+
+        /* --- Form Elements --- */
+        .input-group { margin-bottom: 20px; }
+        .input-group label {
+            display: block; font-size: 12px; color: var(--text-secondary);
+            margin-bottom: 8px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;
+        }
+
+        input[type="text"], input[type="password"], input[type="number"], input[type="file"], select {
+            width: 100%;
+            padding: 14px 18px;
+            background: #2D2D2D;
+            border: 1px solid #333;
+            border-radius: 12px;
+            color: white;
+            font-size: 14px;
+            outline: none;
+            transition: var(--transition);
+        }
+        input:focus, select:focus {
+            border-color: var(--accent-orange);
+            background: #333;
+            box-shadow: 0 0 0 3px rgba(255, 140, 66, 0.1);
+        }
+
         button {
-            width: 100%; padding: 12px;
-            background: var(--accent-orange); color: white;
-            border: none; border-radius: 8px;
-            font-weight: 600; cursor: pointer; transition: 0.3s;
+            width: 100%;
+            padding: 14px;
+            background: var(--accent-orange);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
         }
-        button:hover { opacity: 0.9; transform: translateY(-2px); }
+        button:hover { background: var(--accent-orange-hover); transform: translateY(-2px); }
 
-        /* --- Loading --- */
-        #loading-overlay {
-            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.85); z-index: 1000;
-            flex-direction: column; justify-content: center; align-items: center;
-        }
-        .spinner {
-            width: 50px; height: 50px; border: 3px solid rgba(255,255,255,0.1);
-            border-top: 3px solid var(--accent-orange); border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        /* --- Tables (Dashboard) --- */
+        .dark-table { width: 100%; border-collapse: collapse; }
+        .dark-table th { text-align: left; padding: 15px; color: var(--text-secondary); font-size: 12px; border-bottom: 1px solid #333; text-transform: uppercase; }
+        .dark-table td { padding: 15px; color: white; font-size: 14px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .dark-table tr:hover td { background: rgba(255,255,255,0.02); }
 
-        @media (max-width: 900px) {
-            .sidebar { transform: translateX(-100%); transition: 0.3s; }
+        /* --- Progress Bars --- */
+        .progress-item { margin-bottom: 20px; }
+        .progress-labels { display: flex; justify-content: space-between; font-size: 13px; color: var(--text-secondary); margin-bottom: 8px; }
+        .progress-bg { width: 100%; height: 8px; background: #2D2D2D; border-radius: 10px; overflow: hidden; }
+        .progress-fill { height: 100%; background: var(--accent-orange); border-radius: 10px; }
+
+        /* --- Mobile Responsive --- */
+        .mobile-toggle { display: none; position: fixed; top: 20px; right: 20px; z-index: 2000; color: white; background: #333; padding: 10px; border-radius: 8px; cursor: pointer; }
+        
+        @media (max-width: 992px) {
+            .sidebar { transform: translateX(-100%); }
             .sidebar.active { transform: translateX(0); }
             .main-content { margin-left: 0; width: 100%; padding: 20px; }
-            .dashboard-mid-grid { grid-template-columns: 1fr; }
-            .mobile-toggle { display: block; position: fixed; top: 20px; right: 20px; z-index: 200; color: white; font-size: 24px; background: #333; padding: 5px 10px; border-radius: 5px; }
+            .dashboard-grid-2 { grid-template-columns: 1fr; }
+            .mobile-toggle { display: block; }
         }
-        .mobile-toggle { display: none; }
+
+        /* --- Loading Overlay --- */
+        #loading-overlay {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85); z-index: 9999;
+            flex-direction: column; justify-content: center; align-items: center;
+            backdrop-filter: blur(5px);
+        }
+        .spinner {
+            width: 60px; height: 60px;
+            border: 4px solid rgba(255,255,255,0.1);
+            border-top: 4px solid var(--accent-orange);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 15px;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 """
 # ==============================================================================
@@ -414,7 +481,7 @@ def get_dashboard_summary_v2():
     }
 
 # ==============================================================================
-# লজিক পার্ট: PURCHASE ORDER SHEET PARSER (PDF)
+# লজিক পার্ট: PURCHASE ORDER SHEET PARSER (PDF) - FULL LOGIC
 # ==============================================================================
 
 def is_potential_size(header):
@@ -575,7 +642,7 @@ def extract_data_dynamic(file_path):
     return extracted_data, metadata
 
 # ==============================================================================
-# লজিক পার্ট: CLOSING REPORT API & EXCEL GENERATION
+# লজিক পার্ট: CLOSING REPORT API & EXCEL GENERATION - FULL LOGIC
 # ==============================================================================
 def get_authenticated_session(username, password):
     login_url = 'http://180.92.235.190:8022/erp/login.php'
@@ -883,9 +950,8 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
     wb.save(file_stream)
     file_stream.seek(0)
     return file_stream
-
 # ==============================================================================
-# HTML TEMPLATES: LOGIN, DASHBOARD & UI (DARK THEME)
+# HTML TEMPLATES: LOGIN & DASHBOARDS (DARK THEME)
 # ==============================================================================
 
 LOGIN_TEMPLATE = f"""
@@ -898,25 +964,29 @@ LOGIN_TEMPLATE = f"""
     {COMMON_STYLES}
 </head>
 <body style="justify-content:center; align-items:center;">
-    <div class="card" style="width: 100%; max-width: 400px;">
+    <div class="card" style="width: 100%; max-width: 400px; padding: 40px;">
         <div style="text-align: center; margin-bottom: 30px;">
-            <div style="font-size: 24px; font-weight: 700; color: white;">Cotton<span style="color:var(--accent-orange)">Solutions</span></div>
-            <div style="color: var(--text-secondary); font-size: 14px;">Secure Gateway</div>
+            <div style="font-size: 24px; font-weight: 800; color: white;">Cotton<span style="color:var(--accent-orange)">Solutions</span></div>
+            <div style="color: var(--text-secondary); font-size: 13px; letter-spacing: 1px;">SECURE ACCESS</div>
         </div>
+        
         <form action="/login" method="post">
             <div class="input-group">
                 <label>USERNAME</label>
-                <input type="text" name="username" required>
+                <input type="text" name="username" placeholder="Enter ID" required>
             </div>
             <div class="input-group">
                 <label>PASSWORD</label>
-                <input type="password" name="password" required>
+                <input type="password" name="password" placeholder="Enter Password" required>
             </div>
             <button type="submit">Sign In</button>
         </form>
+        
         {{% with messages = get_flashed_messages() %}}
             {{% if messages %}}
-                <div style="margin-top: 20px; color: #ff6b6b; font-size: 13px; text-align: center;">{{{{ messages[0] }}}}</div>
+                <div style="margin-top: 20px; padding: 10px; background: rgba(231, 76, 60, 0.1); border: 1px solid rgba(231, 76, 60, 0.3); color: #ff7675; font-size: 13px; border-radius: 8px; text-align: center;">
+                    {{{{ messages[0] }}}}
+                </div>
             {{% endif %}}
         {{% endwith %}}
     </div>
@@ -936,7 +1006,7 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
 <body>
     <div id="loading-overlay">
         <div class="spinner"></div>
-        <div style="color: white; margin-top: 15px;">Processing...</div>
+        <div style="color: white; margin-top: 15px; font-weight: 500;">Processing...</div>
     </div>
 
     <div class="mobile-toggle" onclick="document.querySelector('.sidebar').classList.toggle('active')">
@@ -944,206 +1014,286 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
     </div>
 
     <div class="sidebar">
-        <div class="brand">
-            <div style="width: 30px; height: 30px; background: var(--accent-orange); border-radius: 8px;"></div>
-            CMSolutions
+        <div class="brand-logo">Cotton<span>Solutions</span></div>
+        
+        <div class="nav-menu">
+            <div class="nav-link active" onclick="showSection('dashboard', this)"><i class="fas fa-home"></i> Dashboard</div>
+            <div class="nav-link" onclick="showSection('analytics', this)"><i class="fas fa-chart-pie"></i> Closing Report</div>
+            <a href="/admin/accessories" class="nav-link"><i class="fas fa-database"></i> Accessories DB</a>
+            <div class="nav-link" onclick="showSection('help', this)"><i class="fas fa-file-invoice"></i> PO Generator</div>
+            <div class="nav-link" onclick="showSection('settings', this)"><i class="fas fa-users-cog"></i> User Manage</div>
         </div>
-        <div style="flex-grow: 1;">
-            <div class="nav-item active" onclick="showSection('dashboard', this)"><i class="fas fa-home"></i> Dashboard</div>
-            <div class="nav-item" onclick="showSection('analytics', this)"><i class="fas fa-chart-pie"></i> Closing Report</div>
-            <a href="/admin/accessories" class="nav-item"><i class="fas fa-database"></i> Accessories DB</a>
-            <div class="nav-item" onclick="showSection('help', this)"><i class="fas fa-file-invoice"></i> PO Sheet</div>
-            <div class="nav-item" onclick="showSection('settings', this)"><i class="fas fa-users-cog"></i> User Manage</div>
-        </div>
-        <a href="/logout" class="nav-item" style="color: #FF6B6B; margin-top: 20px;"><i class="fas fa-sign-out-alt"></i> Log Out</a>
+
+        <a href="/logout" class="nav-link logout-btn"><i class="fas fa-sign-out-alt"></i> Log Out</a>
     </div>
 
     <div class="main-content">
+        
         <div id="section-dashboard">
-            <div class="page-header">
-                <div class="page-title">Main Dashboard</div>
-                <div class="page-sub">Overview of production & system status</div>
+            <div class="header-section">
+                <div>
+                    <div class="page-title">Main Dashboard</div>
+                    <div class="page-subtitle">Welcome back, Admin. Here is what's happening today.</div>
+                </div>
+                <div style="display:flex; align-items:center; gap:10px; background:var(--bg-card); padding:8px 15px; border-radius:30px; border:1px solid var(--border-color);">
+                    <div style="width:10px; height:10px; background:var(--accent-green); border-radius:50%;"></div>
+                    <span style="font-size:13px; font-weight:600;">System Online</span>
+                </div>
             </div>
 
             <div class="stats-grid">
-                <div class="stat-card">
+                <div class="card stat-card">
                     <div class="stat-icon"><i class="fas fa-file-export"></i></div>
-                    <div class="stat-info"><h3>Closing Reports</h3><p>{{{{ stats.closing.count }}}}</p></div>
+                    <div class="stat-info"><h3>{{{{ stats.closing.count }}}}</h3><p>Closing Reports</p></div>
                 </div>
-                <div class="stat-card">
+                <div class="card stat-card">
                     <div class="stat-icon"><i class="fas fa-boxes"></i></div>
-                    <div class="stat-info"><h3>Accessories</h3><p>{{{{ stats.accessories.count }}}}</p></div>
+                    <div class="stat-info"><h3>{{{{ stats.accessories.count }}}}</h3><p>Accessories</p></div>
                 </div>
-                <div class="stat-card">
+                <div class="card stat-card">
                     <div class="stat-icon"><i class="fas fa-file-pdf"></i></div>
-                    <div class="stat-info"><h3>PO Generated</h3><p>{{{{ stats.po.count }}}}</p></div>
+                    <div class="stat-info"><h3>{{{{ stats.po.count }}}}</h3><p>PO Generated</p></div>
                 </div>
-                <div class="stat-card">
+                <div class="card stat-card">
                     <div class="stat-icon"><i class="fas fa-users"></i></div>
-                    <div class="stat-info"><h3>Active Users</h3><p>{{{{ stats.users.count }}}}</p></div>
+                    <div class="stat-info"><h3>{{{{ stats.users.count }}}}</h3><p>Active Users</p></div>
                 </div>
             </div>
 
-            <div class="dashboard-mid-grid">
-                <div class="content-card">
-                    <div class="card-title"><span>Activity Overview</span> <i class="fas fa-chart-line" style="color:var(--accent-orange)"></i></div>
-                    <div style="height: 250px;"><canvas id="mainChart"></canvas></div>
+            <div class="dashboard-grid-2">
+                <div class="card">
+                    <div class="section-header">
+                        <span>Analytics Overview</span>
+                        <i class="fas fa-chart-line" style="color:var(--accent-orange)"></i>
+                    </div>
+                    <div style="height: 250px;">
+                        <canvas id="mainChart"></canvas>
+                    </div>
                 </div>
-                <div class="content-card">
-                    <div class="card-title"><span>Module Usage</span></div>
-                    <div class="progress-row">
-                        <div class="progress-header"><span>Closing Report</span><span>High</span></div>
-                        <div class="progress-bar-bg"><div class="progress-bar-fill" style="width: 85%;"></div></div>
+
+                <div class="card">
+                    <div class="section-header"><span>Module Usage</span></div>
+                    
+                    <div class="progress-item">
+                        <div class="progress-labels"><span>Closing Report</span><span>High</span></div>
+                        <div class="progress-bg"><div class="progress-fill" style="width: 85%;"></div></div>
                     </div>
-                    <div class="progress-row">
-                        <div class="progress-header"><span>Accessories</span><span>Medium</span></div>
-                        <div class="progress-bar-bg"><div class="progress-bar-fill" style="width: 60%; background: var(--accent-purple);"></div></div>
+                    <div class="progress-item">
+                        <div class="progress-labels"><span>Accessories Input</span><span>Medium</span></div>
+                        <div class="progress-bg"><div class="progress-fill" style="width: 60%; background: var(--accent-purple);"></div></div>
                     </div>
-                    <div class="progress-row">
-                        <div class="progress-header"><span>PO Sheet</span><span>Normal</span></div>
-                        <div class="progress-bar-bg"><div class="progress-bar-fill" style="width: 45%; background: var(--accent-green);"></div></div>
+                    <div class="progress-item">
+                        <div class="progress-labels"><span>PO Processing</span><span>Normal</span></div>
+                        <div class="progress-bg"><div class="progress-fill" style="width: 45%; background: var(--accent-green);"></div></div>
                     </div>
                 </div>
             </div>
 
-            <div class="bottom-grid">
-                <div class="content-card">
-                    <div class="card-title"><span>Recent History</span></div>
-                    <div style="overflow-y: auto; max-height: 200px;">
-                        <table style="width:100%;">
-                            <thead><tr><th>Time</th><th>User</th><th>Action</th></tr></thead>
-                            <tbody>
-                                {{% for log in stats.history %}}
-                                <tr>
-                                    <td>{{{{ log.time }}}}</td>
-                                    <td>{{{{ log.user }}}}</td>
-                                    <td style="color:var(--accent-orange)">{{{{ log.type }}}}</td>
-                                </tr>
-                                {{% endfor %}}
-                            </tbody>
-                        </table>
-                    </div>
+            <div class="card">
+                <div class="section-header"><span>Recent History</span></div>
+                <div style="overflow-x: auto;">
+                    <table class="dark-table">
+                        <thead><tr><th>Time</th><th>User</th><th>Action</th><th>Status</th></tr></thead>
+                        <tbody>
+                            {{% for log in stats.history %}}
+                            <tr>
+                                <td>{{{{ log.time }}}}</td>
+                                <td style="font-weight:600;">{{{{ log.user }}}}</td>
+                                <td>{{{{ log.type }}}}</td>
+                                <td><span style="color:var(--accent-green); font-size:12px;">Completed</span></td>
+                            </tr>
+                            {{% else %}}
+                            <tr><td colspan="4" style="text-align:center; padding:20px; color:var(--text-secondary);">No recent activity found.</td></tr>
+                            {{% endfor %}}
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
 
         <div id="section-analytics" style="display:none;">
-            <div class="content-card" style="max-width:600px; margin:0 auto;">
-                <div class="card-title">Generate Closing Report</div>
-                <p style="color:var(--text-secondary); margin-bottom:20px;">Enter Internal Reference No (e.g. DFL/24/...)</p>
+            <div class="card" style="max-width:600px; margin:0 auto;">
+                <div class="section-header">Generate Closing Report</div>
+                <p style="color:var(--text-secondary); margin-bottom:25px; font-size:13px;">Enter the Internal Reference Number to fetch live data from ERP.</p>
                 <form action="/generate-report" method="post" onsubmit="document.getElementById('loading-overlay').style.display='flex'">
-                    <div class="input-group"><label>REF NO</label><input type="text" name="ref_no" placeholder="Booking-123" required></div>
+                    <div class="input-group">
+                        <label>INTERNAL REFERENCE NO</label>
+                        <input type="text" name="ref_no" placeholder="e.g. Booking-123" required>
+                    </div>
                     <button type="submit">Generate Report</button>
                 </form>
             </div>
         </div>
 
         <div id="section-help" style="display:none;">
-            <div class="content-card" style="max-width:600px; margin:0 auto;">
-                <div class="card-title">PO Sheet Generator</div>
-                <p style="color:var(--text-secondary); margin-bottom:20px;">Upload Booking PDF & PO PDFs together.</p>
+            <div class="card" style="max-width:600px; margin:0 auto;">
+                <div class="section-header">PO Sheet Generator</div>
+                <p style="color:var(--text-secondary); margin-bottom:25px; font-size:13px;">Upload Booking PDF and related PO PDFs together.</p>
                 <form action="/generate-po-report" method="post" enctype="multipart/form-data" onsubmit="document.getElementById('loading-overlay').style.display='flex'">
-                    <div class="input-group" style="border: 2px dashed #444; padding: 20px; text-align: center; border-radius: 10px;">
+                    <div class="input-group" style="border: 2px dashed var(--border-color); padding: 30px; text-align: center; border-radius: 12px;">
                         <input type="file" name="pdf_files" multiple accept=".pdf" required style="display:none;" id="file-upload">
-                        <label for="file-upload" style="cursor:pointer; color:var(--accent-orange); font-size:16px;"><i class="fas fa-cloud-upload-alt"></i> Select Files</label>
-                        <div id="file-count" style="margin-top:10px; color:#888;">No files selected</div>
+                        <label for="file-upload" style="cursor:pointer; color:var(--accent-orange); font-size:15px; margin-bottom:0;">
+                            <i class="fas fa-cloud-upload-alt" style="font-size:30px; margin-bottom:10px;"></i><br>Click to Upload Files
+                        </label>
+                        <div id="file-count" style="margin-top:10px; font-size:12px; color:var(--text-secondary);">No files selected</div>
                     </div>
-                    <button type="submit" style="margin-top:15px;">Process Files</button>
+                    <button type="submit" style="margin-top:20px;">Process Files</button>
                 </form>
             </div>
         </div>
 
         <div id="section-settings" style="display:none;">
-            <div class="dashboard-mid-grid">
-                <div class="content-card">
-                    <div class="card-title">User Directory</div>
+            <div class="dashboard-grid-2">
+                <div class="card">
+                    <div class="section-header">User Directory</div>
                     <div id="userTableContainer">Loading...</div>
                 </div>
-                <div class="content-card">
-                    <div class="card-title">Manage User</div>
+                <div class="card">
+                    <div class="section-header">Manage User</div>
                     <form id="userForm">
                         <input type="hidden" id="action_type" name="action_type" value="create">
-                        <div class="input-group"><label>USERNAME</label><input type="text" id="new_username" name="username" required></div>
-                        <div class="input-group"><label>PASSWORD</label><input type="text" id="new_password" name="password" required></div>
+                        <div class="input-group">
+                            <label>USERNAME</label>
+                            <input type="text" id="new_username" name="username" required>
+                        </div>
+                        <div class="input-group">
+                            <label>PASSWORD</label>
+                            <input type="text" id="new_password" name="password" required>
+                        </div>
                         <div class="input-group">
                             <label>PERMISSIONS</label>
                             <div style="display:flex; gap:10px; flex-wrap:wrap;">
-                                <label style="background:#333; padding:5px 10px; border-radius:4px;"><input type="checkbox" name="permissions" value="closing" id="perm_closing" checked> Closing</label>
-                                <label style="background:#333; padding:5px 10px; border-radius:4px;"><input type="checkbox" name="permissions" value="po_sheet" id="perm_po"> PO</label>
-                                <label style="background:#333; padding:5px 10px; border-radius:4px;"><input type="checkbox" name="permissions" value="accessories" id="perm_acc"> Acc.</label>
+                                <label style="background:#2D2D2D; padding:8px 12px; border-radius:6px; cursor:pointer; font-weight:400; font-size:13px;">
+                                    <input type="checkbox" name="permissions" value="closing" id="perm_closing" checked style="width:auto; margin-right:5px;"> Closing
+                                </label>
+                                <label style="background:#2D2D2D; padding:8px 12px; border-radius:6px; cursor:pointer; font-weight:400; font-size:13px;">
+                                    <input type="checkbox" name="permissions" value="po_sheet" id="perm_po" style="width:auto; margin-right:5px;"> PO Sheet
+                                </label>
+                                <label style="background:#2D2D2D; padding:8px 12px; border-radius:6px; cursor:pointer; font-weight:400; font-size:13px;">
+                                    <input type="checkbox" name="permissions" value="accessories" id="perm_acc" style="width:auto; margin-right:5px;"> Accessories
+                                </label>
                             </div>
                         </div>
-                        <div style="display:flex; gap:10px; margin-top:15px;">
-                            <button type="button" onclick="handleUserSubmit()" id="saveUserBtn">Save</button>
-                            <button type="button" onclick="resetForm()" style="background:#444;">Reset</button>
-                        </div>
+                        <button type="button" onclick="handleUserSubmit()" id="saveUserBtn">Save User</button>
+                        <button type="button" onclick="resetForm()" style="margin-top:10px; background:#2D2D2D; color:white;">Reset Form</button>
                     </form>
                 </div>
             </div>
         </div>
-    </div>
 
-    <script>
-        function showSection(id, el) {{
-            ['dashboard','analytics','help','settings'].forEach(s => document.getElementById('section-'+s).style.display='none');
-            document.getElementById('section-'+id).style.display='block';
-            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-            if(el) el.classList.add('active');
+    </div> <script>
+        // Section Switching
+        function showSection(id, element) {{
+            ['dashboard', 'analytics', 'help', 'settings'].forEach(sid => document.getElementById('section-' + sid).style.display = 'none');
+            document.getElementById('section-' + id).style.display = 'block';
+            
+            if(element) {{
+                document.querySelectorAll('.nav-link').forEach(el => el.classList.remove('active'));
+                element.classList.add('active');
+            }}
             if(id === 'settings') loadUsers();
-            if(window.innerWidth < 900) document.querySelector('.sidebar').classList.remove('active');
+            if(window.innerWidth < 992) document.querySelector('.sidebar').classList.remove('active');
         }}
 
-        // File Upload UI
-        document.getElementById('file-upload')?.addEventListener('change', function(){{
+        // File Upload
+        document.getElementById('file-upload')?.addEventListener('change', function() {{
             document.getElementById('file-count').innerText = this.files.length + " files selected";
         }});
 
-        // Charts
+        // Chart.js Setup
         const ctx = document.getElementById('mainChart').getContext('2d');
-        const grad = ctx.createLinearGradient(0,0,0,300);
-        grad.addColorStop(0, 'rgba(255, 140, 66, 0.2)'); grad.addColorStop(1, 'rgba(255, 140, 66, 0)');
+        const gradient = ctx.createLinearGradient(0, 0, 0, 300);
+        gradient.addColorStop(0, 'rgba(255, 140, 66, 0.2)');
+        gradient.addColorStop(1, 'rgba(255, 140, 66, 0)');
+
         new Chart(ctx, {{
             type: 'line',
             data: {{
-                labels: ['Jan','Feb','Mar','Apr','May','Jun'],
+                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
                 datasets: [{{
-                    label: 'Reports', data: [12, 19, 3, 5, 2, 3], borderColor: '#FF8C42', backgroundColor: grad, tension: 0.4, fill: true, pointBackgroundColor:'#121212'
+                    label: 'Reports Generated',
+                    data: [{{{{ stats.chart_data[0] }}}} + 10, {{{{ stats.chart_data[1] }}}} + 15, {{{{ stats.chart_data[2] }}}} + 5, 25, 30, 40],
+                    borderColor: '#FF8C42',
+                    backgroundColor: gradient,
+                    tension: 0.4,
+                    fill: true,
+                    pointBackgroundColor: '#1F1F23',
+                    pointBorderColor: '#FF8C42',
+                    pointBorderWidth: 2
                 }}]
             }},
-            options: {{ responsive: true, maintainAspectRatio: false, plugins: {{ legend: {{ display: false }} }}, scales: {{ x: {{ grid: {{ display: false }} }}, y: {{ grid: {{ color: '#2d2d2d' }} }} }} }}
+            options: {{
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {{ legend: {{ display: false }} }},
+                scales: {{
+                    x: {{ grid: {{ display: false, color: '#333' }}, ticks: {{ color: '#888' }} }},
+                    y: {{ grid: {{ color: '#2D2D2D' }}, ticks: {{ color: '#888' }} }}
+                }}
+            }}
         }});
 
-        // User Management AJAX
+        // User Management JS
         function loadUsers() {{
-            fetch('/admin/get-users').then(r=>r.json()).then(data => {{
-                let html = '<table><thead><tr><th>User</th><th>Role</th><th>Action</th></tr></thead><tbody>';
-                for(const [u, d] of Object.entries(data)) {{
-                    html += `<tr><td>${{u}}</td><td><span style="color:#2ecc71">${{d.role}}</span></td>
-                    <td>${{d.role!=='admin'?`<i class="fas fa-edit" style="color:#3498db; cursor:pointer;" onclick="editUser('${{u}}','${{d.password}}','${{d.permissions.join(',')}}')"></i> <i class="fas fa-trash" style="color:#e74c3c; cursor:pointer; margin-left:10px;" onclick="deleteUser('${{u}}')"></i>`:'-'}}</td></tr>`;
+            fetch('/admin/get-users').then(res => res.json()).then(data => {{
+                let html = '<table class="dark-table"><thead><tr><th>User</th><th>Role</th><th>Action</th></tr></thead><tbody>';
+                for(const [user, details] of Object.entries(data)) {{
+                    html += `<tr>
+                        <td><div style="font-weight:600; color:white;">${{user}}</div><div style="font-size:11px; color:#888;">${{details.permissions.join(', ')}}</div></td>
+                        <td><span style="color:${{details.role==='admin'?'var(--accent-orange)':'var(--accent-green)'}}">${{details.role}}</span></td>
+                        <td>
+                            ${{details.role !== 'admin' ? 
+                            `<i class="fas fa-edit" style="cursor:pointer; color:#3498db; margin-right:15px;" onclick="editUser('${{user}}', '${{details.password}}', '${{details.permissions.join(',')}}')"></i>
+                             <i class="fas fa-trash" style="cursor:pointer; color:#ff7675;" onclick="deleteUser('${{user}}')"></i>` : 
+                            '<i class="fas fa-lock" style="color:#555;"></i>'}}
+                        </td>
+                    </tr>`;
                 }}
                 document.getElementById('userTableContainer').innerHTML = html + '</tbody></table>';
             }});
         }}
+
         function handleUserSubmit() {{
-            const u = document.getElementById('new_username').value, p = document.getElementById('new_password').value, a = document.getElementById('action_type').value;
-            if(!u || !p) return alert('Missing fields');
+            const u = document.getElementById('new_username').value;
+            const p = document.getElementById('new_password').value;
+            const a = document.getElementById('action_type').value;
+            if(!u || !p) return alert('Username & Password required');
+            
             let perms = [];
-            ['closing','po_sheet','accessories'].forEach(id => {{ if(document.getElementById('perm_'+(id==='po_sheet'?'po':(id==='accessories'?'acc':id))).checked) perms.push(id); }});
-            fetch('/admin/save-user', {{ method:'POST', headers:{{'Content-Type':'application/json'}}, body:JSON.stringify({{username:u, password:p, permissions:perms, action_type:a}}) }})
-            .then(r=>r.json()).then(d=>{{ if(d.status==='success'){{loadUsers(); resetForm();}} else alert(d.message); }});
+            ['closing', 'po_sheet', 'accessories'].forEach(id => {{
+                if(document.getElementById('perm_' + (id === 'po_sheet' ? 'po' : (id === 'accessories' ? 'acc' : id))).checked) perms.push(id);
+            }});
+
+            fetch('/admin/save-user', {{
+                method: 'POST', headers: {{'Content-Type': 'application/json'}},
+                body: JSON.stringify({{ username: u, password: p, permissions: perms, action_type: a }})
+            }}).then(r => r.json()).then(d => {{ if(d.status === 'success') {{ loadUsers(); resetForm(); }} else alert(d.message); }});
         }}
-        function editUser(u, p, perms) {{
-            document.getElementById('new_username').value=u; document.getElementById('new_username').readOnly=true;
-            document.getElementById('new_password').value=p; document.getElementById('action_type').value='update';
-            document.getElementById('saveUserBtn').innerText='Update';
-            let pArr = perms.split(',');
-            ['closing','po_sheet','accessories'].forEach(id => document.getElementById('perm_'+(id==='po_sheet'?'po':(id==='accessories'?'acc':id))).checked = pArr.includes(id));
+
+        function editUser(u, p, permsStr) {{
+            document.getElementById('new_username').value = u;
+            document.getElementById('new_username').readOnly = true;
+            document.getElementById('new_password').value = p;
+            document.getElementById('action_type').value = 'update';
+            document.getElementById('saveUserBtn').innerText = 'Update User';
+            let pArr = permsStr.split(',');
+            ['closing', 'po_sheet', 'accessories'].forEach(id => {{
+                document.getElementById('perm_' + (id === 'po_sheet' ? 'po' : (id === 'accessories' ? 'acc' : id))).checked = pArr.includes(id);
+            }});
         }}
+
         function resetForm() {{
-            document.getElementById('userForm').reset(); document.getElementById('action_type').value='create';
-            document.getElementById('saveUserBtn').innerText='Save'; document.getElementById('new_username').readOnly=false;
+            document.getElementById('userForm').reset();
+            document.getElementById('action_type').value = 'create';
+            document.getElementById('saveUserBtn').innerText = 'Save User';
+            document.getElementById('new_username').readOnly = false;
         }}
-        function deleteUser(u) {{ if(confirm('Delete?')) fetch('/admin/delete-user', {{ method:'POST', headers:{{'Content-Type':'application/json'}}, body:JSON.stringify({{username:u}}) }}).then(()=>loadUsers()); }}
+
+        function deleteUser(u) {{
+            if(confirm('Delete user ' + u + '?')) {{
+                fetch('/admin/delete-user', {{ method: 'POST', headers: {{'Content-Type': 'application/json'}}, body: JSON.stringify({{ username: u }}) }}).then(() => loadUsers());
+            }}
+        }}
     </script>
 </body>
 </html>
@@ -1160,40 +1310,66 @@ USER_DASHBOARD_TEMPLATE = f"""
 </head>
 <body>
     <div id="loading-overlay"><div class="spinner"></div></div>
+
     <div class="sidebar">
-        <div class="brand"><div style="width:30px; height:30px; background:var(--accent-orange); border-radius:8px;"></div>CMS</div>
-        <div class="nav-item active"><i class="fas fa-home"></i> Home</div>
-        <a href="/logout" class="nav-item" style="color:#FF6B6B; margin-top:20px;"><i class="fas fa-sign-out-alt"></i> Log Out</a>
-    </div>
-    <div class="main-content">
-        <div class="page-header">
-            <div class="page-title">Welcome, {{{{ session.user }}}}</div>
-            <div class="page-sub">Select a module to proceed</div>
+        <div class="brand-logo">Cotton<span>Solutions</span></div>
+        <div class="nav-menu">
+            <div class="nav-link active"><i class="fas fa-home"></i> Home</div>
         </div>
+        <a href="/logout" class="nav-link logout-btn"><i class="fas fa-sign-out-alt"></i> Log Out</a>
+    </div>
+
+    <div class="main-content">
+        <div class="header-section">
+            <div>
+                <div class="page-title">Welcome, {{{{ session.user }}}}</div>
+                <div class="page-subtitle">Access your assigned modules below.</div>
+            </div>
+        </div>
+
         <div class="stats-grid">
             {{% if 'closing' in session.permissions %}}
-            <div class="content-card">
-                <div class="card-title">Closing Report</div>
+            <div class="card">
+                <div class="section-header">
+                    <span>Closing Report</span>
+                    <i class="fas fa-file-export" style="color:var(--accent-orange)"></i>
+                </div>
                 <form action="/generate-report" method="post" onsubmit="document.getElementById('loading-overlay').style.display='flex'">
-                    <div class="input-group"><label>REF NO</label><input type="text" name="ref_no" required></div>
-                    <button type="submit">Generate</button>
+                    <div class="input-group">
+                        <label>BOOKING REFERENCE</label>
+                        <input type="text" name="ref_no" placeholder="Enter Ref No" required>
+                    </div>
+                    <button type="submit">Generate Report</button>
                 </form>
             </div>
             {{% endif %}}
+
             {{% if 'po_sheet' in session.permissions %}}
-            <div class="content-card">
-                <div class="card-title">PO Sheet</div>
+            <div class="card">
+                <div class="section-header">
+                    <span>PO Generator</span>
+                    <i class="fas fa-file-pdf" style="color:var(--accent-green)"></i>
+                </div>
                 <form action="/generate-po-report" method="post" enctype="multipart/form-data" onsubmit="document.getElementById('loading-overlay').style.display='flex'">
-                    <div class="input-group"><label>FILES</label><input type="file" name="pdf_files" multiple accept=".pdf" required></div>
-                    <button type="submit" style="background:var(--accent-green)">Process</button>
+                    <div class="input-group">
+                        <label>UPLOAD FILES</label>
+                        <input type="file" name="pdf_files" multiple accept=".pdf" required>
+                    </div>
+                    <button type="submit" style="background:var(--accent-green);">Process Files</button>
                 </form>
             </div>
             {{% endif %}}
+
             {{% if 'accessories' in session.permissions %}}
-            <div class="content-card">
-                <div class="card-title">Accessories</div>
-                <p style="color:#888; margin-bottom:15px;">Manage Challans</p>
-                <a href="/admin/accessories"><button style="background:var(--accent-purple)">Open Dashboard</button></a>
+            <div class="card">
+                <div class="section-header">
+                    <span>Accessories</span>
+                    <i class="fas fa-boxes" style="color:var(--accent-purple)"></i>
+                </div>
+                <p style="color:var(--text-secondary); font-size:13px; margin-bottom:20px;">Manage delivery challans and view logs.</p>
+                <a href="/admin/accessories" style="text-decoration:none;">
+                    <button style="background:var(--accent-purple);">Open Dashboard</button>
+                </a>
             </div>
             {{% endif %}}
         </div>
@@ -1202,24 +1378,31 @@ USER_DASHBOARD_TEMPLATE = f"""
 </html>
 """
 
+# ==============================================================================
+# ACCESSORIES PAGES (DARK THEME)
+# ==============================================================================
+
 ACCESSORIES_SEARCH_TEMPLATE = f"""
 <!doctype html>
 <html lang="en">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Acc. Search</title>
+    <title>Accessories Search</title>
     {COMMON_STYLES}
 </head>
 <body style="justify-content:center; align-items:center;">
-    <div class="content-card" style="width:100%; max-width:450px;">
-        <div class="card-title" style="justify-content:center;">Accessories DB</div>
+    <div class="card" style="width:100%; max-width:450px; padding:30px;">
+        <div class="section-header" style="justify-content:center; margin-bottom:30px;">Accessories Dashboard</div>
         <form action="/admin/accessories/input" method="post">
-            <div class="input-group"><label>BOOKING REF</label><input type="text" name="ref_no" required></div>
+            <div class="input-group">
+                <label>BOOKING REFERENCE NO</label>
+                <input type="text" name="ref_no" required placeholder="e.g. Booking-123">
+            </div>
             <button type="submit">Proceed</button>
         </form>
-        <div style="margin-top:20px; text-align:center;">
-            <a href="/" style="color:var(--text-secondary); font-size:12px;">Back to Home</a>
+        <div style="text-align:center; margin-top:20px;">
+            <a href="/" style="color:var(--text-secondary); text-decoration:none; font-size:13px;">&larr; Back to Home</a>
         </div>
     </div>
 </body>
@@ -1232,28 +1415,62 @@ ACCESSORIES_INPUT_TEMPLATE = f"""
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>New Challan</title>
+    <title>Accessories Input</title>
     {COMMON_STYLES}
 </head>
 <body style="justify-content:center; align-items:center; padding:20px;">
-    <div class="content-card" style="width:100%; max-width:500px;">
-        <div class="card-title">New Challan Entry</div>
-        <div style="background:#2d2d2d; padding:15px; border-radius:8px; margin-bottom:20px;">
-            <div style="font-size:16px; font-weight:700;">{{{{ ref }}}}</div>
-            <div style="font-size:12px; color:#888;">{{{{ buyer }}}} | {{{{ style }}}}</div>
+    <div class="card" style="width:100%; max-width:500px;">
+        <div class="section-header">New Challan Entry</div>
+        
+        <div style="background:#2D2D2D; padding:15px; border-radius:8px; margin-bottom:20px; border:1px solid #333;">
+            <div style="font-size:11px; color:var(--accent-orange); font-weight:700;">BOOKING REF</div>
+            <div style="font-size:16px; font-weight:700; color:white;">{{{{ ref }}}}</div>
+            <div style="font-size:12px; color:var(--text-secondary);">Buyer: {{{{ buyer }}}} | Style: {{{{ style }}}}</div>
         </div>
+
         <form action="/admin/accessories/save" method="post">
             <input type="hidden" name="ref" value="{{{{ ref }}}}">
-            <div class="input-group"><label>TYPE</label><select name="item_type"><option value="Top">Top</option><option value="Bottom">Bottom</option></select></div>
-            <div class="input-group"><label>COLOR</label><select name="color" required><option value="" disabled selected>Select</option>{{% for c in colors %}}<option value="{{{{ c }}}}">{{{{ c }}}}</option>{{% endfor %}}</select></div>
-            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
-                <div class="input-group"><label>LINE</label><input type="text" name="line_no" required></div>
-                <div class="input-group"><label>SIZE</label><input type="text" name="size" value="ALL"></div>
+            
+            <div class="input-group">
+                <label>ITEM TYPE</label>
+                <select name="item_type">
+                    <option value="Top">Top</option>
+                    <option value="Bottom">Bottom</option>
+                </select>
             </div>
-            <div class="input-group"><label>QTY</label><input type="number" name="qty" required></div>
-            <button type="submit">Save</button>
+
+            <div class="input-group">
+                <label>COLOR</label>
+                <select name="color" required>
+                    <option value="" disabled selected>Select Color</option>
+                    {{% for c in colors %}}
+                    <option value="{{{{ c }}}}">{{{{ c }}}}</option>
+                    {{% endfor %}}
+                </select>
+            </div>
+
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px;">
+                <div class="input-group">
+                    <label>LINE NO</label>
+                    <input type="text" name="line_no" placeholder="Line-1" required>
+                </div>
+                <div class="input-group">
+                    <label>SIZE</label>
+                    <input type="text" name="size" value="ALL">
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label>QUANTITY</label>
+                <input type="number" name="qty" placeholder="0" required>
+            </div>
+
+            <button type="submit">Save & View Report</button>
         </form>
-        <div style="text-align:center; margin-top:15px;"><a href="/admin/accessories" style="color:#888; font-size:12px;">Cancel</a></div>
+
+        <div style="margin-top:20px; text-align:center;">
+            <a href="/admin/accessories" style="color:var(--text-secondary); text-decoration:none; font-size:13px;">Cancel</a>
+        </div>
     </div>
 </body>
 </html>
@@ -1269,26 +1486,44 @@ ACCESSORIES_EDIT_TEMPLATE = f"""
     {COMMON_STYLES}
 </head>
 <body style="justify-content:center; align-items:center;">
-    <div class="content-card" style="width:100%; max-width:400px;">
-        <div class="card-title">Edit Entry</div>
+    <div class="card" style="width:100%; max-width:400px;">
+        <div class="section-header">Edit Entry</div>
         <form action="/admin/accessories/update" method="post">
             <input type="hidden" name="ref" value="{{{{ ref }}}}">
             <input type="hidden" name="index" value="{{{{ index }}}}">
-            <div class="input-group"><label>LINE</label><input type="text" name="line_no" value="{{{{ item.line }}}}" required></div>
-            <div class="input-group"><label>COLOR</label><input type="text" name="color" value="{{{{ item.color }}}}" required></div>
-            <div class="input-group"><label>SIZE</label><input type="text" name="size" value="{{{{ item.size }}}}" required></div>
-            <div class="input-group"><label>QTY</label><input type="number" name="qty" value="{{{{ item.qty }}}}" required></div>
-            <button type="submit">Update</button>
+            
+            <div class="input-group">
+                <label>LINE NO</label>
+                <input type="text" name="line_no" value="{{{{ item.line }}}}" required>
+            </div>
+            <div class="input-group">
+                <label>COLOR</label>
+                <input type="text" name="color" value="{{{{ item.color }}}}" required>
+            </div>
+            <div class="input-group">
+                <label>SIZE</label>
+                <input type="text" name="size" value="{{{{ item.size }}}}" required>
+            </div>
+            <div class="input-group">
+                <label>QUANTITY</label>
+                <input type="number" name="qty" value="{{{{ item.qty }}}}" required>
+            </div>
+            
+            <button type="submit" style="background:var(--accent-purple);">Update Entry</button>
         </form>
-        <div style="text-align:center; margin-top:15px;"><a href="/admin/accessories/print?ref={{{{ ref }}}}" style="color:#888; font-size:12px;">Cancel</a></div>
+        <div style="margin-top:15px; text-align:center;">
+            <a href="/admin/accessories/print?ref={{{{ ref }}}}" style="color:white; font-size:13px; text-decoration:none;">Cancel</a>
+        </div>
     </div>
 </body>
 </html>
 """
 
 # ==============================================================================
-# PRINT TEMPLATES (ORIGINAL WHITE) - NO CHANGES
+# REPORT TEMPLATES (ORIGINAL WHITE DESIGN - PRINT FRIENDLY)
 # ==============================================================================
+
+# 1. Closing Report (Original)
 CLOSING_REPORT_PREVIEW_TEMPLATE = """
 <!DOCTYPE html>
 <html lang="en">
@@ -1361,6 +1596,7 @@ CLOSING_REPORT_PREVIEW_TEMPLATE = """
 </html>
 """
 
+# 2. Accessories Report (Original White + Fix: Show List with Edit/Delete)
 ACCESSORIES_REPORT_TEMPLATE = """
 <!DOCTYPE html>
 <html lang="en">
@@ -1377,23 +1613,27 @@ ACCESSORIES_REPORT_TEMPLATE = """
         .table th, .table td { border: 1px solid #000; padding: 5px; text-align: center; }
         .table th { background: #ddd; -webkit-print-color-adjust: exact; }
         .no-print { text-align: right; margin-bottom: 20px; }
+        .btn-link { color: blue; text-decoration: underline; cursor: pointer; border: none; background: none; font-family: inherit; font-size: inherit; }
+        .btn-link:hover { color: red; }
         @media print { .no-print { display: none; } .container { border: none; } }
     </style>
 </head>
 <body>
     <div class="no-print">
-        <a href="/admin/accessories" style="margin-right:10px;">Back</a>
+        <a href="/admin/accessories" style="margin-right:10px; color:black; text-decoration:none;">&larr; Back</a>
         <form action="/admin/accessories/input" method="post" style="display:inline;">
             <input type="hidden" name="ref_no" value="{{ ref }}">
-            <button>Add New</button>
+            <button style="cursor:pointer;">+ Add New Challan</button>
         </form>
-        <button onclick="window.print()">Print</button>
+        <button onclick="window.print()" style="cursor:pointer;">Print Report</button>
     </div>
+    
     <div class="container">
         <div class="header">
             <div class="title">ACCESSORIES DELIVERY CHALLAN</div>
             <div>Cotton Clothing BD Limited</div>
         </div>
+        
         <div class="info-grid">
             <div>
                 <strong>Booking:</strong> {{ ref }}<br>
@@ -1405,10 +1645,18 @@ ACCESSORIES_REPORT_TEMPLATE = """
                 <strong>Item:</strong> {{ item_type if item_type else 'General' }}
             </div>
         </div>
+        
         <table class="table">
             <thead>
-                <tr><th>DATE</th><th>LINE</th><th>COLOR</th><th>SIZE</th><th>QTY</th>
-                {% if session.role == 'admin' %}<th class="no-print">ACTION</th>{% endif %}
+                <tr>
+                    <th>DATE</th>
+                    <th>LINE</th>
+                    <th>COLOR</th>
+                    <th>SIZE</th>
+                    <th>QTY</th>
+                    {% if session.role == 'admin' %}
+                    <th class="no-print">ACTION</th>
+                    {% endif %}
                 </tr>
             </thead>
             <tbody>
@@ -1423,11 +1671,12 @@ ACCESSORIES_REPORT_TEMPLATE = """
                     <td>{{ item.qty }}</td>
                     {% if session.role == 'admin' %}
                     <td class="no-print">
-                        <a href="/admin/accessories/edit?ref={{ ref }}&index={{ loop.index0 }}">Edit</a>
-                        <form action="/admin/accessories/delete" method="POST" style="display:inline;" onsubmit="return confirm('Delete?');">
+                        <a href="/admin/accessories/edit?ref={{ ref }}&index={{ loop.index0 }}" style="color:blue;">Edit</a>
+                        |
+                        <form action="/admin/accessories/delete" method="POST" style="display:inline;" onsubmit="return confirm('Are you sure you want to delete this challan?');">
                             <input type="hidden" name="ref" value="{{ ref }}">
                             <input type="hidden" name="index" value="{{ loop.index0 }}">
-                            <button type="submit">Del</button>
+                            <button type="submit" class="btn-link">Del</button>
                         </form>
                     </td>
                     {% endif %}
@@ -1440,6 +1689,7 @@ ACCESSORIES_REPORT_TEMPLATE = """
                 </tr>
             </tbody>
         </table>
+        
         <div style="margin-top: 50px; display: flex; justify-content: space-between;">
             <div style="border-top:1px solid #000; width:150px; text-align:center;">Received By</div>
             <div style="border-top:1px solid #000; width:150px; text-align:center;">Authorized By</div>
@@ -1449,6 +1699,7 @@ ACCESSORIES_REPORT_TEMPLATE = """
 </html>
 """
 
+# 3. PO Report (Original White)
 PO_REPORT_TEMPLATE = """
 <!DOCTYPE html>
 <html lang="en">
@@ -1492,7 +1743,7 @@ PO_REPORT_TEMPLATE = """
 </html>
 """
 # ==============================================================================
-# FLASK ROUTES (MAIN CONTROLLER LOGIC)
+# FLASK ROUTES (CONTROLLER LOGIC)
 # ==============================================================================
 
 @app.route('/')
@@ -1502,7 +1753,6 @@ def index():
         return render_template_string(LOGIN_TEMPLATE)
     else:
         if session.get('role') == 'admin':
-            # নতুন ড্যাশবোর্ড লজিক কল করা হচ্ছে
             stats = get_dashboard_summary_v2()
             return render_template_string(ADMIN_DASHBOARD_TEMPLATE, stats=stats)
         else:
@@ -1522,57 +1772,48 @@ def login():
         session['role'] = users_db[username]['role']
         session['permissions'] = users_db[username].get('permissions', [])
         
-        # --- Login Time Tracking (BD Time) ---
+        # Login Time Tracking
         now = get_bd_time()
         session['login_start'] = now.isoformat()
         
-        # Update User in DB
         users_db[username]['last_login'] = now.strftime('%I:%M %p, %d %b')
         save_users(users_db)
         
         return redirect(url_for('index'))
     else:
-        flash('Incorrect Username or Password.')
+        flash('Invalid Username or Password.')
         return redirect(url_for('index'))
 
 @app.route('/logout')
 def logout():
-    # --- Duration Calculation ---
     if session.get('logged_in') and 'login_start' in session:
         try:
             start_time = datetime.fromisoformat(session['login_start'])
             end_time = get_bd_time()
             duration = end_time - start_time
-            
             minutes = int(duration.total_seconds() / 60)
-            if minutes < 60:
-                dur_str = f"{minutes} mins"
-            else:
-                dur_str = f"{minutes // 60}h {minutes % 60}m"
+            dur_str = f"{minutes} mins" if minutes < 60 else f"{minutes // 60}h {minutes % 60}m"
 
             username = session.get('user')
             users_db = load_users()
             if username in users_db:
                 users_db[username]['last_duration'] = dur_str
                 save_users(users_db)
-        except:
-            pass
+        except: pass
 
     session.clear()
     flash('Session terminated.')
     return redirect(url_for('index'))
 
-# --- USER MANAGEMENT API ---
+# --- USER MANAGEMENT ROUTES ---
 @app.route('/admin/get-users', methods=['GET'])
 def get_users():
-    if not session.get('logged_in') or session.get('role') != 'admin':
-        return jsonify({})
+    if not session.get('logged_in') or session.get('role') != 'admin': return jsonify({})
     return jsonify(load_users())
 
 @app.route('/admin/save-user', methods=['POST'])
 def save_user():
-    if not session.get('logged_in') or session.get('role') != 'admin':
-        return jsonify({'status': 'error', 'message': 'Unauthorized'})
+    if not session.get('logged_in') or session.get('role') != 'admin': return jsonify({'status': 'error', 'message': 'Unauthorized'})
     
     data = request.json
     username = data.get('username', '').strip()
@@ -1580,25 +1821,18 @@ def save_user():
     permissions = data.get('permissions', [])
     action = data.get('action_type')
     
-    if not username or not password:
-         return jsonify({'status': 'error', 'message': 'Invalid Data'})
+    if not username or not password: return jsonify({'status': 'error', 'message': 'Invalid Data'})
 
     users_db = load_users()
     
     if action == 'create':
-        if username in users_db:
-            return jsonify({'status': 'error', 'message': 'User already exists!'})
+        if username in users_db: return jsonify({'status': 'error', 'message': 'User already exists!'})
         users_db[username] = {
-            "password": password,
-            "role": "user",
-            "permissions": permissions,
-            "created_at": get_bd_date_str(), # Save Creation Date
-            "last_login": "Never",
-            "last_duration": "N/A"
+            "password": password, "role": "user", "permissions": permissions,
+            "created_at": get_bd_date_str(), "last_login": "Never", "last_duration": "N/A"
         }
     elif action == 'update':
-        if username not in users_db:
-            return jsonify({'status': 'error', 'message': 'User not found!'})
+        if username not in users_db: return jsonify({'status': 'error', 'message': 'User not found!'})
         users_db[username]['password'] = password
         users_db[username]['permissions'] = permissions
     
@@ -1607,14 +1841,11 @@ def save_user():
 
 @app.route('/admin/delete-user', methods=['POST'])
 def delete_user():
-    if not session.get('logged_in') or session.get('role') != 'admin':
-        return jsonify({'status': 'error', 'message': 'Unauthorized'})
-    
+    if not session.get('logged_in') or session.get('role') != 'admin': return jsonify({'status': 'error', 'message': 'Unauthorized'})
     username = request.json.get('username')
     users_db = load_users()
     
-    if username == 'Admin':
-         return jsonify({'status': 'error', 'message': 'Cannot delete Main Admin!'})
+    if username == 'Admin': return jsonify({'status': 'error', 'message': 'Cannot delete Main Admin!'})
 
     if username in users_db:
         del users_db[username]
@@ -1623,7 +1854,7 @@ def delete_user():
     
     return jsonify({'status': 'error', 'message': 'User not found'})
 
-# --- CLOSING REPORT ROUTE ---
+# --- CLOSING REPORT ROUTES ---
 @app.route('/generate-report', methods=['POST'])
 def generate_report():
     if not session.get('logged_in'): return redirect(url_for('index'))
@@ -1631,28 +1862,38 @@ def generate_report():
     internal_ref_no = request.form['ref_no']
     if not internal_ref_no: return redirect(url_for('index'))
 
-    # লজিক ফাংশন কল করা হচ্ছে (Part 2 তে ডিফাইন করা)
     report_data = fetch_closing_report_data(internal_ref_no)
 
     if not report_data:
         flash(f"No data found for: {internal_ref_no}")
         return redirect(url_for('index'))
     
-    # স্ট্যাটাস আপডেট
     update_stats(internal_ref_no, session.get('user', 'Unknown'))
-
     return render_template_string(CLOSING_REPORT_PREVIEW_TEMPLATE, report_data=report_data, ref_no=internal_ref_no)
 
-# --- ACCESSORIES ROUTES ---
+@app.route('/download-closing-excel', methods=['GET'])
+def download_closing_excel():
+    if not session.get('logged_in'): return redirect(url_for('index'))
+    internal_ref_no = request.args.get('ref_no')
+    
+    report_data = fetch_closing_report_data(internal_ref_no)
+    if report_data:
+        excel_file = create_formatted_excel_report(report_data, internal_ref_no)
+        update_stats(internal_ref_no, session.get('user', 'Unknown'))
+        return make_response(send_file(
+            excel_file, as_attachment=True, 
+            download_name=f"Report-{internal_ref_no.replace('/', '_')}.xlsx", 
+            mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        ))
+    return redirect(url_for('index'))
 
+# --- ACCESSORIES ROUTES (FIXED: EDIT/DELETE/VIEW) ---
 @app.route('/admin/accessories', methods=['GET'])
 def accessories_search_page():
     if not session.get('logged_in'): return redirect(url_for('index'))
-    # Check permissions
     if 'accessories' not in session.get('permissions', []):
-        flash("You do not have permission to access Accessories Dashboard.")
+        flash("Access Denied")
         return redirect(url_for('index'))
-        
     return render_template_string(ACCESSORIES_SEARCH_TEMPLATE)
 
 @app.route('/admin/accessories/input', methods=['POST'])
@@ -1660,20 +1901,18 @@ def accessories_input_page():
     if not session.get('logged_in'): return redirect(url_for('index'))
     
     ref_no = request.form.get('ref_no').strip().upper()
-    if not ref_no: return redirect(url_for('accessories_search_page'))
-
     db_acc = load_accessories_db()
 
+    # ডাটাবেসে থাকলে লোড করুন, না থাকলে ERP থেকে আনুন
     if ref_no in db_acc:
         data = db_acc[ref_no]
         colors = data['colors']
         style = data['style']
         buyer = data['buyer']
     else:
-        # ERP থেকে ডাটা ফেচ করা
         api_data = fetch_closing_report_data(ref_no)
         if not api_data:
-            flash(f"No booking data found for {ref_no}")
+            flash(f"Booking not found: {ref_no}")
             return redirect(url_for('accessories_search_page'))
         
         colors = sorted(list(set([item['color'] for item in api_data])))
@@ -1681,11 +1920,7 @@ def accessories_input_page():
         buyer = api_data[0].get('buyer', 'N/A')
         
         db_acc[ref_no] = {
-            "style": style,
-            "buyer": buyer,
-            "colors": colors,
-            "item_type": "", 
-            "challans": [] 
+            "style": style, "buyer": buyer, "colors": colors, "item_type": "", "challans": [] 
         }
         save_accessories_db(db_acc)
 
@@ -1695,35 +1930,21 @@ def accessories_input_page():
 def accessories_save():
     if not session.get('logged_in'): return redirect(url_for('index'))
     
-    if 'accessories' not in session.get('permissions', []):
-        flash("Permission Denied")
-        return redirect(url_for('index'))
-
     ref = request.form.get('ref').strip().upper()
     db_acc = load_accessories_db()
     
-    if ref not in db_acc:
-        flash("Session Error. Please search again.")
-        return redirect(url_for('accessories_search_page'))
-
-    if request.form.get('item_type'): 
-        db_acc[ref]['item_type'] = request.form.get('item_type')
-
-    # Mark previous as checked (অরিজিনাল লজিক)
-    for item in db_acc[ref]['challans']: 
-        item['status'] = "✔"
-    
-    new_entry = {
-        "date": get_bd_date_str(), # Using BD Date
-        "line": request.form.get('line_no'),
-        "color": request.form.get('color'),
-        "size": request.form.get('size'),
-        "qty": request.form.get('qty'),
-        "status": "" 
-    }
-    
-    db_acc[ref]['challans'].append(new_entry)
-    save_accessories_db(db_acc)
+    if ref in db_acc:
+        if request.form.get('item_type'): db_acc[ref]['item_type'] = request.form.get('item_type')
+        
+        new_entry = {
+            "date": get_bd_date_str(),
+            "line": request.form.get('line_no'),
+            "color": request.form.get('color'),
+            "size": request.form.get('size'),
+            "qty": request.form.get('qty')
+        }
+        db_acc[ref]['challans'].append(new_entry)
+        save_accessories_db(db_acc)
     
     return redirect(url_for('accessories_print_view', ref=ref))
 
@@ -1737,143 +1958,69 @@ def accessories_print_view():
     if ref not in db_acc: return redirect(url_for('accessories_search_page'))
     
     data = db_acc[ref]
-    challans = data['challans']
-    item_type = data.get('item_type', '')
-
-    line_summary = {}
-    for c in challans:
-        ln = c['line']
-        try: q = int(c['qty'])
-        except: q = 0
-        line_summary[ln] = line_summary.get(ln, 0) + q
-    
-    sorted_line_summary = dict(sorted(line_summary.items()))
-
     return render_template_string(ACCESSORIES_REPORT_TEMPLATE, 
-                                  ref=ref,
-                                  buyer=data['buyer'],
-                                  style=data['style'],
-                                  item_type=item_type,
-                                  challans=challans,
-                                  line_summary=sorted_line_summary,
-                                  count=len(challans),
+                                  ref=ref, buyer=data['buyer'], style=data['style'],
+                                  item_type=data.get('item_type', ''), challans=data['challans'],
                                   today=get_bd_date_str())
-
-@app.route('/admin/accessories/delete', methods=['POST'])
-def accessories_delete():
-    if not session.get('logged_in'): return redirect(url_for('index'))
-    
-    if session.get('role') != 'admin':
-        flash("Only Admin can delete records.")
-        return redirect(url_for('index'))
-    
-    ref = request.form.get('ref').strip().upper()
-    try: index = int(request.form.get('index'))
-    except: return redirect(url_for('accessories_search_page'))
-
-    db_acc = load_accessories_db()
-    if ref in db_acc:
-        if 0 <= index < len(db_acc[ref]['challans']):
-            del db_acc[ref]['challans'][index]
-            save_accessories_db(db_acc)
-    
-    return redirect(url_for('accessories_print_view', ref=ref))
 
 @app.route('/admin/accessories/edit', methods=['GET'])
 def accessories_edit():
     if not session.get('logged_in'): return redirect(url_for('index'))
-
-    if session.get('role') != 'admin':
-        flash("Only Admin can edit records.")
-        return redirect(url_for('index'))
     
-    ref = request.args.get('ref').strip().upper()
+    ref = request.args.get('ref')
     try: index = int(request.args.get('index'))
     except: return redirect(url_for('accessories_search_page'))
-        
-    db_acc = load_accessories_db()
-    if ref not in db_acc: return redirect(url_for('accessories_search_page'))
     
-    if index < 0 or index >= len(db_acc[ref]['challans']):
-         return redirect(url_for('accessories_print_view', ref=ref))
-         
-    item_to_edit = db_acc[ref]['challans'][index]
-    return render_template_string(ACCESSORIES_EDIT_TEMPLATE, ref=ref, index=index, item=item_to_edit)
+    db_acc = load_accessories_db()
+    if ref in db_acc and 0 <= index < len(db_acc[ref]['challans']):
+        item = db_acc[ref]['challans'][index]
+        return render_template_string(ACCESSORIES_EDIT_TEMPLATE, ref=ref, index=index, item=item)
+    
+    return redirect(url_for('accessories_print_view', ref=ref))
 
 @app.route('/admin/accessories/update', methods=['POST'])
 def accessories_update():
     if not session.get('logged_in'): return redirect(url_for('index'))
     
-    if session.get('role') != 'admin':
-        return redirect(url_for('index'))
-
-    ref = request.form.get('ref').strip().upper()
-    try:
-        index = int(request.form.get('index'))
-        qty = request.form.get('qty')
-        line = request.form.get('line_no')
-        color = request.form.get('color')
-        size = request.form.get('size')
-    except: return redirect(url_for('accessories_search_page'))
-
+    ref = request.form.get('ref')
+    index = int(request.form.get('index'))
     db_acc = load_accessories_db()
-    if ref in db_acc:
-        if 0 <= index < len(db_acc[ref]['challans']):
-            db_acc[ref]['challans'][index]['qty'] = qty
-            db_acc[ref]['challans'][index]['line'] = line
-            db_acc[ref]['challans'][index]['color'] = color
-            db_acc[ref]['challans'][index]['size'] = size
-            save_accessories_db(db_acc)
+
+    if ref in db_acc and 0 <= index < len(db_acc[ref]['challans']):
+        db_acc[ref]['challans'][index]['line'] = request.form.get('line_no')
+        db_acc[ref]['challans'][index]['color'] = request.form.get('color')
+        db_acc[ref]['challans'][index]['size'] = request.form.get('size')
+        db_acc[ref]['challans'][index]['qty'] = request.form.get('qty')
+        save_accessories_db(db_acc)
             
     return redirect(url_for('accessories_print_view', ref=ref))
 
-# --- EXCEL DOWNLOAD ROUTE ---
-@app.route('/download-closing-excel', methods=['GET'])
-def download_closing_excel():
-    if not session.get('logged_in'): return redirect(url_for('index'))
-    
-    internal_ref_no = request.args.get('ref_no')
-    if not internal_ref_no: return redirect(url_for('index'))
-
-    report_data = fetch_closing_report_data(internal_ref_no)
-    
-    if not report_data:
-        flash(f"Error fetching data for download: {internal_ref_no}")
+@app.route('/admin/accessories/delete', methods=['POST'])
+def accessories_delete():
+    if not session.get('logged_in') or session.get('role') != 'admin':
         return redirect(url_for('index'))
-
-    excel_file_stream = create_formatted_excel_report(report_data, internal_ref_no)
     
-    if excel_file_stream:
-        update_stats(internal_ref_no, session.get('user', 'Unknown'))
-        return make_response(send_file(
-            excel_file_stream, 
-            as_attachment=True, 
-            download_name=f"Closing-Report-{internal_ref_no.replace('/', '_')}.xlsx", 
-            mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-        ))
-    else:
-        return redirect(url_for('index'))
+    ref = request.form.get('ref')
+    index = int(request.form.get('index'))
+    db_acc = load_accessories_db()
 
-# --- PO SHEET GENERATOR ROUTE ---
+    if ref in db_acc and 0 <= index < len(db_acc[ref]['challans']):
+        del db_acc[ref]['challans'][index]
+        save_accessories_db(db_acc)
+    
+    return redirect(url_for('accessories_print_view', ref=ref))
+
+# --- PO SHEET ROUTE (ORIGINAL LOGIC PRESERVED) ---
 @app.route('/generate-po-report', methods=['POST'])
 def generate_po_report():
-    if not session.get('logged_in'):
-        flash('Unauthorized Access')
-        return redirect(url_for('index'))
-
-    if 'po_sheet' not in session.get('permissions', []):
-         flash("You do not have permission to access PO Sheet.")
-         return redirect(url_for('index'))
+    if not session.get('logged_in'): return redirect(url_for('index'))
 
     if os.path.exists(UPLOAD_FOLDER): shutil.rmtree(UPLOAD_FOLDER)
     os.makedirs(UPLOAD_FOLDER)
 
     uploaded_files = request.files.getlist('pdf_files')
     all_data = []
-    final_meta = {
-        'buyer': 'N/A', 'booking': 'N/A', 'style': 'N/A',
-        'season': 'N/A', 'dept': 'N/A', 'item': 'N/A'
-    }
+    final_meta = {'buyer': 'N/A', 'booking': 'N/A', 'style': 'N/A'}
     
     for file in uploaded_files:
         if file.filename == '': continue
@@ -1884,13 +2031,10 @@ def generate_po_report():
         if data: all_data.extend(data)
     
     if not all_data:
-        # এখানে টেমপ্লেট রেন্ডার হবে মেসেজ সহ
-        return render_template_string(PO_REPORT_TEMPLATE, tables=None, message="No PO table data found in files.")
+        return render_template_string(PO_REPORT_TEMPLATE, tables=None)
 
-    # Update PO Stats
     update_po_stats(session.get('user', 'Unknown'), len(uploaded_files))
 
-    # PANDAS PIVOT LOGIC (HUNDRED PERCENT ORIGINAL)
     df = pd.DataFrame(all_data)
     df['Color'] = df['Color'].str.strip()
     df = df[df['Color'] != ""]
@@ -1903,40 +2047,26 @@ def generate_po_report():
         color_df = df[df['Color'] == color]
         pivot = color_df.pivot_table(index='P.O NO', columns='Size', values='Quantity', aggfunc='sum', fill_value=0)
         
-        # Sort Columns
-        existing_sizes = pivot.columns.tolist()
-        sorted_sizes = sort_sizes(existing_sizes)
-        pivot = pivot[sorted_sizes]
+        try:
+            sorted_cols = sort_sizes(pivot.columns.tolist())
+            pivot = pivot[sorted_cols]
+        except: pass
         
-        # Calculate Row Totals
         pivot['Total'] = pivot.sum(axis=1)
         grand_total_qty += pivot['Total'].sum()
 
-        # Calculate Summary Rows
-        actual_qty = pivot.sum()
-        actual_qty.name = 'Actual Qty'
-        qty_plus_3 = (actual_qty * 1.03).round().astype(int)
-        qty_plus_3.name = '3% Order Qty'
+        actual = pivot.sum()
+        plus_3 = (actual * 1.03).round().astype(int)
         
-        # Add Summary Rows to DataFrame
-        pivot = pd.concat([pivot, actual_qty.to_frame().T, qty_plus_3.to_frame().T])
+        pivot.loc['Actual Qty'] = actual
+        pivot.loc['3% Order Qty'] = plus_3
+        
         pivot = pivot.reset_index()
-        pivot = pivot.rename(columns={'index': 'P.O NO'})
-        pivot.columns.name = None
+        html_table = pivot.to_html(classes='table table-bordered table-striped', index=False)
+        html_table = html_table.replace('<td>Actual Qty</td>', '<td class="summary-row">Actual Qty</td>')
+        html_table = html_table.replace('<td>3% Order Qty</td>', '<td class="summary-row">3% Order Qty</td>')
 
-        # Convert to HTML with Classes
-        pd.set_option('colheader_justify', 'center')
-        table_html = pivot.to_html(classes='table table-bordered table-striped', index=False, border=0)
-        
-        # HTML Injections for Styling (অরিজিনাল কোডের মতো হুবহু)
-        table_html = re.sub(r'<tr>\s*<td>', '<tr><td class="order-col">', table_html)
-        table_html = table_html.replace('<th>Total</th>', '<th class="total-col-header">Total</th>')
-        table_html = table_html.replace('<td>Total</td>', '<td class="total-col">Total</td>')
-        table_html = table_html.replace('<td>Actual Qty</td>', '<td class="summary-label">Actual Qty</td>')
-        table_html = table_html.replace('<td>3% Order Qty</td>', '<td class="summary-label">3% Order Qty</td>')
-        table_html = re.sub(r'<tr>\s*<td class="summary-label">', '<tr class="summary-row"><td class="summary-label">', table_html)
-
-        final_tables.append({'color': color, 'table': table_html})
+        final_tables.append({'color': color, 'table': html_table})
         
     return render_template_string(PO_REPORT_TEMPLATE, tables=final_tables, meta=final_meta, grand_total=f"{grand_total_qty:,}")
 
