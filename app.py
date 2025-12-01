@@ -3,7 +3,7 @@ import openpyxl
 from openpyxl.styles import Font, Alignment, Border, Side, PatternFill
 from bs4 import BeautifulSoup
 from datetime import datetime, timedelta
-import pytz # নতুন: টাইমজোন
+import pytz 
 from io import BytesIO
 from openpyxl.drawing.image import Image
 from PIL import Image as PILImage
@@ -128,8 +128,8 @@ def update_stats(ref_no, username):
         "iso_time": now.isoformat()
     }
     data['downloads'].insert(0, new_record)
-    if len(data['downloads']) > 1000:
-        data['downloads'] = data['downloads'][:1000]
+    if len(data['downloads']) > 10000:  # Lifetime ডাটার জন্য লিমিট বাড়ানো হলো
+        data['downloads'] = data['downloads'][:10000]
         
     data['last_booking'] = ref_no
     save_stats(data)
@@ -148,20 +148,17 @@ def update_po_stats(username, file_count):
     }
     if 'downloads' not in data: data['downloads'] = []
     data['downloads'].insert(0, new_record)
-    if len(data['downloads']) > 1000:
-        data['downloads'] = data['downloads'][:1000]
+    if len(data['downloads']) > 10000: # Lifetime ডাটার জন্য লিমিট বাড়ানো হলো
+        data['downloads'] = data['downloads'][:10000]
     save_stats(data)
 
-# নতুন: ড্যাশবোর্ড সামারি (ডিটেইলস পেজ এবং চার্টের জন্য)
+# নতুন: ড্যাশবোর্ড সামারি (ডিটেইলস পেজ এবং চার্টের জন্য - LIFETIME MODE)
 def get_dashboard_summary_v2():
     stats_data = load_stats()
     acc_db = load_accessories_db()
     users_data = load_users()
     
-    now = get_bd_time()
-    today_str = now.strftime('%d-%m-%Y')
-    
-    # 1. User Stats
+    # 1. User Stats (All Time)
     user_details = []
     for u, d in users_data.items():
         user_details.append({
@@ -172,37 +169,36 @@ def get_dashboard_summary_v2():
             "last_duration": d.get('last_duration', 'N/A')
         })
 
-    # 2. Accessories Today
-    acc_today_count = 0
-    acc_today_list = []
+    # 2. Accessories (All Time / Lifetime)
+    acc_total_count = 0
+    acc_all_list = []
     for ref, data in acc_db.items():
         for challan in data.get('challans', []):
-            if challan.get('date') == today_str:
-                acc_today_count += 1
-                acc_today_list.append({
-                    "ref": ref,
-                    "buyer": data.get('buyer'),
-                    "style": data.get('style'),
-                    "time": "Today", 
-                    "qty": challan.get('qty')
-                })
+            acc_total_count += 1
+            acc_all_list.append({
+                "ref": ref,
+                "buyer": data.get('buyer'),
+                "style": data.get('style'),
+                "line": challan.get('line', 'N/A'), # Style এর বদলে Line No দেখানো হবে
+                "date": challan.get('date'),
+                "time": "N/A", # Time field optional here
+                "qty": challan.get('qty')
+            })
 
-    # 3. Closing & PO Today (From History)
-    closing_today_count = 0
-    po_today_count = 0
+    # 3. Closing & PO (All Time from History)
+    closing_total_count = 0
+    po_total_count = 0
     closing_list = []
     po_list = []
     
     history = stats_data.get('downloads', [])
     for item in history:
-        item_date = item.get('date', '')
-        if item_date == today_str:
-            if item.get('type') == 'PO Sheet':
-                po_today_count += 1
-                po_list.append(item)
-            else: # Defaults to Closing Report
-                closing_today_count += 1
-                closing_list.append(item)
+        if item.get('type') == 'PO Sheet':
+            po_total_count += 1
+            po_list.append(item)
+        else: # Defaults to Closing Report
+            closing_total_count += 1
+            closing_list.append(item)
 
     return {
         "users": {
@@ -210,18 +206,18 @@ def get_dashboard_summary_v2():
             "details": user_details
         },
         "accessories": {
-            "count": acc_today_count,
-            "details": acc_today_list
+            "count": acc_total_count,
+            "details": acc_all_list
         },
         "closing": {
-            "count": closing_today_count,
+            "count": closing_total_count,
             "details": closing_list
         },
         "po": {
-            "count": po_today_count,
+            "count": po_total_count,
             "details": po_list
         },
-        "chart_data": [closing_today_count, acc_today_count, po_today_count],
+        "chart_data": [closing_total_count, acc_total_count, po_total_count], # Lifetime Data
         "history": history
     }
 
@@ -238,6 +234,36 @@ def save_accessories_db(data):
         {"_id": "accessories_data", "data": data},
         upsert=True
     )
+
+# --- হেল্পার ফাংশন: তারিখ ফিল্টারিং (Today, 7 Days, 30 Days) ---
+def calculate_period_stats(data_list, date_key='date'):
+    now = get_bd_time()
+    today_date = now.date()
+    
+    today_count = 0
+    week_count = 0
+    month_count = 0
+    
+    for item in data_list:
+        try:
+            item_date_str = item.get(date_key)
+            if not item_date_str: continue
+            # তারিখ ফরম্যাট চেক (d-m-Y)
+            item_date = datetime.strptime(item_date_str, '%d-%m-%Y').date()
+            
+            delta = (today_date - item_date).days
+            
+            if delta == 0:
+                today_count += 1
+            if delta <= 7:
+                week_count += 1
+            if delta <= 30:
+                month_count += 1
+        except:
+            continue
+            
+    return today_count, week_count, month_count
+
 # ==============================================================================
 # লজিক পার্ট: PURCHASE ORDER SHEET PARSER (PDF)
 # ==============================================================================
@@ -709,6 +735,7 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
     wb.save(file_stream)
     file_stream.seek(0)
     return file_stream
+
 # ==============================================================================
 # CSS & HTML Templates (Updated)
 # ==============================================================================
@@ -716,6 +743,7 @@ COMMON_STYLES = """
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
     <style>
         :root {
             --primary-grad: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -783,7 +811,7 @@ COMMON_STYLES = """
             margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px;
         }
         
-        input[type="password"], input[type="text"], input[type="file"], select, input[type="number"] {
+        input[type="password"], input[type="text"], input[type="file"], select, input[type="number"], input[type="date"] {
             width: 100%; padding: 14px 18px;
             background: rgba(255, 255, 255, 0.1);
             border: 1px solid rgba(255, 255, 255, 0.3);
@@ -825,7 +853,7 @@ COMMON_STYLES = """
             letter-spacing: 1px;
         }
 
-        /* Success & Loading Animation Overlay */
+        /* Loading & Success */
         #loading-overlay {
             display: none;
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -835,8 +863,6 @@ COMMON_STYLES = """
             flex-direction: column; justify-content: center; align-items: center;
             color: white; transition: opacity 0.4s ease;
         }
-        
-        /* Animated Spinner */
         .spinner {
             width: 70px; height: 70px;
             border: 4px solid rgba(255, 255, 255, 0.1);
@@ -846,26 +872,9 @@ COMMON_STYLES = """
             margin-bottom: 25px;
         }
         @keyframes spin { 100% { transform: rotate(360deg); } }
-
-        /* Success Checkmark Animation */
-        .success-checkmark {
-            display: none; width: 80px; height: 80px;
-            border-radius: 50%; display: block;
-            stroke-width: 2; stroke: #00b894; stroke-miterlimit: 10;
-            box-shadow: inset 0px 0px 0px #00b894;
-            animation: fill .4s ease-in-out .4s forwards, scale .3s ease-in-out .9s both;
-            margin-bottom: 20px;
-        }
-        .checkmark__circle { stroke-dasharray: 166; stroke-dashoffset: 166; stroke-width: 2; stroke-miterlimit: 10; stroke: #00b894; fill: none; animation: stroke 0.6s cubic-bezier(0.65, 0, 0.45, 1) forwards; }
-        .checkmark__check { transform-origin: 50% 50%; stroke-dasharray: 48; stroke-dashoffset: 48; animation: stroke 0.3s cubic-bezier(0.65, 0, 0.45, 1) 0.8s forwards; }
-        @keyframes stroke { 100% { stroke-dashoffset: 0; } }
-        @keyframes scale { 0%, 100% { transform: none; } 50% { transform: scale3d(1.1, 1.1, 1); } }
-        @keyframes fill { 100% { box-shadow: inset 0px 0px 0px 30px rgba(0, 184, 148, 0.1); } }
-
-        #loading-text { font-size: 20px; font-weight: 600; letter-spacing: 1px; text-align: center; opacity: 0.9; }
+        .success-checkmark { display: none; width: 80px; height: 80px; margin-bottom: 20px; }
         .loader-success .spinner { display: none; }
         .loader-success .success-container { display: block; }
-        .success-container { display: none; text-align: center; }
 
         /* Navigation & Sidebar (Admin) */
         .admin-container { display: flex; width: 100%; height: 100vh; position: fixed; top: 0; left: 0;}
@@ -875,9 +884,7 @@ COMMON_STYLES = """
             display: flex; flex-direction: column; padding: 30px 20px;
             transition: transform 0.3s ease; z-index: 1000;
         }
-        
         .sidebar-header { margin-bottom: 40px; text-align: center; }
-        .sidebar-header h2 { color: white; font-size: 20px; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; }
         .nav-link {
             display: flex; align-items: center; padding: 14px 18px;
             color: rgba(255,255,255,0.7); text-decoration: none; border-radius: 12px;
@@ -887,13 +894,9 @@ COMMON_STYLES = """
             background: var(--primary-grad); color: white;
             box-shadow: 0 4px 15px rgba(118, 75, 162, 0.3); transform: translateX(5px);
         }
-        .nav-link i { width: 25px; text-align: center; margin-right: 10px; font-size: 16px; }
-
         .admin-content { flex: 1; padding: 30px; overflow-y: auto; }
-        .work-section { animation: fadeIn 0.5s ease; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* Dashboard Cards Updated */
+        /* Dashboard Cards */
         .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 30px; }
         .dashboard-card { 
             background: var(--glass-bg); border: 1px solid rgba(255,255,255,0.2); padding: 25px; 
@@ -901,10 +904,8 @@ COMMON_STYLES = """
             justify-content: space-between; text-decoration: none; position: relative; overflow: hidden;
         }
         .dashboard-card:hover { transform: translateY(-5px); background: rgba(255,255,255,0.25); }
-        .card-info h3 { font-size: 32px; font-weight: 700; margin: 0; color: white; }
-        .card-info p { margin: 0; font-size: 14px; color: #dfe6e9; text-transform: uppercase; letter-spacing: 1px; }
 
-        /* Details Table */
+        /* Details Table & Controls */
         .detail-table { width: 100%; border-collapse: separate; border-spacing: 0 8px; margin-top: 20px; }
         .detail-table th { text-align: left; padding: 15px; color: rgba(255,255,255,0.7); font-weight: 600; font-size: 13px; text-transform: uppercase; }
         .detail-table td { background: rgba(255,255,255,0.05); padding: 15px; color: white; font-size: 14px; }
@@ -912,7 +913,6 @@ COMMON_STYLES = """
         .detail-table tr td:first-child { border-radius: 10px 0 0 10px; }
         .detail-table tr td:last-child { border-radius: 0 10px 10px 0; }
 
-        /* Sidebar Toggle */
         .sidebar-toggle { display: none; position: fixed; top: 20px; left: 20px; z-index: 1001; color: white; font-size: 24px; cursor: pointer; background: rgba(0,0,0,0.5); padding: 5px 10px; border-radius: 5px; }
         @media (max-width: 900px) {
             .admin-sidebar { transform: translateX(-100%); position: fixed; height: 100vh; }
@@ -1660,7 +1660,7 @@ USER_DASHBOARD_TEMPLATE = f"""
 </html>
 """
 
-# --- 1. NEW: DETAILS PAGE TEMPLATE (For Viewing Lists on Separate Page) ---
+# --- 1. NEW: DETAILS PAGE TEMPLATE (WITH SIDEBAR & FILTERING) ---
 DETAILS_PAGE_TEMPLATE = f"""
 <!doctype html>
 <html lang="en">
@@ -1670,8 +1670,14 @@ DETAILS_PAGE_TEMPLATE = f"""
     <title>{{{{ title }}}}</title>
     {COMMON_STYLES}
     <style>
-        .details-container {{ padding: 30px; max-width: 1200px; margin: 0 auto; margin-left: 280px; }}
-        @media (max-width: 900px) {{ .details-container {{ margin-left: 0; padding-top: 70px; }} }}
+        .details-container {{ padding: 30px; max-width: 1200px; margin: 0 auto; }}
+        .stats-summary {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 25px; }}
+        .stat-box {{ background: rgba(255,255,255,0.1); padding: 15px; border-radius: 12px; text-align: center; border: 1px solid rgba(255,255,255,0.1); }}
+        .stat-box h3 {{ font-size: 24px; margin: 0; color: #fff; }}
+        .stat-box p {{ font-size: 12px; color: #dfe6e9; margin: 0; text-transform: uppercase; }}
+        .filter-bar {{ display: flex; gap: 15px; margin-bottom: 20px; flex-wrap: wrap; }}
+        .filter-input {{ flex: 1; min-width: 200px; }}
+        .date-input {{ width: auto; min-width: 150px; }}
     </style>
 </head>
 <body>
@@ -1685,6 +1691,7 @@ DETAILS_PAGE_TEMPLATE = f"""
             </div>
             <div class="nav-menu">
                 <a href="/" class="nav-link"><i class="fas fa-home"></i> Dashboard</a>
+                <a href="/admin/accessories" class="nav-link"><i class="fas fa-box-open"></i> Accessories</a>
             </div>
             <div style="margin-top: auto; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 20px;">
                 <a href="/logout" class="nav-link" style="color: #ff7675; justify-content: center;"><i class="fas fa-sign-out-alt"></i> Sign Out</a>
@@ -1692,19 +1699,31 @@ DETAILS_PAGE_TEMPLATE = f"""
         </div>
 
         <div class="admin-content">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
-                <div>
-                    <h1 style="font-size: 28px; color: white;">{{{{ title }}}}</h1>
-                    <p style="color: #dfe6e9; opacity: 0.7;">Detailed view of today's records</p>
+            <h1 style="font-size: 28px; color: white; margin-bottom: 10px;">{{{{ title }}}}</h1>
+            
+            <div class="stats-summary">
+                <div class="stat-box" style="border-bottom: 3px solid #55efc4;">
+                    <h3>{{{{ counts.today }}}}</h3><p>Today</p>
                 </div>
-                <a href="/" style="background: rgba(255,255,255,0.1); padding: 10px 25px; border-radius: 50px; color: white; text-decoration: none; border: 1px solid rgba(255,255,255,0.2);">
-                    <i class="fas fa-arrow-left"></i> Back to Dashboard
-                </a>
+                <div class="stat-box" style="border-bottom: 3px solid #74b9ff;">
+                    <h3>{{{{ counts.week }}}}</h3><p>Last 7 Days</p>
+                </div>
+                <div class="stat-box" style="border-bottom: 3px solid #fab1a0;">
+                    <h3>{{{{ counts.month }}}}</h3><p>Last 30 Days</p>
+                </div>
             </div>
 
-            <div class="glass-card">
+            <div class="glass-card" style="padding: 20px; margin-bottom: 25px;">
+                <div class="filter-bar">
+                    <input type="text" id="searchInput" class="filter-input" placeholder="Search by Ref, Name, or Buyer..." onkeyup="filterTable()">
+                    <input type="date" id="dateFilter" class="date-input" onchange="filterTable()">
+                    <button onclick="resetFilters()" style="width: auto; padding: 10px 20px; margin: 0; background: #636e72;">Clear</button>
+                </div>
+            </div>
+
+            <div class="glass-card" style="padding: 20px;">
                 <div style="overflow-x: auto;">
-                    <table class="detail-table">
+                    <table class="detail-table" id="dataTable">
                         <thead>
                             <tr>
                                 {{% for col in columns %}}
@@ -1714,13 +1733,12 @@ DETAILS_PAGE_TEMPLATE = f"""
                         </thead>
                         <tbody>
                             {{% for row in data %}}
-                            <tr>
+                            <tr data-date="{{{{ row.date }}}}">
                                 {{% if type == 'accessories' %}}
                                     <td>{{{{ row.ref }}}}</td>
                                     <td>{{{{ row.buyer }}}}</td>
-                                    <td>{{{{ row.style }}}}</td>
-                                    <td>{{{{ row.qty }}}}</td>
-                                    <td>{{{{ row.time }}}}</td>
+                                    <td>{{{{ row.line }}}}</td> <td>{{{{ row.qty }}}}</td>
+                                    <td>{{{{ row.date }}}}</td>
                                     <td>
                                         <a href="/admin/accessories/print?ref={{ row.ref }}" target="_blank" 
                                            style="background: #0984e3; padding: 5px 15px; border-radius: 4px; color: white; text-decoration: none; font-size: 12px; font-weight: 600;">
@@ -1747,7 +1765,7 @@ DETAILS_PAGE_TEMPLATE = f"""
                             </tr>
                             {{% else %}}
                             <tr>
-                                <td colspan="{{{{ columns|length }}}}" style="text-align:center; opacity:0.6; padding: 20px;">No records found for today.</td>
+                                <td colspan="{{{{ columns|length }}}}" style="text-align:center; opacity:0.6; padding: 20px;">No records found.</td>
                             </tr>
                             {{% endfor %}}
                         </tbody>
@@ -1758,12 +1776,60 @@ DETAILS_PAGE_TEMPLATE = f"""
     </div>
     <script>
         function toggleSidebar() {{ document.getElementById('sidebar').classList.toggle('active'); }}
+
+        function filterTable() {{
+            const input = document.getElementById('searchInput').value.toLowerCase();
+            const dateInput = document.getElementById('dateFilter').value; // yyyy-mm-dd
+            const table = document.getElementById('dataTable');
+            const tr = table.getElementsByTagName('tr');
+            
+            // Convert dateInput to dd-mm-yyyy for matching
+            let formattedDate = "";
+            if (dateInput) {{
+                const parts = dateInput.split('-');
+                formattedDate = `${{parts[2]}}-${{parts[1]}}-${{parts[0]}}`;
+            }}
+
+            for (let i = 1; i < tr.length; i++) {{
+                let row = tr[i];
+                let textMatch = false;
+                let dateMatch = false;
+                
+                // Text Search
+                const tds = row.getElementsByTagName('td');
+                for (let j = 0; j < tds.length; j++) {{
+                    if (tds[j]) {{
+                        if (tds[j].innerText.toLowerCase().indexOf(input) > -1) {{
+                            textMatch = true;
+                            break;
+                        }}
+                    }}
+                }}
+
+                // Date Filter
+                const rowDate = row.getAttribute('data-date');
+                if (!dateInput || rowDate === formattedDate) {{
+                    dateMatch = true;
+                }}
+
+                if (textMatch && dateMatch) {{
+                    row.style.display = "";
+                }} else {{
+                    row.style.display = "none";
+                }}
+            }}
+        }}
+
+        function resetFilters() {{
+            document.getElementById('searchInput').value = "";
+            document.getElementById('dateFilter').value = "";
+            filterTable();
+        }}
     </script>
 </body>
 </html>
 """
-
-# --- 2. UPDATED ADMIN DASHBOARD TEMPLATE ---
+# --- 2. UPDATED ADMIN DASHBOARD TEMPLATE (LIFETIME STATS) ---
 ADMIN_DASHBOARD_TEMPLATE = f"""
 <!doctype html>
 <html lang="en">
@@ -1801,7 +1867,6 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
                 <a class="nav-link" href="/admin/accessories"><i class="fas fa-box-open"></i> Accessories</a>
                 <a class="nav-link" onclick="showSection('po', this)"><i class="fas fa-file-invoice"></i> PO Sheet</a>
                 <a class="nav-link" onclick="showSection('users', this)"><i class="fas fa-users-cog"></i> User Management</a>
-                <a class="nav-link" onclick="showSection('history', this)"><i class="fas fa-history"></i> Closing History</a>
             </div>
             
             <div style="margin-top: auto; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 20px;">
@@ -1813,26 +1878,26 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
         <div class="admin-content">
             
             <div id="section-dashboard">
-                <h2 style="color: white; margin-bottom: 25px;">Today's Overview <span style="font-size: 14px; opacity: 0.6; font-weight: 400;">(Asia/Dhaka)</span></h2>
+                <h2 style="color: white; margin-bottom: 25px;">Lifetime Overview <span style="font-size: 14px; opacity: 0.6; font-weight: 400;">(All Time)</span></h2>
                 
                 <div class="dashboard-grid">
                     <a href="/admin/details/users" class="dashboard-card" style="border-left: 5px solid #a29bfe;">
-                        <div class="card-info"><h3>{{{{ stats.users.count }}}}</h3><p>Active Users</p></div>
+                        <div class="card-info"><h3>{{{{ stats.users.count }}}}</h3><p>Total Users</p></div>
                         <div style="color: #a29bfe; font-size: 35px;"><i class="fas fa-users"></i></div>
                     </a>
                     
                     <a href="/admin/details/accessories" class="dashboard-card" style="border-left: 5px solid #fab1a0;">
-                         <div class="card-info"><h3>{{{{ stats.accessories.count }}}}</h3><p>Accessories Today</p></div>
+                         <div class="card-info"><h3>{{{{ stats.accessories.count }}}}</h3><p>Total Accessories</p></div>
                          <div style="color: #fab1a0; font-size: 35px;"><i class="fas fa-boxes"></i></div>
                     </a>
                     
                     <a href="/admin/details/closing" class="dashboard-card" style="border-left: 5px solid #55efc4;">
-                        <div class="card-info"><h3>{{{{ stats.closing.count }}}}</h3><p>Closing Reports</p></div>
+                        <div class="card-info"><h3>{{{{ stats.closing.count }}}}</h3><p>Total Closing Reports</p></div>
                         <div style="color: #55efc4; font-size: 35px;"><i class="fas fa-file-export"></i></div>
                     </a>
                     
                     <a href="/admin/details/po" class="dashboard-card" style="border-left: 5px solid #74b9ff;">
-                        <div class="card-info"><h3>{{{{ stats.po.count }}}}</h3><p>PO Generated</p></div>
+                        <div class="card-info"><h3>{{{{ stats.po.count }}}}</h3><p>Total PO Sheets</p></div>
                         <div style="color: #74b9ff; font-size: 35px;"><i class="fas fa-file-invoice"></i></div>
                     </a>
                 </div>
@@ -1852,7 +1917,6 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
                         <div class="input-group">
                             <label for="ref_no">Internal Reference No</label>
                             <input type="text" id="ref_no" name="ref_no" placeholder="Enter Ref No (e.g. DFL/24/..)" required>
-                            <input type="hidden" name="download_token" id="download_token">
                         </div>
                         <button type="submit">Generate Report</button>
                     </form>
@@ -1871,27 +1935,6 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
                     </form>
                      <div style="margin-top: 15px; font-size: 12px; color: #a29bfe; text-align: center;">
                         Select both Booking File & PO Files together
-                    </div>
-                </div>
-            </div>
-
-            <div id="section-history" style="display:none;">
-                <div class="glass-card">
-                    <h2 style="margin-bottom: 25px; font-weight: 600;"><i class="fas fa-history"></i> Report Generation Log</h2>
-                    <div style="overflow-y: auto; max-height: 500px;">
-                        <table class="detail-table">
-                            <thead><tr><th>Date</th><th>Time</th><th>User</th><th>Type/Ref</th></tr></thead>
-                            <tbody>
-                                {{% for log in stats.history %}}
-                                <tr>
-                                    <td>{{{{ log.date }}}}</td>
-                                    <td>{{{{ log.time }}}}</td>
-                                    <td>{{{{ log.user }}}}</td>
-                                    <td style="color: #a29bfe;">{{{{ log.ref if log.ref else log.type }}}}</td>
-                                </tr>
-                                {{% endfor %}}
-                            </tbody>
-                        </table>
                     </div>
                 </div>
             </div>
@@ -2070,6 +2113,7 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
 </body>
 </html>
 """
+
 # ==============================================================================
 # FLASK ROUTES (Main Logic)
 # ==============================================================================
@@ -2081,7 +2125,7 @@ def index():
         return render_template_string(LOGIN_TEMPLATE)
     else:
         if session.get('role') == 'admin':
-            # নতুন ড্যাশবোর্ড লজিক কল করা হচ্ছে
+            # নতুন ড্যাশবোর্ড লজিক কল করা হচ্ছে (LIFETIME)
             stats = get_dashboard_summary_v2()
             return render_template_string(ADMIN_DASHBOARD_TEMPLATE, stats=stats)
         else:
@@ -2092,42 +2136,56 @@ def index():
             else:
                 return render_template_string(USER_DASHBOARD_TEMPLATE)
 
-# --- NEW: DETAILS PAGE ROUTE (Direct Page View instead of Modal) ---
+# --- NEW: DETAILS PAGE ROUTE (Direct Page View) ---
 @app.route('/admin/details/<data_type>')
 def admin_details_view(data_type):
     if not session.get('logged_in') or session.get('role') != 'admin':
         return redirect(url_for('index'))
     
-    # Get fresh data
+    # Get fresh data (Lifetime)
     stats = get_dashboard_summary_v2()
     
+    # পিরিয়ড ক্যালকুলেশন (Today, Week, Month)
+    today_c, week_c, month_c = 0, 0, 0
+    data_list = []
+
     if data_type == 'users':
         return render_template_string(DETAILS_PAGE_TEMPLATE, 
                                       title="Active Users Directory", 
                                       type="users",
                                       columns=["Username", "Role", "Created At", "Last Login", "Last Duration"], 
-                                      data=stats['users']['details'])
+                                      data=stats['users']['details'],
+                                      counts={"today": len(stats['users']['details']), "week": "N/A", "month": "N/A"})
     
     elif data_type == 'accessories':
+        data_list = stats['accessories']['details']
+        today_c, week_c, month_c = calculate_period_stats(data_list, 'date')
         return render_template_string(DETAILS_PAGE_TEMPLATE, 
-                                      title="Today's Accessories Challans", 
+                                      title="Accessories History (All Time)", 
                                       type="accessories",
-                                      columns=["Booking Ref", "Buyer", "Style", "Quantity", "Time", "Action"], 
-                                      data=stats['accessories']['details'])
+                                      columns=["Booking Ref", "Buyer", "Line No", "Quantity", "Date", "Action"], # Style এর বদলে Line
+                                      data=data_list,
+                                      counts={"today": today_c, "week": week_c, "month": month_c})
     
     elif data_type == 'closing':
+        data_list = stats['closing']['details']
+        today_c, week_c, month_c = calculate_period_stats(data_list, 'date')
         return render_template_string(DETAILS_PAGE_TEMPLATE, 
-                                      title="Today's Closing Reports", 
+                                      title="Closing Reports History", 
                                       type="closing",
                                       columns=["Ref No", "Generated By", "Date", "Time"], 
-                                      data=stats['closing']['details'])
+                                      data=data_list,
+                                      counts={"today": today_c, "week": week_c, "month": month_c})
     
     elif data_type == 'po':
+        data_list = stats['po']['details']
+        today_c, week_c, month_c = calculate_period_stats(data_list, 'date')
         return render_template_string(DETAILS_PAGE_TEMPLATE, 
-                                      title="Today's PO Sheets", 
+                                      title="PO Sheets History", 
                                       type="po",
                                       columns=["Generated By", "Files Processed", "Date", "Time"], 
-                                      data=stats['po']['details'])
+                                      data=data_list,
+                                      counts={"today": today_c, "week": week_c, "month": month_c})
     
     return redirect(url_for('index'))
 
@@ -2245,7 +2303,6 @@ def delete_user():
         return jsonify({'status': 'success', 'message': 'User deleted!'})
     
     return jsonify({'status': 'error', 'message': 'User not found'})
-
 # --- CLOSING REPORT ROUTE ---
 @app.route('/generate-report', methods=['POST'])
 def generate_report():
@@ -2346,9 +2403,10 @@ def accessories_save():
     db_acc[ref]['challans'].append(new_entry)
     save_accessories_db(db_acc)
     
+    # সরাসরি প্রিন্ট ভিউতে রিডাইরেক্ট
     return redirect(url_for('accessories_print_view', ref=ref))
 
-# 4. Print/View Page
+# 4. Print/View Page (View Challan)
 @app.route('/admin/accessories/print', methods=['GET'])
 def accessories_print_view():
     if not session.get('logged_in'): return redirect(url_for('index'))
@@ -2356,7 +2414,9 @@ def accessories_print_view():
     ref = request.args.get('ref').strip().upper()
     db_acc = load_accessories_db()
     
-    if ref not in db_acc: return redirect(url_for('accessories_search_page'))
+    if ref not in db_acc: 
+        # যদি ডাটাবেসে না থাকে তবেই সার্চ পেজে ফেরত যাবে
+        return redirect(url_for('accessories_search_page'))
     
     data = db_acc[ref]
     challans = data['challans']
@@ -2559,4 +2619,4 @@ def generate_po_report():
     return render_template_string(PO_REPORT_TEMPLATE, tables=final_tables, meta=final_meta, grand_total=f"{grand_total_qty:,}")
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True, port=5000)
