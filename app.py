@@ -718,41 +718,57 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
     return file_stream
 
 # ==============================================================================
-# CSS & HTML Templates (DESIGN UPDATED: Premium Glass & Gradient)
+# CSS & HTML Templates (DESIGN UPDATED: Premium Arclon Glass & Gradient)
 # ==============================================================================
 COMMON_STYLES = """
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@2.5.0/fonts/remixicon.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
-            --primary-blue: #007bff;
-            --hover-blue: #0056b3;
-            --sidebar-bg: #1e272e; /* Deep Dark Blue-Grey */
-            --text-main: #2d3436;
-            --glass-border: rgba(255, 255, 255, 0.6);
-            --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.10);
+            /* Arclon Color Palette */
+            --ct-primary: #727cf5; /* Purple-Blue */
+            --ct-primary-hover: #5d69f4;
+            --ct-success: #0acf97;
+            --ct-danger: #fa5c7c;
+            --ct-warning: #ffbc00;
+            --ct-info: #39afd1;
+            
+            --ct-sidebar-bg: #313a46; /* Dark Sidebar */
+            --ct-sidebar-hover: rgba(255, 255, 255, 0.08);
+            
+            --ct-bg-body: #f4f5f8; /* Light Greyish Blue Background */
+            --ct-text-main: #6c757d;
+            --ct-heading-color: #313a46;
+            
+            /* Glass Effects */
+            --glass-bg: rgba(255, 255, 255, 0.85);
+            --glass-border: 1px solid rgba(255, 255, 255, 0.5);
+            --glass-shadow: 0 0 35px 0 rgba(154, 161, 171, 0.15);
+            --glass-blur: blur(10px);
         }
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Nunito', sans-serif; }
         
         body {
-            /* Premium Gradient Background */
-            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            background-color: var(--ct-bg-body);
+            color: var(--ct-text-main);
             min-height: 100vh;
-            color: var(--text-main);
             overflow-x: hidden;
         }
         
         /* Modern Glass Card */
         .glass-card {
-            background: rgba(255, 255, 255, 0.75);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid var(--glass-border);
-            padding: 40px;
-            border-radius: 16px;
+            background: var(--glass-bg);
+            backdrop-filter: var(--glass-blur);
+            -webkit-backdrop-filter: var(--glass-blur);
+            border: var(--glass-border);
+            padding: 30px;
+            border-radius: 5px; /* Arclon uses slightly sharper corners */
             box-shadow: var(--glass-shadow);
-            animation: floatIn 0.6s ease-out forwards;
+            animation: floatIn 0.5s ease-out forwards;
+            margin-bottom: 24px;
         }
 
         .center-container {
@@ -765,62 +781,60 @@ COMMON_STYLES = """
         }
         .center-container .glass-card {
             width: 100%;
-            max-width: 450px;
+            max-width: 480px;
             text-align: center;
         }
 
         @keyframes floatIn {
-            from { opacity: 0; transform: translateY(30px); }
+            from { opacity: 0; transform: translateY(20px); }
             to { opacity: 1; transform: translateY(0); }
         }
         
-        h1 { color: #2d3436; font-size: 26px; font-weight: 700; margin-bottom: 8px; }
-        p.subtitle { color: #636e72; font-size: 14px; margin-bottom: 30px; font-weight: 400; }
+        h1, h2, h3, h4 { color: var(--ct-heading-color); font-weight: 700; margin-bottom: 10px; }
+        p.subtitle { color: var(--ct-text-main); font-size: 14px; margin-bottom: 30px; font-weight: 400; }
         
-        /* Inputs */
+        /* Inputs - Arclon Style */
         .input-group { text-align: left; margin-bottom: 20px; }
         .input-group label {
-            display: block; font-size: 13px; color: #2d3436; font-weight: 600;
-            margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px;
+            display: block; font-size: 14px; color: var(--ct-heading-color); font-weight: 600;
+            margin-bottom: 8px;
         }
         
         input[type="password"], input[type="text"], input[type="file"], select, input[type="number"], input[type="date"] {
-            width: 100%; padding: 12px 15px;
-            background: rgba(255, 255, 255, 0.9);
-            border: 1px solid rgba(0,0,0,0.1);
-            border-radius: 10px;
-            font-size: 14px; color: #2d3436;
-            transition: all 0.3s ease; outline: none;
-            box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
+            width: 100%; padding: 10px 15px;
+            background: #fff;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            font-size: 14px; color: var(--ct-heading-color);
+            transition: all 0.2s ease; outline: none;
         }
         input:focus, select:focus {
-            border-color: var(--primary-blue);
-            box-shadow: 0 0 0 4px rgba(0, 123, 255, 0.15);
-            background: #fff;
+            border-color: var(--ct-primary);
+            box-shadow: 0 0 0 2px rgba(114, 124, 245, 0.25);
         }
         
-        /* Buttons */
+        /* Buttons - Primary Purple */
         button {
-            width: 100%; padding: 14px;
-            background: var(--primary-blue);
+            width: 100%; padding: 11px 20px;
+            background: var(--ct-primary);
             color: white; border: none;
-            border-radius: 10px; font-size: 15px; font-weight: 600;
-            cursor: pointer; transition: all 0.3s ease;
-            margin-top: 15px; letter-spacing: 0.5px;
-            box-shadow: 0 4px 15px rgba(0, 123, 255, 0.3);
+            border-radius: 4px; font-size: 15px; font-weight: 600;
+            cursor: pointer; transition: all 0.2s ease;
+            margin-top: 10px; letter-spacing: 0.5px;
+            box-shadow: 0 2px 6px 0 rgba(114, 124, 245, 0.5);
         }
         button:hover {
-            background: var(--hover-blue);
+            background: var(--ct-primary-hover);
             transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(0, 123, 255, 0.5); /* Stronger Glow */
+            box-shadow: 0 5px 12px rgba(114, 124, 245, 0.6);
         }
         button:active { transform: scale(0.98); }
 
         /* Footer Credit */
         .footer-credit {
             margin-top: 25px;
-            font-size: 12px;
-            color: #b2bec3;
+            font-size: 13px;
+            color: #98a6ad;
             text-align: center;
         }
 
@@ -829,52 +843,55 @@ COMMON_STYLES = """
             display: none;
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(255, 255, 255, 0.85);
-            backdrop-filter: blur(5px);
+            backdrop-filter: blur(4px);
             z-index: 9999;
             flex-direction: column; justify-content: center; align-items: center;
-            color: var(--primary-blue);
+            color: var(--ct-primary);
         }
         
         .spinner {
-            width: 50px; height: 50px;
-            border: 4px solid rgba(0, 123, 255, 0.1);
-            border-top: 4px solid var(--primary-blue);
+            width: 45px; height: 45px;
+            border: 4px solid rgba(114, 124, 245, 0.2);
+            border-top: 4px solid var(--ct-primary);
             border-radius: 50%;
             animation: spin 0.8s linear infinite;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
         }
         @keyframes spin { 100% { transform: rotate(360deg); } }
 
-        /* Navigation & Sidebar */
+        /* Navigation & Sidebar (Arclon Style) */
         .admin-container { display: flex; width: 100%; min-height: 100vh; }
         .admin-sidebar {
             width: 260px; 
-            background: var(--sidebar-bg) !important; /* Force Dark Color */
-            color: #fff;
+            background: var(--ct-sidebar-bg) !important; /* Force Dark Color */
+            color: #8391a2;
             position: fixed; top: 0; left: 0; height: 100vh;
-            display: flex; flex-direction: column; padding: 25px 15px;
+            display: flex; flex-direction: column; padding: 20px 0;
             transition: transform 0.3s ease; z-index: 1000;
-            box-shadow: 4px 0 15px rgba(0,0,0,0.1);
+            box-shadow: 0 0 35px 0 rgba(154, 161, 171, .15);
         }
         
-        .sidebar-header { margin-bottom: 40px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 20px; }
-        .sidebar-header h2 { color: white; font-size: 18px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; margin: 0; }
+        .sidebar-header { margin-bottom: 30px; text-align: center; padding: 0 20px; }
+        .sidebar-header h2 { color: #fff; font-size: 20px; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; margin: 0; }
         
+        .nav-menu { padding: 0 10px; }
         .nav-link {
-            display: flex; align-items: center; padding: 12px 18px;
-            color: rgba(255,255,255,0.7); text-decoration: none; border-radius: 10px;
-            margin-bottom: 8px; transition: all 0.3s ease; font-weight: 500; font-size: 14px; cursor: pointer;
+            display: flex; align-items: center; padding: 12px 20px;
+            color: #cedce4; text-decoration: none; border-radius: 0;
+            margin-bottom: 2px; transition: all 0.3s ease; font-weight: 500; font-size: 15px; cursor: pointer;
+            border-left: 3px solid transparent;
         }
         .nav-link:hover, .nav-link.active {
-            background: var(--primary-blue); color: white;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3); transform: translateX(5px);
+            color: #fff;
+            background: rgba(255,255,255,0.05);
+            border-left-color: var(--ct-primary);
         }
-        .nav-link i { width: 25px; text-align: center; margin-right: 12px; font-size: 16px; }
+        .nav-link i { width: 25px; text-align: center; margin-right: 12px; font-size: 18px; }
 
         .admin-content { 
             flex: 1; 
             padding: 30px; 
-            margin-left: 260px; 
+            margin-left: 260px; /* Layout Fix */
             width: calc(100% - 260px);
         }
 
@@ -882,45 +899,44 @@ COMMON_STYLES = """
         .dashboard-grid { 
             display: grid; 
             grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); 
-            gap: 25px; 
+            gap: 24px; 
             margin-bottom: 30px; 
         }
         .dashboard-card { 
-            background: rgba(255, 255, 255, 0.8);
-            backdrop-filter: blur(10px);
-            padding: 25px; 
-            border-radius: 16px; 
-            box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+            background: #fff;
+            padding: 24px; 
+            border-radius: 5px; 
+            box-shadow: var(--glass-shadow);
             cursor: pointer; transition: 0.3s; 
             display: flex; align-items: center; justify-content: space-between; 
-            text-decoration: none; border: 1px solid rgba(255,255,255,0.5);
+            text-decoration: none; border: 1px solid transparent;
         }
-        .dashboard-card:hover { transform: translateY(-5px); box-shadow: 0 15px 30px rgba(0,0,0,0.1); border-color: var(--primary-blue); }
-        .card-info h3 { font-size: 30px; font-weight: 700; margin: 0; color: #2d3436; }
-        .card-info p { margin: 0; font-size: 13px; color: #636e72; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+        .dashboard-card:hover { transform: translateY(-5px); box-shadow: 0 5px 25px rgba(0,0,0,0.1); }
+        
+        .card-info h3 { font-size: 24px; font-weight: 700; margin: 5px 0; color: var(--ct-heading-color); }
+        .card-info p { margin: 0; font-size: 13px; color: var(--ct-text-main); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
 
         /* Details Table */
-        .detail-table { width: 100%; border-collapse: separate; border-spacing: 0; margin-top: 15px; border-radius: 12px; overflow: hidden; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
-        .detail-table th { background: #fff; text-align: left; padding: 18px; color: #2d3436; font-weight: 700; font-size: 13px; text-transform: uppercase; border-bottom: 2px solid #f1f2f6; }
-        .detail-table td { background: rgba(255,255,255,0.7); padding: 16px 18px; color: #2d3436; font-size: 14px; border-bottom: 1px solid rgba(0,0,0,0.05); }
-        .detail-table tr:hover td { background: #fff; }
+        .detail-table { width: 100%; border-collapse: separate; border-spacing: 0; margin-top: 15px; border-radius: 5px; overflow: hidden; background: #fff; box-shadow: var(--glass-shadow); }
+        .detail-table th { background: #f9f9fd; text-align: left; padding: 15px; color: #6c757d; font-weight: 600; font-size: 13px; text-transform: uppercase; border-bottom: 1px solid #eef2f7; }
+        .detail-table td { padding: 15px; color: var(--ct-heading-color); font-size: 14px; border-bottom: 1px solid #eef2f7; vertical-align: middle; }
+        .detail-table tr:hover td { background: #fcfcfd; }
 
         /* Filter Section */
         .filter-container { 
-            background: rgba(255, 255, 255, 0.6); backdrop-filter: blur(10px);
-            padding: 20px; border-radius: 16px; 
-            box-shadow: 0 5px 15px rgba(0,0,0,0.03); 
+            background: #fff; 
+            padding: 20px; border-radius: 5px; 
+            box-shadow: var(--glass-shadow); 
             display: flex; gap: 15px; flex-wrap: wrap; margin-bottom: 25px; 
-            border: 1px solid rgba(255,255,255,0.5);
         }
         
-        /* Summary Cards */
-        .summary-cards-small { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 25px; }
-        .summary-card { background: rgba(255,255,255,0.8); padding: 25px; border-radius: 16px; text-align: center; box-shadow: 0 8px 20px rgba(0,0,0,0.05); border: 1px solid rgba(255,255,255,0.5); }
-        .summary-card h4 { font-size: 28px; color: var(--primary-blue); margin-bottom: 5px; font-weight: 700; }
-        .summary-card span { font-size: 12px; color: #636e72; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
+        /* Summary Cards on Details Page */
+        .summary-cards-small { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-bottom: 25px; }
+        .summary-card { background: #fff; padding: 24px; border-radius: 5px; text-align: center; box-shadow: var(--glass-shadow); }
+        .summary-card h4 { font-size: 28px; color: var(--ct-primary); margin-bottom: 5px; font-weight: 700; }
+        .summary-card span { font-size: 12px; color: var(--ct-text-main); font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
 
-        .sidebar-toggle { display: none; position: fixed; top: 15px; left: 15px; z-index: 1100; color: #2d3436; font-size: 24px; cursor: pointer; background: rgba(255,255,255,0.8); padding: 8px 12px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .sidebar-toggle { display: none; position: fixed; top: 15px; left: 15px; z-index: 1100; color: var(--ct-heading-color); font-size: 24px; cursor: pointer; background: #fff; padding: 5px 10px; border-radius: 5px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
 
         @media (max-width: 900px) {
             .admin-sidebar { transform: translateX(-100%); }
@@ -931,7 +947,7 @@ COMMON_STYLES = """
         }
     </style>
 """
-# --- Report Preview Template for Closing Report (UNCHANGED PRINT FORMAT) ---
+# --- Report Preview Template for Closing Report ---
 CLOSING_REPORT_PREVIEW_TEMPLATE = """
 <!DOCTYPE html>
 <html lang="en">
@@ -941,21 +957,21 @@ CLOSING_REPORT_PREVIEW_TEMPLATE = """
     <title>Closing Report Preview</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        body { background-color: #f8f9fa; padding: 30px 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; font-size: 1.1rem; }
-        .container { max-width: 1400px; }
+        body { background-color: #f4f5f8; padding: 30px 0; font-family: 'Nunito', sans-serif; font-size: 1.1rem; }
+        .container { max-width: 1400px; background: white; padding: 40px; box-shadow: 0 0 35px 0 rgba(154, 161, 171, .15); }
         .company-header { text-align: center; margin-bottom: 20px; border-bottom: 2px solid #000; padding-bottom: 10px; }
-        .company-name { font-size: 2.2rem; font-weight: 800; color: #2c3e50; text-transform: uppercase; letter-spacing: 1px; line-height: 1; }
-        .report-title { font-size: 1.1rem; color: #555; font-weight: 600; text-transform: uppercase; margin-top: 5px; }
+        .company-name { font-size: 2.2rem; font-weight: 800; color: #313a46; text-transform: uppercase; letter-spacing: 1px; line-height: 1; }
+        .report-title { font-size: 1.1rem; color: #6c757d; font-weight: 600; text-transform: uppercase; margin-top: 5px; }
         .date-section { font-size: 1.2rem; font-weight: 800; color: #000; margin-top: 5px; }
-        .info-container { margin-bottom: 15px; background: white; padding: 15px; display: flex; justify-content: space-between; align-items: flex-end;}
+        .info-container { margin-bottom: 15px; padding: 15px; display: flex; justify-content: space-between; align-items: flex-end; background: #f9f9fd; border: 1px solid #eef2f7;}
         .info-row { display: flex; flex-direction: column; gap: 5px; }
         .info-item { font-size: 1.2rem; font-weight: 600; color: #444; }
         .info-value { color: #000; font-weight: 800; }
-        .booking-box { background: #2c3e50; color: white; padding: 10px 20px; border-radius: 5px; text-align: right; box-shadow: 0 4px 10px rgba(44, 62, 80, 0.3); display: flex; flex-direction: column; justify-content: center; min-width: 200px; }
+        .booking-box { background: #313a46; color: white; padding: 10px 20px; border-radius: 5px; text-align: right; box-shadow: 0 4px 10px rgba(44, 62, 80, 0.3); display: flex; flex-direction: column; justify-content: center; min-width: 200px; }
         .booking-label { font-size: 1.1rem; opacity: 0.9; text-transform: uppercase; letter-spacing: 1px; font-weight: 700; }
         .booking-value { font-size: 1.8rem; font-weight: 800; line-height: 1.1; }
         .table-card { background: white; border-radius: 0; margin-bottom: 30px; border: none; }
-        .color-header { background-color: #2c3e50 !important; color: white; padding: 10px 15px; font-size: 1.4rem; font-weight: 800; text-transform: uppercase; border: 1px solid #000;}
+        .color-header { background-color: #313a46 !important; color: white; padding: 10px 15px; font-size: 1.4rem; font-weight: 800; text-transform: uppercase; border: 1px solid #000;}
         .table { margin-bottom: 0; width: 100%; border-collapse: collapse; font-size: 1rem; }
         .table th { background-color: #fff !important; color: #000 !important; text-align: center; border: 1px solid #000; padding: 8px; vertical-align: middle; font-weight: 900; font-size: 1.2rem; }
         .table td { text-align: center; vertical-align: middle; border: 1px solid #000; padding: 6px; color: #000; font-weight: 600; font-size: 1.1rem; }
@@ -963,21 +979,22 @@ CLOSING_REPORT_PREVIEW_TEMPLATE = """
         .col-input { background-color: #C4D09D !important; font-weight: 700; }
         .col-balance { font-weight: 700; color: #c0392b; }
         .total-row td { background-color: #fff !important; color: #000 !important; font-weight: 900; font-size: 1.2rem; border-top: 2px solid #000; }
-        .action-bar { margin-bottom: 20px; display: flex; justify-content: flex-end; gap: 15px; position: sticky; top: 0; z-index: 1000; background: #f8f9fa; padding: 10px 0; }
-        .btn-print { background-color: #2c3e50; color: white; border-radius: 50px; padding: 10px 30px; font-weight: 600; }
-        .btn-excel { background-color: #27ae60; color: white; border-radius: 50px; padding: 10px 30px; font-weight: 600; text-decoration: none; display: inline-block; }
-        .btn-excel:hover { color: white; background-color: #219150; }
+        .action-bar { margin-bottom: 20px; display: flex; justify-content: flex-end; gap: 15px; position: sticky; top: 0; z-index: 1000; background: #fff; padding: 10px 0; border-bottom: 1px solid #eee;}
+        .btn-print { background-color: #313a46; color: white; border-radius: 4px; padding: 10px 30px; font-weight: 600; border: none;}
+        .btn-excel { background-color: #0acf97; color: white; border-radius: 4px; padding: 10px 30px; font-weight: 600; text-decoration: none; display: inline-block; }
+        .btn-back { background-color: #727cf5; color: white; border-radius: 4px; padding: 10px 30px; font-weight: 600; text-decoration: none; display: inline-block; }
         .footer-credit { text-align: center; margin-top: 40px; margin-bottom: 20px; font-size: 1rem; color: #2c3e50; padding-top: 10px; border-top: 1px solid #000; font-weight: 600;}
         @media print {
             @page { margin: 5mm; size: portrait; } 
             body { background-color: white; padding: 0; }
             .no-print { display: none !important; }
             .action-bar { display: none; }
+            .container { box-shadow: none; padding: 0; }
             .table th, .table td { border: 1px solid #000 !important; }
-            .color-header { background-color: #2c3e50 !important; -webkit-print-color-adjust: exact; color: white !important;}
+            .color-header { background-color: #313a46 !important; -webkit-print-color-adjust: exact; color: white !important;}
             .col-3pct { background-color: #B9C2DF !important; -webkit-print-color-adjust: exact; }
             .col-input { background-color: #C4D09D !important; -webkit-print-color-adjust: exact; }
-            .booking-box { background-color: #2c3e50 !important; -webkit-print-color-adjust: exact; color: white !important; border: 1px solid #000;}
+            .booking-box { background-color: #313a46 !important; -webkit-print-color-adjust: exact; color: white !important; border: 1px solid #000;}
             .total-row td { font-weight: 900 !important; color: #000 !important; }
         }
     </style>
@@ -985,9 +1002,9 @@ CLOSING_REPORT_PREVIEW_TEMPLATE = """
 <body>
     <div class="container">
         <div class="action-bar no-print">
-            <a href="/" class="btn btn-outline-secondary rounded-pill px-4">Back to Dashboard</a>
-            <a href="/download-closing-excel?ref_no={{ ref_no }}" class="btn btn-excel"><i class="fas fa-file-excel"></i> Download Excel</a>
-            <button onclick="window.print()" class="btn btn-print">🖨️ Print Report</button>
+            <a href="/" class="btn-back">Back to Dashboard</a>
+            <a href="/download-closing-excel?ref_no={{ ref_no }}" class="btn-excel">Download Excel</a>
+            <button onclick="window.print()" class="btn-print">Print Report</button>
         </div>
         <div class="company-header">
             <div class="company-name">Cotton Clothing BD Limited</div>
@@ -1088,115 +1105,362 @@ CLOSING_REPORT_PREVIEW_TEMPLATE = """
 </html>
 """
 
-# --- ACCESSORIES SEARCH TEMPLATE ---
-ACCESSORIES_SEARCH_TEMPLATE = f"""
+# --- LOGIN TEMPLATE (Arclon Design) ---
+LOGIN_TEMPLATE = f"""
 <!doctype html>
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Accessories Dashboard</title>
+    <title>Log In | Arclon Admin</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     {COMMON_STYLES}
 </head>
-<body>
-    <div class="center-container">
-        <div class="glass-card">
-            <h1><i class="fas fa-boxes"></i> Accessories</h1>
-            <p class="subtitle">Find Booking to Manage Challan</p>
-            <form action="/admin/accessories/input" method="post">
-                <div class="input-group">
-                    <label for="ref_no">Booking Reference No</label>
-                    <input type="text" id="ref_no" name="ref_no" placeholder="e.g. Booking-123..." required>
-                </div>
-                <button type="submit">Proceed</button>
-            </form>
-            <div style="margin-top: 25px; display: flex; justify-content: center; gap: 20px; align-items: center;">
-                {{% if session.role == 'admin' or (session.permissions and session.permissions|length > 1) %}}
-                <a href="/" style="color:var(--text-main); text-decoration:none; font-size:13px; opacity:0.8; font-weight:600;"><i class="fas fa-arrow-left"></i> Dashboard</a>
-                {{% endif %}}
-                <a href="/logout" style="color:#e74c3c; text-decoration:none; font-size:13px; border: 1px solid rgba(231, 76, 60, 0.5); padding: 8px 15px; border-radius: 20px; transition: all 0.3s ease;">
-                    <i class="fas fa-sign-out-alt"></i> Sign Out
-                </a>
+<body class="authentication-bg">
+    <div class="account-pages mt-5 mb-5">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-lg-5">
+                    <div class="glass-card">
+                        <div class="card-header pt-4 pb-4 text-center bg-primary" style="border-radius: 5px 5px 0 0; margin: -30px -30px 30px -30px;">
+                            <a href="#">
+                                <span style="color: #fff; font-size: 24px; font-weight: 800; letter-spacing: 2px;">ARCLON</span>
+                            </a>
+                        </div>
+
+                        <div class="card-body p-4">
+                            <div class="text-center w-75 m-auto">
+                                <h4 class="text-dark-50 text-center mt-0 fw-bold">Sign In</h4>
+                                <p class="text-muted mb-4">Enter your credentials to access admin panel.</p>
+                            </div>
+
+                            <form action="/login" method="post">
+                                <div class="input-group">
+                                    <label for="username">Username</label>
+                                    <input type="text" id="username" name="username" placeholder="Enter your username" required>
+                                </div>
+
+                                <div class="input-group">
+                                    <label for="password">Password</label>
+                                    <input type="password" id="password" name="password" placeholder="Enter your password" required>
+                                </div>
+
+                                <div class="mb-3 mb-0 text-center">
+                                    <button class="btn btn-primary" type="submit"> Log In </button>
+                                </div>
+                            </form>
+                            
+                            {{% with messages = get_flashed_messages() %}}
+                                {{% if messages %}}
+                                    <div style="margin-top: 15px; padding: 10px; background: rgba(250, 92, 124, 0.1); color: #fa5c7c; border: 1px solid rgba(250, 92, 124, 0.2); border-radius: 4px; text-align: center; font-size: 13px;">
+                                        {{{{ messages[0] }}}}
+                                    </div>
+                                {{% endif %}}
+                            {{% endwith %}}
+                        </div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-12 text-center">
+                            <p class="text-muted">© 2025 Arclon Clone by Mehedi</p>
+                        </div>
+                    </div>
+                </div> 
             </div>
-            <div class="footer-credit">© Mehedi Hasan</div>
         </div>
     </div>
 </body>
 </html>
 """
 
-# --- ACCESSORIES INPUT TEMPLATE ---
+# --- USER DASHBOARD (Arclon Design) ---
+USER_DASHBOARD_TEMPLATE = f"""
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Dashboard | User Panel</title>
+    {COMMON_STYLES}
+</head>
+<body>
+    <div id="wrapper">
+        <div class="left-side-menu">
+            <div class="logo-box">
+                <a href="/" class="logo-text">ARCLON</a>
+            </div>
+            <div class="h-100">
+                <ul class="side-nav list-unstyled">
+                    <li class="side-nav-title">Navigation</li>
+                    <li class="side-nav-item">
+                        <a href="/" class="side-nav-link active">
+                            <i class="ri-dashboard-line"></i> <span> Dashboard </span>
+                        </a>
+                    </li>
+                    {{% if 'accessories' in session.permissions %}}
+                    <li class="side-nav-item">
+                        <a href="/admin/accessories" class="side-nav-link">
+                            <i class="ri-shopping-cart-2-line"></i> <span> Accessories </span>
+                        </a>
+                    </li>
+                    {{% endif %}}
+                </ul>
+                <div style="position: absolute; bottom: 20px; width: 100%; padding: 0 20px;">
+                    <a href="/logout" class="btn btn-outline-light w-100 btn-sm">Log Out</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="content-page">
+            <div class="content">
+                <div class="navbar-custom">
+                    <div class="search-bar">
+                        <h4 class="page-title mb-0" style="color: var(--ct-heading-color);">User Dashboard</h4>
+                    </div>
+                    <div class="d-flex align-items-center gap-4">
+                        <div class="user-profile">
+                            <img src="https://coderthemes.com/arclon/layouts/assets/images/users/avatar-1.jpg" alt="user">
+                            <div>
+                                <span class="d-block fw-bold" style="color: var(--ct-heading-color); font-size: 14px;">{{{{ session.user }}}}</span>
+                                <span class="d-block text-muted" style="font-size: 12px;">User</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="container-fluid">
+                    <div class="row">
+                        <div class="col-12" style="margin-top: 20px;">
+                            <div class="alert alert-info" role="alert">
+                                <strong>Welcome!</strong> Select a tool below to get started.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        {{% if 'closing' in session.permissions %}}
+                        <div class="col-xl-4 col-md-6">
+                            <div class="glass-card text-center">
+                                <i class="ri-file-list-3-line text-primary" style="font-size: 40px;"></i>
+                                <h4 class="mt-3">Closing Report</h4>
+                                <p class="text-muted">Generate production closing reports.</p>
+                                <form action="/generate-report" method="post" onsubmit="startDownloadProcess()">
+                                    <div class="input-group">
+                                        <input type="text" name="ref_no" placeholder="Enter Ref No..." required>
+                                    </div>
+                                    <button type="submit">Generate</button>
+                                </form>
+                            </div>
+                        </div>
+                        {{% endif %}}
+
+                        {{% if 'po_sheet' in session.permissions %}}
+                        <div class="col-xl-4 col-md-6">
+                            <div class="glass-card text-center">
+                                <i class="ri-file-excel-2-line text-success" style="font-size: 40px;"></i>
+                                <h4 class="mt-3">PO Generator</h4>
+                                <p class="text-muted">Create PO sheets from PDF files.</p>
+                                <form action="/generate-po-report" method="post" enctype="multipart/form-data" onsubmit="startDownloadProcess()">
+                                    <div class="input-group">
+                                        <input type="file" name="pdf_files" multiple accept=".pdf" required>
+                                    </div>
+                                    <button type="submit" class="btn-success" style="background-color: var(--ct-success);">Generate</button>
+                                </form>
+                            </div>
+                        </div>
+                        {{% endif %}}
+
+                        {{% if 'accessories' in session.permissions %}}
+                        <div class="col-xl-4 col-md-6">
+                            <div class="glass-card text-center">
+                                <i class="ri-shopping-bag-3-line text-warning" style="font-size: 40px;"></i>
+                                <h4 class="mt-3">Accessories</h4>
+                                <p class="text-muted">Manage accessories challans.</p>
+                                <a href="/admin/accessories" class="btn btn-primary w-100 mt-3" style="background-color: var(--ct-warning); border: none;">Go to Dashboard</a>
+                            </div>
+                        </div>
+                        {{% endif %}}
+                    </div>
+                </div>
+            </div>
+            
+            <footer class="footer text-center" style="padding: 20px; color: #98a6ad;">
+                2025 © Arclon Clone
+            </footer>
+        </div>
+    </div>
+    
+    <div id="loading-overlay">
+        <div class="spinner"></div>
+        <div style="margin-top: 10px; font-weight: 600;">Processing...</div>
+    </div>
+
+    <script>
+        function startDownloadProcess() {{
+            const overlay = document.getElementById('loading-overlay'); 
+            overlay.style.display = 'flex';
+            setTimeout(() => {{ overlay.style.display = 'none'; }}, 3000);
+        }}
+    </script>
+</body>
+</html>
+"""
+
+# --- ACCESSORIES SEARCH TEMPLATE (Arclon Design) ---
+ACCESSORIES_SEARCH_TEMPLATE = f"""
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Accessories | Search</title>
+    {COMMON_STYLES}
+</head>
+<body>
+    <div id="wrapper">
+        <div class="left-side-menu">
+            <div class="logo-box">
+                <a href="/" class="logo-text">ARCLON</a>
+            </div>
+            <div class="h-100">
+                <ul class="side-nav list-unstyled">
+                    <li class="side-nav-title">Navigation</li>
+                    <li class="side-nav-item">
+                        <a href="/" class="side-nav-link">
+                            <i class="ri-dashboard-line"></i> <span> Dashboard </span>
+                        </a>
+                    </li>
+                    <li class="side-nav-item">
+                        <a href="/admin/accessories" class="side-nav-link active">
+                            <i class="ri-shopping-cart-2-line"></i> <span> Accessories </span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="content-page">
+            <div class="content">
+                <div class="navbar-custom">
+                    <h4 class="page-title mb-0" style="color: var(--ct-heading-color);">Accessories Management</h4>
+                </div>
+
+                <div class="container-fluid d-flex justify-content-center align-items-center" style="min-height: 70vh;">
+                    <div class="glass-card" style="width: 100%; max-width: 500px;">
+                        <h2 class="text-center mb-1">Find Booking</h2>
+                        <p class="text-center text-muted mb-4">Enter booking reference number to manage challan</p>
+                        
+                        <form action="/admin/accessories/input" method="post">
+                            <div class="input-group">
+                                <label>Booking Reference No</label>
+                                <input type="text" name="ref_no" placeholder="e.g. Booking-123..." required>
+                            </div>
+                            <button type="submit" class="w-100">Proceed</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+"""
+
+# --- ACCESSORIES INPUT TEMPLATE (Arclon Design) ---
 ACCESSORIES_INPUT_TEMPLATE = f"""
 <!doctype html>
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>New Challan Entry</title>
+    <title>New Challan</title>
     {COMMON_STYLES}
-    <style>
-        option {{ color: #000; background: #fff; }}
-    </style>
 </head>
 <body>
-    <div id="loading-overlay">
-        <div class="spinner"></div>
-        <div id="loading-text">Saving Record...</div>
-    </div>
-    <div class="center-container">
-        <div class="glass-card" style="max-width: 500px;">
-            <h1><i class="fas fa-plus-circle"></i> New Challan</h1>
-            <p class="subtitle">Booking: {{{{ ref }}}}</p>
-            <div style="background: rgba(255,255,255,0.6); padding: 15px; border-radius: 12px; margin-bottom: 25px; font-size: 15px; border: 1px solid rgba(0,0,0,0.05); color: #2d3436;">
-                <strong>Buyer:</strong> {{{{ buyer }}}} <br> <strong>Style:</strong> {{{{ style }}}}
+    <div id="wrapper">
+        <div class="left-side-menu">
+            <div class="logo-box"><a href="/" class="logo-text">ARCLON</a></div>
+            <div class="h-100">
+                <ul class="side-nav list-unstyled">
+                    <li class="side-nav-item"><a href="/" class="side-nav-link"><i class="ri-dashboard-line"></i> <span> Dashboard </span></a></li>
+                    <li class="side-nav-item"><a href="/admin/accessories" class="side-nav-link active"><i class="ri-shopping-cart-2-line"></i> <span> Accessories </span></a></li>
+                </ul>
             </div>
-            <form action="/admin/accessories/save" method="post" onsubmit="showSuccessAnim()">
-                <input type="hidden" name="ref" value="{{{{ ref }}}}">
-                <div class="input-group">
-                    <label>Select Item Type</label>
-                    <select name="item_type">
-                        <option value="" disabled selected>-- Select Item (Top/Btm) --</option>
-                        <option value="Top">Top</option>
-                        <option value="Bottom">Bottom</option>
-                    </select>
+        </div>
+
+        <div class="content-page">
+            <div class="content">
+                <div class="navbar-custom">
+                    <h4 class="page-title mb-0">Create Challan</h4>
                 </div>
-                <div class="input-group">
-                    <label>Select Color</label>
-                    <select name="color" required>
-                        <option value="" disabled selected>-- Choose Color --</option>
-                        {{% for color in colors %}}
-                        <option value="{{{{ color }}}}">{{{{ color }}}}</option>
-                        {{% endfor %}}
-                    </select>
+
+                <div class="container-fluid d-flex justify-content-center mt-4">
+                    <div class="glass-card" style="width: 100%; max-width: 600px;">
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <h3 class="m-0">New Entry</h3>
+                            <span class="badge bg-primary" style="font-size: 14px;">{{{{ ref }}}}</span>
+                        </div>
+                        
+                        <div class="p-3 mb-4 rounded" style="background: rgba(114, 124, 245, 0.1); border: 1px solid rgba(114, 124, 245, 0.2);">
+                            <div class="row">
+                                <div class="col-6"><strong>Buyer:</strong> {{{{ buyer }}}}</div>
+                                <div class="col-6 text-end"><strong>Style:</strong> {{{{ style }}}}</div>
+                            </div>
+                        </div>
+
+                        <form action="/admin/accessories/save" method="post">
+                            <input type="hidden" name="ref" value="{{{{ ref }}}}">
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="input-group">
+                                        <label>Item Type</label>
+                                        <select name="item_type">
+                                            <option value="" disabled selected>-- Select --</option>
+                                            <option value="Top">Top</option>
+                                            <option value="Bottom">Bottom</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="input-group">
+                                        <label>Color</label>
+                                        <select name="color" required>
+                                            <option value="" disabled selected>-- Choose --</option>
+                                            {{% for color in colors %}}
+                                            <option value="{{{{ color }}}}">{{{{ color }}}}</option>
+                                            {{% endfor %}}
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="input-group">
+                                        <label>Line No</label>
+                                        <input type="text" name="line_no" placeholder="e.g. Line-12" required>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="input-group">
+                                        <label>Size</label>
+                                        <input type="text" name="size" placeholder="Optional" value="ALL">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="input-group">
+                                <label>Quantity</label>
+                                <input type="number" name="qty" placeholder="Enter Quantity" required>
+                            </div>
+
+                            <button type="submit" class="w-100">Save & View Report</button>
+                        </form>
+                        
+                        <div class="text-center mt-3">
+                            <a href="/admin/accessories/print?ref={{{{ ref }}}}" target="_blank" style="color: var(--ct-primary); font-weight: 600;">View Report Only</a>
+                        </div>
+                    </div>
                 </div>
-                <div class="input-group">
-                    <label>Sewing Line Number</label>
-                    <input type="text" name="line_no" placeholder="e.g. Line-12" required>
-                </div>
-                <div class="input-group">
-                    <label>Size (Optional)</label>
-                    <input type="text" name="size" placeholder="e.g. XL or ALL" value="ALL">
-                </div>
-                <div class="input-group">
-                    <label>Quantity</label>
-                    <input type="number" name="qty" placeholder="Enter Qty" required>
-                </div>
-                <button type="submit">Save & View Report</button>
-            </form>
-            <div style="margin-top: 15px;">
-                <a href="/admin/accessories/print?ref={{{{ ref }}}}" style="color:var(--primary-blue); font-size:12px; margin-right: 15px; font-weight:600;">View Report Only</a>
-                <a href="/admin/accessories" style="color:var(--text-main); text-decoration:none; font-size:12px;">Back</a>
             </div>
-             <div class="footer-credit">© Mehedi Hasan</div>
         </div>
     </div>
-    <script>
-        function showSuccessAnim() {{
-            const overlay = document.getElementById('loading-overlay');
-            overlay.style.display = 'flex';
-            return true;
-        }}
-    </script>
 </body>
 </html>
 """
@@ -1207,39 +1471,44 @@ ACCESSORIES_EDIT_TEMPLATE = f"""
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Edit Challan</title>
     {COMMON_STYLES}
 </head>
 <body>
-    <div class="center-container">
-        <div class="glass-card">
-            <h1><i class="fas fa-edit"></i> Edit Challan</h1>
-            <p class="subtitle">Update entry for {{{{ ref }}}}</p>
-            <form action="/admin/accessories/update" method="post">
-                <input type="hidden" name="ref" value="{{{{ ref }}}}">
-                <input type="hidden" name="index" value="{{{{ index }}}}">
-                <div class="input-group">
-                    <label>Sewing Line Number</label>
-                    <input type="text" name="line_no" value="{{{{ item.line }}}}" required>
+    <div id="wrapper">
+        <div class="content-page" style="margin-left:0; width:100%;"> <div class="content">
+                <div class="container-fluid d-flex justify-content-center align-items-center" style="min-height: 100vh;">
+                    <div class="glass-card" style="width: 100%; max-width: 500px;">
+                        <h3 class="mb-4">Edit Challan Entry</h3>
+                        <form action="/admin/accessories/update" method="post">
+                            <input type="hidden" name="ref" value="{{{{ ref }}}}">
+                            <input type="hidden" name="index" value="{{{{ index }}}}">
+                            
+                            <div class="input-group">
+                                <label>Line Number</label>
+                                <input type="text" name="line_no" value="{{{{ item.line }}}}" required>
+                            </div>
+                            <div class="input-group">
+                                <label>Color</label>
+                                <input type="text" name="color" value="{{{{ item.color }}}}" required>
+                            </div>
+                            <div class="input-group">
+                                <label>Size</label>
+                                <input type="text" name="size" value="{{{{ item.size }}}}" required>
+                            </div>
+                            <div class="input-group">
+                                <label>Quantity</label>
+                                <input type="number" name="qty" value="{{{{ item.qty }}}}" required>
+                            </div>
+                            
+                            <button type="submit" class="w-100">Update Entry</button>
+                        </form>
+                        <div class="text-center mt-3">
+                            <a href="/admin/accessories/print?ref={{{{ ref }}}}" style="color: var(--ct-danger);">Cancel</a>
+                        </div>
+                    </div>
                 </div>
-                <div class="input-group">
-                    <label>Color</label>
-                    <input type="text" name="color" value="{{{{ item.color }}}}" required>
-                </div>
-                <div class="input-group">
-                    <label>Size</label>
-                    <input type="text" name="size" value="{{{{ item.size }}}}" required>
-                </div>
-                <div class="input-group">
-                    <label>Quantity</label>
-                    <input type="number" name="qty" value="{{{{ item.qty }}}}" required>
-                </div>
-                <button type="submit">Update Entry</button>
-            </form>
-            <br>
-            <a href="/admin/accessories/print?ref={{{{ ref }}}}" style="color:var(--text-main); text-decoration:none; font-size:12px;">Cancel</a>
-            <div class="footer-credit">© Mehedi Hasan</div>
+            </div>
         </div>
     </div>
 </body>
@@ -1512,123 +1781,6 @@ PO_REPORT_TEMPLATE = """
 </html>
 """
 
-# --- LOGIN TEMPLATE (Glassmorphism) ---
-LOGIN_TEMPLATE = f"""
-<!doctype html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>ERP Login</title>
-    {COMMON_STYLES}
-</head>
-<body>
-    <div class="center-container">
-        <div class="glass-card">
-            <h1>System Access</h1>
-            <p class="subtitle">Secure Gateway for ERP Reports</p>
-            <form action="/login" method="post">
-                <div class="input-group">
-                    <label for="username">Username</label>
-                    <input type="text" id="username" name="username" placeholder="Enter Username" required>
-                </div>
-                <div class="input-group">
-                    <label for="password">Authentication PIN</label>
-                    <input type="password" id="password" name="password" placeholder="Enter Password" required>
-                </div>
-                <button type="submit">Verify & Enter</button>
-            </form>
-            {{% with messages = get_flashed_messages() %}}
-                {{% if messages %}}
-                    <div class="flash" style="background: rgba(231, 76, 60, 0.2); color: #c0392b; padding: 10px; border-radius: 8px; margin-top: 15px; font-size: 13px; border: 1px solid rgba(231, 76, 60, 0.4);">{{{{ messages[0] }}}}</div>
-                {{% endif %}}
-            {{% endwith %}}
-            <div class="footer-credit">© Mehedi Hasan</div>
-        </div>
-    </div>
-</body>
-</html>
-"""
-
-# --- USER DASHBOARD (Glassmorphism) ---
-USER_DASHBOARD_TEMPLATE = f"""
-<!doctype html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>User Dashboard</title>
-    {COMMON_STYLES}
-</head>
-<body>
-    <div id="loading-overlay">
-        <div class="spinner"></div>
-        <div id="loading-text">Generating Report...</div>
-    </div>
-
-    <div class="center-container">
-        <div class="glass-card" style="max-width: 500px;">
-            <h1>User Dashboard</h1>
-            <p class="subtitle">Welcome, <span style="font-weight:600; color:var(--primary-blue);">{{{{ session.user }}}}</span></p>
-            
-            {{% if 'closing' in session.permissions %}}
-            <div style="margin-bottom: 25px;">
-                <h4 style="margin-bottom:10px; border-bottom:1px solid rgba(0,0,0,0.1); padding-bottom:5px; font-size: 16px; color:var(--text-main);">Closing Report</h4>
-                <form action="/generate-report" method="post" id="reportForm" onsubmit="startDownloadProcess()">
-                    <div class="input-group">
-                        <label for="ref_no">Internal Reference No</label>
-                        <input type="text" id="ref_no" name="ref_no" placeholder="Booking-123/456.." required>
-                        <input type="hidden" name="download_token" id="download_token">
-                    </div>
-                    <button type="submit">Generate Report</button>
-                </form>
-            </div>
-            {{% endif %}}
-
-            {{% if 'po_sheet' in session.permissions %}}
-             <div style="margin-bottom: 25px;">
-                <h4 style="margin-bottom:10px; border-bottom:1px solid rgba(0,0,0,0.1); padding-bottom:5px; font-size: 16px; color:var(--text-main);">PO Sheet Generator</h4>
-                 <form action="/generate-po-report" method="post" enctype="multipart/form-data" onsubmit="startDownloadProcess()">
-                    <div class="input-group">
-                        <label for="pdf_files">Select PDF Files</label>
-                        <input type="file" id="pdf_files" name="pdf_files" multiple accept=".pdf" required>
-                    </div>
-                    <button type="submit" style="background: var(--primary-blue);">Generate Report</button>
-                </form>
-            </div>
-            {{% endif %}}
-
-            {{% if 'accessories' in session.permissions %}}
-            <div style="margin-bottom: 25px;">
-                <h4 style="margin-bottom:10px; border-bottom:1px solid rgba(0,0,0,0.1); padding-bottom:5px; font-size: 16px; color:var(--text-main);">Accessories</h4>
-                <a href="/admin/accessories" style="display:block; width:100%; text-align:center; padding: 14px; background: #6c5ce7; color:white; border-radius:10px; text-decoration:none; font-weight:600; box-shadow: 0 4px 15px rgba(108, 92, 231, 0.3);">
-                    <i class="fas fa-boxes"></i> Open Accessories Dashboard
-                </a>
-            </div>
-            {{% endif %}}
-
-            {{% with messages = get_flashed_messages() %}}
-                {{% if messages %}}
-                    <div class="flash" style="background: rgba(231, 76, 60, 0.2); color:#c0392b; padding: 10px; border-radius: 8px; margin-top: 15px; font-size: 13px;">{{{{ messages[0] }}}}</div>
-                {{% endif %}}
-            {{% endwith %}}
-            
-            <a href="/logout" style="display: inline-block; margin-top: 20px; color: #636e72; text-decoration: none; font-size: 13px; padding: 5px 15px; border: 1px solid rgba(0,0,0,0.1); border-radius: 20px;">Sign Out</a>
-            <div class="footer-credit">© Mehedi Hasan</div>
-        </div>
-    </div>
-    <script>
-        function startDownloadProcess() {{
-            const overlay = document.getElementById('loading-overlay'); 
-            overlay.style.display = 'flex';
-            setTimeout(() => {{ overlay.style.display = 'none'; }}, 3000);
-            return true;
-        }}
-    </script>
-</body>
-</html>
-"""
-
 # --- NEW: DETAILS PAGE TEMPLATE (FULLY UPDATED - WITH SIDEBAR & LINE NO) ---
 DETAILS_PAGE_TEMPLATE = f"""
 <!doctype html>
@@ -1638,130 +1790,140 @@ DETAILS_PAGE_TEMPLATE = f"""
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{{{{ title }}}}</title>
     {COMMON_STYLES}
-    <style>
-        .details-container {{ padding: 30px; max-width: 1200px; margin: 0 auto; }}
-        /* Persistent Sidebar Fix for Details Page */
-        .admin-content {{ margin-left: 260px; width: calc(100% - 260px); }}
-        @media (max-width: 900px) {{ 
-            .admin-content {{ margin-left: 0; width: 100%; }}
-        }}
-    </style>
 </head>
 <body>
-    <div class="sidebar-toggle" onclick="toggleSidebar()"><i class="fas fa-bars"></i></div>
-    
-    <div class="admin-container">
-        <div class="admin-sidebar" id="sidebar">
-            <div class="sidebar-header">
-                <h2>Admin Panel</h2>
+    <div id="wrapper">
+        <div class="left-side-menu">
+            <div class="logo-box">
+                <a href="/" class="logo-text">ARCLON</a>
             </div>
-            <div class="nav-menu">
-                <a href="/" class="nav-link"><i class="fas fa-home"></i> Dashboard</a>
-                <a href="/admin/details/closing" class="nav-link"><i class="fas fa-file-export"></i> Closing Reports</a>
-                <a href="/admin/accessories" class="nav-link"><i class="fas fa-box-open"></i> Accessories</a>
-                <a href="/admin/details/po" class="nav-link"><i class="fas fa-file-invoice"></i> PO Sheet</a>
-            </div>
-            <div style="margin-top: auto; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 20px;">
-                <a href="/logout" class="nav-link" style="color: #ff7675; justify-content: center;"><i class="fas fa-sign-out-alt"></i> Sign Out</a>
+            <div class="h-100">
+                <ul class="side-nav list-unstyled">
+                    <li class="side-nav-title">Navigation</li>
+                    <li class="side-nav-item">
+                        <a href="/" class="side-nav-link">
+                            <i class="ri-dashboard-line"></i> <span> Dashboard </span>
+                        </a>
+                    </li>
+                    <li class="side-nav-item">
+                        <a href="/admin/accessories" class="side-nav-link">
+                            <i class="ri-shopping-cart-2-line"></i> <span> Accessories </span>
+                        </a>
+                    </li>
+                    <li class="side-nav-item">
+                        <a href="/admin/details/closing" class="side-nav-link">
+                            <i class="ri-file-list-3-line"></i> <span> Closing Reports </span>
+                        </a>
+                    </li>
+                    <li class="side-nav-item">
+                        <a href="/admin/details/po" class="side-nav-link">
+                            <i class="ri-file-excel-2-line"></i> <span> PO Sheets </span>
+                        </a>
+                    </li>
+                    <li class="side-nav-item">
+                        <a href="/admin/details/users" class="side-nav-link">
+                            <i class="ri-group-line"></i> <span> Users </span>
+                        </a>
+                    </li>
+                </ul>
             </div>
         </div>
 
-        <div class="admin-content">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
-                <div>
-                    <h1 style="color: #2d3436;">{{{{ title }}}}</h1>
-                    <p style="color: #636e72;">Lifetime Records Overview</p>
+        <div class="content-page">
+            <div class="content">
+                <div class="navbar-custom">
+                    <h4 class="page-title mb-0" style="color: var(--ct-heading-color);">{{{{ title }}}}</h4>
                 </div>
-            </div>
 
-            {{% if type != 'users' %}}
-            <div class="summary-cards-small">
-                <div class="summary-card">
-                    <h4>{{{{ stats.today }}}}</h4>
-                    <span>Today</span>
-                </div>
-                <div class="summary-card">
-                    <h4>{{{{ stats.week }}}}</h4>
-                    <span>Last 7 Days</span>
-                </div>
-                <div class="summary-card">
-                    <h4>{{{{ stats.month }}}}</h4>
-                    <span>Last 30 Days</span>
-                </div>
-            </div>
-            {{% endif %}}
+                <div class="container-fluid mt-4">
+                    {{% if type != 'users' %}}
+                    <div class="summary-cards-small">
+                        <div class="summary-card">
+                            <h4>{{{{ stats.today }}}}</h4>
+                            <span>Today</span>
+                        </div>
+                        <div class="summary-card">
+                            <h4>{{{{ stats.week }}}}</h4>
+                            <span>Last 7 Days</span>
+                        </div>
+                        <div class="summary-card">
+                            <h4>{{{{ stats.month }}}}</h4>
+                            <span>Last 30 Days</span>
+                        </div>
+                    </div>
+                    {{% endif %}}
 
-            <div class="filter-container">
-                <div class="filter-group">
-                    <input type="text" id="searchInput" onkeyup="filterTable()" placeholder="Search by Ref, Buyer or User...">
-                </div>
-                {{% if type != 'users' %}}
-                <div class="filter-group" style="display: flex; gap: 10px; align-items: center;">
-                    <input type="text" id="startDate" placeholder="Start Date" onfocus="(this.type='date')" onblur="(this.type='text')">
-                    <span style="color:#636e72;">to</span>
-                    <input type="text" id="endDate" placeholder="End Date" onfocus="(this.type='date')" onblur="(this.type='text')">
-                    <button onclick="filterDate()" style="width: auto; margin: 0; padding: 10px 20px;">Go</button>
-                </div>
-                {{% endif %}}
-                <button onclick="window.location.reload()" style="width: auto; margin: 0; padding: 10px 15px; background: #636e72;"><i class="fas fa-sync"></i></button>
-            </div>
+                    <div class="filter-container">
+                        <div class="input-group" style="margin-bottom:0; flex:1;">
+                            <input type="text" id="searchInput" onkeyup="filterTable()" placeholder="Search by Ref, Buyer or User...">
+                        </div>
+                        {{% if type != 'users' %}}
+                        <div style="display: flex; gap: 10px; align-items: center; flex:1;">
+                            <input type="text" id="startDate" placeholder="Start Date" onfocus="(this.type='date')" onblur="(this.type='text')" style="width:100%;">
+                            <span style="color:#6c757d;">to</span>
+                            <input type="text" id="endDate" placeholder="End Date" onfocus="(this.type='date')" onblur="(this.type='text')" style="width:100%;">
+                            <button onclick="filterDate()" style="width: auto; margin: 0; padding: 10px 20px;">Go</button>
+                        </div>
+                        {{% endif %}}
+                        <button onclick="window.location.reload()" style="width: auto; margin: 0; padding: 10px 15px; background: #6c757d;"><i class="fas fa-sync"></i></button>
+                    </div>
 
-            <div class="glass-card" style="padding: 20px;">
-                <div style="overflow-x: auto;">
-                    <table class="detail-table" id="dataTable">
-                        <thead>
-                            <tr>
-                                {{% for col in columns %}}
-                                <th>{{{{ col }}}}</th>
-                                {{% endfor %}}
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {{% for row in data %}}
-                            <tr>
-                                {{% if type == 'accessories' %}}
-                                    <td>{{{{ row.ref }}}}</td>
-                                    <td>{{{{ row.buyer }}}}</td>
-                                    <td>{{{{ row.line }}}}</td> <td>{{{{ row.qty }}}}</td>
-                                    <td class="date-col">{{{{ row.date }}}}</td>
-                                    <td>
-                                        <a href="/admin/accessories/print?ref={{ row.ref }}" target="_blank" 
-                                           style="background: var(--primary-blue); padding: 8px 15px; border-radius: 6px; color: white; text-decoration: none; font-size: 12px; font-weight: 600; display: inline-block; box-shadow: 0 4px 6px rgba(0, 123, 255, 0.2);">
-                                           <i class="fas fa-print"></i> View Challan
-                                        </a>
-                                    </td>
-                                {{% elif type == 'users' %}}
-                                    <td>{{{{ row.username }}}}</td>
-                                    <td>{{{{ row.role }}}}</td>
-                                    <td>{{{{ row.created_at }}}}</td>
-                                    <td>{{{{ row.last_login }}}}</td>
-                                    <td>{{{{ row.last_duration }}}}</td>
-                                {{% elif type == 'closing' %}}
-                                    <td>{{{{ row.ref }}}}</td>
-                                    <td>{{{{ row.user }}}}</td>
-                                    <td class="date-col">{{{{ row.date }}}}</td>
-                                    <td>{{{{ row.time }}}}</td>
-                                {{% elif type == 'po' %}}
-                                    <td>{{{{ row.user }}}}</td>
-                                    <td>{{{{ row.file_count }}}} Files</td>
-                                    <td class="date-col">{{{{ row.date }}}}</td>
-                                    <td>{{{{ row.time }}}}</td>
-                                {{% endif %}}
-                            </tr>
-                            {{% else %}}
-                            <tr>
-                                <td colspan="{{{{ columns|length }}}}" style="text-align:center; opacity:0.6; padding: 20px;">No records found.</td>
-                            </tr>
-                            {{% endfor %}}
-                        </tbody>
-                    </table>
+                    <div class="glass-card" style="padding: 0; overflow:hidden;">
+                        <div style="overflow-x: auto;">
+                            <table class="detail-table w-100" id="dataTable">
+                                <thead>
+                                    <tr>
+                                        {{% for col in columns %}}
+                                        <th>{{{{ col }}}}</th>
+                                        {{% endfor %}}
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {{% for row in data %}}
+                                    <tr>
+                                        {{% if type == 'accessories' %}}
+                                            <td>{{{{ row.ref }}}}</td>
+                                            <td>{{{{ row.buyer }}}}</td>
+                                            <td>{{{{ row.line }}}}</td> <td>{{{{ row.qty }}}}</td>
+                                            <td class="date-col">{{{{ row.date }}}}</td>
+                                            <td>
+                                                <a href="/admin/accessories/print?ref={{ row.ref }}" target="_blank" 
+                                                   style="background: var(--ct-primary); padding: 6px 12px; border-radius: 4px; color: white; text-decoration: none; font-size: 12px; font-weight: 600; display: inline-block;">
+                                                   <i class="ri-printer-line"></i> View
+                                                </a>
+                                            </td>
+                                        {{% elif type == 'users' %}}
+                                            <td>{{{{ row.username }}}}</td>
+                                            <td>{{{{ row.role }}}}</td>
+                                            <td>{{{{ row.created_at }}}}</td>
+                                            <td>{{{{ row.last_login }}}}</td>
+                                            <td>{{{{ row.last_duration }}}}</td>
+                                        {{% elif type == 'closing' %}}
+                                            <td>{{{{ row.ref }}}}</td>
+                                            <td>{{{{ row.user }}}}</td>
+                                            <td class="date-col">{{{{ row.date }}}}</td>
+                                            <td>{{{{ row.time }}}}</td>
+                                        {{% elif type == 'po' %}}
+                                            <td>{{{{ row.user }}}}</td>
+                                            <td>{{{{ row.file_count }}}} Files</td>
+                                            <td class="date-col">{{{{ row.date }}}}</td>
+                                            <td>{{{{ row.time }}}}</td>
+                                        {{% endif %}}
+                                    </tr>
+                                    {{% else %}}
+                                    <tr>
+                                        <td colspan="{{{{ columns|length }}}}" style="text-align:center; padding: 30px; color:#98a6ad;">No records found.</td>
+                                    </tr>
+                                    {{% endfor %}}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
     <script>
-        function toggleSidebar() {{ document.getElementById('sidebar').classList.toggle('active'); }}
-        
         function filterTable() {{
             let input = document.getElementById("searchInput");
             let filter = input.value.toUpperCase();
@@ -1897,7 +2059,7 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
                             <label for="pdf_files">Select PDF Files (Booking & PO)</label>
                             <input type="file" id="pdf_files" name="pdf_files" multiple accept=".pdf" required style="height: auto; padding: 10px;">
                         </div>
-                        <button type="submit" style="background: var(--primary-blue);">Generate Report</button>
+                        <button type="submit" style="background: var(--ct-primary);">Generate Report</button>
                     </form>
                      <div style="margin-top: 15px; font-size: 13px; color: #636e72; text-align: center; font-weight: 500;">
                         Select both Booking File & PO Files together
@@ -1910,7 +2072,7 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
                     <h2 style="margin-bottom: 25px; font-weight: 600; color:#2d3436;"><i class="fas fa-users-cog"></i> User Management</h2>
                     
                     <div style="background: rgba(255,255,255,0.6); padding: 25px; border-radius: 12px; margin-bottom: 25px; border: 1px solid rgba(0,0,0,0.05);">
-                        <h4 style="font-size: 14px; margin-bottom: 15px; color: var(--primary-blue); text-transform: uppercase; letter-spacing: 1px;">Create / Update User</h4>
+                        <h4 style="font-size: 14px; margin-bottom: 15px; color: var(--ct-primary); text-transform: uppercase; letter-spacing: 1px;">Create / Update User</h4>
                         <form id="userForm">
                             <input type="hidden" id="action_type" name="action_type" value="create">
                             <div style="display: flex; gap: 15px; flex-wrap: wrap;">
@@ -1936,7 +2098,7 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
                         </form>
                     </div>
 
-                    <button onclick="loadUsers()" style="width: auto; padding: 10px 25px; margin-bottom: 20px; background: var(--text-main);">Reload List</button>
+                    <button onclick="loadUsers()" style="width: auto; padding: 10px 25px; margin-bottom: 20px; background: var(--ct-heading-color);">Reload List</button>
                     <div id="userTableContainer"></div>
                 </div>
             </div>
@@ -1993,7 +2155,7 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
                             <td>
                                 ${{details.role !== 'admin' ? 
                                     `<button onclick="editUser('${{user}}', '${{details.password}}', '${{perms}}')" style="background: #f39c12; padding: 6px 12px; font-size: 12px; width: auto; margin-right: 5px; box-shadow:none;">Edit</button>
-                                     <button onclick="deleteUser('${{user}}')" style="background: #e74c3c; padding: 6px 12px; font-size: 12px; width: auto; box-shadow:none;">Delete</button>` : 
+                                     <button onclick="deleteUser('${{user}}')" style="background: #fa5c7c; padding: 6px 12px; font-size: 12px; width: auto; box-shadow:none;">Delete</button>` : 
                                     '<span style="font-size:11px; opacity:0.6; font-weight:600;">SUPER ADMIN</span>'}}
                             </td>
                         </tr>`;
