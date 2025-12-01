@@ -14,6 +14,7 @@ import pypdf
 import pandas as pd
 import re
 import shutil
+import urllib.parse
 import numpy as np
 from pymongo import MongoClient 
 
@@ -249,7 +250,6 @@ def save_accessories_db(data):
 # ==============================================================================
 # লজিক পার্ট: PURCHASE ORDER SHEET PARSER
 # ==============================================================================
-# (This part handles PDF processing logic)
 
 def is_potential_size(header):
     h = header.strip().upper()
@@ -718,7 +718,7 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
     return file_stream
 
 # ==============================================================================
-# CSS & HTML Templates (DESIGN UPDATED: Clean White Theme)
+# CSS & HTML Templates (DESIGN UPDATED: Premium Glass & Gradient)
 # ==============================================================================
 COMMON_STYLES = """
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -728,29 +728,31 @@ COMMON_STYLES = """
         :root {
             --primary-blue: #007bff;
             --hover-blue: #0056b3;
-            --bg-color: #f4f7f6;
-            --text-dark: #333;
-            --card-bg: #ffffff;
-            --sidebar-bg: #212529; /* Dark Sidebar for Professional Contrast */
+            --sidebar-bg: #1e272e; /* Deep Dark Blue-Grey */
+            --text-main: #2d3436;
+            --glass-border: rgba(255, 255, 255, 0.6);
+            --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.10);
         }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
         
         body {
-            background-color: var(--bg-color); 
-            color: var(--text-dark);
+            /* Premium Gradient Background */
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
             min-height: 100vh;
+            color: var(--text-main);
             overflow-x: hidden;
         }
         
-        /* Modern White Card Style */
+        /* Modern Glass Card */
         .glass-card {
-            background: var(--card-bg);
+            background: rgba(255, 255, 255, 0.75);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
             padding: 40px;
-            border-radius: 12px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
-            border: 1px solid #e0e0e0;
-            color: var(--text-dark);
-            animation: floatIn 0.5s ease-out forwards;
+            border-radius: 16px;
+            box-shadow: var(--glass-shadow);
+            animation: floatIn 0.6s ease-out forwards;
         }
 
         .center-container {
@@ -768,47 +770,49 @@ COMMON_STYLES = """
         }
 
         @keyframes floatIn {
-            from { opacity: 0; transform: translateY(20px); }
+            from { opacity: 0; transform: translateY(30px); }
             to { opacity: 1; transform: translateY(0); }
         }
         
-        h1 { color: #2c3e50; font-size: 26px; font-weight: 700; margin-bottom: 10px; }
-        p.subtitle { color: #6c757d; font-size: 14px; margin-bottom: 30px; font-weight: 400; }
+        h1 { color: #2d3436; font-size: 26px; font-weight: 700; margin-bottom: 8px; }
+        p.subtitle { color: #636e72; font-size: 14px; margin-bottom: 30px; font-weight: 400; }
         
-        /* Inputs - Clean Style */
+        /* Inputs */
         .input-group { text-align: left; margin-bottom: 20px; }
         .input-group label {
-            display: block; font-size: 13px; color: #495057; font-weight: 600;
+            display: block; font-size: 13px; color: #2d3436; font-weight: 600;
             margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px;
         }
         
         input[type="password"], input[type="text"], input[type="file"], select, input[type="number"], input[type="date"] {
             width: 100%; padding: 12px 15px;
-            background: #fff;
-            border: 1px solid #ced4da;
-            border-radius: 8px;
-            font-size: 14px; color: #495057;
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid rgba(0,0,0,0.1);
+            border-radius: 10px;
+            font-size: 14px; color: #2d3436;
             transition: all 0.3s ease; outline: none;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
         }
         input:focus, select:focus {
             border-color: var(--primary-blue);
-            box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
+            box-shadow: 0 0 0 4px rgba(0, 123, 255, 0.15);
+            background: #fff;
         }
         
-        /* Buttons - Blue & Glowing */
+        /* Buttons */
         button {
-            width: 100%; padding: 12px;
+            width: 100%; padding: 14px;
             background: var(--primary-blue);
             color: white; border: none;
-            border-radius: 8px; font-size: 15px; font-weight: 500;
+            border-radius: 10px; font-size: 15px; font-weight: 600;
             cursor: pointer; transition: all 0.3s ease;
-            margin-top: 10px; letter-spacing: 0.5px;
-            box-shadow: 0 4px 6px rgba(0, 123, 255, 0.2);
+            margin-top: 15px; letter-spacing: 0.5px;
+            box-shadow: 0 4px 15px rgba(0, 123, 255, 0.3);
         }
         button:hover {
             background: var(--hover-blue);
             transform: translateY(-2px);
-            box-shadow: 0 0 15px rgba(0, 123, 255, 0.6); /* Blue Glow */
+            box-shadow: 0 8px 20px rgba(0, 123, 255, 0.5); /* Stronger Glow */
         }
         button:active { transform: scale(0.98); }
 
@@ -816,65 +820,65 @@ COMMON_STYLES = """
         .footer-credit {
             margin-top: 25px;
             font-size: 12px;
-            color: #adb5bd;
+            color: #b2bec3;
             text-align: center;
         }
 
-        /* Loading Animation Overlay */
+        /* Loading Overlay */
         #loading-overlay {
             display: none;
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(255, 255, 255, 0.9);
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(5px);
             z-index: 9999;
             flex-direction: column; justify-content: center; align-items: center;
-            color: var(--primary-blue); transition: opacity 0.4s ease;
+            color: var(--primary-blue);
         }
         
         .spinner {
             width: 50px; height: 50px;
-            border: 4px solid #f3f3f3;
+            border: 4px solid rgba(0, 123, 255, 0.1);
             border-top: 4px solid var(--primary-blue);
             border-radius: 50%;
-            animation: spin 1s linear infinite;
+            animation: spin 0.8s linear infinite;
             margin-bottom: 20px;
         }
         @keyframes spin { 100% { transform: rotate(360deg); } }
 
-        /* Navigation & Sidebar (Admin) */
+        /* Navigation & Sidebar */
         .admin-container { display: flex; width: 100%; min-height: 100vh; }
         .admin-sidebar {
             width: 260px; 
-            background: var(--sidebar-bg);
+            background: var(--sidebar-bg) !important; /* Force Dark Color */
             color: #fff;
             position: fixed; top: 0; left: 0; height: 100vh;
             display: flex; flex-direction: column; padding: 25px 15px;
             transition: transform 0.3s ease; z-index: 1000;
-            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            box-shadow: 4px 0 15px rgba(0,0,0,0.1);
         }
         
-        .sidebar-header { margin-bottom: 40px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 20px; }
-        .sidebar-header h2 { color: white; font-size: 18px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; margin: 0; }
+        .sidebar-header { margin-bottom: 40px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 20px; }
+        .sidebar-header h2 { color: white; font-size: 18px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; margin: 0; }
         
         .nav-link {
-            display: flex; align-items: center; padding: 12px 15px;
-            color: rgba(255,255,255,0.75); text-decoration: none; border-radius: 8px;
+            display: flex; align-items: center; padding: 12px 18px;
+            color: rgba(255,255,255,0.7); text-decoration: none; border-radius: 10px;
             margin-bottom: 8px; transition: all 0.3s ease; font-weight: 500; font-size: 14px; cursor: pointer;
         }
         .nav-link:hover, .nav-link.active {
             background: var(--primary-blue); color: white;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); transform: translateX(5px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3); transform: translateX(5px);
         }
-        .nav-link i { width: 25px; text-align: center; margin-right: 10px; font-size: 16px; }
+        .nav-link i { width: 25px; text-align: center; margin-right: 12px; font-size: 16px; }
 
         .admin-content { 
             flex: 1; 
             padding: 30px; 
-            margin-left: 260px; /* Layout fix */
-            background: var(--bg-color);
+            margin-left: 260px; 
             width: calc(100% - 260px);
         }
 
-        /* Dashboard Cards Updated - Fix Squeezing */
+        /* Dashboard Cards - Glass Style */
         .dashboard-grid { 
             display: grid; 
             grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); 
@@ -882,52 +886,52 @@ COMMON_STYLES = """
             margin-bottom: 30px; 
         }
         .dashboard-card { 
-            background: #fff; 
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
             padding: 25px; 
-            border-radius: 12px; 
-            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            border-radius: 16px; 
+            box-shadow: 0 10px 20px rgba(0,0,0,0.05);
             cursor: pointer; transition: 0.3s; 
             display: flex; align-items: center; justify-content: space-between; 
-            text-decoration: none; border: 1px solid #eee;
+            text-decoration: none; border: 1px solid rgba(255,255,255,0.5);
         }
-        .dashboard-card:hover { transform: translateY(-5px); box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
-        .card-info h3 { font-size: 28px; font-weight: 700; margin: 0; color: #2c3e50; }
-        .card-info p { margin: 0; font-size: 13px; color: #6c757d; font-weight: 500; text-transform: uppercase; }
+        .dashboard-card:hover { transform: translateY(-5px); box-shadow: 0 15px 30px rgba(0,0,0,0.1); border-color: var(--primary-blue); }
+        .card-info h3 { font-size: 30px; font-weight: 700; margin: 0; color: #2d3436; }
+        .card-info p { margin: 0; font-size: 13px; color: #636e72; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
 
         /* Details Table */
-        .detail-table { width: 100%; border-collapse: separate; border-spacing: 0; margin-top: 15px; border: 1px solid #eee; border-radius: 8px; overflow: hidden; }
-        .detail-table th { background: #f8f9fa; text-align: left; padding: 15px; color: #495057; font-weight: 600; font-size: 13px; text-transform: uppercase; border-bottom: 2px solid #eee; }
-        .detail-table td { background: #fff; padding: 14px 15px; color: #333; font-size: 14px; border-bottom: 1px solid #eee; }
-        .detail-table tr:last-child td { border-bottom: none; }
-        .detail-table tr:hover td { background: #f1f3f5; }
+        .detail-table { width: 100%; border-collapse: separate; border-spacing: 0; margin-top: 15px; border-radius: 12px; overflow: hidden; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
+        .detail-table th { background: #fff; text-align: left; padding: 18px; color: #2d3436; font-weight: 700; font-size: 13px; text-transform: uppercase; border-bottom: 2px solid #f1f2f6; }
+        .detail-table td { background: rgba(255,255,255,0.7); padding: 16px 18px; color: #2d3436; font-size: 14px; border-bottom: 1px solid rgba(0,0,0,0.05); }
+        .detail-table tr:hover td { background: #fff; }
 
-        /* Filter Section Style */
+        /* Filter Section */
         .filter-container { 
-            background: #fff; padding: 20px; border-radius: 12px; 
+            background: rgba(255, 255, 255, 0.6); backdrop-filter: blur(10px);
+            padding: 20px; border-radius: 16px; 
             box-shadow: 0 5px 15px rgba(0,0,0,0.03); 
             display: flex; gap: 15px; flex-wrap: wrap; margin-bottom: 25px; 
-            border: 1px solid #eee;
+            border: 1px solid rgba(255,255,255,0.5);
         }
-        .filter-group input { background: #fff; border: 1px solid #ddd; color: #333; }
         
-        /* Summary Cards on Details Page */
+        /* Summary Cards */
         .summary-cards-small { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 25px; }
-        .summary-card { background: #fff; padding: 20px; border-radius: 12px; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.05); border: 1px solid #eee; }
-        .summary-card h4 { font-size: 24px; color: var(--primary-blue); margin-bottom: 5px; font-weight: 700; }
-        .summary-card span { font-size: 12px; color: #6c757d; font-weight: 600; text-transform: uppercase; }
+        .summary-card { background: rgba(255,255,255,0.8); padding: 25px; border-radius: 16px; text-align: center; box-shadow: 0 8px 20px rgba(0,0,0,0.05); border: 1px solid rgba(255,255,255,0.5); }
+        .summary-card h4 { font-size: 28px; color: var(--primary-blue); margin-bottom: 5px; font-weight: 700; }
+        .summary-card span { font-size: 12px; color: #636e72; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
 
-        .sidebar-toggle { display: none; position: fixed; top: 15px; left: 15px; z-index: 1100; color: #333; font-size: 24px; cursor: pointer; background: #fff; padding: 5px 10px; border-radius: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .sidebar-toggle { display: none; position: fixed; top: 15px; left: 15px; z-index: 1100; color: #2d3436; font-size: 24px; cursor: pointer; background: rgba(255,255,255,0.8); padding: 8px 12px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
 
         @media (max-width: 900px) {
             .admin-sidebar { transform: translateX(-100%); }
             .admin-sidebar.active { transform: translateX(0); }
-            .admin-content { margin-left: 0; width: 100%; padding-top: 60px; }
+            .admin-content { margin-left: 0; width: 100%; padding-top: 70px; }
             .sidebar-toggle { display: block; }
             .summary-cards-small { grid-template-columns: 1fr; }
         }
     </style>
 """
-# --- Report Preview Template for Closing Report ---
+# --- Report Preview Template for Closing Report (UNCHANGED PRINT FORMAT) ---
 CLOSING_REPORT_PREVIEW_TEMPLATE = """
 <!DOCTYPE html>
 <html lang="en">
@@ -1096,8 +1100,8 @@ ACCESSORIES_SEARCH_TEMPLATE = f"""
 </head>
 <body>
     <div class="center-container">
-        <div class="glass-card" style="max-width: 500px;">
-            <h1><i class="fas fa-boxes"></i> Accessories Dashboard</h1>
+        <div class="glass-card">
+            <h1><i class="fas fa-boxes"></i> Accessories</h1>
             <p class="subtitle">Find Booking to Manage Challan</p>
             <form action="/admin/accessories/input" method="post">
                 <div class="input-group">
@@ -1108,7 +1112,7 @@ ACCESSORIES_SEARCH_TEMPLATE = f"""
             </form>
             <div style="margin-top: 25px; display: flex; justify-content: center; gap: 20px; align-items: center;">
                 {{% if session.role == 'admin' or (session.permissions and session.permissions|length > 1) %}}
-                <a href="/" style="color:var(--text-dark); text-decoration:none; font-size:13px; opacity:0.8;"><i class="fas fa-arrow-left"></i> Dashboard</a>
+                <a href="/" style="color:var(--text-main); text-decoration:none; font-size:13px; opacity:0.8; font-weight:600;"><i class="fas fa-arrow-left"></i> Dashboard</a>
                 {{% endif %}}
                 <a href="/logout" style="color:#e74c3c; text-decoration:none; font-size:13px; border: 1px solid rgba(231, 76, 60, 0.5); padding: 8px 15px; border-radius: 20px; transition: all 0.3s ease;">
                     <i class="fas fa-sign-out-alt"></i> Sign Out
@@ -1137,19 +1141,13 @@ ACCESSORIES_INPUT_TEMPLATE = f"""
 <body>
     <div id="loading-overlay">
         <div class="spinner"></div>
-        <div class="success-container">
-             <svg class="success-checkmark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
-                <circle class="checkmark__circle" cx="26" cy="26" r="25" fill="none"/>
-                <path class="checkmark__check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
-            </svg>
-        </div>
         <div id="loading-text">Saving Record...</div>
     </div>
     <div class="center-container">
         <div class="glass-card" style="max-width: 500px;">
             <h1><i class="fas fa-plus-circle"></i> New Challan</h1>
             <p class="subtitle">Booking: {{{{ ref }}}}</p>
-            <div style="background: #f8f9fa; padding: 15px; border-radius: 12px; margin-bottom: 25px; font-size: 16px; border: 1px solid #e9ecef; color: #333;">
+            <div style="background: rgba(255,255,255,0.6); padding: 15px; border-radius: 12px; margin-bottom: 25px; font-size: 15px; border: 1px solid rgba(0,0,0,0.05); color: #2d3436;">
                 <strong>Buyer:</strong> {{{{ buyer }}}} <br> <strong>Style:</strong> {{{{ style }}}}
             </div>
             <form action="/admin/accessories/save" method="post" onsubmit="showSuccessAnim()">
@@ -1187,7 +1185,7 @@ ACCESSORIES_INPUT_TEMPLATE = f"""
             </form>
             <div style="margin-top: 15px;">
                 <a href="/admin/accessories/print?ref={{{{ ref }}}}" style="color:var(--primary-blue); font-size:12px; margin-right: 15px; font-weight:600;">View Report Only</a>
-                <a href="/admin/accessories" style="color:var(--text-dark); text-decoration:none; font-size:12px;">Back</a>
+                <a href="/admin/accessories" style="color:var(--text-main); text-decoration:none; font-size:12px;">Back</a>
             </div>
              <div class="footer-credit">© Mehedi Hasan</div>
         </div>
@@ -1195,19 +1193,7 @@ ACCESSORIES_INPUT_TEMPLATE = f"""
     <script>
         function showSuccessAnim() {{
             const overlay = document.getElementById('loading-overlay');
-            const spinner = document.querySelector('.spinner');
-            const successContainer = document.querySelector('.success-container');
-            const text = document.getElementById('loading-text');
             overlay.style.display = 'flex';
-            spinner.style.display = 'block';
-            successContainer.style.display = 'none';
-            text.innerText = 'Processing...';
-            setTimeout(() => {{
-                spinner.style.display = 'none';
-                successContainer.style.display = 'block';
-                overlay.classList.add('loader-success');
-                text.innerText = 'Saved Successfully!';
-            }}, 800);
             return true;
         }}
     </script>
@@ -1227,7 +1213,7 @@ ACCESSORIES_EDIT_TEMPLATE = f"""
 </head>
 <body>
     <div class="center-container">
-        <div class="glass-card" style="max-width: 500px;">
+        <div class="glass-card">
             <h1><i class="fas fa-edit"></i> Edit Challan</h1>
             <p class="subtitle">Update entry for {{{{ ref }}}}</p>
             <form action="/admin/accessories/update" method="post">
@@ -1252,7 +1238,7 @@ ACCESSORIES_EDIT_TEMPLATE = f"""
                 <button type="submit">Update Entry</button>
             </form>
             <br>
-            <a href="/admin/accessories/print?ref={{{{ ref }}}}" style="color:var(--text-dark); text-decoration:none; font-size:12px;">Cancel</a>
+            <a href="/admin/accessories/print?ref={{{{ ref }}}}" style="color:var(--text-main); text-decoration:none; font-size:12px;">Cancel</a>
             <div class="footer-credit">© Mehedi Hasan</div>
         </div>
     </div>
@@ -1260,7 +1246,7 @@ ACCESSORIES_EDIT_TEMPLATE = f"""
 </html>
 """
 
-# --- ACCESSORIES REPORT TEMPLATE ---
+# --- ACCESSORIES REPORT TEMPLATE (UNCHANGED PRINT FORMAT) ---
 ACCESSORIES_REPORT_TEMPLATE = """
 <!DOCTYPE html>
 <html lang="en">
@@ -1414,7 +1400,7 @@ ACCESSORIES_REPORT_TEMPLATE = """
 </html>
 """
 
-# --- PO REPORT TEMPLATE ---
+# --- PO REPORT TEMPLATE (UNCHANGED PRINT FORMAT) ---
 PO_REPORT_TEMPLATE = """
 <!DOCTYPE html>
 <html lang="en">
@@ -1526,7 +1512,7 @@ PO_REPORT_TEMPLATE = """
 </html>
 """
 
-# --- LOGIN TEMPLATE ---
+# --- LOGIN TEMPLATE (Glassmorphism) ---
 LOGIN_TEMPLATE = f"""
 <!doctype html>
 <html lang="en">
@@ -1564,7 +1550,7 @@ LOGIN_TEMPLATE = f"""
 </html>
 """
 
-# --- USER DASHBOARD ---
+# --- USER DASHBOARD (Glassmorphism) ---
 USER_DASHBOARD_TEMPLATE = f"""
 <!doctype html>
 <html lang="en">
@@ -1577,12 +1563,6 @@ USER_DASHBOARD_TEMPLATE = f"""
 <body>
     <div id="loading-overlay">
         <div class="spinner"></div>
-        <div class="success-container">
-             <svg class="success-checkmark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
-                <circle class="checkmark__circle" cx="26" cy="26" r="25" fill="none"/>
-                <path class="checkmark__check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
-            </svg>
-        </div>
         <div id="loading-text">Generating Report...</div>
     </div>
 
@@ -1593,7 +1573,7 @@ USER_DASHBOARD_TEMPLATE = f"""
             
             {{% if 'closing' in session.permissions %}}
             <div style="margin-bottom: 25px;">
-                <h4 style="margin-bottom:10px; border-bottom:1px solid #eee; padding-bottom:5px; font-size: 16px; color:#333;">Closing Report</h4>
+                <h4 style="margin-bottom:10px; border-bottom:1px solid rgba(0,0,0,0.1); padding-bottom:5px; font-size: 16px; color:var(--text-main);">Closing Report</h4>
                 <form action="/generate-report" method="post" id="reportForm" onsubmit="startDownloadProcess()">
                     <div class="input-group">
                         <label for="ref_no">Internal Reference No</label>
@@ -1607,7 +1587,7 @@ USER_DASHBOARD_TEMPLATE = f"""
 
             {{% if 'po_sheet' in session.permissions %}}
              <div style="margin-bottom: 25px;">
-                <h4 style="margin-bottom:10px; border-bottom:1px solid #eee; padding-bottom:5px; font-size: 16px; color:#333;">PO Sheet Generator</h4>
+                <h4 style="margin-bottom:10px; border-bottom:1px solid rgba(0,0,0,0.1); padding-bottom:5px; font-size: 16px; color:var(--text-main);">PO Sheet Generator</h4>
                  <form action="/generate-po-report" method="post" enctype="multipart/form-data" onsubmit="startDownloadProcess()">
                     <div class="input-group">
                         <label for="pdf_files">Select PDF Files</label>
@@ -1620,8 +1600,8 @@ USER_DASHBOARD_TEMPLATE = f"""
 
             {{% if 'accessories' in session.permissions %}}
             <div style="margin-bottom: 25px;">
-                <h4 style="margin-bottom:10px; border-bottom:1px solid #eee; padding-bottom:5px; font-size: 16px; color:#333;">Accessories</h4>
-                <a href="/admin/accessories" style="display:block; width:100%; text-align:center; padding: 14px; background: #6c5ce7; color:white; border-radius:12px; text-decoration:none; font-weight:600; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+                <h4 style="margin-bottom:10px; border-bottom:1px solid rgba(0,0,0,0.1); padding-bottom:5px; font-size: 16px; color:var(--text-main);">Accessories</h4>
+                <a href="/admin/accessories" style="display:block; width:100%; text-align:center; padding: 14px; background: #6c5ce7; color:white; border-radius:10px; text-decoration:none; font-weight:600; box-shadow: 0 4px 15px rgba(108, 92, 231, 0.3);">
                     <i class="fas fa-boxes"></i> Open Accessories Dashboard
                 </a>
             </div>
@@ -1633,28 +1613,15 @@ USER_DASHBOARD_TEMPLATE = f"""
                 {{% endif %}}
             {{% endwith %}}
             
-            <a href="/logout" style="display: inline-block; margin-top: 20px; color: #666; text-decoration: none; font-size: 13px; padding: 5px 15px; border: 1px solid #ddd; border-radius: 20px;">Sign Out</a>
+            <a href="/logout" style="display: inline-block; margin-top: 20px; color: #636e72; text-decoration: none; font-size: 13px; padding: 5px 15px; border: 1px solid rgba(0,0,0,0.1); border-radius: 20px;">Sign Out</a>
             <div class="footer-credit">© Mehedi Hasan</div>
         </div>
     </div>
     <script>
         function startDownloadProcess() {{
             const overlay = document.getElementById('loading-overlay'); 
-            const spinner = document.querySelector('.spinner');
-            const successContainer = document.querySelector('.success-container');
-            const text = document.getElementById('loading-text');
-
             overlay.style.display = 'flex';
-            spinner.style.display = 'block';
-            successContainer.style.display = 'none';
-            text.innerText = 'Processing...';
-            setTimeout(() => {{
-                spinner.style.display = 'none';
-                successContainer.style.display = 'block';
-                overlay.classList.add('loader-success');
-                text.innerText = 'Done!';
-                setTimeout(() => {{ overlay.style.display = 'none'; overlay.classList.remove('loader-success'); }}, 1500);
-            }}, 3000);
+            setTimeout(() => {{ overlay.style.display = 'none'; }}, 3000);
             return true;
         }}
     </script>
@@ -1702,8 +1669,8 @@ DETAILS_PAGE_TEMPLATE = f"""
         <div class="admin-content">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
                 <div>
-                    <h1 style="color: #2c3e50;">{{{{ title }}}}</h1>
-                    <p style="color: #6c757d;">Lifetime Records Overview</p>
+                    <h1 style="color: #2d3436;">{{{{ title }}}}</h1>
+                    <p style="color: #636e72;">Lifetime Records Overview</p>
                 </div>
             </div>
 
@@ -1731,12 +1698,12 @@ DETAILS_PAGE_TEMPLATE = f"""
                 {{% if type != 'users' %}}
                 <div class="filter-group" style="display: flex; gap: 10px; align-items: center;">
                     <input type="text" id="startDate" placeholder="Start Date" onfocus="(this.type='date')" onblur="(this.type='text')">
-                    <span style="color:#666;">to</span>
+                    <span style="color:#636e72;">to</span>
                     <input type="text" id="endDate" placeholder="End Date" onfocus="(this.type='date')" onblur="(this.type='text')">
                     <button onclick="filterDate()" style="width: auto; margin: 0; padding: 10px 20px;">Go</button>
                 </div>
                 {{% endif %}}
-                <button onclick="window.location.reload()" style="width: auto; margin: 0; padding: 10px 15px; background: #6c757d;"><i class="fas fa-sync"></i></button>
+                <button onclick="window.location.reload()" style="width: auto; margin: 0; padding: 10px 15px; background: #636e72;"><i class="fas fa-sync"></i></button>
             </div>
 
             <div class="glass-card" style="padding: 20px;">
@@ -1759,7 +1726,7 @@ DETAILS_PAGE_TEMPLATE = f"""
                                     <td class="date-col">{{{{ row.date }}}}</td>
                                     <td>
                                         <a href="/admin/accessories/print?ref={{ row.ref }}" target="_blank" 
-                                           style="background: var(--primary-blue); padding: 5px 15px; border-radius: 4px; color: white; text-decoration: none; font-size: 12px; font-weight: 600; display: inline-block;">
+                                           style="background: var(--primary-blue); padding: 8px 15px; border-radius: 6px; color: white; text-decoration: none; font-size: 12px; font-weight: 600; display: inline-block; box-shadow: 0 4px 6px rgba(0, 123, 255, 0.2);">
                                            <i class="fas fa-print"></i> View Challan
                                         </a>
                                     </td>
@@ -1807,7 +1774,6 @@ DETAILS_PAGE_TEMPLATE = f"""
         }}
 
         function parseDate(dateStr) {{
-            // Format: DD-MM-YYYY
             const parts = dateStr.split('-');
             if (parts.length === 3) return new Date(parts[2], parts[1] - 1, parts[0]);
             return null;
@@ -1816,27 +1782,17 @@ DETAILS_PAGE_TEMPLATE = f"""
         function filterDate() {{
             let startVal = document.getElementById("startDate").value;
             let endVal = document.getElementById("endDate").value;
-            
             if(!startVal || !endVal) {{ alert("Please select both start and end dates"); return; }}
-            
-            // Convert input YYYY-MM-DD to Date objects
             let startDate = new Date(startVal);
             let endDate = new Date(endVal);
-            // Adjust for end of day
             endDate.setHours(23,59,59);
-
             let table = document.getElementById("dataTable");
             let tr = table.getElementsByTagName("tr");
-            
             for (let i = 1; i < tr.length; i++) {{
                 let dateCell = tr[i].querySelector(".date-col");
                 if (dateCell) {{
                     let rowDate = parseDate(dateCell.innerText.trim());
-                    if (rowDate && rowDate >= startDate && rowDate <= endDate) {{
-                        tr[i].style.display = "";
-                    }} else {{
-                        tr[i].style.display = "none";
-                    }}
+                    if (rowDate && rowDate >= startDate && rowDate <= endDate) {{ tr[i].style.display = ""; }} else {{ tr[i].style.display = "none"; }}
                 }}
             }}
         }}
@@ -1844,7 +1800,7 @@ DETAILS_PAGE_TEMPLATE = f"""
 </body>
 </html>
 """
-# --- UPDATED ADMIN DASHBOARD TEMPLATE (White Theme & Sidebar Fix) ---
+# --- UPDATED ADMIN DASHBOARD TEMPLATE (Premium Glass Theme) ---
 ADMIN_DASHBOARD_TEMPLATE = f"""
 <!doctype html>
 <html lang="en">
@@ -1858,13 +1814,7 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
 <body>
     <div id="loading-overlay">
         <div class="spinner"></div>
-        <div class="success-container">
-             <svg class="success-checkmark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
-                <circle class="checkmark__circle" cx="26" cy="26" r="25" fill="none"/>
-                <path class="checkmark__check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
-            </svg>
-        </div>
-        <div id="loading-text">Processing...</div>
+        <div id="loading-text" style="font-weight: 600; letter-spacing: 1px;">Processing...</div>
     </div>
 
     <div class="sidebar-toggle" onclick="toggleSidebar()"><i class="fas fa-bars"></i></div>
@@ -1892,34 +1842,34 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
         <div class="admin-content">
             
             <div id="section-dashboard">
-                <h2 style="color: #2c3e50; margin-bottom: 5px;">Lifetime Overview</h2>
-                <p style="color: #6c757d; margin-bottom: 25px;">System Performance & Usage (Asia/Dhaka)</p>
+                <h2 style="color: #2d3436; margin-bottom: 5px;">Lifetime Overview</h2>
+                <p style="color: #636e72; margin-bottom: 30px;">System Performance & Usage (Asia/Dhaka)</p>
                 
                 <div class="dashboard-grid">
                     <a href="/admin/details/users" class="dashboard-card" style="border-left: 4px solid #a29bfe;">
                         <div class="card-info"><h3>{{{{ stats.users.count }}}}</h3><p>Active Users</p></div>
-                        <div style="color: #a29bfe; font-size: 32px;"><i class="fas fa-users"></i></div>
+                        <div style="color: #a29bfe; font-size: 36px; opacity: 0.8;"><i class="fas fa-users"></i></div>
                     </a>
                     
                     <a href="/admin/details/accessories" class="dashboard-card" style="border-left: 4px solid #fab1a0;">
                          <div class="card-info"><h3>{{{{ stats.accessories.total }}}}</h3><p>Total Accessories</p></div>
-                         <div style="color: #fab1a0; font-size: 32px;"><i class="fas fa-boxes"></i></div>
+                         <div style="color: #fab1a0; font-size: 36px; opacity: 0.8;"><i class="fas fa-boxes"></i></div>
                     </a>
                     
                     <a href="/admin/details/closing" class="dashboard-card" style="border-left: 4px solid #55efc4;">
                         <div class="card-info"><h3>{{{{ stats.closing.total }}}}</h3><p>Closing Reports</p></div>
-                        <div style="color: #55efc4; font-size: 32px;"><i class="fas fa-file-export"></i></div>
+                        <div style="color: #55efc4; font-size: 36px; opacity: 0.8;"><i class="fas fa-file-export"></i></div>
                     </a>
                     
                     <a href="/admin/details/po" class="dashboard-card" style="border-left: 4px solid #74b9ff;">
                         <div class="card-info"><h3>{{{{ stats.po.total }}}}</h3><p>PO Generated</p></div>
-                        <div style="color: #74b9ff; font-size: 32px;"><i class="fas fa-file-invoice"></i></div>
+                        <div style="color: #74b9ff; font-size: 36px; opacity: 0.8;"><i class="fas fa-file-invoice"></i></div>
                     </a>
                 </div>
 
-                <div class="glass-card" style="display: flex; justify-content: center; align-items: center; flex-direction: column;">
-                    <h3 style="margin-bottom: 20px; color: #2c3e50;">Lifetime Module Usage</h3>
-                    <div style="width: 100%; max-width: 350px;">
+                <div class="glass-card" style="display: flex; justify-content: center; align-items: center; flex-direction: column; padding: 30px;">
+                    <h3 style="margin-bottom: 25px; color: #2d3436;">Lifetime Module Usage</h3>
+                    <div style="width: 100%; max-width: 400px;">
                         <canvas id="usageChart"></canvas>
                     </div>
                 </div>
@@ -1927,7 +1877,7 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
 
             <div id="section-closing" style="display:none; max-width: 600px; margin: 0 auto;">
                 <div class="glass-card">
-                    <h2 style="margin-bottom: 25px; font-weight: 600; color:#333;"><i class="fas fa-file-export"></i> Closing Report</h2>
+                    <h2 style="margin-bottom: 25px; font-weight: 600; color:#2d3436;"><i class="fas fa-file-export"></i> Closing Report</h2>
                     <form action="/generate-report" method="post" onsubmit="startDownloadProcess()">
                         <div class="input-group">
                             <label for="ref_no">Internal Reference No</label>
@@ -1941,15 +1891,15 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
 
             <div id="section-po" style="display:none; max-width: 600px; margin: 0 auto;">
                  <div class="glass-card">
-                    <h2 style="margin-bottom: 25px; font-weight: 600; color:#333;"><i class="fas fa-file-invoice"></i> PDF Report Generator</h2>
+                    <h2 style="margin-bottom: 25px; font-weight: 600; color:#2d3436;"><i class="fas fa-file-invoice"></i> PDF Report Generator</h2>
                     <form action="/generate-po-report" method="post" enctype="multipart/form-data" onsubmit="startDownloadProcess()">
                         <div class="input-group">
                             <label for="pdf_files">Select PDF Files (Booking & PO)</label>
-                            <input type="file" id="pdf_files" name="pdf_files" multiple accept=".pdf" required style="height: auto;">
+                            <input type="file" id="pdf_files" name="pdf_files" multiple accept=".pdf" required style="height: auto; padding: 10px;">
                         </div>
                         <button type="submit" style="background: var(--primary-blue);">Generate Report</button>
                     </form>
-                     <div style="margin-top: 15px; font-size: 12px; color: #666; text-align: center;">
+                     <div style="margin-top: 15px; font-size: 13px; color: #636e72; text-align: center; font-weight: 500;">
                         Select both Booking File & PO Files together
                     </div>
                 </div>
@@ -1957,9 +1907,9 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
             
             <div id="section-users" style="display:none;">
                 <div class="glass-card">
-                    <h2 style="margin-bottom: 25px; font-weight: 600; color:#333;"><i class="fas fa-users-cog"></i> User Management</h2>
+                    <h2 style="margin-bottom: 25px; font-weight: 600; color:#2d3436;"><i class="fas fa-users-cog"></i> User Management</h2>
                     
-                    <div style="background: #f8f9fa; padding: 25px; border-radius: 12px; margin-bottom: 25px; border: 1px solid #e9ecef;">
+                    <div style="background: rgba(255,255,255,0.6); padding: 25px; border-radius: 12px; margin-bottom: 25px; border: 1px solid rgba(0,0,0,0.05);">
                         <h4 style="font-size: 14px; margin-bottom: 15px; color: var(--primary-blue); text-transform: uppercase; letter-spacing: 1px;">Create / Update User</h4>
                         <form id="userForm">
                             <input type="hidden" id="action_type" name="action_type" value="create">
@@ -1973,20 +1923,20 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
                             </div>
                             <div class="input-group" style="margin-bottom: 20px;">
                                 <label>Permissions:</label>
-                                <div style="display: flex; gap: 15px; margin-top: 5px; flex-wrap: wrap; color: #333; font-size: 14px;">
-                                    <div style="display: flex; align-items: center;"><input type="checkbox" name="permissions" value="closing" id="perm_closing" checked style="width: auto; margin-right: 5px;"> Closing</div>
-                                    <div style="display: flex; align-items: center;"><input type="checkbox" name="permissions" value="po_sheet" id="perm_po" style="width: auto; margin-right: 5px;"> PO Sheet</div>
-                                     <div style="display: flex; align-items: center;"><input type="checkbox" name="permissions" value="accessories" id="perm_acc" style="width: auto; margin-right: 5px;"> Accessories</div>
+                                <div style="display: flex; gap: 15px; margin-top: 5px; flex-wrap: wrap; color: #2d3436; font-size: 14px; font-weight: 500;">
+                                    <div style="display: flex; align-items: center;"><input type="checkbox" name="permissions" value="closing" id="perm_closing" checked style="width: auto; margin-right: 8px;"> Closing</div>
+                                    <div style="display: flex; align-items: center;"><input type="checkbox" name="permissions" value="po_sheet" id="perm_po" style="width: auto; margin-right: 8px;"> PO Sheet</div>
+                                     <div style="display: flex; align-items: center;"><input type="checkbox" name="permissions" value="accessories" id="perm_acc" style="width: auto; margin-right: 8px;"> Accessories</div>
                                 </div>
                             </div>
                             <div style="display: flex; gap: 10px;">
                                 <button type="button" onclick="handleUserSubmit(event)" id="saveUserBtn" style="flex: 2;">Create User</button>
-                                <button type="button" onclick="resetForm()" class="btn-reset" style="flex: 1; background: #6c757d;">Reset</button>
+                                <button type="button" onclick="resetForm()" class="btn-reset" style="flex: 1; background: #636e72;">Reset</button>
                             </div>
                         </form>
                     </div>
 
-                    <button onclick="loadUsers()" style="width: auto; padding: 10px 25px; margin-bottom: 20px;">Reload List</button>
+                    <button onclick="loadUsers()" style="width: auto; padding: 10px 25px; margin-bottom: 20px; background: var(--text-main);">Reload List</button>
                     <div id="userTableContainer"></div>
                 </div>
             </div>
@@ -2016,10 +1966,16 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
                 datasets: [{{
                     data: {{{{ stats.chart_data | tojson }}}},
                     backgroundColor: ['#55efc4', '#fab1a0', '#74b9ff'],
-                    borderWidth: 0
+                    borderWidth: 0,
+                    hoverOffset: 10
                 }}]
             }},
-            options: {{ responsive: true, plugins: {{ legend: {{ labels: {{ color: '#333' }} }} }} }}
+            options: {{ 
+                responsive: true, 
+                plugins: {{ 
+                    legend: {{ labels: {{ color: '#2d3436', font: {{ family: 'Poppins', size: 12 }} }} }} 
+                }} 
+            }}
         }});
 
         // --- USER MANAGEMENT LOGIC ---
@@ -2036,9 +1992,9 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
                             <td>${{perms}}</td>
                             <td>
                                 ${{details.role !== 'admin' ? 
-                                    `<button onclick="editUser('${{user}}', '${{details.password}}', '${{perms}}')" style="background: #f39c12; padding: 5px 10px; font-size: 12px; width: auto; margin-right: 5px;">Edit</button>
-                                     <button onclick="deleteUser('${{user}}')" style="background: #e74c3c; padding: 5px 10px; font-size: 12px; width: auto;">Delete</button>` : 
-                                    '<span style="font-size:10px; opacity:0.7">Admin</span>'}}
+                                    `<button onclick="editUser('${{user}}', '${{details.password}}', '${{perms}}')" style="background: #f39c12; padding: 6px 12px; font-size: 12px; width: auto; margin-right: 5px; box-shadow:none;">Edit</button>
+                                     <button onclick="deleteUser('${{user}}')" style="background: #e74c3c; padding: 6px 12px; font-size: 12px; width: auto; box-shadow:none;">Delete</button>` : 
+                                    '<span style="font-size:11px; opacity:0.6; font-weight:600;">SUPER ADMIN</span>'}}
                             </td>
                         </tr>`;
                      }}
@@ -2060,7 +2016,6 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
             if(document.getElementById('perm_po').checked) permissions.push('po_sheet');
             if(document.getElementById('perm_acc').checked) permissions.push('accessories');
 
-            // Loading
             document.getElementById('loading-overlay').style.display = 'flex';
 
             fetch('/admin/save-user', {{
@@ -2151,13 +2106,12 @@ def index():
             else:
                 return render_template_string(USER_DASHBOARD_TEMPLATE)
 
-# --- DETAILS PAGE ROUTE (Direct Page View instead of Modal) ---
+# --- DETAILS PAGE ROUTE ---
 @app.route('/admin/details/<data_type>')
 def admin_details_view(data_type):
     if not session.get('logged_in') or session.get('role') != 'admin':
         return redirect(url_for('index'))
     
-    # Get fresh data (V2 supports Lifetime, Today, Week, Month)
     stats = get_dashboard_summary_v2()
     
     if data_type == 'users':
@@ -2169,11 +2123,10 @@ def admin_details_view(data_type):
                                       data=stats['users']['details'])
     
     elif data_type == 'accessories':
-        # Showing Line No as requested
         return render_template_string(DETAILS_PAGE_TEMPLATE, 
                                       title="Lifetime Accessories Challans", 
                                       type="accessories",
-                                      stats=stats['accessories'], # Passes {today, week, month}
+                                      stats=stats['accessories'], 
                                       columns=["Booking Ref", "Buyer", "Line No", "Quantity", "Date", "Action"], 
                                       data=stats['accessories']['details'])
     
@@ -2209,11 +2162,9 @@ def login():
         session['role'] = users_db[username]['role']
         session['permissions'] = users_db[username].get('permissions', [])
         
-        # --- Login Time Tracking (BD Time) ---
         now = get_bd_time()
         session['login_start'] = now.isoformat()
         
-        # Update User in DB
         users_db[username]['last_login'] = now.strftime('%I:%M %p, %d %b')
         save_users(users_db)
         
@@ -2224,7 +2175,6 @@ def login():
 
 @app.route('/logout')
 def logout():
-    # --- Duration Calculation ---
     if session.get('logged_in') and 'login_start' in session:
         try:
             start_time = datetime.fromisoformat(session['login_start'])
@@ -2279,7 +2229,7 @@ def save_user():
             "password": password,
             "role": "user",
             "permissions": permissions,
-            "created_at": get_bd_date_str(), # Save Creation Date
+            "created_at": get_bd_date_str(),
             "last_login": "Never",
             "last_duration": "N/A"
         }
@@ -2332,7 +2282,6 @@ def generate_report():
 @app.route('/admin/accessories', methods=['GET'])
 def accessories_search_page():
     if not session.get('logged_in'): return redirect(url_for('index'))
-    # Check permissions
     if 'accessories' not in session.get('permissions', []) and session.get('role') != 'admin':
         flash("You do not have permission to access Accessories Dashboard.")
         return redirect(url_for('index'))
@@ -2412,15 +2361,21 @@ def accessories_save():
     
     return redirect(url_for('accessories_print_view', ref=ref))
 
-# 4. Print/View Page
+# 4. Print/View Page (UPDATED TO PREVENT LOOP)
 @app.route('/admin/accessories/print', methods=['GET'])
 def accessories_print_view():
     if not session.get('logged_in'): return redirect(url_for('index'))
     
-    ref = request.args.get('ref').strip().upper()
+    ref = request.args.get('ref')
+    if not ref:
+        return redirect(url_for('accessories_search_page'))
+    
+    ref = ref.strip().upper()
     db_acc = load_accessories_db()
     
-    if ref not in db_acc: return redirect(url_for('accessories_search_page'))
+    if ref not in db_acc: 
+        # If accessing directly with an invalid ref, go to search
+        return redirect(url_for('accessories_search_page'))
     
     data = db_acc[ref]
     challans = data['challans']
@@ -2575,7 +2530,6 @@ def generate_po_report():
     if not all_data:
         return render_template_string(PO_REPORT_TEMPLATE, tables=None, message="No PO table data found in files.")
 
-    # Update PO Stats
     update_po_stats(session.get('user', 'Unknown'), len(uploaded_files))
 
     df = pd.DataFrame(all_data)
