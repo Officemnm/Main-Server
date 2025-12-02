@@ -16,6 +16,7 @@ import re
 import shutil
 import numpy as np
 from pymongo import MongoClient 
+from collections import defaultdict
 
 # --- Flask লাইব্রেরি ইম্পোর্ট ---
 from flask import Flask, request, render_template_string, send_file, flash, session, redirect, url_for, make_response, jsonify
@@ -42,7 +43,7 @@ def get_bd_date_str():
     return get_bd_time().strftime('%d-%m-%Y')
 
 # ==============================================================================
-# Browser Cache Control (ব্যাক বাটন ফিক্স)
+# Browser Cache Control
 # ==============================================================================
 @app.after_request
 def add_header(response):
@@ -68,7 +69,7 @@ except Exception as e:
     print(f"MongoDB Connection Error: {e}")
 
 # ==============================================================================
-# CSS STYLES (DASHBOARD ONLY - DARK THEME)
+# CSS STYLES (UPDATED FOR PERFECT UI)
 # ==============================================================================
 COMMON_STYLES = """
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -99,7 +100,7 @@ COMMON_STYLES = """
             overflow-x: hidden;
         }
 
-        /* Sidebar - Perfected Layout */
+        /* Sidebar */
         .sidebar {
             width: 260px; height: 100vh; background-color: var(--bg-sidebar);
             position: fixed; top: 0; left: 0; display: flex; flex-direction: column;
@@ -158,17 +159,30 @@ COMMON_STYLES = """
         button { width: 100%; padding: 14px; background: var(--accent-orange); color: white; border: none; border-radius: 10px; font-weight: 700; cursor: pointer; transition: 0.3s; font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px; }
         button:hover { background: #e67e22; transform: translateY(-2px); box-shadow: 0 5px 15px rgba(230, 126, 34, 0.3); }
 
-        /* Tables */
+        /* Tables & Action Buttons (UPDATED FOR PERFECT UI) */
         .dark-table { width: 100%; border-collapse: separate; border-spacing: 0; margin-top: 10px; }
         .dark-table th { text-align: left; padding: 15px; color: var(--text-secondary); font-size: 12px; font-weight: 700; text-transform: uppercase; border-bottom: 1px solid #333; letter-spacing: 0.5px; }
         .dark-table td { padding: 15px; color: white; font-size: 14px; border-bottom: 1px solid #2D2D2D; vertical-align: middle; }
         .dark-table tr:last-child td { border-bottom: none; }
         .dark-table tr:hover td { background: rgba(255,255,255,0.03); }
         
-        .action-btn { padding: 6px 12px; border-radius: 6px; text-decoration: none; font-size: 12px; margin-right: 8px; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; border: none; transition: 0.2s; }
-        .btn-edit { background: rgba(108, 92, 231, 0.15); color: var(--accent-purple); }
+        .action-cell { display: flex; gap: 8px; align-items: center; }
+        .action-btn { 
+            padding: 8px 12px; 
+            border-radius: 8px; 
+            text-decoration: none; 
+            font-size: 13px; 
+            display: inline-flex; 
+            align-items: center; 
+            justify-content: center; 
+            cursor: pointer; 
+            border: none; 
+            transition: 0.2s; 
+            font-weight: 600;
+        }
+        .btn-edit { background: rgba(108, 92, 231, 0.2); color: #a29bfe; }
         .btn-edit:hover { background: var(--accent-purple); color: white; }
-        .btn-del { background: rgba(255, 118, 117, 0.15); color: var(--accent-red); }
+        .btn-del { background: rgba(255, 118, 117, 0.2); color: #ff7675; }
         .btn-del:hover { background: var(--accent-red); color: white; }
 
         /* Loading */
@@ -244,8 +258,8 @@ def update_stats(ref_no, username):
         "iso_time": now.isoformat()
     }
     data['downloads'].insert(0, new_record)
-    if len(data['downloads']) > 1000:
-        data['downloads'] = data['downloads'][:1000]
+    if len(data['downloads']) > 2000: # Increased limit for analytics
+        data['downloads'] = data['downloads'][:2000]
         
     data['last_booking'] = ref_no
     save_stats(data)
@@ -263,11 +277,25 @@ def update_po_stats(username, file_count):
     }
     if 'downloads' not in data: data['downloads'] = []
     data['downloads'].insert(0, new_record)
-    if len(data['downloads']) > 1000:
-        data['downloads'] = data['downloads'][:1000]
+    if len(data['downloads']) > 2000:
+        data['downloads'] = data['downloads'][:2000]
     save_stats(data)
 
-# ড্যাশবোর্ড সামারি (Admin Dashboard এর জন্য ডাটা প্রিপারেশন)
+def load_accessories_db():
+    record = accessories_col.find_one({"_id": "accessories_data"})
+    if record:
+        return record['data']
+    else:
+        return {}
+
+def save_accessories_db(data):
+    accessories_col.replace_one(
+        {"_id": "accessories_data"},
+        {"_id": "accessories_data", "data": data},
+        upsert=True
+    )
+
+# --- আপডেটেড: রিয়েল-টাইম ড্যাশবোর্ড সামারি এবং এনালিটিক্স ---
 def get_dashboard_summary_v2():
     stats_data = load_stats()
     acc_db = load_accessories_db()
@@ -287,12 +315,18 @@ def get_dashboard_summary_v2():
             "last_duration": d.get('last_duration', 'N/A')
         })
 
-    # 2. Accessories Today
+    # 2. Accessories Today & Analytics Data Preparation
     acc_today_count = 0
     acc_today_list = []
+    
+    # Analytics Data Containers (Month-Year Key)
+    monthly_data = defaultdict(lambda: {'closing': 0, 'po': 0, 'acc': 0})
+
+    # Process Accessories Data
     for ref, data in acc_db.items():
         for challan in data.get('challans', []):
-            if challan.get('date') == today_str:
+            c_date = challan.get('date')
+            if c_date == today_str:
                 acc_today_count += 1
                 acc_today_list.append({
                     "ref": ref,
@@ -301,8 +335,18 @@ def get_dashboard_summary_v2():
                     "time": "Today", 
                     "qty": challan.get('qty')
                 })
+            
+            # Analytics: Parse Date to Month-Year
+            try:
+                dt_obj = datetime.strptime(c_date, '%d-%m-%Y')
+                m_key = dt_obj.strftime('%b-%y') # e.g., Dec-24
+                # We need a sortable key too
+                sort_key = dt_obj.strftime('%Y-%m')
+                monthly_data[sort_key]['acc'] += 1
+                monthly_data[sort_key]['label'] = m_key
+            except: pass
 
-    # 3. Closing & PO Today (From History)
+    # 3. Closing & PO Today & Analytics
     closing_today_count = 0
     po_today_count = 0
     closing_list = []
@@ -318,6 +362,34 @@ def get_dashboard_summary_v2():
             else: # Defaults to Closing Report
                 closing_today_count += 1
                 closing_list.append(item)
+        
+        # Analytics Processing
+        try:
+            dt_obj = datetime.strptime(item_date, '%d-%m-%Y')
+            m_key = dt_obj.strftime('%b-%y')
+            sort_key = dt_obj.strftime('%Y-%m')
+            
+            if item.get('type') == 'PO Sheet':
+                monthly_data[sort_key]['po'] += 1
+            else:
+                monthly_data[sort_key]['closing'] += 1
+            monthly_data[sort_key]['label'] = m_key
+        except: pass
+
+    # Sort monthly data by date (Last 6 months)
+    sorted_keys = sorted(monthly_data.keys())[-6:] # Get last 6 months
+    
+    chart_labels = []
+    chart_closing = []
+    chart_po = []
+    chart_acc = []
+
+    for k in sorted_keys:
+        d = monthly_data[k]
+        chart_labels.append(d.get('label', k))
+        chart_closing.append(d['closing'])
+        chart_po.append(d['po'])
+        chart_acc.append(d['acc'])
 
     return {
         "users": {
@@ -336,23 +408,15 @@ def get_dashboard_summary_v2():
             "count": po_today_count,
             "details": po_list
         },
-        "chart_data": [closing_today_count, acc_today_count, po_today_count],
+        # Real-time Chart Data
+        "chart": {
+            "labels": chart_labels,
+            "closing": chart_closing,
+            "po": chart_po,
+            "acc": chart_acc
+        },
         "history": history
     }
-
-def load_accessories_db():
-    record = accessories_col.find_one({"_id": "accessories_data"})
-    if record:
-        return record['data']
-    else:
-        return {}
-
-def save_accessories_db(data):
-    accessories_col.replace_one(
-        {"_id": "accessories_data"},
-        {"_id": "accessories_data", "data": data},
-        upsert=True
-    )
 
 # ==============================================================================
 # লজিক পার্ট: PURCHASE ORDER SHEET PARSER (PDF)
@@ -644,7 +708,6 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
     ws.row_dimensions[3].height = 6
 
     formatted_ref_no = internal_ref_no.upper()
-    # UPDATED: Using BD Timezone function
     current_date = get_bd_time().strftime("%d/%m/%Y")
     
     left_sub_headers = {'A4': 'BUYER', 'B4': report_data[0].get('buyer', ''), 'A5': 'IR/IB NO', 'B5': formatted_ref_no, 'A6': 'STYLE NO', 'B6': report_data[0].get('style', '')}
@@ -825,344 +888,6 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
     wb.save(file_stream)
     file_stream.seek(0)
     return file_stream
-# ==============================================================================
-# HTML TEMPLATES: LOGIN, DASHBOARD & UI (REFINED DARK THEME)
-# ==============================================================================
-
-LOGIN_TEMPLATE = f"""
-<!doctype html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Login</title>
-    {COMMON_STYLES}
-</head>
-<body style="justify-content:center; align-items:center;">
-    <div class="card" style="width: 100%; max-width: 400px; padding: 40px;">
-        <div style="text-align: center; margin-bottom: 40px;">
-            <div style="font-size: 26px; font-weight: 800; color: white; letter-spacing: -0.5px;">MNM<span style="color:var(--accent-orange)">Software</span></div>
-            <div style="color: var(--text-secondary); font-size: 12px; letter-spacing: 2px; margin-top: 5px; font-weight: 600;">SECURE ACCESS</div>
-        </div>
-        <form action="/login" method="post">
-            <div class="input-group">
-                <label><i class="fas fa-user" style="margin-right:5px;"></i> USERNAME</label>
-                <input type="text" name="username" required placeholder="Enter your ID">
-            </div>
-            <div class="input-group">
-                <label><i class="fas fa-lock" style="margin-right:5px;"></i> PASSWORD</label>
-                <input type="password" name="password" required placeholder="Enter your Password">
-            </div>
-            <button type="submit" style="margin-top: 10px;">Sign In <i class="fas fa-arrow-right" style="margin-left:5px;"></i></button>
-        </form>
-        {{% with messages = get_flashed_messages() %}}
-            {{% if messages %}}
-                <div style="margin-top: 25px; color: #ff7675; font-size: 13px; text-align: center; background: rgba(255, 118, 117, 0.1); padding: 10px; border-radius: 8px; border: 1px solid rgba(255, 118, 117, 0.2);"><i class="fas fa-exclamation-circle"></i> {{{{ messages[0] }}}}</div>
-            {{% endif %}}
-        {{% endwith %}}
-        <div style="text-align: center; margin-top: 30px; color: var(--text-secondary); font-size: 12px; opacity: 0.6;">
-            © Mehedi Hasan
-        </div>
-    </div>
-</body>
-</html>
-"""
-
-ADMIN_DASHBOARD_TEMPLATE = f"""
-<!doctype html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Admin Dashboard</title>
-    {COMMON_STYLES}
-</head>
-<body>
-    <div id="loading-overlay"><div class="spinner"></div><div style="color:white; margin-top:15px; font-weight:600;">Processing...</div></div>
-    <div class="mobile-toggle" onclick="document.querySelector('.sidebar').classList.toggle('active')"><i class="fas fa-bars"></i></div>
-
-    <div class="sidebar">
-        <div class="brand-logo"><i class="fas fa-layer-group"></i> MNM<span>Software</span></div>
-        <div class="nav-menu">
-            <div class="nav-link active" onclick="showSection('dashboard', this)"><i class="fas fa-home"></i> Dashboard</div>
-            <div class="nav-link" onclick="showSection('analytics', this)"><i class="fas fa-chart-pie"></i> Closing Report</div>
-            <a href="/admin/accessories" class="nav-link"><i class="fas fa-database"></i> Accessories Challan</a>
-            <div class="nav-link" onclick="showSection('help', this)"><i class="fas fa-file-invoice"></i> PO Generator</div>
-            <div class="nav-link" onclick="showSection('settings', this)"><i class="fas fa-users-cog"></i> User Manage</div>
-            <a href="/logout" class="nav-link" style="color: var(--accent-red); margin-top: 10px;"><i class="fas fa-sign-out-alt"></i> Log Out</a>
-        </div>
-        <div class="sidebar-footer">© Mehedi Hasan</div>
-    </div>
-
-    <div class="main-content">
-        <div id="section-dashboard">
-            <div class="header-section">
-                <div><div class="page-title">Main Dashboard</div><div class="page-subtitle">Overview & Statistics</div></div>
-                <div style="background:var(--bg-card); padding:10px 20px; border-radius:30px; border:1px solid var(--border-color); font-size:13px; font-weight:600; display:flex; align-items:center; gap:8px;"><span style="color:var(--accent-green); font-size:10px;">●</span> System Online</div>
-            </div>
-
-            <div class="stats-grid">
-                <div class="card stat-card"><div class="stat-icon"><i class="fas fa-file-export"></i></div><div class="stat-info"><h3>{{{{ stats.closing.count }}}}</h3><p>Closing</p></div></div>
-                <div class="card stat-card"><div class="stat-icon"><i class="fas fa-boxes"></i></div><div class="stat-info"><h3>{{{{ stats.accessories.count }}}}</h3><p>Accessories</p></div></div>
-                <div class="card stat-card"><div class="stat-icon"><i class="fas fa-file-pdf"></i></div><div class="stat-info"><h3>{{{{ stats.po.count }}}}</h3><p>PO Sheets</p></div></div>
-                <div class="card stat-card"><div class="stat-icon"><i class="fas fa-users"></i></div><div class="stat-info"><h3>{{{{ stats.users.count }}}}</h3><p>Users</p></div></div>
-            </div>
-
-            <div class="dashboard-grid-2">
-                <div class="card">
-                    <div class="section-header"><span>Analytics</span><i class="fas fa-chart-line" style="color:var(--accent-orange)"></i></div>
-                    <div style="height: 250px;"><canvas id="mainChart"></canvas></div>
-                </div>
-                <div class="card">
-                    <div class="section-header"><span>Module Usage</span></div>
-                    <div class="progress-item" style="margin-bottom: 20px;"><div style="display:flex; justify-content:space-between; margin-bottom:8px; font-size:13px; color:white;"><span>Closing Report</span><span style="color:var(--text-secondary);">High</span></div><div style="height:6px; background:#333; border-radius:3px;"><div style="width: 85%; height:100%; background:var(--accent-orange); border-radius:3px;"></div></div></div>
-                    <div class="progress-item" style="margin-bottom: 20px;"><div style="display:flex; justify-content:space-between; margin-bottom:8px; font-size:13px; color:white;"><span>Accessories</span><span style="color:var(--text-secondary);">Medium</span></div><div style="height:6px; background:#333; border-radius:3px;"><div style="width: 60%; height:100%; background:var(--accent-purple); border-radius:3px;"></div></div></div>
-                    <div class="progress-item"><div style="display:flex; justify-content:space-between; margin-bottom:8px; font-size:13px; color:white;"><span>PO Generator</span><span style="color:var(--text-secondary);">Normal</span></div><div style="height:6px; background:#333; border-radius:3px;"><div style="width: 45%; height:100%; background:var(--accent-green); border-radius:3px;"></div></div></div>
-                </div>
-            </div>
-
-            <div class="card">
-                <div class="section-header"><span>Recent Activity Log</span><i class="fas fa-history" style="color:var(--text-secondary)"></i></div>
-                <div style="overflow-x: auto;">
-                    <table class="dark-table">
-                        <thead><tr><th>Time</th><th>User</th><th>Action</th><th>Reference / Type</th></tr></thead>
-                        <tbody>
-                            {{% for log in stats.history %}}
-                            <tr>
-                                <td><i class="far fa-clock" style="margin-right:5px; color:var(--text-secondary);"></i> {{{{ log.time }}}}</td>
-                                <td style="font-weight:600; color:white;">{{{{ log.user }}}}</td>
-                                <td><span style="background:rgba(255,255,255,0.05); padding:4px 10px; border-radius:4px; font-size:11px;">{{{{ log.type }}}}</span></td>
-                                <td>{{{{ log.ref if log.ref else '-' }}}}</td>
-                            </tr>
-                            {{% else %}}
-                            <tr><td colspan="4" style="text-align:center; padding:30px; color:var(--text-secondary);">No activity recorded today.</td></tr>
-                            {{% endfor %}}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-
-        <div id="section-analytics" style="display:none;">
-            <div class="card" style="max-width:500px; margin:0 auto; margin-top:50px;">
-                <div class="section-header">Generate Closing Report</div>
-                <form action="/generate-report" method="post" onsubmit="document.getElementById('loading-overlay').style.display='flex'">
-                    <div class="input-group"><label>INTERNAL REF NO</label><input type="text" name="ref_no" placeholder="e.g. Booking-123" required></div>
-                    <button type="submit"><i class="fas fa-magic" style="margin-right:8px;"></i> Generate Report</button>
-                </form>
-            </div>
-        </div>
-
-        <div id="section-help" style="display:none;">
-            <div class="card" style="max-width:600px; margin:0 auto; margin-top:50px;">
-                <div class="section-header">PO Sheet Generator</div>
-                <form action="/generate-po-report" method="post" enctype="multipart/form-data" onsubmit="document.getElementById('loading-overlay').style.display='flex'">
-                    <div class="input-group" style="border: 2px dashed var(--border-color); padding: 40px; text-align: center; border-radius: 12px; transition:0.3s;" onmouseover="this.style.borderColor='var(--accent-orange)'" onmouseout="this.style.borderColor='var(--border-color)'">
-                        <input type="file" name="pdf_files" multiple accept=".pdf" required style="display:none;" id="file-upload">
-                        <label for="file-upload" style="cursor:pointer; color:var(--accent-orange); margin-bottom:0;"><i class="fas fa-cloud-upload-alt" style="font-size:40px; margin-bottom:15px;"></i><br>Click to Upload PDF Files</label>
-                        <div id="file-count" style="margin-top:15px; font-size:13px; color:var(--text-secondary);">No files selected</div>
-                    </div>
-                    <button type="submit" style="margin-top:25px; background:var(--accent-green);"><i class="fas fa-cogs" style="margin-right:8px;"></i> Process Files</button>
-                </form>
-            </div>
-        </div>
-
-        <div id="section-settings" style="display:none;">
-            <div class="dashboard-grid-2">
-                <div class="card"><div class="section-header">User Directory</div><div id="userTableContainer">Loading...</div></div>
-                <div class="card"><div class="section-header">Manage User</div>
-                    <form id="userForm">
-                        <input type="hidden" id="action_type" value="create">
-                        <div class="input-group"><label>USERNAME</label><input type="text" id="new_username" required></div>
-                        <div class="input-group"><label>PASSWORD</label><input type="text" id="new_password" required></div>
-                        <div class="input-group"><label>PERMISSIONS</label>
-                            <div style="display:flex; gap:10px; flex-wrap:wrap;">
-                                <label style="background:#2D2D2D; padding:10px; border-radius:8px; cursor:pointer; display:flex; align-items:center; border:1px solid #333;"><input type="checkbox" id="perm_closing" checked style="width:auto; margin-right:8px;"> Closing</label>
-                                <label style="background:#2D2D2D; padding:10px; border-radius:8px; cursor:pointer; display:flex; align-items:center; border:1px solid #333;"><input type="checkbox" id="perm_po" style="width:auto; margin-right:8px;"> PO</label>
-                                <label style="background:#2D2D2D; padding:10px; border-radius:8px; cursor:pointer; display:flex; align-items:center; border:1px solid #333;"><input type="checkbox" id="perm_acc" style="width:auto; margin-right:8px;"> Acc</label>
-                            </div>
-                        </div>
-                        <button type="button" onclick="handleUserSubmit()" id="saveUserBtn"><i class="fas fa-save" style="margin-right:8px;"></i> Save User</button>
-                        <button type="button" onclick="resetForm()" style="margin-top:10px; background:#2D2D2D; color:white; border:1px solid #333;">Reset Form</button>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <script>
-        function showSection(id, element) {{
-            ['dashboard', 'analytics', 'help', 'settings'].forEach(sid => document.getElementById('section-' + sid).style.display = 'none');
-            document.getElementById('section-' + id).style.display = 'block';
-            if(element) {{ document.querySelectorAll('.nav-link').forEach(el => el.classList.remove('active')); element.classList.add('active'); }}
-            if(id === 'settings') loadUsers();
-            if(window.innerWidth < 992) document.querySelector('.sidebar').classList.remove('active');
-        }}
-        document.getElementById('file-upload')?.addEventListener('change', function() {{ document.getElementById('file-count').innerText = this.files.length + " files selected"; }});
-        const ctx = document.getElementById('mainChart').getContext('2d');
-        const gradient = ctx.createLinearGradient(0, 0, 0, 300); gradient.addColorStop(0, 'rgba(255, 140, 66, 0.2)'); gradient.addColorStop(1, 'rgba(255, 140, 66, 0)');
-        new Chart(ctx, {{ type: 'line', data: {{ labels: ['Jan','Feb','Mar','Apr','May','Jun'], datasets: [{{ data: [{{{{ stats.chart_data[0] }}}}+10, {{{{ stats.chart_data[1] }}}}+15, {{{{ stats.chart_data[2] }}}}+5, 25, 30, 40], borderColor: '#FF8C42', backgroundColor: gradient, tension: 0.4, fill: true }}] }}, options: {{ plugins: {{ legend: {{ display: false }} }}, scales: {{ x: {{ grid: {{ display: false, color: '#333' }} }}, y: {{ grid: {{ color: '#2D2D2D' }} }} }} }} }});
-        
-        function loadUsers() {{
-            fetch('/admin/get-users').then(res => res.json()).then(data => {{
-                let html = '<table class="dark-table"><thead><tr><th>User</th><th>Role</th><th>Actions</th></tr></thead><tbody>';
-                for(const [u, d] of Object.entries(data)) {{
-                    html += `<tr><td>${{u}}</td><td><span style="background:rgba(255,255,255,0.1); padding:2px 8px; border-radius:4px; font-size:11px;">${{d.role}}</span></td><td>${{d.role !== 'admin' ? `<button class="action-btn btn-edit" onclick="editUser('${{u}}', '${{d.password}}', '${{d.permissions.join(',')}}')"><i class="fas fa-edit"></i></button> <button class="action-btn btn-del" onclick="deleteUser('${{u}}')"><i class="fas fa-trash"></i></button>` : '<i class="fas fa-shield-alt" style="color:var(--text-secondary); margin-left:10px;"></i>'}}</td></tr>`;
-                }}
-                document.getElementById('userTableContainer').innerHTML = html + '</tbody></table>';
-            }});
-        }}
-        function handleUserSubmit() {{
-            const u = document.getElementById('new_username').value, p = document.getElementById('new_password').value, a = document.getElementById('action_type').value;
-            let perms = []; ['closing', 'po_sheet', 'accessories'].forEach(id => {{ if(document.getElementById('perm_' + (id==='po_sheet'?'po':(id==='accessories'?'acc':id))).checked) perms.push(id); }});
-            fetch('/admin/save-user', {{ method: 'POST', headers: {{'Content-Type': 'application/json'}}, body: JSON.stringify({{ username: u, password: p, permissions: perms, action_type: a }}) }}).then(r => r.json()).then(d => {{ if(d.status === 'success') {{ loadUsers(); resetForm(); }} else alert(d.message); }});
-        }}
-        function editUser(u, p, permsStr) {{ document.getElementById('new_username').value = u; document.getElementById('new_username').readOnly = true; document.getElementById('new_password').value = p; document.getElementById('action_type').value = 'update'; document.getElementById('saveUserBtn').innerHTML = '<i class="fas fa-sync"></i> Update User'; let pArr = permsStr.split(','); ['closing', 'po_sheet', 'accessories'].forEach(id => {{ document.getElementById('perm_' + (id==='po_sheet'?'po':(id==='accessories'?'acc':id))).checked = pArr.includes(id); }}); }}
-        function resetForm() {{ document.getElementById('userForm').reset(); document.getElementById('action_type').value = 'create'; document.getElementById('saveUserBtn').innerHTML = '<i class="fas fa-save"></i> Save User'; document.getElementById('new_username').readOnly = false; }}
-        function deleteUser(u) {{ if(confirm('Are you sure you want to delete this user?')) fetch('/admin/delete-user', {{ method: 'POST', headers: {{'Content-Type': 'application/json'}}, body: JSON.stringify({{ username: u }}) }}).then(() => loadUsers()); }}
-    </script>
-</body>
-</html>
-"""
-
-USER_DASHBOARD_TEMPLATE = f"""
-<!doctype html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>User Dashboard</title>
-    {COMMON_STYLES}
-</head>
-<body>
-    <div id="loading-overlay"><div class="spinner"></div><div style="color:white; margin-top:15px; font-weight:600;">Generating...</div></div>
-    <div class="sidebar">
-        <div class="brand-logo"><i class="fas fa-layer-group"></i>MNM<span>Software</span></div>
-        <div class="nav-menu"><div class="nav-link active"><i class="fas fa-home"></i> Home</div></div>
-        <a href="/logout" class="nav-link logout-btn" style="color:var(--accent-red);"><i class="fas fa-sign-out-alt"></i> Log Out</a>
-        <div class="sidebar-footer">© Mehedi Hasan</div>
-    </div>
-    <div class="main-content">
-        <div class="header-section"><div><div class="page-title">Welcome, {{{{ session.user }}}}</div><div class="page-subtitle">Your assigned production modules.</div></div></div>
-        <div class="stats-grid">
-            {{% if 'closing' in session.permissions %}}
-            <div class="card"><div class="section-header"><span>Closing Report</span><i class="fas fa-file-export" style="color:var(--accent-orange)"></i></div>
-            <form action="/generate-report" method="post" onsubmit="document.getElementById('loading-overlay').style.display='flex'"><div class="input-group"><label>REF NO</label><input type="text" name="ref_no" required placeholder="Booking Ref"></div><button>Generate</button></form></div>{{% endif %}}
-            {{% if 'po_sheet' in session.permissions %}}
-            <div class="card"><div class="section-header"><span>PO Sheet</span><i class="fas fa-file-pdf" style="color:var(--accent-green)"></i></div>
-            <form action="/generate-po-report" method="post" enctype="multipart/form-data" onsubmit="document.getElementById('loading-overlay').style.display='flex'"><div class="input-group"><label>FILES</label><input type="file" name="pdf_files" multiple accept=".pdf" required style="padding:10px;"></div><button style="background:var(--accent-green)">Process Files</button></form></div>{{% endif %}}
-            {{% if 'accessories' in session.permissions %}}
-            <div class="card"><div class="section-header"><span>Accessories</span><i class="fas fa-boxes" style="color:var(--accent-purple)"></i></div><p style="color:var(--text-secondary); margin-bottom:20px; font-size:13px; line-height:1.5;">Manage Challans, entries and history for accessories.</p><a href="/admin/accessories"><button style="background:var(--accent-purple)">Open Dashboard</button></a></div>{{% endif %}}
-        </div>
-    </div>
-</body>
-</html>
-"""
-
-ACCESSORIES_SEARCH_TEMPLATE = f"""
-<!doctype html><html lang="en"><head><title>Search</title>{COMMON_STYLES}</head><body style="justify-content:center; align-items:center;">
-<div class="card" style="width:100%; max-width:450px; padding:40px;">
-    <div class="section-header" style="justify-content:center; margin-bottom:30px; border-bottom:none;">Accessories Challan</div>
-    <form action="/admin/accessories/input" method="post"><div class="input-group"><label><i class="fas fa-search"></i> BOOKING REFERENCE</label><input type="text" name="ref_no" required placeholder="Enter Booking No"></div><button style="background:var(--accent-purple);">Proceed to Entry <i class="fas fa-arrow-right"></i></button></form>
-    <div style="display:flex; justify-content:space-between; margin-top:25px; align-items:center;">
-        <a href="/" style="color:var(--text-secondary); text-decoration:none; font-size:13px;"><i class="fas fa-arrow-left"></i> Back to Dashboard</a>
-        <a href="/logout" style="color:var(--accent-red); text-decoration:none; font-size:13px; font-weight:600;">Sign Out <i class="fas fa-sign-out-alt"></i></a>
-    </div>
-    <div style="text-align: center; margin-top: 30px; color: var(--text-secondary); font-size: 11px; opacity: 0.5;">© Mehedi Hasan</div>
-</div></body></html>
-"""
-
-ACCESSORIES_INPUT_TEMPLATE = f"""
-<!doctype html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Accessories Input</title>
-    {COMMON_STYLES}
-</head>
-<body>
-    <div class="sidebar">
-        <div class="brand-logo"><i class="fas fa-boxes"></i> Accessories</div>
-        <div class="nav-menu">
-            <a href="/" class="nav-link"><i class="fas fa-home"></i> Home</a>
-            <a href="/admin/accessories" class="nav-link active"><i class="fas fa-search"></i> Search</a>
-            <a href="/logout" class="nav-link" style="color:var(--accent-red); margin-top:10px;"><i class="fas fa-sign-out-alt"></i> Sign Out</a>
-        </div>
-        <div class="sidebar-footer">© Mehedi Hasan</div>
-    </div>
-    <div class="main-content">
-        <div class="header-section">
-            <div>
-                <div class="page-title">Accessories Entry</div>
-                <div style="color:var(--accent-orange); font-weight:700; font-size:16px;">{{{{ ref }}}} <span style="color:var(--text-secondary); font-weight:400; margin-left:10px; font-size:14px;">{{{{ buyer }}}} | {{{{ style }}}}</span></div>
-            </div>
-            <a href="/admin/accessories/print?ref={{{{ ref }}}}" target="_blank"><button style="width:auto; padding:12px 25px; background:var(--accent-green);"> <i class="fas fa-print" style="margin-right:8px;"></i> Print Report</button></a>
-        </div>
-
-        <div class="dashboard-grid-2">
-            <div class="card">
-                <div class="section-header"><span>New Challan Entry</span><i class="fas fa-plus-circle" style="color:var(--accent-orange)"></i></div>
-                <form action="/admin/accessories/save" method="post">
-                    <input type="hidden" name="ref" value="{{{{ ref }}}}">
-                    <div class="input-group"><label>TYPE</label><select name="item_type"><option value="Top">Top</option><option value="Bottom">Bottom</option></select></div>
-                    <div class="input-group"><label>COLOR</label><select name="color" required><option value="" disabled selected>Select Color</option>{{% for c in colors %}}<option value="{{{{ c }}}}">{{{{ c }}}}</option>{{% endfor %}}</select></div>
-                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px;">
-                        <div class="input-group"><label>LINE NO</label><input type="text" name="line_no" required placeholder="Line"></div>
-                        <div class="input-group"><label>SIZE</label><input type="text" name="size" value="ALL"></div>
-                    </div>
-                    <div class="input-group"><label>QUANTITY</label><input type="number" name="qty" required placeholder="0"></div>
-                    <button type="submit"><i class="fas fa-save" style="margin-right:8px;"></i> Save Entry</button>
-                </form>
-            </div>
-
-            <div class="card">
-                <div class="section-header">Recent History <span style="background:var(--accent-purple); padding:2px 8px; border-radius:4px; font-size:11px; margin-left:10px;">{{{{ challans|length }}}}</span></div>
-                <div style="overflow-y:auto; max-height:450px; padding-right:5px;">
-                    <table class="dark-table">
-                        <thead><tr><th>Ln</th><th>Color</th><th>Qty</th><th>Act</th></tr></thead>
-                        <tbody>
-                            {{% for item in challans|reverse %}}
-                            <tr>
-                                <td>{{{{ item.line }}}}</td>
-                                <td>{{{{ item.color }}}}</td>
-                                <td style="font-weight:700; color:var(--accent-green);">{{{{ item.qty }}}}</td>
-                                <td>
-                                    {{% if session.role == 'admin' %}}
-                                    <div style="display:flex;">
-                                        <a href="/admin/accessories/edit?ref={{{{ ref }}}}&index={{{{ (challans|length) - loop.index }}}}" class="action-btn btn-edit"><i class="fas fa-pen"></i></a>
-                                        <form action="/admin/accessories/delete" method="POST" style="display:inline;" onsubmit="return confirm('Delete this entry?');">
-                                            <input type="hidden" name="ref" value="{{{{ ref }}}}">
-                                            <input type="hidden" name="index" value="{{{{ (challans|length) - loop.index }}}}">
-                                            <button type="submit" class="action-btn btn-del"><i class="fas fa-trash"></i></button>
-                                        </form>
-                                    </div>
-                                    {{% else %}}<span style="font-size:10px; opacity:0.5;">Locked</span>{{% endif %}}
-                                </td>
-                            </tr>
-                            {{% else %}}
-                            <tr><td colspan="4" style="text-align:center; padding:30px; color:var(--text-secondary); font-size:12px;">No challans added yet.</td></tr>
-                            {{% endfor %}}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-    </div>
-</body>
-</html>
-"""
-
-ACCESSORIES_EDIT_TEMPLATE = f"""<!doctype html><html lang="en"><head><title>Edit</title>{COMMON_STYLES}</head><body style="justify-content:center; align-items:center;">
-<div class="card" style="width:100%; max-width:400px; padding:40px;"><div class="section-header" style="justify-content:center; border-bottom:none; margin-bottom:20px;">Edit Entry</div>
-<form action="/admin/accessories/update" method="post"><input type="hidden" name="ref" value="{{{{ ref }}}}"><input type="hidden" name="index" value="{{{{ index }}}}">
-<div class="input-group"><label>LINE NO</label><input type="text" name="line_no" value="{{{{ item.line }}}}" required></div>
-<div class="input-group"><label>COLOR</label><input type="text" name="color" value="{{{{ item.color }}}}" required></div>
-<div class="input-group"><label>SIZE</label><input type="text" name="size" value="{{{{ item.size }}}}" required></div>
-<div class="input-group"><label>QUANTITY</label><input type="number" name="qty" value="{{{{ item.qty }}}}" required></div>
-<button type="submit" style="background:var(--accent-purple); margin-top:10px;"><i class="fas fa-sync-alt"></i> Update</button></form>
-<div style="text-align:center; margin-top:20px;"><a href="/admin/accessories/input_direct?ref={{{{ ref }}}}" style="color:var(--text-secondary); font-size:13px; text-decoration:none;">Cancel</a></div></div></body></html>"""
-
 # ==============================================================================
 # REPORT TEMPLATES (ORIGINAL WHITE DESIGN - PRINT FRIENDLY)
 # ==============================================================================
@@ -1964,6 +1689,3 @@ def generate_po_report():
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
-
-
-
