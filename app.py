@@ -2777,88 +2777,88 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
     </div>
     <script>
         // ===== WELCOME POPUP WITH TIME-BASED GREETING =====
-        function showWelcomePopup() {
+        function showWelcomePopup() {{
             const hour = new Date().getHours();
             let greeting, icon;
             
-            if (hour >= 5 && hour < 12) {
+            if (hour >= 5 && hour < 12) {{
                 greeting = "Good Morning";
                 icon = "🌅";
-            } else if (hour >= 12 && hour < 17) {
+            }} else if (hour >= 12 && hour < 17) {{
                 greeting = "Good Afternoon";
                 icon = "☀️";
-            } else if (hour >= 17 && hour < 21) {
+            }} else if (hour >= 17 && hour < 21) {{
                 greeting = "Good Evening";
                 icon = "🌆";
-            } else {
+            }} else {{
                 greeting = "Good Night";
                 icon = "🌙";
-            }
+            }}
             
             document.getElementById('greetingText').textContent = greeting;
             document.getElementById('welcomeIcon').textContent = icon;
             document.getElementById('welcomeModal').style.display = 'flex';
-        }
+        }}
         
-        function closeWelcome() {
+        function closeWelcome() {{
             const modal = document.getElementById('welcomeModal');
             modal.style.animation = 'modalFadeOut 0.3s ease-out forwards';
-            setTimeout(() => {
+            setTimeout(() => {{
                 modal.style.display = 'none';
                 sessionStorage.setItem('welcomeShown', 'true');
-            }, 300);
-        }
+            }}, 300);
+        }}
         
         // Check if welcome was already shown in this session
-        if (!sessionStorage.getItem('welcomeShown')) {
+        if (!sessionStorage.getItem('welcomeShown')) {{
             setTimeout(showWelcomePopup, 500);
-        }
+        }}
         
         // ===== SECTION NAVIGATION =====
-        function showSection(id, element) {
-            ['dashboard', 'analytics', 'help', 'settings'].forEach(sid => {
+        function showSection(id, element) {{
+            ['dashboard', 'analytics', 'help', 'settings'].forEach(sid => {{
                 document.getElementById('section-' + sid).style.display = 'none';
-            });
+            }});
             document.getElementById('section-' + id).style.display = 'block';
             
-            if (element) {
+            if (element) {{
                 document.querySelectorAll('.nav-link').forEach(el => el.classList.remove('active'));
                 element.classList.add('active');
-            }
+            }}
             
             if (id === 'settings') loadUsers();
             if (window.innerWidth < 1024) document.querySelector('.sidebar').classList.remove('active');
-        }
+        }}
         
         // ===== FILE UPLOAD HANDLER =====
         const fileUpload = document.getElementById('file-upload');
         const uploadZone = document.getElementById('uploadZone');
         
-        if (fileUpload) {
-            fileUpload.addEventListener('change', function() {
+        if (fileUpload) {{
+            fileUpload.addEventListener('change', function() {{
                 const count = this.files.length;
                 document.getElementById('file-count').innerHTML = count > 0 
-                    ? `<i class="fas fa-check-circle" style="margin-right: 5px;"></i>${count} file(s) selected`
+                    ? `<i class="fas fa-check-circle" style="margin-right: 5px;"></i>${{count}} file(s) selected`
                     : 'No files selected';
-            });
+            }});
             
             // Drag and drop
-            uploadZone.addEventListener('dragover', (e) => {
+            uploadZone.addEventListener('dragover', (e) => {{
                 e.preventDefault();
                 uploadZone.classList.add('dragover');
-            });
+            }});
             
-            uploadZone.addEventListener('dragleave', () => {
+            uploadZone.addEventListener('dragleave', () => {{
                 uploadZone.classList.remove('dragover');
-            });
+            }});
             
-            uploadZone.addEventListener('drop', (e) => {
+            uploadZone.addEventListener('drop', (e) => {{
                 e.preventDefault();
                 uploadZone.classList.remove('dragover');
                 fileUpload.files = e.dataTransfer.files;
                 fileUpload.dispatchEvent(new Event('change'));
-            });
-        }
+            }});
+        }}
         
         // ===== ANIMATED CHART =====
         const ctx = document.getElementById('mainChart').getContext('2d');
@@ -2875,14 +2875,14 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
         gradientGreen.addColorStop(0, 'rgba(16, 185, 129, 0.4)');
         gradientGreen.addColorStop(1, 'rgba(16, 185, 129, 0)');
         
-        new Chart(ctx, {
+        new Chart(ctx, {{
             type: 'line',
-            data: {
-                labels: {{ stats.chart.labels | tojson }},
+            data: {{
+                labels: {{{{ stats.chart.labels | tojson }}}},
                 datasets: [
-                    {
+                    {{
                         label: 'Closing',
-                        data: {{ stats.chart.closing | tojson }},
+                        data: {{{{ stats.chart.closing | tojson }}}},
                         borderColor: '#FF7A00',
                         backgroundColor: gradientOrange,
                         tension: 0.4,
@@ -2892,10 +2892,10 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
                         pointBorderWidth: 2,
                         pointRadius: 5,
                         pointHoverRadius: 8
-                    },
-                    {
+                    }},
+                    {{
                         label: 'Accessories',
-                        data: {{ stats.chart.acc | tojson }},
+                        data: {{{{ stats.chart.acc | tojson }}}},
                         borderColor: '#8B5CF6',
                         backgroundColor: gradientPurple,
                         tension: 0.4,
@@ -2905,10 +2905,10 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
                         pointBorderWidth: 2,
                         pointRadius: 5,
                         pointHoverRadius: 8
-                    },
-                    {
+                    }},
+                    {{
                         label: 'PO Sheets',
-                        data: {{ stats.chart.po | tojson }},
+                        data: {{{{ stats.chart.po | tojson }}}},
                         borderColor: '#10B981',
                         backgroundColor: gradientGreen,
                         tension: 0.4,
@@ -2918,71 +2918,71 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
                         pointBorderWidth: 2,
                         pointRadius: 5,
                         pointHoverRadius: 8
-                    }
+                    }}
                 ]
-            },
-            options: {
-                plugins: {
-                    legend: {
+            }},
+            options: {{
+                plugins: {{
+                    legend: {{
                         display: true,
                         position: 'top',
-                        labels: {
+                        labels: {{
                             color: '#8b8b9e',
-                            font: { size: 12, weight: 500 },
+                            font: {{ size: 12, weight: 500 }},
                             usePointStyle: true,
                             padding: 20
-                        }
-                    }
-                },
-                scales: {
-                    x: {
-                        grid: { display: false },
-                        ticks: { color: '#8b8b9e', font: { size: 11 } }
-                    },
-                    y: {
-                        grid: { color: 'rgba(255,255,255,0.03)' },
-                        ticks: { color: '#8b8b9e', font: { size: 11 } }
-                    }
-                },
+                        }}
+                    }}
+                }},
+                scales: {{
+                    x: {{
+                        grid: {{ display: false }},
+                        ticks: {{ color: '#8b8b9e', font: {{ size: 11 }} }}
+                    }},
+                    y: {{
+                        grid: {{ color: 'rgba(255,255,255,0.03)' }},
+                        ticks: {{ color: '#8b8b9e', font: {{ size: 11 }} }}
+                    }}
+                }},
                 responsive: true,
                 maintainAspectRatio: false,
-                interaction: {
+                interaction: {{
                     intersect: false,
                     mode: 'index'
-                },
-                animation: {
+                }},
+                animation: {{
                     duration: 2000,
                     easing: 'easeOutQuart'
-                }
-            }
-        });
+                }}
+            }}
+        }});
         
         // ===== COUNT UP ANIMATION =====
-        function animateCountUp() {
-            document.querySelectorAll('.count-up').forEach(counter => {
+        function animateCountUp() {{
+            document.querySelectorAll('.count-up').forEach(counter => {{
                 const target = parseInt(counter.getAttribute('data-target'));
                 const duration = 2000;
                 const step = target / (duration / 16);
                 let current = 0;
                 
-                const updateCounter = () => {
+                const updateCounter = () => {{
                     current += step;
-                    if (current < target) {
+                    if (current < target) {{
                         counter.textContent = Math.floor(current);
                         requestAnimationFrame(updateCounter);
-                    } else {
+                    }} else {{
                         counter.textContent = target;
-                    }
-                };
+                    }}
+                }};
                 
                 updateCounter();
-            });
-        }
+            }});
+        }}
         
         setTimeout(animateCountUp, 500);
         
         // ===== LOADING ANIMATION =====
-        function showLoading() {
+        function showLoading() {{
             const overlay = document.getElementById('loading-overlay');
             const spinner = document.getElementById('spinner-anim').parentElement;
             const success = document.getElementById('success-anim');
@@ -2997,9 +2997,9 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
             text.textContent = 'Processing Request...';
             
             return true;
-        }
+        }}
 
-        function showSuccess() {
+        function showSuccess() {{
             const overlay = document.getElementById('loading-overlay');
             const spinner = document.getElementById('spinner-anim').parentElement;
             const success = document.getElementById('success-anim');
@@ -3009,42 +3009,42 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
             success.style.display = 'block';
             text.style.display = 'none';
             
-            setTimeout(() => { overlay.style.display = 'none'; }, 1500);
-        }
+            setTimeout(() => {{ overlay.style.display = 'none'; }}, 1500);
+        }}
 
         // ===== USER MANAGEMENT =====
-        function loadUsers() {
+        function loadUsers() {{
             fetch('/admin/get-users')
                 .then(res => res.json())
-                .then(data => {
+                .then(data => {{
                     let html = '<table class="dark-table"><thead><tr><th>User</th><th>Role</th><th style="text-align:right;">Actions</th></tr></thead><tbody>';
                     
-                    for (const [u, d] of Object.entries(data)) {
+                    for (const [u, d] of Object.entries(data)) {{
                         const roleClass = d.role === 'admin' ? 'background: rgba(255, 122, 0, 0.1); color: var(--accent-orange);' : 'background: rgba(139, 92, 246, 0.1); color: var(--accent-purple);';
                         
                         html += `<tr>
-                            <td style="font-weight: 600;">${u}</td>
-                            <td><span class="table-badge" style="${roleClass}">${d.role}</span></td>
+                            <td style="font-weight: 600;">${{u}}</td>
+                            <td><span class="table-badge" style="${{roleClass}}">${{d.role}}</span></td>
                             <td style="text-align:right;">
-                                ${d.role !== 'admin' ?  `
+                                ${{d.role !== 'admin' ?  `
                                     <div class="action-cell">
-                                        <button class="action-btn btn-edit" onclick="editUser('${u}', '${d.password}', '${d.permissions.join(',')}')">
+                                        <button class="action-btn btn-edit" onclick="editUser('${{u}}', '${{d.password}}', '${{d.permissions.join(',')}}')">
                                             <i class="fas fa-edit"></i>
                                         </button> 
-                                        <button class="action-btn btn-del" onclick="deleteUser('${u}')">
+                                        <button class="action-btn btn-del" onclick="deleteUser('${{u}}')">
                                             <i class="fas fa-trash"></i>
                                         </button>
                                     </div>
-                                ` : '<i class="fas fa-shield-alt" style="color: var(--accent-orange); opacity: 0.5;"></i>'}
+                                ` : '<i class="fas fa-shield-alt" style="color: var(--accent-orange); opacity: 0.5;"></i>'}}
                             </td>
                         </tr>`;
-                    }
+                    }}
                     
                     document.getElementById('userTableContainer').innerHTML = html + '</tbody></table>';
-                });
-        }
+                }});
+        }}
         
-        function handleUserSubmit() {
+        function handleUserSubmit() {{
             const u = document.getElementById('new_username').value;
             const p = document.getElementById('new_password').value;
             const a = document.getElementById('action_type').value;
@@ -3056,25 +3056,25 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
             
             showLoading();
             
-            fetch('/admin/save-user', {
+            fetch('/admin/save-user', {{
                 method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ username: u, password: p, permissions: perms, action_type: a })
-            })
+                headers: {{'Content-Type': 'application/json'}},
+                body: JSON.stringify({{ username: u, password: p, permissions: perms, action_type: a }})
+            }})
             .then(r => r.json())
-            .then(d => {
-                if (d.status === 'success') {
+            .then(d => {{
+                if (d.status === 'success') {{
                     showSuccess();
                     loadUsers();
                     resetForm();
-                } else {
+                }} else {{
                     alert(d.message);
                     document.getElementById('loading-overlay').style.display = 'none';
-                }
-            });
-        }
+                }}
+            }});
+        }}
         
-        function editUser(u, p, permsStr) {
+        function editUser(u, p, permsStr) {{
             document.getElementById('new_username').value = u;
             document.getElementById('new_username').readOnly = true;
             document.getElementById('new_password').value = p;
@@ -3085,55 +3085,55 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
             document.getElementById('perm_closing').checked = pArr.includes('closing');
             document.getElementById('perm_po').checked = pArr.includes('po_sheet');
             document.getElementById('perm_acc').checked = pArr.includes('accessories');
-        }
+        }}
         
-        function resetForm() {
+        function resetForm() {{
             document.getElementById('userForm').reset();
             document.getElementById('action_type').value = 'create';
             document.getElementById('saveUserBtn').innerHTML = '<i class="fas fa-save" style="margin-right: 10px;"></i> Save User';
             document.getElementById('new_username').readOnly = false;
             document.getElementById('perm_closing').checked = true;
-        }
+        }}
         
-        function deleteUser(u) {
-            if (confirm('Are you sure you want to delete "' + u + '"?')) {
-                fetch('/admin/delete-user', {
+        function deleteUser(u) {{
+            if (confirm('Are you sure you want to delete "' + u + '"?')) {{
+                fetch('/admin/delete-user', {{
                     method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ username: u })
-                }).then(() => loadUsers());
-            }
-        }
+                    headers: {{'Content-Type': 'application/json'}},
+                    body: JSON.stringify({{ username: u }})
+                }}).then(() => loadUsers());
+            }}
+        }}
         
         // ===== PARTICLES.JS INITIALIZATION =====
-        if (typeof particlesJS !== 'undefined') {
-            particlesJS('particles-js', {
-                particles: {
-                    number: { value: 50, density: { enable: true, value_area: 800 } },
-                    color: { value: '#FF7A00' },
-                    shape: { type: 'circle' },
-                    opacity: { value: 0.3, random: true },
-                    size: { value: 3, random: true },
-                    line_linked: { enable: true, distance: 150, color: '#FF7A00', opacity: 0.1, width: 1 },
-                    move: { enable: true, speed: 1, direction: 'none', random: true, out_mode: 'out' }
-                },
-                interactivity: {
-                    events: { onhover: { enable: true, mode: 'grab' } },
-                    modes: { grab: { distance: 140, line_linked: { opacity: 0.3 } } }
-                }
-            });
-        }
+        if (typeof particlesJS !== 'undefined') {{
+            particlesJS('particles-js', {{
+                particles: {{
+                    number: {{ value: 50, density: {{ enable: true, value_area: 800 }} }},
+                    color: {{ value: '#FF7A00' }},
+                    shape: {{ type: 'circle' }},
+                    opacity: {{ value: 0.3, random: true }},
+                    size: {{ value: 3, random: true }},
+                    line_linked: {{ enable: true, distance: 150, color: '#FF7A00', opacity: 0.1, width: 1 }},
+                    move: {{ enable: true, speed: 1, direction: 'none', random: true, out_mode: 'out' }}
+                }},
+                interactivity: {{
+                    events: {{ onhover: {{ enable: true, mode: 'grab' }} }},
+                    modes: {{ grab: {{ distance: 140, line_linked: {{ opacity: 0.3 }} }} }}
+                }}
+            }});
+        }}
         
         // Add CSS for fadeInUp animation
         const style = document.createElement('style');
         style.textContent = `
-            @keyframes fadeInUp {
-                from { opacity: 0; transform: translateY(20px); }
-                to { opacity: 1; transform: translateY(0); }
-            }
-            @keyframes modalFadeOut {
-                to { opacity: 0; }
-            }
+            @keyframes fadeInUp {{
+                from {{ opacity: 0; transform: translateY(20px); }}
+                to {{ opacity: 1; transform: translateY(0); }}
+            }}
+            @keyframes modalFadeOut {{
+                to {{ opacity: 0; }}
+            }}
         `;
         document.head.appendChild(style);
     </script>
@@ -3278,54 +3278,54 @@ USER_DASHBOARD_TEMPLATE = f"""
     
     <script>
         // Welcome Popup
-        function showWelcomePopup() {
+        function showWelcomePopup() {{
             const hour = new Date().getHours();
             let greeting, icon;
             
-            if (hour >= 5 && hour < 12) {
+            if (hour >= 5 && hour < 12) {{
                 greeting = "Good Morning";
                 icon = "🌅";
-            } else if (hour >= 12 && hour < 17) {
+            }} else if (hour >= 12 && hour < 17) {{
                 greeting = "Good Afternoon";
                 icon = "☀️";
-            } else if (hour >= 17 && hour < 21) {
+            }} else if (hour >= 17 && hour < 21) {{
                 greeting = "Good Evening";
                 icon = "🌆";
-            } else {
+            }} else {{
                 greeting = "Good Night";
                 icon = "🌙";
-            }
+            }}
             
             document.getElementById('greetingText').textContent = greeting;
             document.getElementById('welcomeIcon').textContent = icon;
             document.getElementById('welcomeModal').style.display = 'flex';
-        }
+        }}
         
-        function closeWelcome() {
+        function closeWelcome() {{
             const modal = document.getElementById('welcomeModal');
             modal.style.opacity = '0';
-            setTimeout(() => {
+            setTimeout(() => {{
                 modal.style.display = 'none';
                 sessionStorage.setItem('welcomeShown', 'true');
-            }, 300);
-        }
+            }}, 300);
+        }}
         
-        if (!sessionStorage.getItem('welcomeShown')) {
+        if (!sessionStorage.getItem('welcomeShown')) {{
             setTimeout(showWelcomePopup, 500);
-        }
+        }}
         
-        function showLoading() {
+        function showLoading() {{
             document.getElementById('loading-overlay').style.display = 'flex';
             return true;
-        }
+        }}
         
         // Add fadeInUp animation
         const style = document.createElement('style');
         style.textContent = `
-            @keyframes fadeInUp {
-                from { opacity: 0; transform: translateY(20px); }
-                to { opacity: 1; transform: translateY(0); }
-            }
+            @keyframes fadeInUp {{
+                from {{ opacity: 0; transform: translateY(20px); }}
+                to {{ opacity: 1; transform: translateY(0); }}
+            }}
         `;
         document.head.appendChild(style);
     </script>
