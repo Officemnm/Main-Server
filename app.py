@@ -1368,6 +1368,136 @@ COMMON_STYLES = """
             transform: scale(1.1) rotate(90deg);
             box-shadow: 0 12px 40px var(--accent-orange-glow);
         }
+        /* Glow Text */
+        .glow-text {
+            text-shadow: 0 0 20px var(--accent-orange-glow);
+        }
+
+        /* Animated Border */
+        .animated-border {
+            position: relative;
+        }
+
+        .animated-border::after {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(45deg, var(--accent-orange), var(--accent-purple), var(--accent-green), var(--accent-orange));
+            background-size: 400% 400%;
+            border-radius: inherit;
+            z-index: -1;
+            animation: gradientBorder 3s ease infinite;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .animated-border:hover::after {
+            opacity: 1;
+        }
+
+        @keyframes gradientBorder {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* Permission Checkbox Styles */
+        .perm-checkbox {
+            background: rgba(255, 255, 255, 0.03);
+            padding: 14px 18px;
+            border-radius: 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            border: 1px solid var(--border-color);
+            transition: var(--transition-smooth);
+            flex: 1;
+            min-width: 100px;
+        }
+
+        .perm-checkbox:hover {
+            border-color: var(--accent-orange);
+            background: rgba(255, 122, 0, 0.05);
+        }
+
+        .perm-checkbox input {
+            width: auto;
+            margin-right: 10px;
+            accent-color: var(--accent-orange);
+        }
+
+        .perm-checkbox span {
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+
+        .perm-checkbox:has(input:checked) {
+            border-color: var(--accent-orange);
+            background: rgba(255, 122, 0, 0.1);
+        }
+
+        .perm-checkbox:has(input:checked) span {
+            color: var(--accent-orange);
+        }
+
+        /* Time Badge */
+        .time-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(255, 255, 255, 0.03);
+            padding: 8px 14px;
+            border-radius: 8px;
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .time-badge i {
+            color: var(--accent-orange);
+        }
+    </style>
+"""
+# ==============================================================================
+# হেল্পার ফাংশন: পরিসংখ্যান ও হিস্ট্রি (MongoDB ব্যবহার করে)
+# ==============================================================================
+
+def load_users():
+    record = users_col.find_one({"_id": "global_users"})
+    default_users = {
+        "Admin": {
+            "password": "@Nijhum@12", 
+            "role": "admin", 
+            "permissions": ["closing", "po_sheet", "user_manage", "view_history", "accessories"],
+            "created_at": "N/A",
+            "last_login": "Never",
+            "last_duration": "N/A"
+        }
+    }
+    if record:
+        return record['data']
+    else:
+        users_col.insert_one({"_id": "global_users", "data": default_users})
+        return default_users
+
+def save_users(users_data):
+    users_col.replace_one(
+        {"_id": "global_users"}, 
+        {"_id": "global_users", "data": users_data}, 
+        upsert=True
+    )
+
+def load_stats():
+    record = stats_col.find_one({"_id": "dashboard_stats"})
+    if record:
+        return record['data']
+    else:
+        default_stats = {"downloads": [], "last_booking": "None"}
+        stats_col.insert_one({"_id": "dashboard_stats", "data": default_stats})
+        return default_stats
 def save_stats(data):
     stats_col.replace_one(
         {"_id": "dashboard_stats"},
