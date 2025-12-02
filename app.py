@@ -721,7 +721,7 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
     NUM_COLUMNS, TABLE_START_ROW = 9, 8
     ws.merge_cells(start_row=1, start_column=1, end_row=1, end_column=NUM_COLUMNS)
     # UPDATED BRANDING
-    ws['A1'].value = "MNM SOFTWARE"
+    ws['A1'].value = "COTTON CLOTHING BD LTD"
     ws['A1'].font = title_font 
     ws['A1'].alignment = center_align
 
@@ -1465,7 +1465,7 @@ CLOSING_REPORT_PREVIEW_TEMPLATE = """
             <a href="/download-closing-excel?ref_no={{ ref_no }}" class="btn btn-excel"><i class="fas fa-file-excel"></i> Download Excel</a>
         </div>
         <div class="company-header">
-            <div class="company-name">MNM Software</div>
+            <div class="company-name">COTTON CLOTHING BD LTD</div>
             <div class="report-title">CLOSING REPORT [ INPUT SECTION ]</div>
             <div class="date-section">Date: <span id="date"></span></div>
         </div>
@@ -1622,7 +1622,7 @@ ACCESSORIES_REPORT_TEMPLATE = """
 </div>
 <div class="container">
     <div class="header">
-        <div class="company-name">MNM Software</div>
+        <div class="company-name">COTTON CLOTHING BD LTD</div>
         <div class="company-address">Kazi Tower, 27 Road, Gazipura, Tongi, Gazipur.</div>
         <div class="report-title">ACCESSORIES DELIVERY CHALLAN</div>
     </div>
@@ -1776,10 +1776,10 @@ PO_REPORT_TEMPLATE = """
     <div class="container">
         <div class="action-bar no-print">
             <a href="/" class="btn btn-outline-secondary rounded-pill px-4">Back to Dashboard</a>
-            <button onclick="window.print()" class="btn btn-print"><i class="fas fa-file-pdf"></i> Download PDF</button>
+            <button onclick="window.print()" class="btn btn-print"><i class="fas fa-file-pdf"></i>Print</button>
         </div>
         <div class="company-header">
-            <div class="company-name">MNM Software</div>
+            <div class="company-name">COTTON CLOTHING BD LTD</div>
             <div class="report-title">Purchase Order Summary</div>
             <div class="date-section">Date: <span id="date"></span></div>
         </div>
@@ -2231,3 +2231,4 @@ def generate_po_report():
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
+
