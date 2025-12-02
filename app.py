@@ -1003,6 +1003,12 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
                 <div><div class="page-title">Main Dashboard</div><div class="page-subtitle">Overview & Real-time Statistics</div></div>
                 <div style="background:var(--bg-card); padding:10px 20px; border-radius:30px; border:1px solid var(--border-color); font-size:13px; font-weight:600; display:flex; align-items:center; gap:8px;"><span style="color:var(--accent-green); font-size:10px;">●</span> System Online</div>
             </div>
+            
+            {{% with messages = get_flashed_messages() %}}
+                {{% if messages %}}
+                    <div style="margin-bottom: 20px; color: #ff7675; font-size: 13px; text-align: center; background: rgba(255, 118, 117, 0.1); padding: 10px; border-radius: 8px; border: 1px solid rgba(255, 118, 117, 0.2);"><i class="fas fa-exclamation-circle"></i> {{{{ messages[0] }}}}</div>
+                {{% endif %}}
+            {{% endwith %}}
 
             <div class="stats-grid">
                 <div class="card stat-card"><div class="stat-icon"><i class="fas fa-file-export"></i></div><div class="stat-info"><h3>{{{{ stats.closing.count }}}}</h3><p>Closing</p></div></div>
@@ -1246,6 +1252,13 @@ USER_DASHBOARD_TEMPLATE = f"""
         <div class="header-section">
             <div><div class="page-title">Welcome, {{{{ session.user }}}}</div><div class="page-subtitle">Your assigned production modules.</div></div>
         </div>
+
+        {{% with messages = get_flashed_messages() %}}
+            {{% if messages %}}
+                <div style="margin-bottom: 20px; color: #ff7675; font-size: 13px; text-align: center; background: rgba(255, 118, 117, 0.1); padding: 10px; border-radius: 8px; border: 1px solid rgba(255, 118, 117, 0.2);"><i class="fas fa-exclamation-circle"></i> {{{{ messages[0] }}}}</div>
+            {{% endif %}}
+        {{% endwith %}}
+
         <div class="stats-grid">
             {{% if 'closing' in session.permissions %}}
             <div class="card"><div class="section-header"><span>Closing Report</span><i class="fas fa-file-export" style="color:var(--accent-orange)"></i></div>
@@ -1388,7 +1401,6 @@ ACCESSORIES_EDIT_TEMPLATE = f"""<!doctype html><html lang="en"><head><title>Edit
 <div class="input-group"><label>QUANTITY</label><input type="number" name="qty" value="{{{{ item.qty }}}}" required></div>
 <button type="submit" style="background:var(--accent-purple); margin-top:10px;"><i class="fas fa-sync-alt"></i> Update</button></form>
 <div style="text-align:center; margin-top:20px;"><a href="/admin/accessories/input_direct?ref={{{{ ref }}}}" style="color:var(--text-secondary); font-size:13px; text-decoration:none;">Cancel</a></div></div></body></html>"""
-
 # ==============================================================================
 # REPORT TEMPLATES (ORIGINAL WHITE DESIGN - PRINT FRIENDLY)
 # ==============================================================================
@@ -1426,14 +1438,14 @@ CLOSING_REPORT_PREVIEW_TEMPLATE = """
         .col-balance { font-weight: 700; color: #c0392b; }
         .total-row td { background-color: #fff !important; color: #000 !important; font-weight: 900; font-size: 1.2rem; border-top: 2px solid #000; }
         .action-bar { margin-bottom: 20px; display: flex; justify-content: flex-end; gap: 15px; position: sticky; top: 0; z-index: 1000; background: #f8f9fa; padding: 10px 0; }
-        .btn-print { background-color: #2c3e50; color: white; border-radius: 50px; padding: 10px 30px; font-weight: 600; }
-        .btn-pdf { background-color: #e74c3c; color: white; border-radius: 50px; padding: 10px 30px; font-weight: 600; border: none; }
+        .btn-print { background-color: #2c3e50; color: white; border-radius: 50px; padding: 10px 30px; font-weight: 600; border: none; }
         .btn-excel { background-color: #27ae60; color: white; border-radius: 50px; padding: 10px 30px; font-weight: 600; text-decoration: none; display: inline-block; }
         .btn-excel:hover { color: white; background-color: #219150; }
         .footer-credit { text-align: center; margin-top: 40px; margin-bottom: 20px; font-size: 1rem; color: #2c3e50; padding-top: 10px; border-top: 1px solid #000; font-weight: 600;}
         @media print {
             @page { margin: 5mm; size: portrait; } 
             body { background-color: white; padding: 0; }
+            .container { max-width: 100% !important; width: 100%; }
             .no-print { display: none !important; }
             .action-bar { display: none; }
             .table th, .table td { border: 1px solid #000 !important; }
@@ -1449,7 +1461,7 @@ CLOSING_REPORT_PREVIEW_TEMPLATE = """
     <div class="container">
         <div class="action-bar no-print">
             <a href="/" class="btn btn-outline-secondary rounded-pill px-4">Back to Dashboard</a>
-            <button onclick="window.print()" class="btn btn-pdf"><i class="fas fa-file-pdf"></i> Download PDF</button>
+            <button onclick="window.print()" class="btn btn-print"><i class="fas fa-print"></i> Print Report</button>
             <a href="/download-closing-excel?ref_no={{ ref_no }}" class="btn btn-excel"><i class="fas fa-file-excel"></i> Download Excel</a>
         </div>
         <div class="company-header">
@@ -1943,7 +1955,8 @@ def generate_report():
         report_data = fetch_closing_report_data(internal_ref_no)
 
         if not report_data:
-            flash(f"Data Not Found or Server Error for: {internal_ref_no}")
+            # ডাটা না পাওয়া গেলে Flash মেসেজ পাঠানো হচ্ছে
+            flash(f"Booking Not Found: {internal_ref_no}")
             return redirect(url_for('index'))
         
         # Update Stats
@@ -2174,6 +2187,9 @@ def generate_po_report():
         for color in unique_colors:
             color_df = df[df['Color'] == color]
             pivot = color_df.pivot_table(index='P.O NO', columns='Size', values='Quantity', aggfunc='sum', fill_value=0)
+            
+            # --- UPDATE: Remove 'Size' Column Name ---
+            pivot.columns.name = None
             
             try:
                 sorted_cols = sort_sizes(pivot.columns.tolist())
