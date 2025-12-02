@@ -886,7 +886,7 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
         <div class="nav-menu">
             <div class="nav-link active" onclick="showSection('dashboard', this)"><i class="fas fa-home"></i> Dashboard</div>
             <div class="nav-link" onclick="showSection('analytics', this)"><i class="fas fa-chart-pie"></i> Closing Report</div>
-            <a href="/admin/accessories" class="nav-link"><i class="fas fa-database"></i> Accessories DB</a>
+            <a href="/admin/accessories" class="nav-link"><i class="fas fa-database"></i> Accessories Challan</a>
             <div class="nav-link" onclick="showSection('help', this)"><i class="fas fa-file-invoice"></i> PO Generator</div>
             <div class="nav-link" onclick="showSection('settings', this)"><i class="fas fa-users-cog"></i> User Manage</div>
             <a href="/logout" class="nav-link" style="color: var(--accent-red); margin-top: 10px;"><i class="fas fa-sign-out-alt"></i> Log Out</a>
@@ -1062,7 +1062,7 @@ USER_DASHBOARD_TEMPLATE = f"""
 ACCESSORIES_SEARCH_TEMPLATE = f"""
 <!doctype html><html lang="en"><head><title>Search</title>{COMMON_STYLES}</head><body style="justify-content:center; align-items:center;">
 <div class="card" style="width:100%; max-width:450px; padding:40px;">
-    <div class="section-header" style="justify-content:center; margin-bottom:30px; border-bottom:none;">Accessories DB</div>
+    <div class="section-header" style="justify-content:center; margin-bottom:30px; border-bottom:none;">Accessories Challan</div>
     <form action="/admin/accessories/input" method="post"><div class="input-group"><label><i class="fas fa-search"></i> BOOKING REFERENCE</label><input type="text" name="ref_no" required placeholder="Enter Booking No"></div><button style="background:var(--accent-purple);">Proceed to Entry <i class="fas fa-arrow-right"></i></button></form>
     <div style="display:flex; justify-content:space-between; margin-top:25px; align-items:center;">
         <a href="/" style="color:var(--text-secondary); text-decoration:none; font-size:13px;"><i class="fas fa-arrow-left"></i> Back to Dashboard</a>
@@ -1964,5 +1964,6 @@ def generate_po_report():
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
+
 
 
