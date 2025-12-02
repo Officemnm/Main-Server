@@ -74,7 +74,7 @@ except Exception as e:
 
 
 # ==============================================================================
-# CSS STYLES (UPDATED DARK THEME - FULL & PERFECT ALIGNMENT)
+# CSS STYLES (UPDATED: PREMIUM ANIMATIONS & BRANDING)
 # ==============================================================================
 COMMON_STYLES = """
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -125,7 +125,6 @@ COMMON_STYLES = """
         .nav-link:hover, .nav-link.active { background-color: rgba(255, 140, 66, 0.1); color: var(--accent-orange); }
         .nav-link i { width: 25px; margin-right: 10px; font-size: 16px; text-align: center; }
 
-        /* Sidebar Footer Credit */
         .sidebar-footer {
             margin-top: auto; padding-top: 20px; border-top: 1px solid var(--border-color);
             text-align: center; font-size: 12px; color: var(--text-secondary); font-weight: 500; opacity: 0.6;
@@ -184,10 +183,46 @@ COMMON_STYLES = """
         .btn-del { background: rgba(255, 118, 117, 0.2); color: #ff7675; }
         .btn-del:hover { background: var(--accent-red); color: white; }
 
-        /* Loading */
-        #loading-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 9999; flex-direction: column; justify-content: center; align-items: center; }
-        .spinner { width: 50px; height: 50px; border: 4px solid rgba(255,255,255,0.1); border-top: 4px solid var(--accent-orange); border-radius: 50%; animation: spin 1s linear infinite; }
+        /* Loading & Animations */
+        #loading-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 9999; flex-direction: column; justify-content: center; align-items: center; backdrop-filter: blur(8px); transition: 0.3s; }
+        
+        .spinner { width: 60px; height: 60px; border: 4px solid rgba(255,255,255,0.1); border-top: 4px solid var(--accent-orange); border-radius: 50%; animation: spin 0.8s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* Success Checkmark Animation */
+        .checkmark-container { display: none; text-align: center; }
+        .checkmark-circle {
+            width: 80px; height: 80px; position: relative; display: inline-block; vertical-align: top;
+            border-radius: 50%; border: 2px solid var(--accent-green); margin-bottom: 20px;
+            animation: success-anim 0.5s forwards;
+        }
+        .checkmark-circle::before {
+            content: ''; display: block; width: 25px; height: 45px;
+            border: solid var(--accent-green); border-width: 0 4px 4px 0;
+            position: absolute; top: 10px; left: 26px;
+            transform: rotate(45deg); opacity: 0;
+            animation: checkmark-anim 0.3s 0.4s forwards;
+        }
+        
+        /* Fail Cross Animation */
+        .fail-container { display: none; text-align: center; }
+        .fail-circle {
+            width: 80px; height: 80px; position: relative; display: inline-block; vertical-align: top;
+            border-radius: 50%; border: 2px solid var(--accent-red); margin-bottom: 20px;
+            animation: fail-anim 0.5s forwards;
+        }
+        .fail-circle::before, .fail-circle::after {
+            content: ''; position: absolute; width: 4px; height: 50px; background: var(--accent-red);
+            top: 13px; left: 36px; border-radius: 2px;
+        }
+        .fail-circle::before { transform: rotate(45deg); }
+        .fail-circle::after { transform: rotate(-45deg); }
+
+        @keyframes success-anim { 0% { transform: scale(0); } 80% { transform: scale(1.1); } 100% { transform: scale(1); } }
+        @keyframes checkmark-anim { 0% { opacity: 0; height: 0; width: 0; } 100% { opacity: 1; height: 45px; width: 25px; } }
+        @keyframes fail-anim { 0% { transform: scale(0); } 80% { transform: scale(1.1); } 100% { transform: scale(1); } }
+
+        .anim-text { font-size: 20px; font-weight: 700; color: white; margin-top: 10px; letter-spacing: 1px; }
 
         /* Mobile */
         .mobile-toggle { display: none; position: fixed; top: 20px; right: 20px; z-index: 2000; color: white; background: #333; padding: 8px; border-radius: 5px; }
@@ -256,9 +291,9 @@ def update_stats(ref_no, username):
         "iso_time": now.isoformat()
     }
     data['downloads'].insert(0, new_record)
-    # Limit increased for better analytics accuracy
-    if len(data['downloads']) > 2000:
-        data['downloads'] = data['downloads'][:2000]
+    # Analytics এর জন্য ডাটা লিমিট বাড়ানো হয়েছে
+    if len(data['downloads']) > 3000:
+        data['downloads'] = data['downloads'][:3000]
         
     data['last_booking'] = ref_no
     save_stats(data)
@@ -276,8 +311,8 @@ def update_po_stats(username, file_count):
     }
     if 'downloads' not in data: data['downloads'] = []
     data['downloads'].insert(0, new_record)
-    if len(data['downloads']) > 2000:
-        data['downloads'] = data['downloads'][:2000]
+    if len(data['downloads']) > 3000:
+        data['downloads'] = data['downloads'][:3000]
     save_stats(data)
 
 def load_accessories_db():
@@ -314,15 +349,13 @@ def get_dashboard_summary_v2():
             "last_duration": d.get('last_duration', 'N/A')
         })
 
-    # 2. Accessories Today & Analytics Data Preparation
+    # 2. Accessories Today & Analytics
     acc_today_count = 0
     acc_today_list = []
     
-    # Analytics Data Containers (Month-Year Key)
-    # Structure: {'2023-12': {'label': 'Dec-23', 'closing': 0, 'po': 0, 'acc': 0}}
+    # Analytics Container: {'YYYY-MM': {'label': 'Jan-24', 'closing': 0, 'po': 0, 'acc': 0}}
     monthly_data = defaultdict(lambda: {'closing': 0, 'po': 0, 'acc': 0})
 
-    # Process Accessories Data
     for ref, data in acc_db.items():
         for challan in data.get('challans', []):
             c_date = challan.get('date')
@@ -336,13 +369,11 @@ def get_dashboard_summary_v2():
                     "qty": challan.get('qty')
                 })
             
-            # Analytics: Parse Date to Month-Year
+            # Analytics Calculation
             try:
-                # Assuming date format dd-mm-yyyy
                 dt_obj = datetime.strptime(c_date, '%d-%m-%Y')
-                m_key = dt_obj.strftime('%b-%y') # e.g., Dec-24
-                sort_key = dt_obj.strftime('%Y-%m') # Sorting Key
-                
+                m_key = dt_obj.strftime('%b-%y')
+                sort_key = dt_obj.strftime('%Y-%m')
                 monthly_data[sort_key]['acc'] += 1
                 monthly_data[sort_key]['label'] = m_key
             except: pass
@@ -360,11 +391,11 @@ def get_dashboard_summary_v2():
             if item.get('type') == 'PO Sheet':
                 po_today_count += 1
                 po_list.append(item)
-            else: # Defaults to Closing Report
+            else: 
                 closing_today_count += 1
                 closing_list.append(item)
         
-        # Analytics Processing
+        # Analytics Calculation
         try:
             dt_obj = datetime.strptime(item_date, '%d-%m-%Y')
             m_key = dt_obj.strftime('%b-%y')
@@ -377,21 +408,18 @@ def get_dashboard_summary_v2():
             monthly_data[sort_key]['label'] = m_key
         except: pass
 
-    # Sort monthly data by date (Last 6 months)
-    sorted_keys = sorted(monthly_data.keys())[-6:] # Get last 6 months
+    # Sort and filter last 6 months
+    sorted_keys = sorted(monthly_data.keys())[-6:]
     
     chart_labels = []
     chart_closing = []
     chart_po = []
     chart_acc = []
 
-    # If no data, fill with current month at least
-    if not sorted_keys:
+    if not sorted_keys: # Fallback if empty
         curr_m = now.strftime('%b-%y')
         chart_labels = [curr_m]
-        chart_closing = [0]
-        chart_po = [0]
-        chart_acc = [0]
+        chart_closing = [0]; chart_po = [0]; chart_acc = [0]
     else:
         for k in sorted_keys:
             d = monthly_data[k]
@@ -401,23 +429,10 @@ def get_dashboard_summary_v2():
             chart_acc.append(d['acc'])
 
     return {
-        "users": {
-            "count": len(users_data),
-            "details": user_details
-        },
-        "accessories": {
-            "count": acc_today_count,
-            "details": acc_today_list
-        },
-        "closing": {
-            "count": closing_today_count,
-            "details": closing_list
-        },
-        "po": {
-            "count": po_today_count,
-            "details": po_list
-        },
-        # Real-time Chart Data for Dashboard
+        "users": { "count": len(users_data), "details": user_details },
+        "accessories": { "count": acc_today_count, "details": acc_today_list },
+        "closing": { "count": closing_today_count, "details": closing_list },
+        "po": { "count": po_today_count, "details": po_list },
         "chart": {
             "labels": chart_labels,
             "closing": chart_closing,
@@ -706,7 +721,8 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
 
     NUM_COLUMNS, TABLE_START_ROW = 9, 8
     ws.merge_cells(start_row=1, start_column=1, end_row=1, end_column=NUM_COLUMNS)
-    ws['A1'].value = "COTTON CLOTHING BD LTD"
+    # UPDATED BRANDING
+    ws['A1'].value = "MNM SOFTWARE"
     ws['A1'].font = title_font 
     ws['A1'].alignment = center_align
 
@@ -907,13 +923,13 @@ LOGIN_TEMPLATE = f"""
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Login</title>
+    <title>Login - MNM Software</title>
     {COMMON_STYLES}
 </head>
 <body style="justify-content:center; align-items:center;">
     <div class="card" style="width: 100%; max-width: 400px; padding: 40px;">
         <div style="text-align: center; margin-bottom: 40px;">
-            <div style="font-size: 26px; font-weight: 800; color: white; letter-spacing: -0.5px;">Cotton<span style="color:var(--accent-orange)">Solutions</span></div>
+            <div style="font-size: 26px; font-weight: 800; color: white; letter-spacing: -0.5px;">MNM<span style="color:var(--accent-orange)">Software</span></div>
             <div style="color: var(--text-secondary); font-size: 12px; letter-spacing: 2px; margin-top: 5px; font-weight: 600;">SECURE ACCESS</div>
         </div>
         <form action="/login" method="post">
@@ -950,15 +966,31 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
     {COMMON_STYLES}
 </head>
 <body>
-    <div id="loading-overlay"><div class="spinner"></div><div style="color:white; margin-top:15px; font-weight:600;">Processing...</div></div>
+    <div id="loading-overlay">
+        <div class="spinner" id="spinner-anim"></div>
+        
+        <div class="checkmark-container" id="success-anim">
+            <div class="checkmark-circle"></div>
+            <div class="anim-text">Successful!</div>
+        </div>
+
+        <div class="fail-container" id="fail-anim">
+            <div class="fail-circle"></div>
+            <div class="anim-text">Action Failed!</div>
+            <div style="font-size:12px; color:#ff7675; margin-top:5px;">Please check server or inputs</div>
+        </div>
+        
+        <div style="color:white; margin-top:15px; font-weight:600;" id="loading-text">Processing...</div>
+    </div>
+
     <div class="mobile-toggle" onclick="document.querySelector('.sidebar').classList.toggle('active')"><i class="fas fa-bars"></i></div>
 
     <div class="sidebar">
-        <div class="brand-logo"><i class="fas fa-layer-group"></i> Cotton<span>Solutions</span></div>
+        <div class="brand-logo"><i class="fas fa-layer-group"></i> MNM<span>Software</span></div>
         <div class="nav-menu">
             <div class="nav-link active" onclick="showSection('dashboard', this)"><i class="fas fa-home"></i> Dashboard</div>
             <div class="nav-link" onclick="showSection('analytics', this)"><i class="fas fa-chart-pie"></i> Closing Report</div>
-            <a href="/admin/accessories" class="nav-link"><i class="fas fa-database"></i> Accessories DB</a>
+            <a href="/admin/accessories" class="nav-link"><i class="fas fa-database"></i> Accessories Challan</a>
             <div class="nav-link" onclick="showSection('help', this)"><i class="fas fa-file-invoice"></i> PO Generator</div>
             <div class="nav-link" onclick="showSection('settings', this)"><i class="fas fa-users-cog"></i> User Manage</div>
             <a href="/logout" class="nav-link" style="color: var(--accent-red); margin-top: 10px;"><i class="fas fa-sign-out-alt"></i> Log Out</a>
@@ -969,7 +1001,7 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
     <div class="main-content">
         <div id="section-dashboard">
             <div class="header-section">
-                <div><div class="page-title">Main Dashboard</div><div class="page-subtitle">Overview & Statistics</div></div>
+                <div><div class="page-title">Main Dashboard</div><div class="page-subtitle">Overview & Real-time Statistics</div></div>
                 <div style="background:var(--bg-card); padding:10px 20px; border-radius:30px; border:1px solid var(--border-color); font-size:13px; font-weight:600; display:flex; align-items:center; gap:8px;"><span style="color:var(--accent-green); font-size:10px;">●</span> System Online</div>
             </div>
 
@@ -1018,7 +1050,7 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
         <div id="section-analytics" style="display:none;">
             <div class="card" style="max-width:500px; margin:0 auto; margin-top:50px;">
                 <div class="section-header">Generate Closing Report</div>
-                <form action="/generate-report" method="post" onsubmit="document.getElementById('loading-overlay').style.display='flex'">
+                <form action="/generate-report" method="post" onsubmit="return showLoading()">
                     <div class="input-group"><label>INTERNAL REF NO</label><input type="text" name="ref_no" placeholder="e.g. Booking-123" required></div>
                     <button type="submit"><i class="fas fa-magic" style="margin-right:8px;"></i> Generate Report</button>
                 </form>
@@ -1028,7 +1060,7 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
         <div id="section-help" style="display:none;">
             <div class="card" style="max-width:600px; margin:0 auto; margin-top:50px;">
                 <div class="section-header">PO Sheet Generator</div>
-                <form action="/generate-po-report" method="post" enctype="multipart/form-data" onsubmit="document.getElementById('loading-overlay').style.display='flex'">
+                <form action="/generate-po-report" method="post" enctype="multipart/form-data" onsubmit="return showLoading()">
                     <div class="input-group" style="border: 2px dashed var(--border-color); padding: 40px; text-align: center; border-radius: 12px; transition:0.3s;" onmouseover="this.style.borderColor='var(--accent-orange)'" onmouseout="this.style.borderColor='var(--border-color)'">
                         <input type="file" name="pdf_files" multiple accept=".pdf" required style="display:none;" id="file-upload">
                         <label for="file-upload" style="cursor:pointer; color:var(--accent-orange); margin-bottom:0;"><i class="fas fa-cloud-upload-alt" style="font-size:40px; margin-bottom:15px;"></i><br>Click to Upload PDF Files</label>
@@ -1072,10 +1104,10 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
         }}
         document.getElementById('file-upload')?.addEventListener('change', function() {{ document.getElementById('file-count').innerText = this.files.length + " files selected"; }});
         
-        // --- REAL-TIME CHART INITIALIZATION (FIXED) ---
+        // --- REAL-TIME WAVY CHART INITIALIZATION ---
         const ctx = document.getElementById('mainChart').getContext('2d');
-        const gradientOrange = ctx.createLinearGradient(0, 0, 0, 300); gradientOrange.addColorStop(0, 'rgba(255, 140, 66, 0.2)'); gradientOrange.addColorStop(1, 'rgba(255, 140, 66, 0)');
-        const gradientPurple = ctx.createLinearGradient(0, 0, 0, 300); gradientPurple.addColorStop(0, 'rgba(108, 92, 231, 0.2)'); gradientPurple.addColorStop(1, 'rgba(108, 92, 231, 0)');
+        const gradientOrange = ctx.createLinearGradient(0, 0, 0, 300); gradientOrange.addColorStop(0, 'rgba(255, 140, 66, 0.4)'); gradientOrange.addColorStop(1, 'rgba(255, 140, 66, 0)');
+        const gradientPurple = ctx.createLinearGradient(0, 0, 0, 300); gradientPurple.addColorStop(0, 'rgba(108, 92, 231, 0.4)'); gradientPurple.addColorStop(1, 'rgba(108, 92, 231, 0)');
         
         new Chart(ctx, {{
             type: 'line',
@@ -1084,26 +1116,26 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
                 datasets: [
                     {{
                         label: 'Closing',
-                        data: {{{{ stats.chart.closing | tojson }}}}, // Real-time Data
+                        data: {{{{ stats.chart.closing | tojson }}}},
                         borderColor: '#FF8C42',
                         backgroundColor: gradientOrange,
-                        tension: 0.4,
+                        tension: 0.4, // Wavy
                         fill: true
                     }},
                     {{
                         label: 'Accessories',
-                        data: {{{{ stats.chart.acc | tojson }}}}, // Real-time Data
+                        data: {{{{ stats.chart.acc | tojson }}}},
                         borderColor: '#6C5CE7',
                         backgroundColor: gradientPurple,
-                        tension: 0.4,
+                        tension: 0.4, // Wavy
                         fill: true
                     }},
                     {{
                         label: 'PO Sheets',
-                        data: {{{{ stats.chart.po | tojson }}}}, // Real-time Data
+                        data: {{{{ stats.chart.po | tojson }}}},
                         borderColor: '#00b894',
                         borderDash: [5, 5],
-                        tension: 0.4,
+                        tension: 0.4, // Wavy
                         fill: false
                     }}
                 ]
@@ -1119,6 +1151,38 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
             }}
         }});
         
+        // --- ANIMATION CONTROLLER ---
+        function showLoading() {{
+            const overlay = document.getElementById('loading-overlay');
+            const spinner = document.getElementById('spinner-anim');
+            const success = document.getElementById('success-anim');
+            const fail = document.getElementById('fail-anim');
+            const text = document.getElementById('loading-text');
+            
+            overlay.style.display = 'flex';
+            spinner.style.display = 'block';
+            success.style.display = 'none';
+            fail.style.display = 'none';
+            text.innerText = 'Processing...';
+            
+            // Timeout to simulate processing (For UX) - Real server fail logic handled in backend flash
+            return true;
+        }}
+
+        function showSuccess() {{
+            const overlay = document.getElementById('loading-overlay');
+            const spinner = document.getElementById('spinner-anim');
+            const success = document.getElementById('success-anim');
+            const text = document.getElementById('loading-text');
+            
+            overlay.style.display = 'flex';
+            spinner.style.display = 'none';
+            success.style.display = 'block';
+            text.innerText = '';
+            
+            setTimeout(() => {{ overlay.style.display = 'none'; }}, 1500);
+        }}
+
         function loadUsers() {{
             fetch('/admin/get-users').then(res => res.json()).then(data => {{
                 let html = '<table class="dark-table"><thead><tr><th>User</th><th>Role</th><th style="text-align:right;">Actions</th></tr></thead><tbody>';
@@ -1133,11 +1197,25 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
                 document.getElementById('userTableContainer').innerHTML = html + '</tbody></table>';
             }});
         }}
+        
         function handleUserSubmit() {{
             const u = document.getElementById('new_username').value, p = document.getElementById('new_password').value, a = document.getElementById('action_type').value;
             let perms = []; ['closing', 'po_sheet', 'accessories'].forEach(id => {{ if(document.getElementById('perm_' + (id==='po_sheet'?'po':(id==='accessories'?'acc':id))).checked) perms.push(id); }});
-            fetch('/admin/save-user', {{ method: 'POST', headers: {{'Content-Type': 'application/json'}}, body: JSON.stringify({{ username: u, password: p, permissions: perms, action_type: a }}) }}).then(r => r.json()).then(d => {{ if(d.status === 'success') {{ loadUsers(); resetForm(); }} else alert(d.message); }});
+            
+            // Show Loading
+            showLoading();
+            
+            fetch('/admin/save-user', {{ method: 'POST', headers: {{'Content-Type': 'application/json'}}, body: JSON.stringify({{ username: u, password: p, permissions: perms, action_type: a }}) }}).then(r => r.json()).then(d => {{ 
+                if(d.status === 'success') {{ 
+                    showSuccess(); // Trigger Success Anim
+                    loadUsers(); resetForm(); 
+                }} else {{ 
+                    alert(d.message); 
+                    document.getElementById('loading-overlay').style.display = 'none';
+                }}
+            }});
         }}
+        
         function editUser(u, p, permsStr) {{ document.getElementById('new_username').value = u; document.getElementById('new_username').readOnly = true; document.getElementById('new_password').value = p; document.getElementById('action_type').value = 'update'; document.getElementById('saveUserBtn').innerHTML = '<i class="fas fa-sync"></i> Update User'; let pArr = permsStr.split(','); ['closing', 'po_sheet', 'accessories'].forEach(id => {{ document.getElementById('perm_' + (id==='po_sheet'?'po':(id==='accessories'?'acc':id))).checked = pArr.includes(id); }}); }}
         function resetForm() {{ document.getElementById('userForm').reset(); document.getElementById('action_type').value = 'create'; document.getElementById('saveUserBtn').innerHTML = '<i class="fas fa-save"></i> Save User'; document.getElementById('new_username').readOnly = false; }}
         function deleteUser(u) {{ if(confirm('Are you sure you want to delete this user?')) fetch('/admin/delete-user', {{ method: 'POST', headers: {{'Content-Type': 'application/json'}}, body: JSON.stringify({{ username: u }}) }}).then(() => loadUsers()); }}
@@ -1156,9 +1234,9 @@ USER_DASHBOARD_TEMPLATE = f"""
     {COMMON_STYLES}
 </head>
 <body>
-    <div id="loading-overlay"><div class="spinner"></div><div style="color:white; margin-top:15px; font-weight:600;">Generating...</div></div>
+    <div id="loading-overlay"><div class="spinner"></div><div style="color:white; margin-top:15px; font-weight:600;">Processing...</div></div>
     <div class="sidebar">
-        <div class="brand-logo"><i class="fas fa-layer-group"></i> Cotton<span>Solutions</span></div>
+        <div class="brand-logo"><i class="fas fa-layer-group"></i> MNM<span>Software</span></div>
         <div class="nav-menu">
             <div class="nav-link active"><i class="fas fa-home"></i> Home</div>
             <a href="/logout" class="nav-link" style="color:var(--accent-red); margin-top:auto;"><i class="fas fa-sign-out-alt"></i> Log Out</a>
@@ -1190,7 +1268,7 @@ USER_DASHBOARD_TEMPLATE = f"""
 ACCESSORIES_SEARCH_TEMPLATE = f"""
 <!doctype html><html lang="en"><head><title>Search</title>{COMMON_STYLES}</head><body style="justify-content:center; align-items:center;">
 <div class="card" style="width:100%; max-width:450px; padding:40px;">
-    <div class="section-header" style="justify-content:center; margin-bottom:30px; border-bottom:none;">Accessories DB</div>
+    <div class="section-header" style="justify-content:center; margin-bottom:30px; border-bottom:none;">Accessories Challan</div>
     <form action="/admin/accessories/input" method="post"><div class="input-group"><label><i class="fas fa-search"></i> BOOKING REFERENCE</label><input type="text" name="ref_no" required placeholder="Enter Booking No"></div>
     <button style="background:var(--accent-orange);">Proceed to Entry <i class="fas fa-arrow-right"></i></button>
     </form>
@@ -1212,6 +1290,12 @@ ACCESSORIES_INPUT_TEMPLATE = f"""
     {COMMON_STYLES}
 </head>
 <body>
+    <div id="loading-overlay">
+        <div class="spinner" id="spinner-anim"></div>
+        <div class="checkmark-container" id="success-anim"><div class="checkmark-circle"></div><div class="anim-text">Done!</div></div>
+        <div style="color:white; margin-top:15px; font-weight:600;" id="loading-text">Saving...</div>
+    </div>
+
     <div class="sidebar">
         <div class="brand-logo"><i class="fas fa-boxes"></i> Accessories</div>
         <div class="nav-menu">
@@ -1233,7 +1317,7 @@ ACCESSORIES_INPUT_TEMPLATE = f"""
         <div class="dashboard-grid-2">
             <div class="card">
                 <div class="section-header"><span>New Challan Entry</span><i class="fas fa-plus-circle" style="color:var(--accent-orange)"></i></div>
-                <form action="/admin/accessories/save" method="post">
+                <form action="/admin/accessories/save" method="post" onsubmit="showLoading()">
                     <input type="hidden" name="ref" value="{{{{ ref }}}}">
                     <div class="input-group"><label>TYPE</label><select name="item_type"><option value="Top">Top</option><option value="Bottom">Bottom</option></select></div>
                     <div class="input-group"><label>COLOR</label><select name="color" required><option value="" disabled selected>Select Color</option>{{% for c in colors %}}<option value="{{{{ c }}}}">{{{{ c }}}}</option>{{% endfor %}}</select></div>
@@ -1250,13 +1334,14 @@ ACCESSORIES_INPUT_TEMPLATE = f"""
                 <div class="section-header">Recent History <span style="background:var(--accent-purple); padding:2px 8px; border-radius:4px; font-size:11px; margin-left:10px;">{{{{ challans|length }}}}</span></div>
                 <div style="overflow-y:auto; max-height:450px; padding-right:5px;">
                     <table class="dark-table">
-                        <thead><tr><th>Ln</th><th>Color</th><th>Qty</th><th style="text-align:right;">Act</th></tr></thead>
+                        <thead><tr><th>Ln</th><th>Color</th><th>Qty</th><th>St</th><th style="text-align:right;">Act</th></tr></thead>
                         <tbody>
                             {{% for item in challans|reverse %}}
                             <tr>
                                 <td>{{{{ item.line }}}}</td>
                                 <td>{{{{ item.color }}}}</td>
                                 <td style="font-weight:700; color:var(--accent-green);">{{{{ item.qty }}}}</td>
+                                <td style="color:var(--accent-green); font-weight:bold;">{{{{ item.status }}}}</td>
                                 <td style="text-align:right;">
                                     {{% if session.role == 'admin' %}}
                                     <div class="action-cell">
@@ -1271,7 +1356,7 @@ ACCESSORIES_INPUT_TEMPLATE = f"""
                                 </td>
                             </tr>
                             {{% else %}}
-                            <tr><td colspan="4" style="text-align:center; padding:30px; color:var(--text-secondary); font-size:12px;">No challans added yet.</td></tr>
+                            <tr><td colspan="5" style="text-align:center; padding:30px; color:var(--text-secondary); font-size:12px;">No challans added yet.</td></tr>
                             {{% endfor %}}
                         </tbody>
                     </table>
@@ -1279,6 +1364,14 @@ ACCESSORIES_INPUT_TEMPLATE = f"""
             </div>
         </div>
     </div>
+    <script>
+        function showLoading() {{
+            document.getElementById('loading-overlay').style.display = 'flex';
+            document.getElementById('spinner-anim').style.display = 'block';
+            document.getElementById('success-anim').style.display = 'none';
+            return true;
+        }}
+    </script>
 </body>
 </html>
 """
@@ -1292,7 +1385,6 @@ ACCESSORIES_EDIT_TEMPLATE = f"""<!doctype html><html lang="en"><head><title>Edit
 <div class="input-group"><label>QUANTITY</label><input type="number" name="qty" value="{{{{ item.qty }}}}" required></div>
 <button type="submit" style="background:var(--accent-purple); margin-top:10px;"><i class="fas fa-sync-alt"></i> Update</button></form>
 <div style="text-align:center; margin-top:20px;"><a href="/admin/accessories/input_direct?ref={{{{ ref }}}}" style="color:var(--text-secondary); font-size:13px; text-decoration:none;">Cancel</a></div></div></body></html>"""
-
 # ==============================================================================
 # REPORT TEMPLATES (ORIGINAL WHITE DESIGN - PRINT FRIENDLY)
 # ==============================================================================
@@ -1355,7 +1447,7 @@ CLOSING_REPORT_PREVIEW_TEMPLATE = """
             <button onclick="window.print()" class="btn btn-print">🖨️ Print Report</button>
         </div>
         <div class="company-header">
-            <div class="company-name">Cotton Clothing BD Limited</div>
+            <div class="company-name">MNM Software</div>
             <div class="report-title">CLOSING REPORT [ INPUT SECTION ]</div>
             <div class="date-section">Date: <span id="date"></span></div>
         </div>
@@ -1512,7 +1604,7 @@ ACCESSORIES_REPORT_TEMPLATE = """
 </div>
 <div class="container">
     <div class="header">
-        <div class="company-name">Cotton Clothing BD Limited</div>
+        <div class="company-name">MNM Software</div>
         <div class="company-address">Kazi Tower, 27 Road, Gazipura, Tongi, Gazipur.</div>
         <div class="report-title">ACCESSORIES DELIVERY CHALLAN</div>
     </div>
@@ -1666,7 +1758,7 @@ PO_REPORT_TEMPLATE = """
             <button onclick="window.print()" class="btn btn-print">🖨️ Print Report</button>
         </div>
         <div class="company-header">
-            <div class="company-name">Cotton Clothing BD Limited</div>
+            <div class="company-name">MNM Software</div>
             <div class="report-title">Purchase Order Summary</div>
             <div class="date-section">Date: <span id="date"></span></div>
         </div>
@@ -1723,7 +1815,7 @@ def index():
         return render_template_string(LOGIN_TEMPLATE)
     else:
         if session.get('role') == 'admin':
-            # ড্যাশবোর্ড ডাটা লোড (চার্ট এবং স্ট্যাটাস এর জন্য)
+            # ড্যাশবোর্ড ডাটা লোড (রিয়েল-টাইম চার্ট এবং স্ট্যাটাস)
             stats = get_dashboard_summary_v2()
             return render_template_string(ADMIN_DASHBOARD_TEMPLATE, stats=stats)
         else:
@@ -1838,34 +1930,43 @@ def generate_report():
     internal_ref_no = request.form['ref_no']
     if not internal_ref_no: return redirect(url_for('index'))
 
-    report_data = fetch_closing_report_data(internal_ref_no)
+    try:
+        report_data = fetch_closing_report_data(internal_ref_no)
 
-    if not report_data:
-        flash(f"No data found for: {internal_ref_no}")
+        if not report_data:
+            flash(f"Data Not Found or Server Error for: {internal_ref_no}")
+            return redirect(url_for('index'))
+        
+        # Update Stats
+        update_stats(internal_ref_no, session.get('user', 'Unknown'))
+        
+        # Render Preview
+        return render_template_string(CLOSING_REPORT_PREVIEW_TEMPLATE, report_data=report_data, ref_no=internal_ref_no)
+    except Exception as e:
+        flash(f"System Error: {str(e)}")
         return redirect(url_for('index'))
-    
-    # Update Stats
-    update_stats(internal_ref_no, session.get('user', 'Unknown'))
-    
-    # Render Preview (Using the White Template from Step 4)
-    # This solves the preview issue
-    return render_template_string(CLOSING_REPORT_PREVIEW_TEMPLATE, report_data=report_data, ref_no=internal_ref_no)
 
 @app.route('/download-closing-excel', methods=['GET'])
 def download_closing_excel():
     if not session.get('logged_in'): return redirect(url_for('index'))
     internal_ref_no = request.args.get('ref_no')
     
-    report_data = fetch_closing_report_data(internal_ref_no)
-    if report_data:
-        excel_file = create_formatted_excel_report(report_data, internal_ref_no)
-        update_stats(internal_ref_no, session.get('user', 'Unknown'))
-        return make_response(send_file(
-            excel_file, as_attachment=True, 
-            download_name=f"Report-{internal_ref_no.replace('/', '_')}.xlsx", 
-            mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-        ))
-    return redirect(url_for('index'))
+    try:
+        report_data = fetch_closing_report_data(internal_ref_no)
+        if report_data:
+            excel_file = create_formatted_excel_report(report_data, internal_ref_no)
+            update_stats(internal_ref_no, session.get('user', 'Unknown'))
+            return make_response(send_file(
+                excel_file, as_attachment=True, 
+                download_name=f"Report-{internal_ref_no.replace('/', '_')}.xlsx", 
+                mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+            ))
+        else:
+            flash("Data source returned empty.")
+            return redirect(url_for('index'))
+    except Exception as e:
+        flash("Failed to generate Excel.")
+        return redirect(url_for('index'))
 
 # --- ACCESSORIES ROUTES ---
 @app.route('/admin/accessories', methods=['GET'])
@@ -1880,7 +1981,7 @@ def accessories_search_page():
 def accessories_input_page():
     if not session.get('logged_in'): return redirect(url_for('index'))
     
-    # ref_no রিসিভ করা (form থেকে বা args থেকে)
+    # ref_no রিসিভ করা
     ref_no = request.form.get('ref_no') or request.args.get('ref')
     if ref_no: ref_no = ref_no.strip().upper()
     
@@ -1894,27 +1995,30 @@ def accessories_input_page():
         colors = data['colors']
         style = data['style']
         buyer = data['buyer']
-        challans = data['challans'] # হিস্ট্রি টেবিলের জন্য ডাটা
+        challans = data['challans'] 
     else:
-        api_data = fetch_closing_report_data(ref_no)
-        if not api_data:
-            flash(f"Booking not found: {ref_no}")
+        try:
+            api_data = fetch_closing_report_data(ref_no)
+            if not api_data:
+                flash(f"Booking not found: {ref_no}")
+                return redirect(url_for('accessories_search_page'))
+            
+            colors = sorted(list(set([item['color'] for item in api_data])))
+            style = api_data[0].get('style', 'N/A')
+            buyer = api_data[0].get('buyer', 'N/A')
+            challans = []
+            
+            db_acc[ref_no] = {
+                "style": style, "buyer": buyer, "colors": colors, "item_type": "", "challans": challans
+            }
+            save_accessories_db(db_acc)
+        except:
+            flash("Connection Error with ERP")
             return redirect(url_for('accessories_search_page'))
-        
-        colors = sorted(list(set([item['color'] for item in api_data])))
-        style = api_data[0].get('style', 'N/A')
-        buyer = api_data[0].get('buyer', 'N/A')
-        challans = [] # নতুন এন্ট্রি তাই খালি লিস্ট
-        
-        db_acc[ref_no] = {
-            "style": style, "buyer": buyer, "colors": colors, "item_type": "", "challans": challans
-        }
-        save_accessories_db(db_acc)
 
-    # challans লিস্ট টেমপ্লেটে পাঠানো হচ্ছে যাতে নিচে টেবিল শো করে (Step 3 Template ব্যবহার করে)
     return render_template_string(ACCESSORIES_INPUT_TEMPLATE, ref=ref_no, colors=colors, style=style, buyer=buyer, challans=challans)
 
-# ডাইরেক্ট ইনপুট পেজে যাওয়ার জন্য (এডিট ক্যানসেল করার পর)
+# ডাইরেক্ট ইনপুট পেজে যাওয়ার জন্য
 @app.route('/admin/accessories/input_direct')
 def accessories_input_direct():
     return accessories_input_page() 
@@ -1929,13 +2033,19 @@ def accessories_save():
     if ref in db_acc:
         if request.form.get('item_type'): db_acc[ref]['item_type'] = request.form.get('item_type')
         
+        # --- UPDATE STATUS LOGIC ---
+        # ১. আগের সব চালানের Status টিক (✔) করে দেওয়া
+        for item in db_acc[ref]['challans']:
+            item['status'] = "✔"
+        
+        # ২. নতুন চালানের Status ফাঁকা রাখা
         new_entry = {
             "date": get_bd_date_str(),
             "line": request.form.get('line_no'),
             "color": request.form.get('color'),
             "size": request.form.get('size'),
             "qty": request.form.get('qty'),
-            "status": "✔" 
+            "status": "" # Current/New entry has no status initially
         }
         db_acc[ref]['challans'].append(new_entry)
         save_accessories_db(db_acc)
@@ -1955,7 +2065,7 @@ def accessories_print_view():
     data = db_acc[ref]
     challans = data['challans']
     
-    # লাইন সামারি তৈরি (রিপোর্টের জন্য)
+    # লাইন সামারি তৈরি
     line_summary = {}
     for c in challans:
         ln = c['line']
@@ -1964,7 +2074,7 @@ def accessories_print_view():
         line_summary[ln] = line_summary.get(ln, 0) + q
     sorted_line_summary = dict(sorted(line_summary.items()))
 
-    # Render with ORIGINAL White Template from Step 4
+    # Render with ORIGINAL White Template
     return render_template_string(ACCESSORIES_REPORT_TEMPLATE, 
                                   ref=ref, buyer=data['buyer'], style=data['style'],
                                   item_type=data.get('item_type', ''), challans=challans,
@@ -2001,7 +2111,6 @@ def accessories_update():
         db_acc[ref]['challans'][index]['qty'] = request.form.get('qty')
         save_accessories_db(db_acc)
     
-    # আপডেট শেষে আবার ইনপুট পেজে ফেরত পাঠানো (যাতে হিস্ট্রি দেখা যায়)
     return redirect(url_for('accessories_input_direct', ref=ref))
 
 @app.route('/admin/accessories/delete', methods=['POST'])
@@ -2017,7 +2126,6 @@ def accessories_delete():
         del db_acc[ref]['challans'][index]
         save_accessories_db(db_acc)
     
-    # ডিলিট শেষে ইনপুট পেজে ফেরত (হিস্ট্রি আপডেট হবে)
     return redirect(url_for('accessories_input_direct', ref=ref))
 
 # --- PO SHEET ROUTE ---
@@ -2028,70 +2136,73 @@ def generate_po_report():
     if os.path.exists(UPLOAD_FOLDER): shutil.rmtree(UPLOAD_FOLDER)
     os.makedirs(UPLOAD_FOLDER)
 
-    uploaded_files = request.files.getlist('pdf_files')
-    all_data = []
-    final_meta = {'buyer': 'N/A', 'booking': 'N/A', 'style': 'N/A'}
-    
-    for file in uploaded_files:
-        if file.filename == '': continue
-        file_path = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
-        file.save(file_path)
-        data, meta = extract_data_dynamic(file_path)
-        if meta['buyer'] != 'N/A': final_meta = meta
-        if data: all_data.extend(data)
-    
-    if not all_data:
-        return render_template_string(PO_REPORT_TEMPLATE, tables=None, message="No PO data found.")
+    try:
+        uploaded_files = request.files.getlist('pdf_files')
+        all_data = []
+        final_meta = {'buyer': 'N/A', 'booking': 'N/A', 'style': 'N/A'}
+        
+        for file in uploaded_files:
+            if file.filename == '': continue
+            file_path = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
+            file.save(file_path)
+            data, meta = extract_data_dynamic(file_path)
+            if meta['buyer'] != 'N/A': final_meta = meta
+            if data: all_data.extend(data)
+        
+        if not all_data:
+            return render_template_string(PO_REPORT_TEMPLATE, tables=None, message="No PO data found in uploaded files.")
 
-    update_po_stats(session.get('user', 'Unknown'), len(uploaded_files))
+        update_po_stats(session.get('user', 'Unknown'), len(uploaded_files))
 
-    df = pd.DataFrame(all_data)
-    df['Color'] = df['Color'].str.strip()
-    df = df[df['Color'] != ""]
-    unique_colors = df['Color'].unique()
-    
-    final_tables = []
-    grand_total_qty = 0
+        df = pd.DataFrame(all_data)
+        df['Color'] = df['Color'].str.strip()
+        df = df[df['Color'] != ""]
+        unique_colors = df['Color'].unique()
+        
+        final_tables = []
+        grand_total_qty = 0
 
-    for color in unique_colors:
-        color_df = df[df['Color'] == color]
-        pivot = color_df.pivot_table(index='P.O NO', columns='Size', values='Quantity', aggfunc='sum', fill_value=0)
-        
-        try:
-            sorted_cols = sort_sizes(pivot.columns.tolist())
-            pivot = pivot[sorted_cols]
-        except: pass
-        
-        pivot['Total'] = pivot.sum(axis=1)
-        grand_total_qty += pivot['Total'].sum()
+        for color in unique_colors:
+            color_df = df[df['Color'] == color]
+            pivot = color_df.pivot_table(index='P.O NO', columns='Size', values='Quantity', aggfunc='sum', fill_value=0)
+            
+            try:
+                sorted_cols = sort_sizes(pivot.columns.tolist())
+                pivot = pivot[sorted_cols]
+            except: pass
+            
+            pivot['Total'] = pivot.sum(axis=1)
+            grand_total_qty += pivot['Total'].sum()
 
-        actual = pivot.sum()
-        plus_3 = (actual * 1.03).round().astype(int)
-        
-        # Add summary rows manually for cleaner HTML
-        actual_qty = pivot.sum()
-        actual_qty.name = 'Actual Qty'
-        qty_plus_3 = (actual_qty * 1.03).round().astype(int)
-        qty_plus_3.name = '3% Order Qty'
-        
-        pivot_final = pd.concat([pivot, actual_qty.to_frame().T, qty_plus_3.to_frame().T])
-        pivot_final = pivot_final.reset_index()
-        pivot_final = pivot_final.rename(columns={'index': 'P.O NO'})
-        
-        pd.set_option('colheader_justify', 'center')
-        html_table = pivot_final.to_html(classes='table table-bordered table-striped', index=False, border=0)
-        
-        # Inject styles for summary rows (Matching Main Code Logic)
-        html_table = re.sub(r'<tr>\s*<td>', '<tr><td class="order-col">', html_table)
-        html_table = html_table.replace('<th>Total</th>', '<th class="total-col-header">Total</th>')
-        html_table = html_table.replace('<td>Total</td>', '<td class="total-col">Total</td>')
-        html_table = html_table.replace('<td>Actual Qty</td>', '<td class="summary-label">Actual Qty</td>')
-        html_table = html_table.replace('<td>3% Order Qty</td>', '<td class="summary-label">3% Order Qty</td>')
-        html_table = re.sub(r'<tr>\s*<td class="summary-label">', '<tr class="summary-row"><td class="summary-label">', html_table)
+            actual = pivot.sum()
+            plus_3 = (actual * 1.03).round().astype(int)
+            
+            actual_qty = pivot.sum()
+            actual_qty.name = 'Actual Qty'
+            qty_plus_3 = (actual_qty * 1.03).round().astype(int)
+            qty_plus_3.name = '3% Order Qty'
+            
+            pivot_final = pd.concat([pivot, actual_qty.to_frame().T, qty_plus_3.to_frame().T])
+            pivot_final = pivot_final.reset_index()
+            pivot_final = pivot_final.rename(columns={'index': 'P.O NO'})
+            
+            pd.set_option('colheader_justify', 'center')
+            html_table = pivot_final.to_html(classes='table table-bordered table-striped', index=False, border=0)
+            
+            # Styles Injection
+            html_table = re.sub(r'<tr>\s*<td>', '<tr><td class="order-col">', html_table)
+            html_table = html_table.replace('<th>Total</th>', '<th class="total-col-header">Total</th>')
+            html_table = html_table.replace('<td>Total</td>', '<td class="total-col">Total</td>')
+            html_table = html_table.replace('<td>Actual Qty</td>', '<td class="summary-label">Actual Qty</td>')
+            html_table = html_table.replace('<td>3% Order Qty</td>', '<td class="summary-label">3% Order Qty</td>')
+            html_table = re.sub(r'<tr>\s*<td class="summary-label">', '<tr class="summary-row"><td class="summary-label">', html_table)
 
-        final_tables.append({'color': color, 'table': html_table})
-        
-    return render_template_string(PO_REPORT_TEMPLATE, tables=final_tables, meta=final_meta, grand_total=f"{grand_total_qty:,}")
+            final_tables.append({'color': color, 'table': html_table})
+            
+        return render_template_string(PO_REPORT_TEMPLATE, tables=final_tables, meta=final_meta, grand_total=f"{grand_total_qty:,}")
+    except Exception as e:
+        flash(f"Error processing files: {str(e)}")
+        return redirect(url_for('index'))
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
