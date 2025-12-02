@@ -74,12 +74,11 @@ except Exception as e:
 
 
 # ==============================================================================
-# CSS STYLES (UPDATED: PREMIUM ANIMATIONS, PO FIX & BRANDING)
+# CSS STYLES (UPDATED: PREMIUM ANIMATIONS & BRANDING)
 # ==============================================================================
 COMMON_STYLES = """
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
@@ -126,7 +125,6 @@ COMMON_STYLES = """
         .nav-link:hover, .nav-link.active { background-color: rgba(255, 140, 66, 0.1); color: var(--accent-orange); }
         .nav-link i { width: 25px; margin-right: 10px; font-size: 16px; text-align: center; }
 
-        /* Sidebar Footer Credit */
         .sidebar-footer {
             margin-top: auto; padding-top: 20px; border-top: 1px solid var(--border-color);
             text-align: center; font-size: 12px; color: var(--text-secondary); font-weight: 500; opacity: 0.6;
@@ -185,10 +183,46 @@ COMMON_STYLES = """
         .btn-del { background: rgba(255, 118, 117, 0.2); color: #ff7675; }
         .btn-del:hover { background: var(--accent-red); color: white; }
 
-        /* Loading Overlay */
-        #loading-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 9999; flex-direction: column; justify-content: center; align-items: center; }
+        /* Loading & Animations */
+        #loading-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 9999; flex-direction: column; justify-content: center; align-items: center; backdrop-filter: blur(8px); transition: 0.3s; }
+        
         .spinner { width: 60px; height: 60px; border: 4px solid rgba(255,255,255,0.1); border-top: 4px solid var(--accent-orange); border-radius: 50%; animation: spin 0.8s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* Success Checkmark Animation */
+        .checkmark-container { display: none; text-align: center; }
+        .checkmark-circle {
+            width: 80px; height: 80px; position: relative; display: inline-block; vertical-align: top;
+            border-radius: 50%; border: 2px solid var(--accent-green); margin-bottom: 20px;
+            animation: success-anim 0.5s forwards;
+        }
+        .checkmark-circle::before {
+            content: ''; display: block; width: 25px; height: 45px;
+            border: solid var(--accent-green); border-width: 0 4px 4px 0;
+            position: absolute; top: 10px; left: 26px;
+            transform: rotate(45deg); opacity: 0;
+            animation: checkmark-anim 0.3s 0.4s forwards;
+        }
+        
+        /* Fail Cross Animation */
+        .fail-container { display: none; text-align: center; }
+        .fail-circle {
+            width: 80px; height: 80px; position: relative; display: inline-block; vertical-align: top;
+            border-radius: 50%; border: 2px solid var(--accent-red); margin-bottom: 20px;
+            animation: fail-anim 0.5s forwards;
+        }
+        .fail-circle::before, .fail-circle::after {
+            content: ''; position: absolute; width: 4px; height: 50px; background: var(--accent-red);
+            top: 13px; left: 36px; border-radius: 2px;
+        }
+        .fail-circle::before { transform: rotate(45deg); }
+        .fail-circle::after { transform: rotate(-45deg); }
+
+        @keyframes success-anim { 0% { transform: scale(0); } 80% { transform: scale(1.1); } 100% { transform: scale(1); } }
+        @keyframes checkmark-anim { 0% { opacity: 0; height: 0; width: 0; } 100% { opacity: 1; height: 45px; width: 25px; } }
+        @keyframes fail-anim { 0% { transform: scale(0); } 80% { transform: scale(1.1); } 100% { transform: scale(1); } }
+
+        .anim-text { font-size: 20px; font-weight: 700; color: white; margin-top: 10px; letter-spacing: 1px; }
 
         /* Mobile */
         .mobile-toggle { display: none; position: fixed; top: 20px; right: 20px; z-index: 2000; color: white; background: #333; padding: 8px; border-radius: 5px; }
@@ -407,7 +441,6 @@ def get_dashboard_summary_v2():
         },
         "history": history
     }
-
 # ==============================================================================
 # লজিক পার্ট: PURCHASE ORDER SHEET PARSER (PDF)
 # ==============================================================================
@@ -943,7 +976,7 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
         <div class="fail-container" id="fail-anim">
             <div class="fail-circle"></div>
             <div class="anim-text">Action Failed!</div>
-            <div style="font-size:12px; color:#ff7675; margin-top:5px;">Please check connection or data</div>
+            <div style="font-size:12px; color:#ff7675; margin-top:5px;">Please check server or inputs</div>
         </div>
         
         <div style="color:white; margin-top:15px; font-weight:600;" id="loading-text">Processing...</div>
@@ -1130,6 +1163,8 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
             success.style.display = 'none';
             fail.style.display = 'none';
             text.innerText = 'Processing...';
+            
+            // Timeout to simulate processing (For UX) - Real server fail logic handled in backend flash
             return true;
         }}
 
@@ -1198,12 +1233,7 @@ USER_DASHBOARD_TEMPLATE = f"""
     {COMMON_STYLES}
 </head>
 <body>
-    <div id="loading-overlay">
-        <div class="spinner" id="spinner-anim"></div>
-        <div class="checkmark-container" id="success-anim"><div class="checkmark-circle"></div><div class="anim-text">Done!</div></div>
-        <div style="color:white; margin-top:15px; font-weight:600;" id="loading-text">Generating...</div>
-    </div>
-
+    <div id="loading-overlay"><div class="spinner"></div><div style="color:white; margin-top:15px; font-weight:600;">Processing...</div></div>
     <div class="sidebar">
         <div class="brand-logo"><i class="fas fa-layer-group"></i> MNM<span>Software</span></div>
         <div class="nav-menu">
@@ -1215,29 +1245,20 @@ USER_DASHBOARD_TEMPLATE = f"""
     <div class="main-content">
         <div class="header-section">
             <div><div class="page-title">Welcome, {{{{ session.user }}}}</div><div class="page-subtitle">Your assigned production modules.</div></div>
-            <a href="/logout" style="background:var(--bg-card); padding:10px 20px; border-radius:8px; border:1px solid var(--border-color); color:var(--accent-red); font-size:13px; font-weight:600; text-decoration:none; display:flex; align-items:center; gap:5px;"><i class="fas fa-sign-out-alt"></i> Sign Out</a>
         </div>
         <div class="stats-grid">
             {{% if 'closing' in session.permissions %}}
             <div class="card"><div class="section-header"><span>Closing Report</span><i class="fas fa-file-export" style="color:var(--accent-orange)"></i></div>
-            <form action="/generate-report" method="post" onsubmit="return showLoading()"><div class="input-group"><label>REF NO</label><input type="text" name="ref_no" required placeholder="Booking Ref"></div><button>Generate</button></form></div>{{% endif %}}
+            <form action="/generate-report" method="post" onsubmit="document.getElementById('loading-overlay').style.display='flex'"><div class="input-group"><label>REF NO</label><input type="text" name="ref_no" required placeholder="Booking Ref"></div><button>Generate</button></form></div>{{% endif %}}
             
             {{% if 'po_sheet' in session.permissions %}}
             <div class="card"><div class="section-header"><span>PO Sheet</span><i class="fas fa-file-pdf" style="color:var(--accent-green)"></i></div>
-            <form action="/generate-po-report" method="post" enctype="multipart/form-data" onsubmit="return showLoading()"><div class="input-group"><label>FILES</label><input type="file" name="pdf_files" multiple accept=".pdf" required style="padding:10px;"></div><button style="background:var(--accent-green)">Process Files</button></form></div>{{% endif %}}
+            <form action="/generate-po-report" method="post" enctype="multipart/form-data" onsubmit="document.getElementById('loading-overlay').style.display='flex'"><div class="input-group"><label>FILES</label><input type="file" name="pdf_files" multiple accept=".pdf" required style="padding:10px;"></div><button style="background:var(--accent-green)">Process Files</button></form></div>{{% endif %}}
             
             {{% if 'accessories' in session.permissions %}}
             <div class="card"><div class="section-header"><span>Accessories</span><i class="fas fa-boxes" style="color:var(--accent-purple)"></i></div><p style="color:var(--text-secondary); margin-bottom:20px; font-size:13px; line-height:1.5;">Manage Challans, entries and history for accessories.</p><a href="/admin/accessories"><button style="background:var(--accent-purple)">Open Dashboard</button></a></div>{{% endif %}}
         </div>
     </div>
-    <script>
-        function showLoading() {{
-            document.getElementById('loading-overlay').style.display = 'flex';
-            document.getElementById('spinner-anim').style.display = 'block';
-            document.getElementById('success-anim').style.display = 'none';
-            return true;
-        }}
-    </script>
 </body>
 </html>
 """
@@ -1249,6 +1270,11 @@ ACCESSORIES_SEARCH_TEMPLATE = f"""
     <form action="/admin/accessories/input" method="post"><div class="input-group"><label><i class="fas fa-search"></i> BOOKING REFERENCE</label><input type="text" name="ref_no" required placeholder="Enter Booking No"></div>
     <button style="background:var(--accent-orange);">Proceed to Entry <i class="fas fa-arrow-right"></i></button>
     </form>
+    {{% with messages = get_flashed_messages() %}}
+        {{% if messages %}}
+            <div style="margin-top: 15px; color: #ff7675; font-size: 13px; text-align: center; background: rgba(255, 118, 117, 0.1); padding: 10px; border-radius: 8px;"><i class="fas fa-exclamation-circle"></i> {{{{ messages[0] }}}}</div>
+        {{% endif %}}
+    {{% endwith %}}
     <div style="display:flex; justify-content:space-between; margin-top:25px; align-items:center;">
         <a href="/" style="color:var(--text-secondary); text-decoration:none; font-size:13px;"><i class="fas fa-arrow-left"></i> Back to Dashboard</a>
         <a href="/logout" style="color:var(--accent-red); text-decoration:none; font-size:13px; font-weight:600;">Sign Out <i class="fas fa-sign-out-alt"></i></a>
@@ -1269,7 +1295,7 @@ ACCESSORIES_INPUT_TEMPLATE = f"""
 <body>
     <div id="loading-overlay">
         <div class="spinner" id="spinner-anim"></div>
-        <div class="checkmark-container" id="success-anim"><div class="checkmark-circle"></div><div class="anim-text">Saved!</div></div>
+        <div class="checkmark-container" id="success-anim"><div class="checkmark-circle"></div><div class="anim-text">Done!</div></div>
         <div style="color:white; margin-top:15px; font-weight:600;" id="loading-text">Saving...</div>
     </div>
 
@@ -1362,8 +1388,9 @@ ACCESSORIES_EDIT_TEMPLATE = f"""<!doctype html><html lang="en"><head><title>Edit
 <div class="input-group"><label>QUANTITY</label><input type="number" name="qty" value="{{{{ item.qty }}}}" required></div>
 <button type="submit" style="background:var(--accent-purple); margin-top:10px;"><i class="fas fa-sync-alt"></i> Update</button></form>
 <div style="text-align:center; margin-top:20px;"><a href="/admin/accessories/input_direct?ref={{{{ ref }}}}" style="color:var(--text-secondary); font-size:13px; text-decoration:none;">Cancel</a></div></div></body></html>"""
+
 # ==============================================================================
-# REPORT TEMPLATES (ORIGINAL WHITE DESIGN - PRINT & PDF FRIENDLY)
+# REPORT TEMPLATES (ORIGINAL WHITE DESIGN - PRINT FRIENDLY)
 # ==============================================================================
 
 CLOSING_REPORT_PREVIEW_TEMPLATE = """
@@ -1377,12 +1404,12 @@ CLOSING_REPORT_PREVIEW_TEMPLATE = """
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         body { background-color: #f8f9fa; padding: 30px 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; font-size: 1.1rem; }
-        .container { max-width: 1400px; background: white; padding: 30px; box-shadow: 0 0 20px rgba(0,0,0,0.05); }
+        .container { max-width: 1400px; }
         .company-header { text-align: center; margin-bottom: 20px; border-bottom: 2px solid #000; padding-bottom: 10px; }
         .company-name { font-size: 2.2rem; font-weight: 800; color: #2c3e50; text-transform: uppercase; letter-spacing: 1px; line-height: 1; }
         .report-title { font-size: 1.1rem; color: #555; font-weight: 600; text-transform: uppercase; margin-top: 5px; }
         .date-section { font-size: 1.2rem; font-weight: 800; color: #000; margin-top: 5px; }
-        .info-container { margin-bottom: 15px; background: white; padding: 15px; display: flex; justify-content: space-between; align-items: flex-end; border: 1px solid #eee; }
+        .info-container { margin-bottom: 15px; background: white; padding: 15px; display: flex; justify-content: space-between; align-items: flex-end;}
         .info-row { display: flex; flex-direction: column; gap: 5px; }
         .info-item { font-size: 1.2rem; font-weight: 600; color: #444; }
         .info-value { color: #000; font-weight: 800; }
@@ -1398,20 +1425,15 @@ CLOSING_REPORT_PREVIEW_TEMPLATE = """
         .col-input { background-color: #C4D09D !important; font-weight: 700; }
         .col-balance { font-weight: 700; color: #c0392b; }
         .total-row td { background-color: #fff !important; color: #000 !important; font-weight: 900; font-size: 1.2rem; border-top: 2px solid #000; }
-        .action-bar { margin-bottom: 20px; display: flex; justify-content: flex-end; gap: 15px; position: sticky; top: 0; z-index: 1000; background: #f8f9fa; padding: 10px 20px; border-bottom: 1px solid #ddd; }
-        .btn-print { background-color: #2c3e50; color: white; border-radius: 50px; padding: 10px 30px; font-weight: 600; border: none; transition: 0.3s; }
-        .btn-print:hover { background-color: #1a252f; transform: translateY(-2px); }
-        .btn-excel { background-color: #27ae60; color: white; border-radius: 50px; padding: 10px 30px; font-weight: 600; text-decoration: none; display: inline-block; transition: 0.3s; }
-        .btn-excel:hover { color: white; background-color: #219150; transform: translateY(-2px); }
-        .btn-back { background-color: #95a5a6; color: white; border-radius: 50px; padding: 10px 30px; font-weight: 600; text-decoration: none; transition: 0.3s; }
-        .btn-back:hover { background-color: #7f8c8d; color: white; transform: translateY(-2px); }
-        
+        .action-bar { margin-bottom: 20px; display: flex; justify-content: flex-end; gap: 15px; position: sticky; top: 0; z-index: 1000; background: #f8f9fa; padding: 10px 0; }
+        .btn-print { background-color: #2c3e50; color: white; border-radius: 50px; padding: 10px 30px; font-weight: 600; }
+        .btn-pdf { background-color: #e74c3c; color: white; border-radius: 50px; padding: 10px 30px; font-weight: 600; border: none; }
+        .btn-excel { background-color: #27ae60; color: white; border-radius: 50px; padding: 10px 30px; font-weight: 600; text-decoration: none; display: inline-block; }
+        .btn-excel:hover { color: white; background-color: #219150; }
         .footer-credit { text-align: center; margin-top: 40px; margin-bottom: 20px; font-size: 1rem; color: #2c3e50; padding-top: 10px; border-top: 1px solid #000; font-weight: 600;}
-        
         @media print {
             @page { margin: 5mm; size: portrait; } 
             body { background-color: white; padding: 0; }
-            .container { box-shadow: none; padding: 0; max-width: 100%; }
             .no-print { display: none !important; }
             .action-bar { display: none; }
             .table th, .table td { border: 1px solid #000 !important; }
@@ -1424,12 +1446,12 @@ CLOSING_REPORT_PREVIEW_TEMPLATE = """
     </style>
 </head>
 <body>
-    <div class="action-bar no-print">
-        <a href="/" class="btn-back"><i class="fas fa-arrow-left"></i> Back</a>
-        <a href="/download-closing-excel?ref_no={{ ref_no }}" class="btn-excel"><i class="fas fa-file-excel"></i> Excel</a>
-        <button onclick="window.print()" class="btn-print"><i class="fas fa-print"></i> Print</button>
-    </div>
     <div class="container">
+        <div class="action-bar no-print">
+            <a href="/" class="btn btn-outline-secondary rounded-pill px-4">Back to Dashboard</a>
+            <button onclick="window.print()" class="btn btn-pdf"><i class="fas fa-file-pdf"></i> Download PDF</button>
+            <a href="/download-closing-excel?ref_no={{ ref_no }}" class="btn btn-excel"><i class="fas fa-file-excel"></i> Download Excel</a>
+        </div>
         <div class="company-header">
             <div class="company-name">MNM Software</div>
             <div class="report-title">CLOSING REPORT [ INPUT SECTION ]</div>
@@ -1687,10 +1709,9 @@ PO_REPORT_TEMPLATE = """
     <title>PO Report - Cotton Clothing BD</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
         body { background-color: #f8f9fa; padding: 30px 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        .container { max-width: 1200px; background: white; padding: 30px; box-shadow: 0 0 20px rgba(0,0,0,0.05); }
+        .container { max-width: 1200px; }
         .company-header { text-align: center; margin-bottom: 20px; border-bottom: 2px solid #000; padding-bottom: 10px; }
         .company-name { font-size: 2.2rem; font-weight: 800; color: #2c3e50; text-transform: uppercase; letter-spacing: 1px; line-height: 1; }
         .report-title { font-size: 1.1rem; color: #555; font-weight: 600; text-transform: uppercase; margin-top: 5px; }
@@ -1707,42 +1728,31 @@ PO_REPORT_TEMPLATE = """
         .color-header { background-color: #e9ecef; color: #2c3e50; padding: 10px 12px; font-size: 1.5rem; font-weight: 900; border-bottom: 1px solid #dee2e6; text-transform: uppercase; }
         .table { margin-bottom: 0; width: 100%; border-collapse: collapse; }
         .table th { background-color: #2c3e50; color: white; font-weight: 900; font-size: 1.2rem; text-align: center; border: 1px solid #34495e; padding: 8px 4px; vertical-align: middle; }
+        .table th:empty { background-color: white !important; border: none; } /* Fix for Empty Blue Cell */
         .table td { text-align: center; vertical-align: middle; border: 1px solid #dee2e6; padding: 6px 3px; color: #000; font-weight: 800; font-size: 1.15rem; }
         .table-striped tbody tr:nth-of-type(odd) { background-color: #f8f9fa; }
         .order-col { font-weight: 900 !important; text-align: center !important; background-color: #fdfdfd; white-space: nowrap; width: 1%; }
         .total-col { font-weight: 900; background-color: #e8f6f3 !important; color: #16a085; border-left: 2px solid #1abc9c !important; }
         .total-col-header { background-color: #e8f6f3 !important; color: #000 !important; font-weight: 900 !important; border: 1px solid #34495e !important; }
-        
-        /* Fixed: Empty Blue Rows Issue - Only apply blue to specific summary rows */
-        tr.summary-row td { background-color: #d1ecff !important; color: #000 !important; font-weight: 900 !important; border-top: 2px solid #aaa !important; font-size: 1.2rem !important; }
-        
+        .table-striped tbody tr.summary-row, .table-striped tbody tr.summary-row td { background-color: #d1ecff !important; --bs-table-accent-bg: #d1ecff !important; color: #000 !important; font-weight: 900 !important; border-top: 2px solid #aaa !important; font-size: 1.2rem !important; }
         .summary-label { text-align: right !important; padding-right: 15px !important; color: #000 !important; }
-        
-        .action-bar { margin-bottom: 20px; display: flex; justify-content: flex-end; gap: 10px; padding: 10px 0; border-bottom: 1px solid #eee; }
-        .btn-print { background-color: #2c3e50; color: white; border-radius: 50px; padding: 10px 30px; font-weight: 600; border: none; transition: 0.3s; }
-        .btn-print:hover { background-color: #1a252f; transform: translateY(-2px); }
-        
-        .btn-pdf { background-color: #e74c3c; color: white; border-radius: 50px; padding: 10px 30px; font-weight: 600; border: none; transition: 0.3s; }
-        .btn-pdf:hover { background-color: #c0392b; transform: translateY(-2px); }
-        
-        .btn-back { background-color: #95a5a6; color: white; border-radius: 50px; padding: 10px 30px; font-weight: 600; text-decoration: none; transition: 0.3s; }
-        .btn-back:hover { background-color: #7f8c8d; color: white; transform: translateY(-2px); }
-
+        .action-bar { margin-bottom: 20px; display: flex; justify-content: flex-end; gap: 10px; }
+        .btn-print { background-color: #e74c3c; color: white; border-radius: 50px; padding: 8px 30px; font-weight: 600; border: none; }
         .footer-credit { text-align: center; margin-top: 30px; margin-bottom: 20px; font-size: 0.8rem; color: #2c3e50; padding-top: 10px; border-top: 1px solid #ddd; }
-        
         @media print {
             @page { margin: 5mm; size: portrait; }
             body { background-color: white; padding: 0; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; color-adjust: exact !important; }
-            .container { max-width: 100% !important; width: 100% !important; padding: 0; margin: 0; box-shadow: none; }
+            .container { max-width: 100% !important; width: 100% !important; padding: 0; margin: 0; }
             .no-print { display: none !important; }
             .company-header { border-bottom: 2px solid #000; margin-bottom: 5px; padding-bottom: 5px; }
             .company-name { font-size: 1.8rem; } 
-            .info-container { margin-bottom: 10px; border: none; }
+            .info-container { margin-bottom: 10px; }
             .info-box { border: 1px solid #000 !important; border-left: 5px solid #000 !important; padding: 5px 10px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
             .total-box { border: 2px solid #000 !important; background: white !important; color: black !important; padding: 5px 10px; }
             .info-item { font-size: 13pt !important; font-weight: 800 !important; }
             .table th, .table td { border: 1px solid #000 !important; padding: 2px !important; font-size: 13pt !important; font-weight: 800 !important; }
-            tr.summary-row td { background-color: #d1ecff !important; box-shadow: inset 0 0 0 9999px #d1ecff !important; color: #000 !important; font-weight: 900 !important; }
+            .table th:empty { background-color: white !important; border: none !important; } /* Print Fix Empty Cell */
+            .table-striped tbody tr.summary-row td { background-color: #d1ecff !important; box-shadow: inset 0 0 0 9999px #d1ecff !important; color: #000 !important; font-weight: 900 !important; }
             .color-header { background-color: #f1f1f1 !important; border: 1px solid #000 !important; font-size: 1.4rem !important; font-weight: 900; padding: 5px; margin-top: 10px; box-shadow: inset 0 0 0 9999px #f1f1f1 !important; }
             .total-col-header { background-color: #e8f6f3 !important; box-shadow: inset 0 0 0 9999px #e8f6f3 !important; color: #000 !important; }
             .table-card { border: none; margin-bottom: 10px; break-inside: avoid; }
@@ -1751,12 +1761,11 @@ PO_REPORT_TEMPLATE = """
     </style>
 </head>
 <body>
-    <div class="action-bar no-print">
-        <a href="/" class="btn-back"><i class="fas fa-arrow-left"></i> Back</a>
-        <button onclick="downloadPDF()" class="btn-pdf"><i class="fas fa-file-pdf"></i> Download PDF</button>
-        <button onclick="window.print()" class="btn-print"><i class="fas fa-print"></i> Print</button>
-    </div>
-    <div class="container" id="report-content">
+    <div class="container">
+        <div class="action-bar no-print">
+            <a href="/" class="btn btn-outline-secondary rounded-pill px-4">Back to Dashboard</a>
+            <button onclick="window.print()" class="btn btn-print"><i class="fas fa-file-pdf"></i> Download PDF</button>
+        </div>
         <div class="company-header">
             <div class="company-name">MNM Software</div>
             <div class="report-title">Purchase Order Summary</div>
@@ -1800,18 +1809,6 @@ PO_REPORT_TEMPLATE = """
         const month = String(dateObj.getMonth() + 1).padStart(2, '0');
         const year = dateObj.getFullYear();
         document.getElementById('date').innerText = `${day}-${month}-${year}`;
-
-        function downloadPDF() {
-            const element = document.getElementById('report-content');
-            const opt = {
-                margin:       0.2,
-                filename:     'PO_Report.pdf',
-                image:        { type: 'jpeg', quality: 0.98 },
-                html2canvas:  { scale: 2 },
-                jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
-            };
-            html2pdf().set(opt).from(element).save();
-        }
     </script>
 </body>
 </html>
@@ -1952,7 +1949,7 @@ def generate_report():
         # Update Stats
         update_stats(internal_ref_no, session.get('user', 'Unknown'))
         
-        # Render Preview (Using the White Template from Step 4)
+        # Render Preview
         return render_template_string(CLOSING_REPORT_PREVIEW_TEMPLATE, report_data=report_data, ref_no=internal_ref_no)
     except Exception as e:
         flash(f"System Error: {str(e)}")
@@ -2045,19 +2042,19 @@ def accessories_save():
     if ref in db_acc:
         if request.form.get('item_type'): db_acc[ref]['item_type'] = request.form.get('item_type')
         
-        # --- UPDATE STATUS LOGIC (FIXED) ---
+        # --- UPDATE STATUS LOGIC ---
         # ১. আগের সব চালানের Status টিক (✔) করে দেওয়া
         for item in db_acc[ref]['challans']:
             item['status'] = "✔"
         
-        # ২. নতুন চালানের Status ফাঁকা রাখা (যেমনটি আপনি চেয়েছেন)
+        # ২. নতুন চালানের Status ফাঁকা রাখা
         new_entry = {
             "date": get_bd_date_str(),
             "line": request.form.get('line_no'),
             "color": request.form.get('color'),
             "size": request.form.get('size'),
             "qty": request.form.get('qty'),
-            "status": "" # Current entry has no checkmark
+            "status": "" # Current/New entry has no status initially
         }
         db_acc[ref]['challans'].append(new_entry)
         save_accessories_db(db_acc)
