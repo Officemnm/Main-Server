@@ -59,7 +59,6 @@ def add_header(response):
 # ==============================================================================
 # MongoDB কানেকশন সেটআপ
 # ==============================================================================
-# [Warning: Production এ পাসওয়ার্ড এনভায়রনমেন্ট ভেরিয়েবল ব্যবহার করা উচিত]
 MONGO_URI = "mongodb+srv://Mehedi:Mehedi123@office.jxdnuaj.mongodb.net/?appName=Office"
 
 try:
@@ -72,6 +71,8 @@ try:
     print("MongoDB Connected Successfully!")
 except Exception as e:
     print(f"MongoDB Connection Error: {e}")
+
+
 # ==============================================================================
 # ENHANCED CSS STYLES - PREMIUM MODERN UI WITH ANIMATIONS
 # ==============================================================================
@@ -111,7 +112,7 @@ COMMON_STYLES = """
         }
 
         * { 
-            margin: 0; 
+            margin: 0;
             padding: 0; 
             box-sizing: border-box; 
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; 
@@ -173,7 +174,7 @@ COMMON_STYLES = """
 
         /* Enhanced Sidebar Styling */
         .sidebar {
-            width: 280px; 
+            width: 280px;
             height: 100vh; 
             background: var(--gradient-dark);
             position: fixed; 
@@ -181,13 +182,12 @@ COMMON_STYLES = """
             left: 0; 
             display: flex; 
             flex-direction: column;
-            padding: 30px 20px; 
+            padding: 30px 20px;
             border-right: 1px solid var(--border-color); 
             z-index: 1000;
             transition: var(--transition-smooth);
             box-shadow: 4px 0 30px rgba(0, 0, 0, 0.3);
         }
-
         .sidebar::before {
             content: '';
             position: absolute;
@@ -200,7 +200,7 @@ COMMON_STYLES = """
         }
 
         .brand-logo { 
-            font-size: 26px; 
+            font-size: 26px;
             font-weight: 900; 
             color: white; 
             margin-bottom: 50px; 
@@ -233,12 +233,12 @@ COMMON_STYLES = """
         .nav-menu { 
             flex-grow: 1; 
             display: flex; 
-            flex-direction: column; 
+            flex-direction: column;
             gap: 8px; 
         }
 
         .nav-link {
-            display: flex; 
+            display: flex;
             align-items: center; 
             padding: 14px 18px; 
             color: var(--text-secondary);
@@ -263,7 +263,6 @@ COMMON_STYLES = """
             transition: var(--transition-smooth);
             z-index: -1;
         }
-
         .nav-link:hover::before, .nav-link.active::before { width: 100%; }
 
         .nav-link:hover, .nav-link.active { 
@@ -278,7 +277,7 @@ COMMON_STYLES = """
         }
 
         .nav-link i { 
-            width: 24px; 
+            width: 24px;
             margin-right: 12px; 
             font-size: 18px; 
             text-align: center;
@@ -300,14 +299,13 @@ COMMON_STYLES = """
             font-weight: 700;
             animation: badgePulse 2s ease-in-out infinite;
         }
-
         @keyframes badgePulse {
             0%, 100% { transform: scale(1); }
             50% { transform: scale(1.1); }
         }
 
         .sidebar-footer {
-            margin-top: auto; 
+            margin-top: auto;
             padding-top: 20px; 
             border-top: 1px solid var(--border-color);
             text-align: center; 
@@ -317,9 +315,10 @@ COMMON_STYLES = """
             opacity: 0.5;
             letter-spacing: 1px;
         }
+
         /* Main Content */
         .main-content { 
-            margin-left: 280px; 
+            margin-left: 280px;
             width: calc(100% - 280px); 
             padding: 30px 40px; 
             position: relative;
@@ -328,7 +327,7 @@ COMMON_STYLES = """
         }
 
         .header-section { 
-            display: flex; 
+            display: flex;
             justify-content: space-between; 
             align-items: flex-start; 
             margin-bottom: 35px;
@@ -341,7 +340,7 @@ COMMON_STYLES = """
         }
 
         .page-title { 
-            font-size: 32px; 
+            font-size: 32px;
             font-weight: 800; 
             color: white; 
             margin-bottom: 8px;
@@ -353,7 +352,7 @@ COMMON_STYLES = """
         }
 
         .page-subtitle { 
-            color: var(--text-secondary); 
+            color: var(--text-secondary);
             font-size: 14px;
             font-weight: 400;
         }
@@ -371,36 +370,16 @@ COMMON_STYLES = """
             box-shadow: var(--shadow-card);
             transition: var(--transition-smooth);
         }
-
-        .status-badge:hover {
-            border-color: var(--accent-green);
-            box-shadow: 0 0 20px rgba(16, 185, 129, 0.2);
-        }
-
-        .status-dot {
-            width: 10px;
-            height: 10px;
-            background: var(--accent-green);
-            border-radius: 50%;
-            animation: statusPulse 2s ease-in-out infinite;
-            box-shadow: 0 0 10px var(--accent-green);
-        }
-
-        @keyframes statusPulse {
-            0%, 100% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.5; transform: scale(1.3); }
-        }
-
         /* Enhanced Cards & Grid */
         .stats-grid { 
-            display: grid; 
+            display: grid;
             grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); 
             gap: 24px; 
             margin-bottom: 35px;
         }
 
         .dashboard-grid-2 { 
-            display: grid; 
+            display: grid;
             grid-template-columns: 2fr 1fr; 
             gap: 24px; 
             margin-bottom: 24px; 
@@ -438,7 +417,7 @@ COMMON_STYLES = """
         .card:hover::before { opacity: 1; }
         
         .section-header { 
-            display: flex; 
+            display: flex;
             justify-content: space-between; 
             align-items: center; 
             margin-bottom: 24px; 
@@ -458,10 +437,9 @@ COMMON_STYLES = """
             opacity: 1;
             transform: rotate(10deg) scale(1.1);
         }
-
         /* Stat Cards with Animations */
         .stat-card { 
-            display: flex; 
+            display: flex;
             align-items: center; 
             gap: 24px; 
             transition: var(--transition-smooth);
@@ -473,13 +451,13 @@ COMMON_STYLES = """
         }
 
         .stat-icon { 
-            width: 64px; 
+            width: 64px;
             height: 64px; 
             background: linear-gradient(145deg, rgba(255, 122, 0, 0.15), rgba(255, 122, 0, 0.05));
             border-radius: 16px; 
             display: flex; 
             justify-content: center; 
-            align-items: center; 
+            align-items: center;
             font-size: 26px; 
             color: var(--accent-orange);
             position: relative;
@@ -512,7 +490,7 @@ COMMON_STYLES = """
         }
 
         .stat-info h3 { 
-            font-size: 36px; 
+            font-size: 36px;
             font-weight: 800; 
             margin: 0; 
             color: white;
@@ -525,18 +503,18 @@ COMMON_STYLES = """
         }
 
         .stat-info p { 
-            font-size: 13px; 
+            font-size: 13px;
             color: var(--text-secondary); 
             margin: 6px 0 0 0; 
             text-transform: uppercase;
             letter-spacing: 1.5px;
             font-weight: 600;
         }
+
         /* Animated Counter */
         .count-up {
             display: inline-block;
         }
-
         /* Progress Bars with Animation */
         .progress-item { margin-bottom: 24px; }
 
@@ -594,12 +572,11 @@ COMMON_STYLES = """
         .progress-orange { background: var(--gradient-orange); }
         .progress-purple { background: linear-gradient(135deg, #8B5CF6 0%, #A78BFA 100%); }
         .progress-green { background: linear-gradient(135deg, #10B981 0%, #34D399 100%); }
-
         /* Enhanced Forms */
         .input-group { margin-bottom: 20px; }
 
         .input-group label { 
-            display: block; 
+            display: block;
             font-size: 11px; 
             color: var(--text-secondary); 
             margin-bottom: 8px; 
@@ -609,7 +586,7 @@ COMMON_STYLES = """
         }
 
         input, select { 
-            width: 100%; 
+            width: 100%;
             padding: 14px 18px; 
             background: rgba(255, 255, 255, 0.03);
             border: 1px solid var(--border-color);
@@ -639,17 +616,17 @@ COMMON_STYLES = """
             background-repeat: no-repeat;
             background-position: right 12px center;
             background-size: 24px;
+            background-color: rgba(255, 255, 255, 0.03);
         }
         
-        /* FIX: Dropdown Option Visibility */
         select option {
-            background-color: #16161f; /* Dark background matching card */
+            background-color: #1a1a25;
             color: white;
             padding: 10px;
         }
         
         button { 
-            width: 100%; 
+            width: 100%;
             padding: 14px 24px; 
             background: var(--gradient-orange);
             color: white; 
@@ -663,7 +640,6 @@ COMMON_STYLES = """
             overflow: hidden;
             letter-spacing: 0.5px;
         }
-
         button::before {
             content: '';
             position: absolute;
@@ -688,13 +664,13 @@ COMMON_STYLES = """
 
         /* Enhanced Tables */
         .dark-table { 
-            width: 100%; 
+            width: 100%;
             border-collapse: collapse; 
             margin-top: 10px; 
         }
 
         .dark-table th { 
-            text-align: left; 
+            text-align: left;
             padding: 14px 16px; 
             color: var(--text-secondary); 
             font-size: 11px;
@@ -705,7 +681,7 @@ COMMON_STYLES = """
         }
 
         .dark-table td { 
-            padding: 16px; 
+            padding: 16px;
             color: white; 
             font-size: 14px; 
             border-bottom: 1px solid rgba(255,255,255,0.03);
@@ -732,13 +708,13 @@ COMMON_STYLES = """
         
         /* Action Buttons */
         .action-cell { 
-            display: flex; 
+            display: flex;
             gap: 8px; 
             justify-content: flex-end; 
         }
 
         .action-btn { 
-            padding: 8px 12px; 
+            padding: 8px 12px;
             border-radius: 8px; 
             text-decoration: none; 
             font-size: 12px; 
@@ -753,31 +729,31 @@ COMMON_STYLES = """
         }
 
         .btn-edit { 
-            background: rgba(139, 92, 246, 0.15); 
+            background: rgba(139, 92, 246, 0.15);
             color: #A78BFA; 
         }
 
         .btn-edit:hover { 
-            background: var(--accent-purple); 
+            background: var(--accent-purple);
             color: white;
             transform: scale(1.1);
             box-shadow: 0 0 20px rgba(139, 92, 246, 0.4);
         }
 
         .btn-del { 
-            background: rgba(239, 68, 68, 0.15); 
+            background: rgba(239, 68, 68, 0.15);
             color: #F87171; 
         }
 
         .btn-del:hover { 
-            background: var(--accent-red); 
+            background: var(--accent-red);
             color: white;
             transform: scale(1.1);
             box-shadow: 0 0 20px rgba(239, 68, 68, 0.4);
         }
         /* Enhanced Loading Overlay */
         #loading-overlay { 
-            display: none; 
+            display: none;
             position: fixed; 
             top: 0; 
             left: 0; 
@@ -785,7 +761,7 @@ COMMON_STYLES = """
             height: 100%; 
             background: rgba(10, 10, 15, 0.95);
             z-index: 9999; 
-            flex-direction: column; 
+            flex-direction: column;
             justify-content: center; 
             align-items: center; 
             backdrop-filter: blur(20px);
@@ -800,12 +776,12 @@ COMMON_STYLES = """
         }
 
         .spinner { 
-            width: 80px; 
+            width: 80px;
             height: 80px; 
             border: 4px solid rgba(255, 122, 0, 0.1);
             border-top: 4px solid var(--accent-orange);
             border-right: 4px solid var(--accent-orange-light);
-            border-radius: 50%; 
+            border-radius: 50%;
             animation: spin 0.8s linear infinite;
             box-shadow: 0 0 30px var(--accent-orange-glow);
         }
@@ -831,12 +807,12 @@ COMMON_STYLES = """
 
         /* Success Checkmark Animation */
         .checkmark-container { 
-            display: none; 
+            display: none;
             text-align: center; 
         }
 
         .checkmark-circle {
-            width: 100px; 
+            width: 100px;
             height: 100px; 
             position: relative; 
             display: inline-block;
@@ -848,7 +824,7 @@ COMMON_STYLES = """
         }
 
         .checkmark-circle::before {
-            content: ''; 
+            content: '';
             display: block; 
             width: 30px; 
             height: 50px;
@@ -861,15 +837,14 @@ COMMON_STYLES = """
             opacity: 0;
             animation: checkmark-anim 0.4s 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
         }
-        
         /* Fail Cross Animation */
         .fail-container { 
             display: none; 
-            text-align: center; 
+            text-align: center;
         }
 
         .fail-circle {
-            width: 100px; 
+            width: 100px;
             height: 100px; 
             position: relative; 
             display: inline-block;
@@ -881,7 +856,7 @@ COMMON_STYLES = """
         }
 
         .fail-circle::before, .fail-circle::after {
-            content: ''; 
+            content: '';
             position: absolute; 
             width: 4px; 
             height: 50px; 
@@ -921,7 +896,7 @@ COMMON_STYLES = """
         .anim-text { 
             font-size: 24px; 
             font-weight: 800; 
-            color: white; 
+            color: white;
             margin-top: 10px; 
             letter-spacing: 1px;
         }
@@ -940,6 +915,7 @@ COMMON_STYLES = """
             0%, 100% { opacity: 0.5; }
             50% { opacity: 1; }
         }
+
         /* Welcome Popup Modal */
         .welcome-modal {
             display: none;
@@ -961,7 +937,6 @@ COMMON_STYLES = """
             from { opacity: 0; }
             to { opacity: 1; }
         }
-
         .welcome-content {
             background: var(--gradient-card);
             border: 1px solid var(--border-color);
@@ -987,14 +962,13 @@ COMMON_STYLES = """
             animation: welcomeGlow 3s ease-in-out infinite;
             opacity: 0.3;
         }
-
         @keyframes welcomeSlideIn {
             from { 
-                opacity: 0; 
+                opacity: 0;
                 transform: translateY(-50px) scale(0.9);
             }
             to { 
-                opacity: 1; 
+                opacity: 1;
                 transform: translateY(0) scale(1);
             }
         }
@@ -1096,7 +1070,6 @@ COMMON_STYLES = """
             visibility: visible;
             bottom: 130%;
         }
-
         /* File Upload Zone */
         .upload-zone {
             border: 2px dashed var(--border-color);
@@ -1183,11 +1156,11 @@ COMMON_STYLES = """
 
         @keyframes flashSlideIn {
             from { 
-                opacity: 0; 
+                opacity: 0;
                 transform: translateY(-10px);
             }
             to { 
-                opacity: 1; 
+                opacity: 1;
                 transform: translateY(0);
             }
         }
@@ -1203,6 +1176,7 @@ COMMON_STYLES = """
             border: 1px solid rgba(16, 185, 129, 0.2);
             color: #34D399;
         }
+        
         /* Ripple Effect */
         .ripple {
             position: relative;
@@ -1224,12 +1198,11 @@ COMMON_STYLES = """
                 opacity: 0;
             }
         }
-
         /* Mobile */
         .mobile-toggle { 
             display: none; 
             position: fixed; 
-            top: 20px; 
+            top: 20px;
             right: 20px; 
             z-index: 2000; 
             color: white; 
@@ -1247,19 +1220,19 @@ COMMON_STYLES = """
 
         @media (max-width: 1024px) {
             .sidebar { 
-                transform: translateX(-100%); 
+                transform: translateX(-100%);
                 width: 280px;
             } 
             .sidebar.active { 
-                transform: translateX(0); 
+                transform: translateX(0);
             }
             .main-content { 
-                margin-left: 0; 
+                margin-left: 0;
                 width: 100%; 
                 padding: 20px; 
             }
             .dashboard-grid-2 { 
-                grid-template-columns: 1fr; 
+                grid-template-columns: 1fr;
             }
             .mobile-toggle { 
                 display: flex;
@@ -1299,7 +1272,6 @@ COMMON_STYLES = """
             0% { background-position: 200% 0; }
             100% { background-position: -200% 0; }
         }
-
         /* Notification Dot */
         .notification-dot {
             position: absolute;
@@ -1375,7 +1347,6 @@ COMMON_STYLES = """
             transform: scale(1.1) rotate(90deg);
             box-shadow: 0 12px 40px var(--accent-orange-glow);
         }
-
         /* Glow Text */
         .glow-text {
             text-shadow: 0 0 20px var(--accent-orange-glow);
@@ -1411,7 +1382,6 @@ COMMON_STYLES = """
             50% { background-position: 100% 50%; }
             100% { background-position: 0% 50%; }
         }
-
         /* Permission Checkbox Styles */
         .perm-checkbox {
             background: rgba(255, 255, 255, 0.03);
@@ -1640,7 +1610,6 @@ def get_dashboard_summary_v2():
                 daily_data[sort_key]['closing'] += 1
             daily_data[sort_key]['label'] = dt_obj.strftime('%d-%b')
         except: pass
-
     # Get last month's 1st date to today
     first_of_last_month = (now.replace(day=1) - timedelta(days=1)).replace(day=1)
     start_date = first_of_last_month.strftime('%Y-%m-%d')
@@ -1657,7 +1626,9 @@ def get_dashboard_summary_v2():
     if not sorted_keys:
         curr_d = now.strftime('%d-%b')
         chart_labels = [curr_d]
-        chart_closing = [0]; chart_po = [0]; chart_acc = [0]
+        chart_closing = [0]
+        chart_po = [0]
+        chart_acc = [0]
     else:
         for k in sorted_keys:
             d = daily_data[k]
@@ -1679,6 +1650,7 @@ def get_dashboard_summary_v2():
         },
         "history": history
     }
+
 # ==============================================================================
 # লজিক পার্ট: PURCHASE ORDER SHEET PARSER (PDF)
 # ==============================================================================
@@ -1730,16 +1702,15 @@ def extract_metadata(first_page_text):
     style_match = re.search(r"Style Ref\. ?[:\s]*([\w-]+)", first_page_text, re.IGNORECASE)
     if style_match: meta['style'] = style_match.group(1).strip()
     else:
-        style_match = re.search(r"Style Des\.?[\s\S]*?([\w-]+)", first_page_text, re.IGNORECASE)
+        style_match = re.search(r"Style Des\. ?[\s\S]*?([\w-]+)", first_page_text, re.IGNORECASE)
         if style_match: meta['style'] = style_match.group(1).strip()
 
     season_match = re.search(r"Season\s*[:\n\"]*([\w\d-]+)", first_page_text, re.IGNORECASE)
     if season_match: meta['season'] = season_match.group(1).strip()
-
     dept_match = re.search(r"Dept\. ?[\s\n:]*([A-Za-z]+)", first_page_text, re.IGNORECASE)
     if dept_match: meta['dept'] = dept_match.group(1).strip()
 
-    item_match = re.search(r"Garments?  Item[\s\n:]*([^\n\r]+)", first_page_text, re.IGNORECASE)
+    item_match = re.search(r"Garments?   Item[\s\n:]*([^\n\r]+)", first_page_text, re.IGNORECASE)
     if item_match: 
         item_text = item_match.group(1).strip()
         if "Style" in item_text: item_text = item_text.split("Style")[0].strip()
@@ -1803,7 +1774,6 @@ def extract_data_dynamic(file_path):
                     if line.startswith("Total Quantity") or line.startswith("Total Amount"):
                         capturing_data = False
                         continue
-                    
                     lower_line = line.lower()
                     if "quantity" in lower_line or "currency" in lower_line or "price" in lower_line or "amount" in lower_line:
                         continue
@@ -1827,6 +1797,7 @@ def extract_data_dynamic(file_path):
                             next_line = next_line.strip()
                             if "Total" in next_line or re.search(r'[a-zA-Z]', next_line.replace("Spec", "").replace("price", "")): break
                             if re.match(r'^\d+$', next_line): vertical_qtys.append(int(next_line))
+                        
                         if len(vertical_qtys) >= len(sizes): final_qtys = vertical_qtys[:len(sizes)]
                     
                     if final_qtys and color_name:
@@ -1839,7 +1810,6 @@ def extract_data_dynamic(file_path):
                             })
     except Exception as e: print(f"Error processing file: {e}")
     return extracted_data, metadata
-
 # ==============================================================================
 # লজিক পার্ট: CLOSING REPORT API & EXCEL GENERATION
 # ==============================================================================
@@ -1903,6 +1873,7 @@ def parse_report_data(html_content):
             else:
                 current_block.append(row)
         if current_block: item_blocks.append(current_block)
+        
         for block in item_blocks:
             style, color, buyer_name, gmts_qty_data, sewing_input_data, cutting_qc_data = "N/A", "N/A", "N/A", None, None, None
             for row in block:
@@ -1911,12 +1882,16 @@ def parse_report_data(html_content):
                     criteria_main = cells[0].get_text(strip=True)
                     criteria_sub = cells[2].get_text(strip=True)
                     main_lower, sub_lower = criteria_main.lower(), criteria_sub.lower()
+                    
                     if main_lower == "style": style = cells[1].get_text(strip=True)
-                    elif main_lower == "color & gmts.  item": color = cells[1].get_text(strip=True)
+                    elif main_lower == "color & gmts. item": color = cells[1].get_text(strip=True)
                     elif "buyer" in main_lower: buyer_name = cells[1].get_text(strip=True)
+                    
                     if sub_lower == "gmts. color /country qty": gmts_qty_data = [cell.get_text(strip=True) for cell in cells[3:len(headers)+3]]
+                    
                     if "sewing input" in main_lower: sewing_input_data = [cell.get_text(strip=True) for cell in cells[1:len(headers)+1]]
                     elif "sewing input" in sub_lower: sewing_input_data = [cell.get_text(strip=True) for cell in cells[3:len(headers)+3]]
+    
                     if "cutting qc" in main_lower and "balance" not in main_lower:
                         cutting_qc_data = [cell.get_text(strip=True) for cell in cells[1:len(headers)+1]]
                     elif "cutting qc" in sub_lower and "balance" not in sub_lower:
@@ -1929,7 +1904,13 @@ def parse_report_data(html_content):
                         plus_3_percent_data.append(str(new_qty))
                     except (ValueError, TypeError):
                         plus_3_percent_data.append(value)
-                all_report_data.append({'style': style, 'buyer': buyer_name, 'color': color, 'headers': headers, 'gmts_qty': gmts_qty_data, 'plus_3_percent': plus_3_percent_data, 'sewing_input': sewing_input_data if sewing_input_data else [], 'cutting_qc': cutting_qc_data if cutting_qc_data else []})
+                all_report_data.append({
+                    'style': style, 'buyer': buyer_name, 'color': color, 
+                    'headers': headers, 'gmts_qty': gmts_qty_data, 
+                    'plus_3_percent': plus_3_percent_data, 
+                    'sewing_input': sewing_input_data if sewing_input_data else [], 
+                    'cutting_qc': cutting_qc_data if cutting_qc_data else []
+                })
         return all_report_data
     except Exception as e:
         return None
@@ -1942,7 +1923,6 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
     # Styles
     bold_font = Font(bold=True)
     title_font = Font(size=32, bold=True, color="7B261A") 
-    # FIX: Corrected decimal space here
     white_bold_font = Font(size=16.5, bold=True, color="FFFFFF")
     center_align = Alignment(horizontal='center', vertical='center')
     left_align = Alignment(horizontal='left', vertical='center')
@@ -1959,6 +1939,7 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
 
     NUM_COLUMNS, TABLE_START_ROW = 9, 8
     ws.merge_cells(start_row=1, start_column=1, end_row=1, end_column=NUM_COLUMNS)
+    # UPDATED BRANDING
     ws['A1'].value = "COTTON CLOTHING BD LTD"
     ws['A1'].font = title_font 
     ws['A1'].alignment = center_align
@@ -1972,7 +1953,11 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
     formatted_ref_no = internal_ref_no.upper()
     current_date = get_bd_time().strftime("%d/%m/%Y")
     
-    left_sub_headers = {'A4': 'BUYER', 'B4': report_data[0].get('buyer', ''), 'A5': 'IR/IB NO', 'B5': formatted_ref_no, 'A6': 'STYLE NO', 'B6': report_data[0].get('style', '')}
+    left_sub_headers = {
+        'A4': 'BUYER', 'B4': report_data[0].get('buyer', ''), 
+        'A5': 'IR/IB NO', 'B5': formatted_ref_no, 
+        'A6': 'STYLE NO', 'B6': report_data[0].get('style', '')
+    }
     
     for cell_ref, value in left_sub_headers.items():
         cell = ws[cell_ref]
@@ -1981,7 +1966,7 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
         cell.alignment = left_align
         cell.border = thin_border
         if cell_ref == 'B5':
-            cell.fill = ir_ib_fill      
+            cell.fill = ir_ib_fill 
             cell.font = white_bold_font 
         else:
             cell.fill = dark_green_fill 
@@ -2037,6 +2022,7 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
                 cell = ws.cell(row=current_row, column=col_idx)
                 cell.border = medium_border if col_idx == 2 else thin_border
                 cell.alignment = center_align
+    
                 if col_idx in [1, 2, 3, 6, 9]: cell.font = bold_font
                 
                 if col_idx == 3: cell.fill = light_blue_fill      
@@ -2053,7 +2039,7 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
             merged_cell = ws.cell(row=start_merge_row, column=1)
             merged_cell.alignment = color_align
             if not merged_cell.font.bold: merged_cell.font = bold_font
-
+        
         total_row_str = str(current_row)
         ws.merge_cells(start_row=current_row, start_column=1, end_row=current_row, end_column=2)
         
@@ -2084,7 +2070,6 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
                 cell.fill = dark_green_fill 
                 cell.border = medium_border
         current_row += 2
-       
     image_row = current_row + 1
    
     try:
@@ -2120,10 +2105,8 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
             if cell.font:
                 existing_font = cell.font
                 if cell.row != 1: 
-                    # FIX: Corrected decimal space here
                     new_font = Font(name=existing_font.name, size=16.5, bold=existing_font.bold, italic=existing_font.italic, vertAlign=existing_font.vertAlign, underline=existing_font.underline, strike=existing_font.strike, color=existing_font.color)
                     cell.font = new_font
-   
     ws.column_dimensions['A'].width = 23
     ws.column_dimensions['B'].width = 8.5
     ws.column_dimensions['C'].width = 20
@@ -2151,6 +2134,2649 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
     wb.save(file_stream)
     file_stream.seek(0)
     return file_stream
+
+# ==============================================================================
+# HTML TEMPLATES: LOGIN PAGE - FIXED RESPONSIVE & CENTERED
+# ==============================================================================
+
+LOGIN_TEMPLATE = f"""
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Login - MNM Software</title>
+    {COMMON_STYLES}
+    <style>
+        html, body {{
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+        }}
+        
+        body {
+            background: var(--bg-body);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            overflow-y: auto;
+        }
+        
+        /* Animated Background Orbs */
+        .bg-orb {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.4;
+            animation: orbFloat 20s ease-in-out infinite;
+            pointer-events: none;
+        }
+        
+        .orb-1 {
+            width: 300px;
+            height: 300px;
+            background: var(--accent-orange);
+            top: -100px;
+            left: -100px;
+            animation-delay: 0s;
+        }
+        
+        .orb-2 {
+            width: 250px;
+            height: 250px;
+            background: var(--accent-purple);
+            bottom: -50px;
+            right: -50px;
+            animation-delay: -5s;
+        }
+        
+        .orb-3 {
+            width: 150px;
+            height: 150px;
+            background: var(--accent-green);
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            animation-delay: -10s;
+        }
+        
+        @keyframes orbFloat {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            25% { transform: translate(30px, -30px) scale(1.05); }
+            50% { transform: translate(-20px, 20px) scale(0.95); }
+            75% { transform: translate(15px, 30px) scale(1.02); }
+        }
+        
+        .login-container {
+            position: relative;
+            z-index: 10;
+            width: 100%;
+            max-width: 420px;
+            padding: 20px;
+            margin: auto;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            min-height: 100vh;
+        }
+        
+        .login-card {
+            background: var(--gradient-card);
+            border: 1px solid var(--border-color);
+            border-radius: 24px;
+            padding: 40px 35px;
+            backdrop-filter: blur(20px);
+            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.5), 0 0 60px var(--accent-orange-glow);
+            animation: loginCardAppear 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        @keyframes loginCardAppear {
+            from {
+                opacity: 0;
+                transform: translateY(30px) scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+        
+        .brand-section {
+            text-align: center;
+            margin-bottom: 35px;
+        }
+        
+        .brand-icon {
+            width: 70px;
+            height: 70px;
+            background: var(--gradient-orange);
+            border-radius: 18px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            color: white;
+            margin-bottom: 18px;
+            box-shadow: 0 15px 40px var(--accent-orange-glow);
+            animation: brandIconPulse 3s ease-in-out infinite;
+        }
+        
+        @keyframes brandIconPulse {
+            0%, 100% { transform: scale(1) rotate(0deg); box-shadow: 0 15px 40px var(--accent-orange-glow); }
+            50% { transform: scale(1.05) rotate(5deg); box-shadow: 0 20px 50px var(--accent-orange-glow); }
+        }
+        
+        .brand-name {
+            font-size: 28px;
+            font-weight: 900;
+            color: white;
+            letter-spacing: -1px;
+        }
+        
+        .brand-name span {
+            background: var(--gradient-orange);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .brand-tagline {
+            color: var(--text-secondary);
+            font-size: 11px;
+            letter-spacing: 2px;
+            margin-top: 6px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        
+        .login-form .input-group {
+            margin-bottom: 20px;
+        }
+        
+        .login-form .input-group label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+        
+        .login-form .input-group label i {
+            color: var(--accent-orange);
+            font-size: 13px;
+        }
+        
+        .login-form input {
+            padding: 14px 18px;
+            font-size: 14px;
+            border-radius: 12px;
+        }
+        
+        .login-btn {
+            margin-top: 8px;
+            padding: 14px 24px;
+            font-size: 15px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .login-btn i {
+            transition: transform 0.3s;
+        }
+        
+        .login-btn:hover i {
+            transform: translateX(5px);
+        }
+        
+        .error-box {
+            margin-top: 20px;
+            padding: 14px 18px;
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            border-radius: 10px;
+            color: #F87171;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            animation: errorShake 0.5s ease-out;
+        }
+        
+        @keyframes errorShake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-5px); }
+            40%, 80% { transform: translateX(5px); }
+        }
+        
+        .footer-credit {
+            text-align: center;
+            margin-top: 25px;
+            color: var(--text-secondary);
+            font-size: 11px;
+            opacity: 0.5;
+            font-weight: 500;
+        }
+        
+        .footer-credit a {
+            color: var(--accent-orange);
+            text-decoration: none;
+        }
+        
+        /* Responsive Fixes */
+        @media (max-width: 480px) {
+            .login-container {
+                padding: 15px;
+            }
+            
+            .login-card {
+                padding: 30px 25px;
+                border-radius: 20px;
+            }
+            
+            .brand-icon {
+                width: 60px;
+                height: 60px;
+                font-size: 28px;
+            }
+            
+            .brand-name {
+                font-size: 24px;
+            }
+            
+            .brand-tagline {
+                font-size: 10px;
+            }
+            
+            .login-form input {
+                padding: 12px 16px;
+                font-size: 14px;
+            }
+            
+            .login-btn {
+                padding: 12px 20px;
+                font-size: 14px;
+            }
+        }
+        
+        @media (max-height: 700px) {
+            .login-container {
+                min-height: auto;
+                padding-top: 30px;
+                padding-bottom: 30px;
+            }
+            
+            .brand-section {
+                margin-bottom: 25px;
+            }
+            
+            .brand-icon {
+                width: 60px;
+                height: 60px;
+                font-size: 26px;
+                margin-bottom: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-orb orb-1"></div>
+    <div class="bg-orb orb-2"></div>
+    <div class="bg-orb orb-3"></div>
+    
+    <div class="login-container">
+        <div class="login-card">
+            <div class="brand-section">
+                <div class="brand-icon">
+                    <i class="fas fa-layer-group"></i>
+                </div>
+                <div class="brand-name">MNM<span>Software</span></div>
+                <div class="brand-tagline">Secure Access Portal</div>
+            </div>
+            
+            <form action="/login" method="post" class="login-form">
+                <div class="input-group">
+                    <label><i class="fas fa-user"></i> USERNAME</label>
+                    <input type="text" name="username" required placeholder="Enter your ID" autocomplete="off">
+                </div>
+                <div class="input-group">
+                    <label><i class="fas fa-lock"></i> PASSWORD</label>
+                    <input type="password" name="password" required placeholder="Enter your Password">
+                </div>
+                <button type="submit" class="login-btn">
+                    Sign In <i class="fas fa-arrow-right"></i>
+                </button>
+            </form>
+            
+            {{% with messages = get_flashed_messages() %}}
+                {{% if messages %}}
+                    <div class="error-box">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <span>{{{{ messages[0] }}}}</span>
+                    </div>
+                {{% endif %}}
+            {{% endwith %}}
+            
+            <div class="footer-credit">
+                © 2025 <a href="#">Mehedi Hasan</a> • All Rights Reserved
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Add ripple effect to button
+        document.querySelector('.login-btn').addEventListener('click', function(e) {{
+            const ripple = document.createElement('span');
+            ripple.classList.add('ripple-effect');
+            const rect = this.getBoundingClientRect();
+            ripple.style.left = (e.clientX - rect.left) + 'px';
+            ripple.style.top = (e.clientY - rect.top) + 'px';
+            this.appendChild(ripple);
+            setTimeout(() => ripple.remove(), 600);
+        }});
+    </script>
+</body>
+</html>
+"""
+# ==============================================================================
+# ADMIN DASHBOARD TEMPLATE - MODERN UI WITH DEW STYLE CHART
+# ==============================================================================
+
+ADMIN_DASHBOARD_TEMPLATE = f"""
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Admin Dashboard - MNM Software</title>
+    {COMMON_STYLES}
+</head>
+<body>
+    <div class="animated-bg"></div>
+    <div id="particles-js"></div>
+
+    <div class="welcome-modal" id="welcomeModal">
+        <div class="welcome-content">
+            <div class="welcome-icon" id="welcomeIcon">👋</div>
+            <div class="welcome-greeting" id="greetingText">Good Morning</div>
+            <div class="welcome-title">Welcome Back, <span>{{{{ session.user }}}}</span>!</div>
+            <div class="welcome-message">
+                You're now logged into the MNM Software Dashboard.
+                All systems are operational and ready for your commands.
+            </div>
+            <button class="welcome-close" onclick="closeWelcome()">
+                <i class="fas fa-rocket" style="margin-right: 8px;"></i> Let's Go!
+            </button>
+        </div>
+    </div>
+
+    <div id="loading-overlay">
+        <div class="spinner-container">
+            <div class="spinner" id="spinner-anim"></div>
+            <div class="spinner-inner"></div>
+        </div>
+        
+        <div class="checkmark-container" id="success-anim">
+            <div class="checkmark-circle"></div>
+            <div class="anim-text">Successful!</div>
+        </div>
+
+        <div class="fail-container" id="fail-anim">
+            <div class="fail-circle"></div>
+            <div class="anim-text">Action Failed!</div>
+            <div style="font-size:13px; color:#F87171; margin-top:8px;">Please check server or inputs</div>
+        </div>
+        
+        <div class="loading-text" id="loading-text">Processing Request...</div>
+    </div>
+
+    <div class="mobile-toggle" onclick="document.querySelector('.sidebar').classList.toggle('active')">
+        <i class="fas fa-bars"></i>
+    </div>
+
+    <div class="sidebar">
+        <div class="brand-logo">
+            <i class="fas fa-layer-group"></i> 
+            MNM<span>Software</span>
+        </div>
+        <div class="nav-menu">
+            <div class="nav-link active" onclick="showSection('dashboard', this)">
+                <i class="fas fa-home"></i> Dashboard
+                <span class="nav-badge">Live</span>
+            </div>
+            <div class="nav-link" onclick="showSection('analytics', this)">
+                <i class="fas fa-chart-pie"></i> Closing Report
+            </div>
+            <a href="/admin/accessories" class="nav-link">
+                <i class="fas fa-database"></i> Accessories Challan
+            </a>
+            <div class="nav-link" onclick="showSection('help', this)">
+                <i class="fas fa-file-invoice"></i> PO Generator
+            </div>
+            <div class="nav-link" onclick="showSection('settings', this)">
+                <i class="fas fa-users-cog"></i> User Manage
+            </div>
+            <a href="/admin/store" class="nav-link">
+                <i class="fas fa-store"></i> Store
+            </a>
+            <a href="/logout" class="nav-link" style="color: var(--accent-red); margin-top: 20px;">
+                <i class="fas fa-sign-out-alt"></i> Sign Out
+            </a>
+        </div>
+        <div class="sidebar-footer">
+            <i class="fas fa-code" style="margin-right: 5px;"></i> Powered by Mehedi Hasan
+        </div>
+    </div>
+
+    <div class="main-content">
+        
+        <div id="section-dashboard">
+            <div class="header-section">
+                <div>
+                    <div class="page-title">Main Dashboard</div>
+                    <div class="page-subtitle">Lifetime Overview & Analytics</div>
+                </div>
+                <div class="status-badge">
+                    <div class="status-dot"></div>
+                    <span>System Online</span>
+                </div>
+            </div>
+            
+            {{% with messages = get_flashed_messages() %}}
+                {{% if messages %}}
+                    <div class="flash-message flash-error">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <span>{{{{ messages[0] }}}}</span>
+                    </div>
+                {{% endif %}}
+            {{% endwith %}}
+
+            <div class="stats-grid">
+                <div class="card stat-card" style="animation-delay: 0.1s;">
+                    <div class="stat-icon"><i class="fas fa-file-export"></i></div>
+                    <div class="stat-info">
+                        <h3 class="count-up" data-target="{{{{ stats.closing.count }}}}">0</h3>
+                        <p>Lifetime Closing</p>
+                    </div>
+                </div>
+                <div class="card stat-card" style="animation-delay: 0.2s;">
+                    <div class="stat-icon" style="background: linear-gradient(145deg, rgba(139, 92, 246, 0.15), rgba(139, 92, 246, 0.05));">
+                        <i class="fas fa-boxes" style="color: var(--accent-purple);"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 class="count-up" data-target="{{{{ stats.accessories.count }}}}">0</h3>
+                        <p>Lifetime Accessories</p>
+                    </div>
+                </div>
+                <div class="card stat-card" style="animation-delay: 0.3s;">
+                    <div class="stat-icon" style="background: linear-gradient(145deg, rgba(16, 185, 129, 0.15), rgba(16, 185, 129, 0.05));">
+                        <i class="fas fa-file-pdf" style="color: var(--accent-green);"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 class="count-up" data-target="{{{{ stats.po.count }}}}">0</h3>
+                        <p>Lifetime PO Sheets</p>
+                    </div>
+                </div>
+                <div class="card stat-card" style="animation-delay: 0.4s;">
+                    <div class="stat-icon" style="background: linear-gradient(145deg, rgba(59, 130, 246, 0.15), rgba(59, 130, 246, 0.05));">
+                        <i class="fas fa-users" style="color: var(--accent-blue);"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 class="count-up" data-target="{{{{ stats.users.count }}}}">0</h3>
+                        <p>Total Users</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="dashboard-grid-2">
+                <div class="card">
+                    <div class="section-header">
+                        <span>Daily Activity Chart</span>
+                        <div class="realtime-indicator">
+                            <div class="realtime-dot"></div>
+                            <span>Real-time</span>
+                        </div>
+                    </div>
+                    <div class="chart-container" style="height: 320px;">
+                        <canvas id="mainChart"></canvas>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="section-header">
+                        <span>Module Usage</span>
+                        <i class="fas fa-chart-bar" style="color: var(--accent-orange);"></i>
+                    </div>
+                    
+                    <div class="progress-item">
+                        <div class="progress-header">
+                            <span>Closing Report</span>
+                            <span class="progress-value">{{{{ stats.closing.count }}}} Lifetime</span>
+                        </div>
+                        <div class="progress-bar-container">
+                            <div class="progress-bar-fill progress-orange" style="width: 85%;"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="progress-item">
+                        <div class="progress-header">
+                            <span>Accessories</span>
+                            <span class="progress-value">{{{{ stats.accessories.count }}}} Challans</span>
+                        </div>
+                        <div class="progress-bar-container">
+                            <div class="progress-bar-fill progress-purple" style="width: 65%;"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="progress-item">
+                        <div class="progress-header">
+                            <span>PO Generator</span>
+                            <span class="progress-value">{{{{ stats.po.count }}}} Files</span>
+                        </div>
+                        <div class="progress-bar-container">
+                            <div class="progress-bar-fill progress-green" style="width: 45%;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="section-header">
+                    <span>Recent Activity Log</span>
+                    <i class="fas fa-history" style="color: var(--text-secondary);"></i>
+                </div>
+                <div style="overflow-x: auto;">
+                    <table class="dark-table">
+                        <thead>
+                            <tr>
+                                <th>Time</th>
+                                <th>User</th>
+                                <th>Action</th>
+                                <th>Reference</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {{% for log in stats.history[:10] %}}
+                            <tr style="animation: fadeInUp 0.5s ease-out {{{{ loop.index * 0.05 }}}}s backwards;">
+                                <td>
+                                    <div class="time-badge">
+                                        <i class="far fa-clock"></i>
+                                        {{{{ log.time }}}}
+                                    </div>
+                                </td>
+                                <td style="font-weight: 600; color: white;">{{{{ log.user }}}}</td>
+                                <td>
+                                    <span class="table-badge" style="
+                                        {{% if log.type == 'Closing Report' %}}
+                                        background: rgba(255, 122, 0, 0.1); color: var(--accent-orange);
+                                        {{% elif log.type == 'PO Sheet' %}}
+                                        background: rgba(16, 185, 129, 0.1); color: var(--accent-green);
+                                        {{% else %}}
+                                        background: rgba(139, 92, 246, 0.1); color: var(--accent-purple);
+                                        {{% endif %}}
+                                    ">{{{{ log.type }}}}</span>
+                                </td>
+                                <td style="color: var(--text-secondary);">{{{{ log.ref if log.ref else '-' }}}}</td>
+                            </tr>
+                            {{% else %}}
+                            <tr>
+                                <td colspan="4" style="text-align: center; padding: 40px; color: var(--text-secondary);">
+                                    <i class="fas fa-inbox" style="font-size: 40px; opacity: 0.3; margin-bottom: 15px; display: block;"></i>
+                                    No activity recorded yet. 
+                                </td>
+                            </tr>
+                            {{% endfor %}}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div id="section-analytics" style="display:none;">
+            <div class="header-section">
+                <div>
+                    <div class="page-title">Closing Report</div>
+                    <div class="page-subtitle">Generate production closing reports</div>
+                </div>
+            </div>
+            <div class="card" style="max-width: 550px; margin: 0 auto; margin-top: 30px;">
+                <div class="section-header">
+                    <span><i class="fas fa-magic" style="margin-right: 10px; color: var(--accent-orange);"></i>Generate Report</span>
+                </div>
+                <form action="/generate-report" method="post" onsubmit="return showLoading()">
+                    <div class="input-group">
+                        <label><i class="fas fa-bookmark" style="margin-right: 5px;"></i> INTERNAL REF NO</label>
+                        <input type="text" name="ref_no" placeholder="e.g. IB-12345 or Booking-123" required>
+                    </div>
+                    <button type="submit">
+                        <i class="fas fa-bolt" style="margin-right: 10px;"></i> Generate Report
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <div id="section-help" style="display:none;">
+            <div class="header-section">
+                <div>
+                    <div class="page-title">PO Sheet Generator</div>
+                    <div class="page-subtitle">Process and generate PO summary sheets</div>
+                </div>
+            </div>
+            <div class="card" style="max-width: 650px; margin: 0 auto; margin-top: 30px;">
+                <div class="section-header">
+                    <span><i class="fas fa-file-pdf" style="margin-right: 10px; color: var(--accent-green);"></i>Upload PDF Files</span>
+                </div>
+                <form action="/generate-po-report" method="post" enctype="multipart/form-data" onsubmit="return showLoading()">
+                    <div class="upload-zone" id="uploadZone" onclick="document.getElementById('file-upload').click()">
+                        <input type="file" name="pdf_files" multiple accept=".pdf" required style="display: none;" id="file-upload">
+                        <div class="upload-icon">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                        </div>
+                        <div class="upload-text">Click or Drag to Upload PDF Files</div>
+                        <div class="upload-hint">Supports multiple PDF files</div>
+                        <div id="file-count">No files selected</div>
+                    </div>
+                    <button type="submit" style="margin-top: 25px; background: linear-gradient(135deg, #10B981 0%, #34D399 100%);">
+                        <i class="fas fa-cogs" style="margin-right: 10px;"></i> Process Files
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <div id="section-settings" style="display:none;">
+            <div class="header-section">
+                <div>
+                    <div class="page-title">User Management</div>
+                    <div class="page-subtitle">Manage user accounts and permissions</div>
+                </div>
+            </div>
+            <div class="dashboard-grid-2">
+                <div class="card">
+                    <div class="section-header">
+                        <span>User Directory</span>
+                        <span class="table-badge" style="background: var(--accent-orange); color: white;">{{{{ stats.users.count }}}} Users</span>
+                    </div>
+                    <div id="userTableContainer" style="max-height: 450px; overflow-y: auto;">
+                        <div class="skeleton" style="height: 50px; margin-bottom: 10px;"></div>
+                        <div class="skeleton" style="height: 50px; margin-bottom: 10px;"></div>
+                        <div class="skeleton" style="height: 50px;"></div>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="section-header">
+                        <span>Create / Edit User</span>
+                        <i class="fas fa-user-plus" style="color: var(--accent-orange);"></i>
+                    </div>
+                    <form id="userForm">
+                        <input type="hidden" id="action_type" value="create">
+                        <div class="input-group">
+                            <label><i class="fas fa-user" style="margin-right: 5px;"></i> USERNAME</label>
+                            <input type="text" id="new_username" required placeholder="Enter username">
+                        </div>
+                        <div class="input-group">
+                            <label><i class="fas fa-key" style="margin-right: 5px;"></i> PASSWORD</label>
+                            <input type="text" id="new_password" required placeholder="Enter password">
+                        </div>
+                        <div class="input-group">
+                            <label><i class="fas fa-shield-alt" style="margin-right: 5px;"></i> PERMISSIONS</label>
+                            <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 5px;">
+                                <label class="perm-checkbox">
+                                    <input type="checkbox" id="perm_closing" checked>
+                                    <span>Closing</span>
+                                </label>
+                                <label class="perm-checkbox">
+                                    <input type="checkbox" id="perm_po">
+                                    <span>PO Sheet</span>
+                                </label>
+                                <label class="perm-checkbox">
+                                    <input type="checkbox" id="perm_acc">
+                                    <span>Accessories</span>
+                                </label>
+                            </div>
+                        </div>
+                        <button type="button" onclick="handleUserSubmit()" id="saveUserBtn">
+                            <i class="fas fa-save" style="margin-right: 10px;"></i> Save User
+                        </button>
+                        <button type="button" onclick="resetForm()" style="margin-top: 12px; background: rgba(255,255,255,0.05); border: 1px solid var(--border-color);">
+                            <i class="fas fa-undo" style="margin-right: 10px;"></i> Reset Form
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        // ===== WELCOME POPUP WITH TIME-BASED GREETING =====
+        function showWelcomePopup() {{
+            const hour = new Date().getHours();
+            let greeting, icon;
+            
+            if (hour >= 5 && hour < 12) {{
+                greeting = "Good Morning";
+                icon = "🌅";
+            }} else if (hour >= 12 && hour < 17) {{
+                greeting = "Good Afternoon";
+                icon = "☀️";
+            }} else if (hour >= 17 && hour < 21) {{
+                greeting = "Good Evening";
+                icon = "🌆";
+            }} else {{
+                greeting = "Good Night";
+                icon = "🌙";
+            }}
+            
+            document.getElementById('greetingText').textContent = greeting;
+            document.getElementById('welcomeIcon').textContent = icon;
+            document.getElementById('welcomeModal').style.display = 'flex';
+        }}
+        
+        function closeWelcome() {{
+            const modal = document.getElementById('welcomeModal');
+            modal.style.animation = 'modalFadeOut 0.3s ease-out forwards';
+            setTimeout(() => {{
+                modal.style.display = 'none';
+                sessionStorage.setItem('welcomeShown', 'true');
+            }}, 300);
+        }}
+        
+        if (!sessionStorage.getItem('welcomeShown')) {{
+            setTimeout(showWelcomePopup, 500);
+        }}
+        
+        // ===== SECTION NAVIGATION =====
+        function showSection(id, element) {{
+            ['dashboard', 'analytics', 'help', 'settings'].forEach(sid => {{
+                document.getElementById('section-' + sid).style.display = 'none';
+            }});
+            document.getElementById('section-' + id).style.display = 'block';
+            
+            if (element) {{
+                document.querySelectorAll('.nav-link').forEach(el => el.classList.remove('active'));
+                element.classList.add('active');
+            }}
+            
+            if (id === 'settings') loadUsers();
+            if (window.innerWidth < 1024) document.querySelector('.sidebar').classList.remove('active');
+        }}
+        
+        // ===== FILE UPLOAD HANDLER =====
+        const fileUpload = document.getElementById('file-upload');
+        const uploadZone = document.getElementById('uploadZone');
+        
+        if (fileUpload) {{
+            fileUpload.addEventListener('change', function() {{
+                const count = this.files.length;
+                document.getElementById('file-count').innerHTML = count > 0 
+                    ? `<i class="fas fa-check-circle" style="margin-right: 5px;"></i>${{count}} file(s) selected`
+                    : 'No files selected';
+            }});
+            uploadZone.addEventListener('dragover', (e) => {{
+                e.preventDefault();
+                uploadZone.classList.add('dragover');
+            }});
+            uploadZone.addEventListener('dragleave', () => {{
+                uploadZone.classList.remove('dragover');
+            }});
+            uploadZone.addEventListener('drop', (e) => {{
+                e.preventDefault();
+                uploadZone.classList.remove('dragover');
+                fileUpload.files = e.dataTransfer.files;
+                fileUpload.dispatchEvent(new Event('change'));
+            }});
+        }}
+        
+        // ===== DEW STYLE DAILY CHART =====
+        const ctx = document.getElementById('mainChart').getContext('2d');
+        const gradientOrange = ctx.createLinearGradient(0, 0, 0, 300);
+        gradientOrange.addColorStop(0, 'rgba(255, 122, 0, 0.5)');
+        gradientOrange.addColorStop(1, 'rgba(255, 122, 0, 0.0)');
+        const gradientPurple = ctx.createLinearGradient(0, 0, 0, 300);
+        gradientPurple.addColorStop(0, 'rgba(139, 92, 246, 0.5)');
+        gradientPurple.addColorStop(1, 'rgba(139, 92, 246, 0.0)');
+        const gradientGreen = ctx.createLinearGradient(0, 0, 0, 300);
+        gradientGreen.addColorStop(0, 'rgba(16, 185, 129, 0.5)');
+        gradientGreen.addColorStop(1, 'rgba(16, 185, 129, 0.0)');
+        new Chart(ctx, {{
+            type: 'line',
+            data: {{
+                labels: {{{{ stats.chart.labels | tojson }}}},
+                datasets: [
+                    {{
+                        label: 'Closing',
+                        data: {{{{ stats.chart.closing | tojson }}}},
+                        borderColor: '#FF7A00',
+                        backgroundColor: gradientOrange,
+                        tension: 0.4,
+                        fill: true,
+                        pointBackgroundColor: '#FF7A00',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2,
+                        pointRadius: 4,
+                        pointHoverRadius: 7,
+                        borderWidth: 3
+                    }},
+                    {{
+                        label: 'Accessories',
+                        data: {{{{ stats.chart.acc | tojson }}}},
+                        borderColor: '#8B5CF6',
+                        backgroundColor: gradientPurple,
+                        tension: 0.4,
+                        fill: true,
+                        pointBackgroundColor: '#8B5CF6',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2,
+                        pointRadius: 4,
+                        pointHoverRadius: 7,
+                        borderWidth: 3
+                    }},
+                    {{
+                        label: 'PO Sheets',
+                        data: {{{{ stats.chart.po | tojson }}}},
+                        borderColor: '#10B981',
+                        backgroundColor: gradientGreen,
+                        tension: 0.4,
+                        fill: true,
+                        pointBackgroundColor: '#10B981',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2,
+                        pointRadius: 4,
+                        pointHoverRadius: 7,
+                        borderWidth: 3
+                    }}
+                ]
+            }},
+            options: {{
+                plugins: {{
+                    legend: {{
+                        display: true,
+                        position: 'top',
+                        labels: {{
+                            color: '#8b8b9e',
+                            font: {{ size: 11, weight: 500 }},
+                            usePointStyle: true,
+                            padding: 15,
+                            boxWidth: 8
+                        }}
+                    }},
+                    tooltip: {{
+                        mode: 'index',
+                        intersect: false,
+                        backgroundColor: 'rgba(22, 22, 31, 0.95)',
+                        titleColor: '#fff',
+                        bodyColor: '#8b8b9e',
+                        borderColor: 'rgba(255, 122, 0, 0.3)',
+                        borderWidth: 1,
+                        padding: 12,
+                        cornerRadius: 10,
+                        displayColors: true
+                    }}
+                }},
+                scales: {{
+                    x: {{
+                        grid: {{ 
+                            display: false 
+                        }},
+                        ticks: {{ 
+                            color: '#8b8b9e', 
+                            font: {{ size: 10 }},
+                            maxRotation: 45,
+                            minRotation: 45
+                        }}
+                    }},
+                    y: {{
+                        grid: {{ 
+                            color: 'rgba(255,255,255,0.03)',
+                            drawBorder: false
+                        }},
+                        ticks: {{ 
+                            color: '#8b8b9e', 
+                            font: {{ size: 10 }},
+                            stepSize: 1
+                        }},
+                        beginAtZero: true
+                    }}
+                }},
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: {{
+                    intersect: false,
+                    mode: 'index'
+                }},
+                animation: {{
+                    duration: 2000,
+                    easing: 'easeOutQuart'
+                }}
+            }}
+        }});
+
+        // ===== COUNT UP ANIMATION =====
+        function animateCountUp() {{
+            document.querySelectorAll('.count-up').forEach(counter => {{
+                const target = parseInt(counter.getAttribute('data-target'));
+                const duration = 2000;
+                const step = target / (duration / 16);
+                let current = 0;
+                
+                const updateCounter = () => {{
+                    current += step;
+                    if (current < target) {{
+                        counter.textContent = Math.floor(current);
+                        requestAnimationFrame(updateCounter);
+                    }} else {{
+                        counter.textContent = target;
+                    }}
+                }};
+                
+                updateCounter();
+            }});
+        }}
+        
+        setTimeout(animateCountUp, 500);
+
+        // ===== LOADING ANIMATION =====
+        function showLoading() {{
+            const overlay = document.getElementById('loading-overlay');
+            const spinner = document.getElementById('spinner-anim').parentElement;
+            const success = document.getElementById('success-anim');
+            const fail = document.getElementById('fail-anim');
+            const text = document.getElementById('loading-text');
+            
+            overlay.style.display = 'flex';
+            spinner.style.display = 'block';
+            success.style.display = 'none';
+            fail.style.display = 'none';
+            text.style.display = 'block';
+            text.textContent = 'Processing Request...';
+            
+            return true;
+        }}
+
+        function showSuccess() {{
+            const overlay = document.getElementById('loading-overlay');
+            const spinner = document.getElementById('spinner-anim').parentElement;
+            const success = document.getElementById('success-anim');
+            const text = document.getElementById('loading-text');
+            
+            spinner.style.display = 'none';
+            success.style.display = 'block';
+            text.style.display = 'none';
+            
+            setTimeout(() => {{ overlay.style.display = 'none'; }}, 1500);
+        }}
+
+        // ===== USER MANAGEMENT =====
+        function loadUsers() {{
+            fetch('/admin/get-users')
+                .then(res => res.json())
+                .then(data => {{
+                    let html = '<table class="dark-table"><thead><tr><th>User</th><th>Role</th><th style="text-align:right;">Actions</th></tr></thead><tbody>';
+                    
+                    for (const [u, d] of Object.entries(data)) {{
+                        const roleClass = d.role === 'admin' ? 'background: rgba(255, 122, 0, 0.1); color: var(--accent-orange);' : 'background: rgba(139, 92, 246, 0.1); color: var(--accent-purple);';
+                        
+                        html += `<tr>
+                            <td style="font-weight: 600;">${{u}}</td>
+                            <td><span class="table-badge" style="${{roleClass}}">${{d.role}}</span></td>
+                            <td style="text-align:right;">
+                                ${{d.role !== 'admin' ? `
+                                    <div class="action-cell">
+                                        <button class="action-btn btn-edit" onclick="editUser('${{u}}', '${{d.password}}', '${{d.permissions.join(',')}}')">
+                                            <i class="fas fa-edit"></i>
+                                        </button> 
+                                        <button class="action-btn btn-del" onclick="deleteUser('${{u}}')">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                ` : '<i class="fas fa-shield-alt" style="color: var(--accent-orange); opacity: 0.5;"></i>'}}
+                            </td>
+                        </tr>`;
+                    }}
+                    
+                    document.getElementById('userTableContainer').innerHTML = html + '</tbody></table>';
+                }});
+        }}
+        
+        function handleUserSubmit() {{
+            const u = document.getElementById('new_username').value;
+            const p = document.getElementById('new_password').value;
+            const a = document.getElementById('action_type').value;
+            
+            let perms = [];
+            if (document.getElementById('perm_closing').checked) perms.push('closing');
+            if (document.getElementById('perm_po').checked) perms.push('po_sheet');
+            if (document.getElementById('perm_acc').checked) perms.push('accessories');
+            
+            showLoading();
+            
+            fetch('/admin/save-user', {{
+                method: 'POST',
+                headers: {{'Content-Type': 'application/json'}},
+                body: JSON.stringify({{ username: u, password: p, permissions: perms, action_type: a }})
+            }})
+            .then(r => r.json())
+            .then(d => {{
+                if (d.status === 'success') {{
+                    showSuccess();
+                    loadUsers();
+                    resetForm();
+                }} else {{
+                    alert(d.message);
+                    document.getElementById('loading-overlay').style.display = 'none';
+                }}
+            }});
+        }}
+        
+        function editUser(u, p, permsStr) {{
+            document.getElementById('new_username').value = u;
+            document.getElementById('new_username').readOnly = true;
+            document.getElementById('new_password').value = p;
+            document.getElementById('action_type').value = 'update';
+            document.getElementById('saveUserBtn').innerHTML = '<i class="fas fa-sync" style="margin-right: 10px;"></i> Update User';
+            const pArr = permsStr.split(',');
+            document.getElementById('perm_closing').checked = pArr.includes('closing');
+            document.getElementById('perm_po').checked = pArr.includes('po_sheet');
+            document.getElementById('perm_acc').checked = pArr.includes('accessories');
+        }}
+        
+        function resetForm() {{
+            document.getElementById('userForm').reset();
+            document.getElementById('action_type').value = 'create';
+            document.getElementById('saveUserBtn').innerHTML = '<i class="fas fa-save" style="margin-right: 10px;"></i> Save User';
+            document.getElementById('new_username').readOnly = false;
+            document.getElementById('perm_closing').checked = true;
+        }}
+        
+        function deleteUser(u) {{
+            if (confirm('Are you sure you want to delete "' + u + '"?')) {{
+                fetch('/admin/delete-user', {{
+                    method: 'POST',
+                    headers: {{'Content-Type': 'application/json'}},
+                    body: JSON.stringify({{ username: u }})
+                }}).then(() => loadUsers());
+            }}
+        }}
+        
+        // ===== PARTICLES.JS INITIALIZATION =====
+        if (typeof particlesJS !== 'undefined') {{
+            particlesJS('particles-js', {{
+                particles: {{
+                    number: {{ value: 50, density: {{ enable: true, value_area: 800 }} }},
+                    color: {{ value: '#FF7A00' }},
+                    shape: {{ type: 'circle' }},
+                    opacity: {{ value: 0.3, random: true }},
+                    size: {{ value: 3, random: true }},
+                    line_linked: {{ enable: true, distance: 150, color: '#FF7A00', opacity: 0.1, width: 1 }},
+                    move: {{ enable: true, speed: 1, direction: 'none', random: true, out_mode: 'out' }}
+                }},
+                interactivity: {{
+                    events: {{ onhover: {{ enable: true, mode: 'grab' }} }},
+                    modes: {{ grab: {{ distance: 140, line_linked: {{ opacity: 0.3 }} }} }}
+                }}
+            }});
+        }}
+        
+        // Add CSS for fadeInUp animation
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes fadeInUp {{
+                from {{ opacity: 0; transform: translateY(20px); }}
+                to {{ opacity: 1; transform: translateY(0); }}
+            }}
+            @keyframes modalFadeOut {{
+                to {{ opacity: 0; }}
+            }}
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>
+"""
+# ==============================================================================
+# USER DASHBOARD TEMPLATE - MODERN UI
+# ==============================================================================
+
+USER_DASHBOARD_TEMPLATE = f"""
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Dashboard - MNM Software</title>
+    {COMMON_STYLES}
+</head>
+<body>
+    <div class="animated-bg"></div>
+    
+    <div class="welcome-modal" id="welcomeModal">
+        <div class="welcome-content">
+            <div class="welcome-icon" id="welcomeIcon">👋</div>
+            <div class="welcome-greeting" id="greetingText">Good Morning</div>
+            <div class="welcome-title">Welcome, <span>{{{{ session.user }}}}</span>!</div>
+            <div class="welcome-message">
+                Your workspace is ready.
+                Access your assigned modules below.
+            </div>
+            <button class="welcome-close" onclick="closeWelcome()">
+                <i class="fas fa-rocket" style="margin-right: 8px;"></i> Get Started
+            </button>
+        </div>
+    </div>
+    
+    <div id="loading-overlay">
+        <div class="spinner-container">
+            <div class="spinner"></div>
+            <div class="spinner-inner"></div>
+        </div>
+        <div class="loading-text">Processing...</div>
+    </div>
+    
+    <div class="sidebar">
+        <div class="brand-logo">
+            <i class="fas fa-layer-group"></i> 
+            MNM<span>Software</span>
+        </div>
+        <div class="nav-menu">
+            <div class="nav-link active">
+                <i class="fas fa-home"></i> Home
+            </div>
+            <a href="/logout" class="nav-link" style="color: var(--accent-red); margin-top: auto;">
+                <i class="fas fa-sign-out-alt"></i> Sign Out
+            </a>
+        </div>
+        <div class="sidebar-footer">
+            <i class="fas fa-code" style="margin-right: 5px;"></i> Powered by Mehedi Hasan
+        </div>
+    </div>
+    
+    <div class="main-content">
+        <div class="header-section">
+            <div>
+                <div class="page-title">Welcome, {{{{ session.user }}}}!</div>
+                <div class="page-subtitle">Your assigned production modules</div>
+            </div>
+            <div class="status-badge">
+                <div class="status-dot"></div>
+                <span>Online</span>
+            </div>
+        </div>
+
+        {{% with messages = get_flashed_messages() %}}
+            {{% if messages %}}
+                <div class="flash-message flash-error">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <span>{{{{ messages[0] }}}}</span>
+                </div>
+            {{% endif %}}
+        {{% endwith %}}
+
+        <div class="stats-grid">
+            {{% if 'closing' in session.permissions %}}
+            <div class="card" style="animation: fadeInUp 0.5s ease-out 0.1s backwards;">
+                <div class="section-header">
+                    <span><i class="fas fa-file-export" style="margin-right: 10px; color: var(--accent-orange);"></i>Closing Report</span>
+                </div>
+                <p style="color: var(--text-secondary); margin-bottom: 20px; font-size: 14px; line-height: 1.6;">
+                    Generate production closing reports with real-time data.  
+                </p>
+                <form action="/generate-report" method="post" onsubmit="showLoading()">
+                    <div class="input-group">
+                        <label>BOOKING REF NO</label>
+                        <input type="text" name="ref_no" required placeholder="Enter Booking Reference">
+                    </div>
+                    <button type="submit">
+                        <i class="fas fa-magic" style="margin-right: 8px;"></i> Generate
+                    </button>
+                </form>
+            </div>
+            {{% endif %}}
+            
+            {{% if 'po_sheet' in session.permissions %}}
+            <div class="card" style="animation: fadeInUp 0.5s ease-out 0.2s backwards;">
+                <div class="section-header">
+                    <span><i class="fas fa-file-pdf" style="margin-right: 10px; color: var(--accent-green);"></i>PO Sheet</span>
+                </div>
+                <p style="color: var(--text-secondary); margin-bottom: 20px; font-size: 14px; line-height: 1.6;">
+                    Process PDF files and generate PO summary reports.
+                </p>
+                <form action="/generate-po-report" method="post" enctype="multipart/form-data" onsubmit="showLoading()">
+                    <div class="input-group">
+                        <label>PDF FILES</label>
+                        <input type="file" name="pdf_files" multiple accept=".pdf" required style="padding: 12px;">
+                    </div>
+                    <button type="submit" style="background: linear-gradient(135deg, #10B981 0%, #34D399 100%);">
+                        <i class="fas fa-cogs" style="margin-right: 8px;"></i> Process Files
+                    </button>
+                </form>
+            </div>
+            {{% endif %}}
+            
+            {{% if 'accessories' in session.permissions %}}
+            <div class="card" style="animation: fadeInUp 0.5s ease-out 0.3s backwards;">
+                <div class="section-header">
+                    <span><i class="fas fa-boxes" style="margin-right: 10px; color: var(--accent-purple);"></i>Accessories</span>
+                </div>
+                <p style="color: var(--text-secondary); margin-bottom: 20px; font-size: 14px; line-height: 1.6;">
+                    Manage challans, entries and delivery history for accessories.
+                </p>
+                <a href="/admin/accessories">
+                    <button style="background: linear-gradient(135deg, #8B5CF6 0%, #A78BFA 100%);">
+                        <i class="fas fa-external-link-alt" style="margin-right: 8px;"></i> Open Dashboard
+                    </button>
+                </a>
+            </div>
+            {{% endif %}}
+        </div>
+    </div>
+    
+    <script>
+        // Welcome Popup
+        function showWelcomePopup() {{
+            const hour = new Date().getHours();
+            let greeting, icon;
+            
+            if (hour >= 5 && hour < 12) {{
+                greeting = "Good Morning";
+                icon = "🌅";
+            }} else if (hour >= 12 && hour < 17) {{
+                greeting = "Good Afternoon";
+                icon = "☀️";
+            }} else if (hour >= 17 && hour < 21) {{
+                greeting = "Good Evening";
+                icon = "🌆";
+            }} else {{
+                greeting = "Good Night";
+                icon = "🌙";
+            }}
+            
+            document.getElementById('greetingText').textContent = greeting;
+            document.getElementById('welcomeIcon').textContent = icon;
+            document.getElementById('welcomeModal').style.display = 'flex';
+        }}
+        
+        function closeWelcome() {{
+            const modal = document.getElementById('welcomeModal');
+            modal.style.opacity = '0';
+            setTimeout(() => {{
+                modal.style.display = 'none';
+                sessionStorage.setItem('welcomeShown', 'true');
+            }}, 300);
+        }}
+        
+        if (!sessionStorage.getItem('welcomeShown')) {{
+            setTimeout(showWelcomePopup, 500);
+        }}
+        
+        function showLoading() {{
+            document.getElementById('loading-overlay').style.display = 'flex';
+            return true;
+        }}
+        
+        // Add fadeInUp animation
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes fadeInUp {{
+                from {{ opacity: 0; transform: translateY(20px); }}
+                to {{ opacity: 1; transform: translateY(0); }}
+            }}
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>
+"""
+
+# ==============================================================================
+# ACCESSORIES TEMPLATES - MODERN DARK THEME
+# ==============================================================================
+
+ACCESSORIES_SEARCH_TEMPLATE = f"""
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Accessories Search - MNM Software</title>
+    {COMMON_STYLES}
+    <style>
+        body {{
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }}
+        
+        .search-container {{
+            position: relative;
+            z-index: 10;
+            width: 100%;
+            max-width: 480px;
+            padding: 20px;
+        }}
+        
+        .search-card {{
+            background: var(--gradient-card);
+            border: 1px solid var(--border-color);
+            border-radius: 24px;
+            padding: 50px 45px;
+            backdrop-filter: blur(20px);
+            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.5), 0 0 60px var(--accent-orange-glow);
+            animation: cardAppear 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }}
+        
+        @keyframes cardAppear {{
+            from {{ opacity: 0; transform: translateY(20px) scale(0.95); }}
+            to {{ opacity: 1; transform: translateY(0) scale(1); }}
+        }}
+        
+        .search-header {{
+            text-align: center;
+            margin-bottom: 40px;
+        }}
+        
+        .search-icon {{
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(145deg, rgba(139, 92, 246, 0.2), rgba(139, 92, 246, 0.05));
+            border-radius: 20px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
+            color: var(--accent-purple);
+            margin-bottom: 20px;
+            animation: iconFloat 3s ease-in-out infinite;
+        }}
+        
+        @keyframes iconFloat {{
+            0%, 100% {{ transform: translateY(0); }}
+            50% {{ transform: translateY(-10px); }}
+        }}
+        
+        .search-title {{
+            font-size: 28px;
+            font-weight: 800;
+            color: white;
+            margin-bottom: 8px;
+        }}
+        
+        .search-subtitle {{
+            color: var(--text-secondary);
+            font-size: 14px;
+        }}
+        
+        .nav-links {{
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border-color);
+        }}
+        
+        .nav-links a {{
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: var(--transition-smooth);
+        }}
+        
+        .nav-links a:hover {{
+            color: var(--accent-orange);
+        }}
+        
+        .nav-links a.logout {{
+            color: var(--accent-red);
+        }}
+        
+        .nav-links a.logout:hover {{
+            color: #ff6b6b;
+        }}
+    </style>
+</head>
+<body>
+    <div class="animated-bg"></div>
+    
+    <div class="search-container">
+        <div class="search-card">
+            <div class="search-header">
+                <div class="search-icon">
+                    <i class="fas fa-boxes"></i>
+                </div>
+                <div class="search-title">Accessories Challan</div>
+                <div class="search-subtitle">Enter booking reference to continue</div>
+            </div>
+            
+            <form action="/admin/accessories/input" method="post">
+                <div class="input-group">
+                    <label><i class="fas fa-search" style="margin-right: 5px;"></i> BOOKING REFERENCE</label>
+                    <input type="text" name="ref_no" required placeholder="e.g. IB-12345" autocomplete="off">
+                </div>
+                <button type="submit" style="background: linear-gradient(135deg, #8B5CF6 0%, #A78BFA 100%);">
+                    Proceed to Entry <i class="fas fa-arrow-right" style="margin-left: 10px;"></i>
+                </button>
+            </form>
+            
+            {{% with messages = get_flashed_messages() %}}
+                {{% if messages %}}
+                    <div class="flash-message flash-error" style="margin-top: 20px;">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <span>{{{{ messages[0] }}}}</span>
+                    </div>
+                {{% endif %}}
+            {{% endwith %}}
+            
+            <div class="nav-links">
+                <a href="/"><i class="fas fa-arrow-left"></i> Back to Dashboard</a>
+                <a href="/logout" class="logout">Sign Out <i class="fas fa-sign-out-alt"></i></a>
+            </div>
+        </div>
+        
+        <div style="text-align: center; margin-top: 25px; color: var(--text-secondary); font-size: 11px; opacity: 0.4;">
+            © 2025 Mehedi Hasan
+        </div>
+    </div>
+</body>
+</html>
+"""
+
+ACCESSORIES_INPUT_TEMPLATE = f"""
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Accessories Entry - MNM Software</title>
+    {COMMON_STYLES}
+    <style>
+        .ref-badge {{
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(255, 122, 0, 0.1);
+            border: 1px solid rgba(255, 122, 0, 0.2);
+            padding: 10px 20px;
+            border-radius: 12px;
+            margin-top: 10px;
+        }}
+        
+        .ref-badge .ref-no {{
+            font-size: 18px;
+            font-weight: 800;
+            color: var(--accent-orange);
+        }}
+        
+        .ref-badge .ref-info {{
+            color: var(--text-secondary);
+            font-size: 13px;
+            font-weight: 500;
+        }}
+        
+        .history-scroll {{
+            max-height: 500px;
+            overflow-y: auto;
+            padding-right: 5px;
+        }}
+        
+        .challan-row {{
+            display: grid;
+            grid-template-columns: 60px 1fr 80px 60px 80px;
+            gap: 10px;
+            padding: 14px;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 10px;
+            margin-bottom: 8px;
+            align-items: center;
+            transition: var(--transition-smooth);
+            border: 1px solid transparent;
+        }}
+        
+        .challan-row:hover {{
+            background: rgba(255, 122, 0, 0.05);
+            border-color: var(--border-glow);
+        }}
+        
+        .line-badge {{
+            background: var(--gradient-orange);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 13px;
+            text-align: center;
+        }}
+        
+        .qty-value {{
+            font-size: 18px;
+            font-weight: 800;
+            color: var(--accent-green);
+        }}
+        
+        .status-check {{
+            color: var(--accent-green);
+            font-size: 20px;
+        }}
+        
+        .print-btn {{
+            background: linear-gradient(135deg, #10B981 0%, #34D399 100%) !important;
+        }}
+        
+        .empty-state {{
+            text-align: center;
+            padding: 50px 20px;
+            color: var(--text-secondary);
+        }}
+        
+        .empty-state i {{
+            font-size: 50px;
+            opacity: 0.2;
+            margin-bottom: 15px;
+        }}
+        
+        .grid-2-cols {{
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }}
+        
+        .count-badge {{
+            background: var(--accent-purple);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+            margin-left: 10px;
+        }}
+        
+        /* Fixed Select Styling */
+        select {{
+            background-color: #1a1a25 !important;
+            color: white !important;
+        }}
+        
+        select option {{
+            background-color: #1a1a25 !important;
+            color: white !important;
+            padding: 10px;
+        }}
+    </style>
+</head>
+<body>
+    <div class="animated-bg"></div>
+    
+    <div id="loading-overlay">
+        <div class="spinner-container">
+            <div class="spinner" id="spinner-anim"></div>
+            <div class="spinner-inner"></div>
+        </div>
+        <div class="checkmark-container" id="success-anim">
+            <div class="checkmark-circle"></div>
+            <div class="anim-text">Saved!</div>
+        </div>
+        <div class="loading-text" id="loading-text">Saving Entry...</div>
+    </div>
+
+    <div class="sidebar">
+        <div class="brand-logo">
+            <i class="fas fa-boxes"></i> 
+            Accessories
+        </div>
+        <div class="nav-menu">
+            <a href="/" class="nav-link"><i class="fas fa-home"></i> Dashboard</a>
+            <a href="/admin/accessories" class="nav-link active"><i class="fas fa-search"></i> Search</a>
+            <a href="/logout" class="nav-link" style="color: var(--accent-red); margin-top: 20px;">
+                <i class="fas fa-sign-out-alt"></i> Sign Out
+            </a>
+        </div>
+        <div class="sidebar-footer">© 2025 Mehedi Hasan</div>
+    </div>
+    
+    <div class="main-content">
+        <div class="header-section">
+            <div>
+                <div class="page-title">Accessories Entry</div>
+                <div class="ref-badge">
+                    <span class="ref-no">{{{{ ref }}}}</span>
+                    <span class="ref-info">{{{{ buyer }}}} • {{{{ style }}}}</span>
+                </div>
+            </div>
+            <a href="/admin/accessories/print?ref={{{{ ref }}}}" target="_blank">
+                <button class="print-btn" style="width: auto; padding: 14px 30px;">
+                    <i class="fas fa-print" style="margin-right: 10px;"></i> Print Report
+                </button>
+            </a>
+        </div>
+
+        <div class="dashboard-grid-2">
+            <div class="card">
+                <div class="section-header">
+                    <span><i class="fas fa-plus-circle" style="margin-right: 10px; color: var(--accent-orange);"></i>New Challan Entry</span>
+                </div>
+                <form action="/admin/accessories/save" method="post" onsubmit="return showLoading()">
+                    <input type="hidden" name="ref" value="{{{{ ref }}}}">
+                    
+                    <div class="grid-2-cols">
+                        <div class="input-group">
+                            <label><i class="fas fa-tag" style="margin-right: 5px;"></i> TYPE</label>
+                            <select name="item_type">
+                                <option value="Top">Top</option>
+                                <option value="Bottom">Bottom</option>
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <label><i class="fas fa-palette" style="margin-right: 5px;"></i> COLOR</label>
+                            <select name="color" required>
+                                <option value="" disabled selected>Select Color</option>
+                                {{% for c in colors %}}
+                                <option value="{{{{ c }}}}">{{{{ c }}}}</option>
+                                {{% endfor %}}
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="grid-2-cols">
+                        <div class="input-group">
+                            <label><i class="fas fa-industry" style="margin-right: 5px;"></i> LINE NO</label>
+                            <input type="text" name="line_no" required placeholder="e.g. L-01">
+                        </div>
+                        <div class="input-group">
+                            <label><i class="fas fa-ruler" style="margin-right: 5px;"></i> SIZE</label>
+                            <input type="text" name="size" value="ALL" placeholder="Size">
+                        </div>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label><i class="fas fa-sort-numeric-up" style="margin-right: 5px;"></i> QUANTITY</label>
+                        <input type="number" name="qty" required placeholder="Enter Quantity" min="1">
+                    </div>
+                    
+                    <button type="submit">
+                        <i class="fas fa-save" style="margin-right: 10px;"></i> Save Entry
+                    </button>
+                </form>
+            </div>
+
+            <div class="card">
+                <div class="section-header">
+                    <span>Recent History</span>
+                    <span class="count-badge">{{{{ challans|length }}}}</span>
+                </div>
+                <div class="history-scroll">
+                    {{% if challans %}}
+                        {{% for item in challans|reverse %}}
+                        <div class="challan-row" style="animation: fadeInUp 0.3s ease-out {{{{ loop.index * 0.05 }}}}s backwards;">
+                            <div class="line-badge">{{{{ item.line }}}}</div>
+                            <div style="color: white; font-weight: 500; font-size: 13px;">{{{{ item.color }}}}</div>
+                            <div class="qty-value">{{{{ item.qty }}}}</div>
+                            <div class="status-check">{{{{ item.status if item.status else '●' }}}}</div>
+                            <div class="action-cell">
+                                {{% if session.role == 'admin' %}}
+                                <a href="/admin/accessories/edit?ref={{{{ ref }}}}&index={{{{ (challans|length) - loop.index }}}}" class="action-btn btn-edit">
+                                    <i class="fas fa-pen"></i>
+                                </a>
+                                <form action="/admin/accessories/delete" method="POST" style="display: inline;" onsubmit="return confirm('Delete this entry?');">
+                                    <input type="hidden" name="ref" value="{{{{ ref }}}}">
+                                    <input type="hidden" name="index" value="{{{{ (challans|length) - loop.index }}}}">
+                                    <button type="submit" class="action-btn btn-del"><i class="fas fa-trash"></i></button>
+                                </form>
+                                {{% else %}}
+                                <span style="font-size: 10px; color: var(--text-secondary); opacity: 0.5;">🔒</span>
+                                {{% endif %}}
+                            </div>
+                        </div>
+                        {{% endfor %}}
+                    {{% else %}}
+                        <div class="empty-state">
+                            <i class="fas fa-inbox"></i>
+                            <div>No challans added yet</div>
+                            <div style="font-size: 12px; margin-top: 5px;">Add your first entry using the form</div>
+                        </div>
+                    {{% endif %}}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function showLoading() {{
+            const overlay = document.getElementById('loading-overlay');
+            const spinner = document.getElementById('spinner-anim').parentElement;
+            const success = document.getElementById('success-anim');
+            const text = document.getElementById('loading-text');
+            
+            overlay.style.display = 'flex';
+            spinner.style.display = 'block';
+            success.style.display = 'none';
+            text.style.display = 'block';
+            text.textContent = 'Saving Entry...';
+            
+            return true;
+        }}
+        
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes fadeInUp {{
+                from {{ opacity: 0; transform: translateY(10px); }}
+                to {{ opacity: 1; transform: translateY(0); }}
+            }}
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>
+"""
+
+ACCESSORIES_EDIT_TEMPLATE = f"""
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Edit Entry - MNM Software</title>
+    {COMMON_STYLES}
+    <style>
+        body {{
+            justify-content: center;
+            align-items: center;
+        }}
+        
+        .edit-container {{
+            position: relative;
+            z-index: 10;
+            width: 100%;
+            max-width: 450px;
+            padding: 20px;
+        }}
+        
+        .edit-card {{
+            background: var(--gradient-card);
+            border: 1px solid var(--border-color);
+            border-radius: 24px;
+            padding: 45px;
+            backdrop-filter: blur(20px);
+            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.5);
+            animation: cardAppear 0.5s ease-out;
+        }}
+        
+        @keyframes cardAppear {{
+            from {{ opacity: 0; transform: scale(0.95); }}
+            to {{ opacity: 1; transform: scale(1); }}
+        }}
+        
+        .edit-header {{
+            text-align: center;
+            margin-bottom: 35px;
+        }}
+        
+        .edit-icon {{
+            width: 70px;
+            height: 70px;
+            background: linear-gradient(145deg, rgba(139, 92, 246, 0.2), rgba(139, 92, 246, 0.05));
+            border-radius: 16px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            color: var(--accent-purple);
+            margin-bottom: 15px;
+        }}
+        
+        .edit-title {{
+            font-size: 24px;
+            font-weight: 800;
+            color: white;
+        }}
+        
+        .cancel-link {{
+            display: block;
+            text-align: center;
+            margin-top: 20px;
+            color: var(--text-secondary);
+            font-size: 13px;
+            text-decoration: none;
+            transition: var(--transition-smooth);
+        }}
+        
+        .cancel-link:hover {{
+            color: var(--accent-orange);
+        }}
+    </style>
+</head>
+<body>
+    <div class="animated-bg"></div>
+    
+    <div class="edit-container">
+        <div class="edit-card">
+            <div class="edit-header">
+                <div class="edit-icon">
+                    <i class="fas fa-edit"></i>
+                </div>
+                <div class="edit-title">Edit Entry</div>
+            </div>
+            
+            <form action="/admin/accessories/update" method="post">
+                <input type="hidden" name="ref" value="{{{{ ref }}}}">
+                <input type="hidden" name="index" value="{{{{ index }}}}">
+                
+                <div class="input-group">
+                    <label><i class="fas fa-industry" style="margin-right: 5px;"></i> LINE NO</label>
+                    <input type="text" name="line_no" value="{{{{ item.line }}}}" required>
+                </div>
+                
+                <div class="input-group">
+                    <label><i class="fas fa-palette" style="margin-right: 5px;"></i> COLOR</label>
+                    <input type="text" name="color" value="{{{{ item.color }}}}" required>
+                </div>
+                
+                <div class="input-group">
+                    <label><i class="fas fa-ruler" style="margin-right: 5px;"></i> SIZE</label>
+                    <input type="text" name="size" value="{{{{ item.size }}}}" required>
+                </div>
+                
+                <div class="input-group">
+                    <label><i class="fas fa-sort-numeric-up" style="margin-right: 5px;"></i> QUANTITY</label>
+                    <input type="number" name="qty" value="{{{{ item.qty }}}}" required>
+                </div>
+                
+                <button type="submit" style="background: linear-gradient(135deg, #8B5CF6 0%, #A78BFA 100%);">
+                    <i class="fas fa-sync-alt" style="margin-right: 10px;"></i> Update Entry
+                </button>
+            </form>
+            
+            <a href="/admin/accessories/input_direct?ref={{{{ ref }}}}" class="cancel-link">
+                <i class="fas fa-times" style="margin-right: 5px;"></i> Cancel
+            </a>
+        </div>
+    </div>
+</body>
+</html>
+"""
+
+# ==============================================================================
+# STORE DASHBOARD TEMPLATE - NEW (ALUMINUM SHOP)
+# ==============================================================================
+
+STORE_DASHBOARD_TEMPLATE = f"""
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Store Dashboard - MNM Software</title>
+    {COMMON_STYLES}
+    <style>
+        .store-card {{
+            background: var(--gradient-card);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 30px;
+            transition: var(--transition-smooth);
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }}
+        
+        .store-card::before {{
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--gradient-orange);
+            opacity: 0;
+            transition: var(--transition-smooth);
+        }}
+        
+        .store-card:hover {{
+            transform: translateY(-8px);
+            border-color: var(--accent-orange);
+            box-shadow: 0 20px 40px rgba(255, 122, 0, 0.15);
+        }}
+        
+        .store-card:hover::before {{
+            opacity: 1;
+        }}
+        
+        .store-card-icon {{
+            width: 70px;
+            height: 70px;
+            border-radius: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            margin-bottom: 20px;
+            transition: var(--transition-smooth);
+        }}
+        
+        .store-card:hover .store-card-icon {{
+            transform: scale(1.1) rotate(-5deg);
+        }}
+        
+        .icon-orange {{
+            background: linear-gradient(145deg, rgba(255, 122, 0, 0.2), rgba(255, 122, 0, 0.05));
+            color: var(--accent-orange);
+        }}
+        
+        .icon-purple {{
+            background: linear-gradient(145deg, rgba(139, 92, 246, 0.2), rgba(139, 92, 246, 0.05));
+            color: var(--accent-purple);
+        }}
+        
+        .icon-green {{
+            background: linear-gradient(145deg, rgba(16, 185, 129, 0.2), rgba(16, 185, 129, 0.05));
+            color: var(--accent-green);
+        }}
+        
+        .icon-blue {{
+            background: linear-gradient(145deg, rgba(59, 130, 246, 0.2), rgba(59, 130, 246, 0.05));
+            color: var(--accent-blue);
+        }}
+        
+        .icon-cyan {{
+            background: linear-gradient(145deg, rgba(6, 182, 212, 0.2), rgba(6, 182, 212, 0.05));
+            color: var(--accent-cyan);
+        }}
+        
+        .icon-red {{
+            background: linear-gradient(145deg, rgba(239, 68, 68, 0.2), rgba(239, 68, 68, 0.05));
+            color: var(--accent-red);
+        }}
+        
+        .store-card-title {{
+            font-size: 20px;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 8px;
+        }}
+        
+        .store-card-desc {{
+            font-size: 13px;
+            color: var(--text-secondary);
+            line-height: 1.5;
+            margin-bottom: 20px;
+        }}
+        
+        .store-card-stat {{
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-top: 15px;
+            border-top: 1px solid var(--border-color);
+        }}
+        
+        .stat-number {{
+            font-size: 28px;
+            font-weight: 800;
+            color: white;
+        }}
+        
+        .stat-label {{
+            font-size: 11px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }}
+        
+        .store-grid {{
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+            margin-top: 30px;
+        }}
+        
+        .coming-soon-badge {{
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: rgba(255, 122, 0, 0.2);
+            color: var(--accent-orange);
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }}
+        
+        .quick-action {{
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 12px;
+            color: var(--text-secondary);
+            transition: var(--transition-smooth);
+        }}
+        
+        .quick-action:hover {{
+            background: var(--accent-orange);
+            color: white;
+        }}
+    </style>
+</head>
+<body>
+    <div class="animated-bg"></div>
+
+    <div class="mobile-toggle" onclick="document.querySelector('.sidebar').classList.toggle('active')">
+        <i class="fas fa-bars"></i>
+    </div>
+
+    <div class="sidebar">
+        <div class="brand-logo">
+            <i class="fas fa-store"></i> 
+            Store<span>Panel</span>
+        </div>
+        <div class="nav-menu">
+            <a href="/" class="nav-link">
+                <i class="fas fa-arrow-left"></i> Back to Main
+            </a>
+            <div class="nav-link active">
+                <i class="fas fa-th-large"></i> Store Dashboard
+            </div>
+            <div class="nav-link" style="opacity: 0.5; cursor: not-allowed;">
+                <i class="fas fa-box"></i> Products
+                <span class="nav-badge" style="background: var(--accent-purple);">Soon</span>
+            </div>
+            <div class="nav-link" style="opacity: 0.5; cursor: not-allowed;">
+                <i class="fas fa-users"></i> Customers
+                <span class="nav-badge" style="background: var(--accent-purple);">Soon</span>
+            </div>
+            <div class="nav-link" style="opacity: 0.5; cursor: not-allowed;">
+                <i class="fas fa-file-invoice-dollar"></i> Invoices
+                <span class="nav-badge" style="background: var(--accent-purple);">Soon</span>
+            </div>
+            <a href="/logout" class="nav-link" style="color: var(--accent-red); margin-top: 20px;">
+                <i class="fas fa-sign-out-alt"></i> Sign Out
+            </a>
+        </div>
+        <div class="sidebar-footer">
+            <i class="fas fa-code" style="margin-right: 5px;"></i> Powered by Mehedi Hasan
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="header-section">
+            <div>
+                <div class="page-title">Store Dashboard</div>
+                <div class="page-subtitle">Aluminum Shop Management System</div>
+            </div>
+            <div class="status-badge">
+                <div class="status-dot"></div>
+                <span>Store Active</span>
+            </div>
+        </div>
+
+        <div class="store-grid">
+            <div class="store-card">
+                <span class="coming-soon-badge">Coming Soon</span>
+                <div class="store-card-icon icon-orange">
+                    <i class="fas fa-boxes"></i>
+                </div>
+                <div class="store-card-title">Product Inventory</div>
+                <div class="store-card-desc">
+                    Manage aluminum products, profiles, sheets, and accessories. Track stock levels and reorder points.
+                </div>
+                <div class="store-card-stat">
+                    <div>
+                        <div class="stat-number">0</div>
+                        <div class="stat-label">Total Products</div>
+                    </div>
+                    <div class="quick-action">
+                        <i class="fas fa-plus"></i> Add Product
+                    </div>
+                </div>
+            </div>
+
+            <div class="store-card">
+                <span class="coming-soon-badge">Coming Soon</span>
+                <div class="store-card-icon icon-green">
+                    <i class="fas fa-shopping-cart"></i>
+                </div>
+                <div class="store-card-title">Sales & Orders</div>
+                <div class="store-card-desc">
+                    Create new sales orders, manage pending orders, and track delivery status.
+                </div>
+                <div class="store-card-stat">
+                    <div>
+                        <div class="stat-number">0</div>
+                        <div class="stat-label">Today's Sales</div>
+                    </div>
+                    <div class="quick-action">
+                        <i class="fas fa-receipt"></i> New Sale
+                    </div>
+                </div>
+            </div>
+
+            <div class="store-card">
+                <span class="coming-soon-badge">Coming Soon</span>
+                <div class="store-card-icon icon-purple">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div class="store-card-title">Customer Management</div>
+                <div class="store-card-desc">
+                    Maintain customer database, track purchase history, and manage credit accounts.
+                </div>
+                <div class="store-card-stat">
+                    <div>
+                        <div class="stat-number">0</div>
+                        <div class="stat-label">Total Customers</div>
+                    </div>
+                    <div class="quick-action">
+                        <i class="fas fa-user-plus"></i> Add Customer
+                    </div>
+                </div>
+            </div>
+
+            <div class="store-card">
+                <span class="coming-soon-badge">Coming Soon</span>
+                <div class="store-card-icon icon-blue">
+                    <i class="fas fa-file-invoice-dollar"></i>
+                </div>
+                <div class="store-card-title">Invoices & Billing</div>
+                <div class="store-card-desc">
+                    Generate professional invoices, track payments, and manage outstanding dues.
+                </div>
+                <div class="store-card-stat">
+                    <div>
+                        <div class="stat-number">৳0</div>
+                        <div class="stat-label">This Month</div>
+                    </div>
+                    <div class="quick-action">
+                        <i class="fas fa-file-alt"></i> Create Invoice
+                    </div>
+                </div>
+            </div>
+
+            <div class="store-card">
+                <span class="coming-soon-badge">Coming Soon</span>
+                <div class="store-card-icon icon-red">
+                    <i class="fas fa-wallet"></i>
+                </div>
+                <div class="store-card-title">Expense Tracker</div>
+                <div class="store-card-desc">
+                    Record daily expenses, categorize costs, and monitor profit margins.
+                </div>
+                <div class="store-card-stat">
+                    <div>
+                        <div class="stat-number">৳0</div>
+                        <div class="stat-label">Total Expense</div>
+                    </div>
+                    <div class="quick-action">
+                        <i class="fas fa-plus"></i> Add Expense
+                    </div>
+                </div>
+            </div>
+
+            <div class="store-card">
+                <span class="coming-soon-badge">Coming Soon</span>
+                <div class="store-card-icon icon-cyan">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <div class="store-card-title">Reports & Analytics</div>
+                <div class="store-card-desc">
+                    View sales reports, profit analysis, stock movement, and business insights.
+                </div>
+                <div class="store-card-stat">
+                    <div>
+                        <div class="stat-number">0</div>
+                        <div class="stat-label">Reports Generated</div>
+                    </div>
+                    <div class="quick-action">
+                        <i class="fas fa-download"></i> Export Report
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card" style="margin-top: 30px;">
+            <div class="section-header">
+                <span><i class="fas fa-info-circle" style="margin-right: 10px; color: var(--accent-orange);"></i>About Store Module</span>
+            </div>
+            <p style="color: var(--text-secondary); line-height: 1.8; font-size: 14px;">
+                এই Store মডিউলটি একটি এলুমিনিয়াম দোকানের জন্য ডিজাইন করা হয়েছে। এখানে আপনি প্রোডাক্ট ইনভেন্টরি, 
+                সেলস অর্ডার, কাস্টমার ম্যানেজমেন্ট, ইনভয়েস জেনারেশন, খরচ ট্র্যাকিং এবং বিজনেস রিপোর্ট তৈরি করতে পারবেন।
+                <br><br>
+                <strong style="color: var(--accent-orange);">Coming Soon:</strong> সকল ফিচার শীঘ্রই অ্যাক্টিভ করা হবে।
+            </p>
+        </div>
+    </div>
+</body>
+</html>
+"""
+# ==============================================================================
+# REPORT TEMPLATES (ORIGINAL WHITE DESIGN - PRINT FRIENDLY)
+# ==============================================================================
+
+CLOSING_REPORT_PREVIEW_TEMPLATE = """
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Closing Report Preview</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { background-color: #f8f9fa; padding: 30px 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; font-size: 1.1rem; }
+        .container { max-width: 1400px; }
+        .company-header { text-align: center; margin-bottom: 20px; border-bottom: 2px solid #000; padding-bottom: 10px; }
+        .company-name { font-size: 2.2rem; font-weight: 800; color: #2c3e50; text-transform: uppercase; letter-spacing: 1px; line-height: 1; }
+        .report-title { font-size: 1.1rem; color: #555; font-weight: 600; text-transform: uppercase; margin-top: 5px; }
+        .date-section { font-size: 1.2rem; font-weight: 800; color: #000; margin-top: 5px; }
+        .info-container { margin-bottom: 15px; background: white; padding: 15px; display: flex; justify-content: space-between; align-items: flex-end;}
+        .info-row { display: flex; flex-direction: column; gap: 5px; }
+        .info-item { font-size: 1.2rem; font-weight: 600; color: #444; }
+        .info-label { font-weight: 800; color: #444; width: 90px; display: inline-block; }
+        .info-value { font-weight: 800; color: #000; }
+        .booking-box { background: #2c3e50; color: white; padding: 10px 20px; border-radius: 5px; text-align: right; box-shadow: 0 4px 10px rgba(44, 62, 80, 0.3); display: flex; flex-direction: column; justify-content: center; min-width: 200px; }
+        .booking-label { font-size: 1.1rem; opacity: 0.9; text-transform: uppercase; letter-spacing: 1px; font-weight: 700; }
+        .booking-value { font-size: 1.8rem; font-weight: 800; line-height: 1.1; }
+        .table-card { background: white; border-radius: 0; margin-bottom: 30px; border: none; }
+        .color-header { background-color: #2c3e50 !important; color: white; padding: 10px 15px; font-size: 1.4rem; font-weight: 800; text-transform: uppercase; border: 1px solid #000;}
+        .table { margin-bottom: 0; width: 100%; border-collapse: collapse; font-size: 1rem; }
+        .table th { background-color: #fff !important; color: #000 !important; text-align: center; border: 1px solid #000; padding: 8px; vertical-align: middle; font-weight: 900; font-size: 1.2rem; }
+        .table td { text-align: center; vertical-align: middle; border: 1px solid #000; padding: 6px; color: #000; font-weight: 600; font-size: 1.1rem; }
+        .col-3pct { background-color: #B9C2DF !important; font-weight: 700; }
+        .col-input { background-color: #C4D09D !important; font-weight: 700; }
+        .col-balance { font-weight: 700; color: #c0392b; }
+        .total-row td { background-color: #fff !important; color: #000 !important; font-weight: 900; font-size: 1.2rem; border-top: 2px solid #000; }
+        .action-bar { margin-bottom: 20px; display: flex; justify-content: flex-end; gap: 15px; position: sticky; top: 0; z-index: 1000; background: #f8f9fa; padding: 10px 0; }
+        .btn-print { background-color: #2c3e50; color: white; border-radius: 50px; padding: 10px 30px; font-weight: 600; border: none; }
+        .btn-excel { background-color: #27ae60; color: white; border-radius: 50px; padding: 10px 30px; font-weight: 600; text-decoration: none; display: inline-block; }
+        .btn-excel:hover { color: white; background-color: #219150; }
+        .footer-credit { text-align: center; margin-top: 40px; margin-bottom: 20px; font-size: 1rem; color: #2c3e50; padding-top: 10px; border-top: 1px solid #000; font-weight: 600;}
+        @media print {
+            @page { margin: 5mm; size: portrait; } 
+            body { background-color: white; padding: 0; }
+            .container { max-width: 100% !important; width: 100%; }
+            .no-print { display: none !important; }
+            .action-bar { display: none; }
+            .table th, .table td { border: 1px solid #000 !important; }
+            .color-header { background-color: #2c3e50 !important; -webkit-print-color-adjust: exact; color: white !important;}
+            .col-3pct { background-color: #B9C2DF !important; -webkit-print-color-adjust: exact; }
+            .col-input { background-color: #C4D09D !important; -webkit-print-color-adjust: exact; }
+            .booking-box { background-color: #2c3e50 !important; -webkit-print-color-adjust: exact; color: white !important; border: 1px solid #000;}
+            .total-row td { font-weight: 900 !important; color: #000 !important; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="action-bar no-print">
+            <a href="/" class="btn btn-outline-secondary rounded-pill px-4">Back to Dashboard</a>
+            <button onclick="window.print()" class="btn btn-print"><i class="fas fa-print"></i> Print Report</button>
+            <a href="/download-closing-excel?ref_no={{ ref_no }}" class="btn btn-excel"><i class="fas fa-file-excel"></i> Download Excel</a>
+        </div>
+        <div class="company-header">
+            <div class="company-name">COTTON CLOTHING BD LTD</div>
+            <div class="report-title">CLOSING REPORT [ INPUT SECTION ]</div>
+            <div class="date-section">Date: <span id="date"></span></div>
+        </div>
+        {% if report_data %}
+        <div class="info-container">
+            <div class="info-row">
+                <div class="info-item"><span class="info-label">Buyer:</span> <span class="info-value">{{ report_data[0].buyer }}</span></div>
+                <div class="info-item"><span class="info-label">Style:</span> <span class="info-value">{{ report_data[0].style }}</span></div>
+            </div>
+            <div class="booking-box">
+                <div class="booking-label">IR/IB NO</div>
+                <div class="booking-value">{{ ref_no }}</div>
+            </div>
+        </div>
+        {% for block in report_data %}
+        <div class="table-card">
+            <div class="color-header">COLOR: {{ block.color }}</div>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>SIZE</th>
+                        <th>ORDER QTY 3%</th>
+                        <th>ACTUAL QTY</th>
+                        <th>CUTTING QC</th>
+                        <th>INPUT QTY</th>
+                        <th>BALANCE</th>
+                        <th>SHORT/PLUS</th>
+                        <th>PERCENTAGE %</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% set ns = namespace(tot_3=0, tot_act=0, tot_cut=0, tot_inp=0, tot_bal=0, tot_sp=0) %}
+                    {% for i in range(block.headers|length) %}
+                        {% set actual = block.gmts_qty[i]|replace(',', '')|int %}
+                        {% set qty_3 = (actual * 1.03)|round|int %}
+                        {% set cut_qc = 0 %}
+                        {% if i < block.cutting_qc|length %}
+                            {% set cut_qc = block.cutting_qc[i]|replace(',', '')|int %}
+                        {% endif %}
+                        {% set inp_qty = 0 %}
+                        {% if i < block.sewing_input|length %}
+                            {% set inp_qty = block.sewing_input[i]|replace(',', '')|int %}
+                        {% endif %}
+                        {% set balance = cut_qc - inp_qty %}
+                        {% set short_plus = inp_qty - qty_3 %}
+                        {% set percentage = 0 %}
+                        {% if qty_3 > 0 %}
+                            {% set percentage = (short_plus / qty_3) * 100 %}
+                        {% endif %}
+                        {% set ns.tot_3 = ns.tot_3 + qty_3 %}
+                        {% set ns.tot_act = ns.tot_act + actual %}
+                        {% set ns.tot_cut = ns.tot_cut + cut_qc %}
+                        {% set ns.tot_inp = ns.tot_inp + inp_qty %}
+                        {% set ns.tot_bal = ns.tot_bal + balance %}
+                        {% set ns.tot_sp = ns.tot_sp + short_plus %}
+                        <tr>
+                            <td>{{ block.headers[i] }}</td>
+                            <td class="col-3pct">{{ qty_3 }}</td>
+                            <td>{{ actual }}</td>
+                            <td>{{ cut_qc }}</td>
+                            <td class="col-input">{{ inp_qty }}</td>
+                            <td class="col-balance">{{ balance }}</td>
+                            <td style="color: {{ 'green' if short_plus >= 0 else 'red' }}">{{ short_plus }}</td>
+                            <td>{{ "%.2f"|format(percentage) }}%</td>
+                        </tr>
+                    {% endfor %}
+                    <tr class="total-row">
+                        <td>TOTAL</td>
+                        <td>{{ ns.tot_3 }}</td>
+                        <td>{{ ns.tot_act }}</td>
+                        <td>{{ ns.tot_cut }}</td>
+                        <td>{{ ns.tot_inp }}</td>
+                        <td>{{ ns.tot_bal }}</td>
+                        <td>{{ ns.tot_sp }}</td>
+                        <td>
+                            {% if ns.tot_3 > 0 %}
+                                {{ "%.2f"|format((ns.tot_sp / ns.tot_3) * 100) }}%
+                            {% else %}
+                                0.00%
+                            {% endif %}
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        {% endfor %}
+        <div class="footer-credit">Report Generated By <span style="color: #000; font-weight: 900;">Mehedi Hasan</span></div>
+        {% endif %}
+    </div>
+    <script>
+        const dateObj = new Date();
+        document.getElementById('date').innerText = dateObj.toLocaleDateString('en-GB');
+    </script>
+</body>
+</html>
+"""
+
+ACCESSORIES_REPORT_TEMPLATE = """
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Accessories Delivery Report</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body { font-family: 'Poppins', sans-serif; background: #fff; padding: 20px; color: #000; }
+        .container { max-width: 1000px; margin: 0 auto; border: 2px solid #000; padding: 20px; min-height: 90vh; position: relative; }
+        .header { text-align: center; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 20px; position: relative; }
+        .company-name { font-size: 28px; font-weight: 800; text-transform: uppercase; color: #2c3e50; line-height: 1; }
+        .company-address { font-size: 12px; font-weight: 600; color: #444; margin-top: 5px; margin-bottom: 10px; }
+        .report-title { background: #2c3e50; color: white; padding: 5px 25px; display: inline-block; font-weight: bold; font-size: 18px; border-radius: 4px; }
+        .info-grid { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; }
+        .info-left { flex: 2; border: 1px dashed #555; padding: 15px; margin-right: 15px; }
+        .info-row { display: flex; margin-bottom: 5px; font-size: 14px; align-items: center; }
+        .info-label { font-weight: 800; width: 80px; color: #444; }
+        .info-val { font-weight: 700; font-size: 15px; color: #000; }
+        .booking-border { border: 2px solid #000; padding: 2px 8px; display: inline-block; font-weight: 900; }
+        .info-right { flex: 1; display: flex; flex-direction: column; justify-content: space-between; height: 100%; border-left: 1px solid #ddd; padding-left: 15px; }
+        .right-item { font-size: 14px; margin-bottom: 8px; font-weight: 700; }
+        .right-label { color: #555; }
+        .summary-container { margin-bottom: 20px; border: 2px solid #000; padding: 10px; background: #f9f9f9; }
+        .summary-header { font-weight: 900; text-align: center; border-bottom: 1px solid #000; margin-bottom: 5px; text-transform: uppercase; }
+        .summary-table { width: 100%; font-size: 13px; font-weight: 700; }
+        .summary-table td { padding: 2px 5px; }
+        .main-table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 14px; }
+        .main-table th { background: #2c3e50 !important; color: white !important; padding: 10px; border: 1px solid #000; font-size: 14px; text-transform: uppercase; -webkit-print-color-adjust: exact; }
+        .main-table td { border: 1px solid #000; padding: 6px; text-align: center; vertical-align: middle; color: #000; font-weight: 600; }
+        .line-card { display: inline-block; padding: 4px 10px; border: 2px solid #000; font-size: 16px; font-weight: 900; border-radius: 4px; box-shadow: 2px 2px 0 #000; background: #fff; }
+        .line-text-bold { font-size: 14px; font-weight: 800; opacity: 0.7; }
+        .status-cell { font-size: 20px; color: green; font-weight: 900; }
+        .qty-cell { font-size: 16px; font-weight: 800; }
+        .action-btn { color: white; padding: 4px 8px; border-radius: 4px; text-decoration: none; font-size: 12px; margin: 0 2px; display: inline-block; }
+        .btn-edit-row { background-color: #f39c12; }
+        .btn-del-row { background-color: #e74c3c; }
+        .footer-total { margin-top: 20px; display: flex; justify-content: flex-end; }
+        .total-box { border: 3px solid #000; padding: 8px 30px; font-size: 20px; font-weight: 900; background: #ddd; -webkit-print-color-adjust: exact; }
+        .no-print { margin-bottom: 20px; text-align: right; }
+        .btn { padding: 8px 20px; background: #2c3e50; color: white; border: none; cursor: pointer; text-decoration: none; display: inline-block; border-radius: 4px; font-size: 14px; }
+        .btn-add { background: #27ae60; }
+        .generator-sig { text-align: right; font-size: 10px; margin-top: 5px; color: #555; }
+        @media print {
+            .no-print { display: none; }
+            .action-col { display: none; }
+            .container { border: none; padding: 0; margin: 0; max-width: 100%; }
+            body { padding: 0; }
+        }
+    </style>
+</head>
+<body>
+<div class="no-print">
+    <a href="/admin/accessories/input_direct?ref={{ ref }}" class="btn">Back</a>
+    <button onclick="window.print()" class="btn">🖨️ Print</button>
+</div>
+<div class="container">
+    <div class="header">
+        <div class="company-name">COTTON CLOTHING BD LTD</div>
+        <div class="company-address">Kazi Tower, 27 Road, Gazipura, Tongi, Gazipur.</div>
+        <div class="report-title">ACCESSORIES DELIVERY CHALLAN</div>
+    </div>
+    <div class="info-grid">
+        <div class="info-left">
+            <div class="info-row"><span class="info-label">Booking:</span> <span class="booking-border">{{ ref }}</span></div>
+            <div class="info-row"><span class="info-label">Buyer:</span> <span class="info-val">{{ buyer }}</span></div>
+            <div class="info-row"><span class="info-label">Style:</span> <span class="info-val">{{ style }}</span></div>
+            <div class="info-row"><span class="info-label">Date:</span> <span class="info-val">{{ today }}</span></div>
+        </div>
+        <div class="info-right">
+            <div class="right-item"><span class="right-label">Store:</span> Clothing General Store</div>
+            <div class="right-item"><span class="right-label">Send:</span> Cutting</div>
+            <div class="right-item"><span class="right-label">Item:</span> <span style="border: 1px solid #000; padding: 0 5px;">{{ item_type if item_type else 'Top/Btm' }}</span></div>
+        </div>
+    </div>
+    <div class="summary-container">
+        <div class="summary-header">Line-wise Summary</div>
+        <table class="summary-table">
+            <tr>
+            {% for line, qty in line_summary.items() %}
+                <td>{{ line }}: {{ qty }} pcs</td>
+                {% if loop.index % 4 == 0 %}</tr><tr>{% endif %}
+            {% endfor %}
+            </tr>
+        </table>
+        <div style="text-align: right; margin-top: 5px; font-weight: 800; border-top: 1px solid #ccc;">Total Deliveries: {{ count }}</div>
+    </div>
+    <table class="main-table">
+        <thead>
+            <tr>
+                <th width="15%">DATE</th>
+                <th width="15%">LINE NO</th>
+                <th width="20%">COLOR</th>
+                <th width="10%">SIZE</th>
+                <th width="10%">STATUS</th>
+                <th width="15%">QTY</th>
+                {% if session.role == 'admin' %}
+                <th width="15%" class="action-col">ACTION</th>
+                {% endif %}
+            </tr>
+        </thead>
+        <tbody>
+            {% set ns = namespace(grand_total=0) %}
+            {% for item in challans %}
+                {% set ns.grand_total = ns.grand_total + item.qty|int %}
+                <tr>
+                    <td>{{ item.date }}</td>
+                    <td>
+                        {% if loop.index == count %}
+                            <div class="line-card">{{ item.line }}</div>
+                        {% else %}
+                            <span class="line-text-bold">{{ item.line }}</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ item.color }}</td>
+                    <td>{{ item.size }}</td>
+                    <td class="status-cell">{{ item.status }}</td>
+                    <td class="qty-cell">{{ item.qty }}</td>
+                    {% if session.role == 'admin' %}
+                    <td class="action-col">
+                        <a href="/admin/accessories/edit?ref={{ ref }}&index={{ loop.index0 }}" class="action-btn btn-edit-row"><i class="fas fa-pencil-alt"></i></a>
+                        <form action="/admin/accessories/delete" method="POST" style="display:inline;" onsubmit="return confirm('Delete this challan?');">
+                            <input type="hidden" name="ref" value="{{ ref }}">
+                            <input type="hidden" name="index" value="{{ loop.index0 }}">
+                            <button type="submit" class="action-btn btn-del-row" style="border:none; cursor:pointer;"><i class="fas fa-trash"></i></button>
+                        </form>
+                    </td>
+                    {% endif %}
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <div class="footer-total">
+        <div class="total-box">
+            TOTAL QTY: {{ ns.grand_total }}
+        </div>
+    </div>
+    <div class="generator-sig">Report Generated By Mehedi Hasan</div>
+    <div style="margin-top: 60px; display: flex; justify-content: space-between; text-align: center; font-weight: bold; padding: 0 50px;">
+        <div style="border-top: 2px solid #000; width: 180px; padding-top: 5px;">Received By</div>
+        <div style="border-top: 2px solid #000; width: 180px; padding-top: 5px;">Input Incharge</div>
+        <div style="border-top: 2px solid #000; width: 180px; padding-top: 5px;">Store</div>
+    </div>
+</div>
+</body>
+</html>
+"""
+
+PO_REPORT_TEMPLATE = """
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PO Report - Cotton Clothing BD</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { background-color: #f8f9fa; padding: 30px 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .container { max-width: 1200px; }
+        .company-header { text-align: center; margin-bottom: 20px; border-bottom: 2px solid #000; padding-bottom: 10px; }
+        .company-name { font-size: 2.2rem; font-weight: 800; color: #2c3e50; text-transform: uppercase; letter-spacing: 1px; line-height: 1; }
+        .report-title { font-size: 1.1rem; color: #555; font-weight: 600; text-transform: uppercase; margin-top: 5px; }
+        .date-section { font-size: 1.2rem; font-weight: 800; color: #000; margin-top: 5px; }
+        .info-container { display: flex; justify-content: space-between; margin-bottom: 15px; gap: 15px; }
+        .info-box { background: white; border: 1px solid #ddd; border-left: 5px solid #2c3e50; padding: 10px 15px; border-radius: 5px; flex: 2; box-shadow: 0 2px 5px rgba(0,0,0,0.05); display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .total-box { background: #2c3e50; color: white; padding: 10px 15px; border-radius: 5px; width: 240px; text-align: right; display: flex; flex-direction: column; justify-content: center; box-shadow: 0 4px 10px rgba(44, 62, 80, 0.3); }
+        .info-item { margin-bottom: 6px; font-size: 1.3rem; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .info-label { font-weight: 800; color: #444; width: 90px; display: inline-block; }
+        .info-value { font-weight: 800; color: #000; }
+        .total-label { font-size: 1.1rem; opacity: 0.9; text-transform: uppercase; letter-spacing: 1px; font-weight: 700; }
+        .total-value { font-size: 2.5rem; font-weight: 800; line-height: 1.1; }
+        .table-card { background: white; border-radius: 0; margin-bottom: 20px; overflow: hidden; border: 1px solid #dee2e6; }
+        .color-header { background-color: #e9ecef; color: #2c3e50; padding: 10px 12px; font-size: 1.5rem; font-weight: 900; border-bottom: 1px solid #dee2e6; text-transform: uppercase; }
+        .table { margin-bottom: 0; width: 100%; border-collapse: collapse; }
+        .table th { background-color: #2c3e50; color: white; font-weight: 900; font-size: 1.2rem; text-align: center; border: 1px solid #34495e; padding: 8px 4px; vertical-align: middle; }
+        .table th:empty { background-color: white !important; border: none; }
+        .table td { text-align: center; vertical-align: middle; border: 1px solid #dee2e6; padding: 6px 3px; color: #000; font-weight: 800; font-size: 1.15rem; }
+        .table-striped tbody tr:nth-of-type(odd) { background-color: #f8f9fa; }
+        .order-col { font-weight: 900 !important; text-align: center !important; background-color: #fdfdfd; white-space: nowrap; width: 1%; }
+        .total-col { font-weight: 900; background-color: #e8f6f3 !important; color: #16a085; border-left: 2px solid #1abc9c !important; }
+        .total-col-header { background-color: #e8f6f3 !important; color: #000 !important; font-weight: 900 !important; border: 1px solid #34495e !important; }
+        .table-striped tbody tr.summary-row, .table-striped tbody tr.summary-row td { background-color: #d1ecff !important; --bs-table-accent-bg: #d1ecff !important; color: #000 !important; font-weight: 900 !important; border-top: 2px solid #aaa !important; font-size: 1.2rem !important; }
+        .summary-label { text-align: right !important; padding-right: 15px !important; color: #000 !important; }
+        .action-bar { margin-bottom: 20px; display: flex; justify-content: flex-end; gap: 10px; }
+        .btn-print { background-color: #e74c3c; color: white; border-radius: 50px; padding: 8px 30px; font-weight: 600; border: none; }
+        .footer-credit { text-align: center; margin-top: 30px; margin-bottom: 20px; font-size: 0.8rem; color: #2c3e50; padding-top: 10px; border-top: 1px solid #ddd; }
+        @media print {
+            @page { margin: 5mm; size: portrait; }
+            body { background-color: white; padding: 0; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; color-adjust: exact !important; }
+            .container { max-width: 100% !important; width: 100% !important; padding: 0; margin: 0; }
+            .no-print { display: none !important; }
+            .company-header { border-bottom: 2px solid #000; margin-bottom: 5px; padding-bottom: 5px; }
+            .company-name { font-size: 1.8rem; } 
+            .info-container { margin-bottom: 10px; }
+            .info-box { border: 1px solid #000 !important; border-left: 5px solid #000 !important; padding: 5px 10px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+            .total-box { border: 2px solid #000 !important; background: white !important; color: black !important; padding: 5px 10px; }
+            .info-item { font-size: 13pt !important; font-weight: 800 !important; }
+            .table th, .table td { border: 1px solid #000 !important; padding: 2px !important; font-size: 13pt !important; font-weight: 800 !important; }
+            .table th:empty { background-color: white !important; border: none !important; }
+            .table-striped tbody tr.summary-row td { background-color: #d1ecff !important; box-shadow: inset 0 0 0 9999px #d1ecff !important; color: #000 !important; font-weight: 900 !important; }
+            .color-header { background-color: #f1f1f1 !important; border: 1px solid #000 !important; font-size: 1.4rem !important; font-weight: 900; padding: 5px; margin-top: 10px; box-shadow: inset 0 0 0 9999px #f1f1f1 !important; }
+            .total-col-header { background-color: #e8f6f3 !important; box-shadow: inset 0 0 0 9999px #e8f6f3 !important; color: #000 !important; }
+            .table-card { border: none; margin-bottom: 10px; break-inside: avoid; }
+            .footer-credit { display: block !important; color: black; border-top: 1px solid #000; margin-top: 10px; font-size: 8pt !important; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="action-bar no-print">
+            <a href="/" class="btn btn-outline-secondary rounded-pill px-4">Back to Dashboard</a>
+            <button onclick="window.print()" class="btn btn-print"><i class="fas fa-file-pdf"></i> Print</button>
+        </div>
+        <div class="company-header">
+            <div class="company-name">COTTON CLOTHING BD LTD</div>
+            <div class="report-title">Purchase Order Summary</div>
+            <div class="date-section">Date: <span id="date"></span></div>
+        </div>
+        {% if message %}
+            <div class="alert alert-warning text-center no-print">{{ message }}</div>
+        {% endif %}
+        {% if tables %}
+            <div class="info-container">
+                <div class="info-box">
+                    <div>
+                        <div class="info-item"><span class="info-label">Buyer:</span> <span class="info-value">{{ meta.buyer }}</span></div>
+                        <div class="info-item"><span class="info-label">Booking:</span> <span class="info-value">{{ meta.booking }}</span></div>
+                        <div class="info-item"><span class="info-label">Style:</span> <span class="info-value">{{ meta.style }}</span></div>
+                    </div>
+                    <div>
+                        <div class="info-item"><span class="info-label">Season:</span> <span class="info-value">{{ meta.season }}</span></div>
+                        <div class="info-item"><span class="info-label">Dept:</span> <span class="info-value">{{ meta.dept }}</span></div>
+                        <div class="info-item"><span class="info-label">Item:</span> <span class="info-value">{{ meta.item }}</span></div>
+                    </div>
+                </div>
+                <div class="total-box">
+                    <div class="total-label">Grand Total</div>
+                    <div class="total-value">{{ grand_total }}</div>
+                    <small>Pieces</small>
+                </div>
+            </div>
+            {% for item in tables %}
+                <div class="table-card">
+                    <div class="color-header">COLOR: {{ item.color }}</div>
+                    <div class="table-responsive">{{ item.table | safe }}</div>
+                </div>
+            {% endfor %}
+            <div class="footer-credit">Report Created By <strong>Mehedi Hasan</strong></div>
+        {% endif %}
+    </div>
+    <script>
+        const dateObj = new Date();
+        const day = String(dateObj.getDate()).padStart(2, '0');
+        const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+        const year = dateObj.getFullYear();
+        document.getElementById('date').innerText = `${day}-${month}-${year}`;
+    </script>
+</body>
+</html>
+"""
 
 # ==============================================================================
 # FLASK ROUTES (CONTROLLER LOGIC)
@@ -2218,10 +4844,6 @@ def logout():
     flash('Session terminated.')
     return redirect(url_for('index'))
 
-# ==============================================================================
-# USER MANAGEMENT ROUTES
-# ==============================================================================
-
 @app.route('/admin/get-users', methods=['GET'])
 def get_users():
     if not session.get('logged_in') or session.get('role') != 'admin': 
@@ -2282,38 +4904,26 @@ def delete_user():
     
     return jsonify({'status': 'error', 'message': 'User not found'})
 
-# ==============================================================================
-# STORE ROUTE
-# ==============================================================================
-
 @app.route('/admin/store')
 def store_dashboard():
     if not session.get('logged_in'):
         return redirect(url_for('index'))
     return render_template_string(STORE_DASHBOARD_TEMPLATE)
 
-# ==============================================================================
-# CLOSING REPORT ROUTES
-# ==============================================================================
-
 @app.route('/generate-report', methods=['POST'])
 def generate_report():
-    if not session.get('logged_in'): 
-        return redirect(url_for('index'))
+    if not session.get('logged_in'): return redirect(url_for('index'))
     
     internal_ref_no = request.form['ref_no']
-    if not internal_ref_no: 
-        return redirect(url_for('index'))
+    if not internal_ref_no: return redirect(url_for('index'))
 
     try:
         report_data = fetch_closing_report_data(internal_ref_no)
-
         if not report_data:
             flash(f"Booking Not Found: {internal_ref_no}")
             return redirect(url_for('index'))
         
         update_stats(internal_ref_no, session.get('user', 'Unknown'))
-        
         return render_template_string(CLOSING_REPORT_PREVIEW_TEMPLATE, report_data=report_data, ref_no=internal_ref_no)
     except Exception as e:
         flash(f"System Error: {str(e)}")
@@ -2321,11 +4931,9 @@ def generate_report():
 
 @app.route('/download-closing-excel', methods=['GET'])
 def download_closing_excel():
-    if not session.get('logged_in'): 
-        return redirect(url_for('index'))
+    if not session.get('logged_in'): return redirect(url_for('index'))
     
     internal_ref_no = request.args.get('ref_no')
-    
     try:
         report_data = fetch_closing_report_data(internal_ref_no)
         if report_data:
@@ -2344,14 +4952,9 @@ def download_closing_excel():
         flash("Failed to generate Excel.")
         return redirect(url_for('index'))
 
-# ==============================================================================
-# ACCESSORIES ROUTES
-# ==============================================================================
-
 @app.route('/admin/accessories', methods=['GET'])
 def accessories_search_page():
-    if not session.get('logged_in'): 
-        return redirect(url_for('index'))
+    if not session.get('logged_in'): return redirect(url_for('index'))
     if 'accessories' not in session.get('permissions', []):
         flash("Access Denied")
         return redirect(url_for('index'))
@@ -2359,15 +4962,12 @@ def accessories_search_page():
 
 @app.route('/admin/accessories/input', methods=['POST'])
 def accessories_input_page():
-    if not session.get('logged_in'): 
-        return redirect(url_for('index'))
+    if not session.get('logged_in'): return redirect(url_for('index'))
     
     ref_no = request.form.get('ref_no') or request.args.get('ref')
-    if ref_no: 
-        ref_no = ref_no.strip().upper()
+    if ref_no: ref_no = ref_no.strip().upper()
     
-    if not ref_no: 
-        return redirect(url_for('accessories_search_page'))
+    if not ref_no: return redirect(url_for('accessories_search_page'))
 
     db_acc = load_accessories_db()
 
@@ -2390,25 +4990,15 @@ def accessories_input_page():
             challans = []
             
             db_acc[ref_no] = {
-                "style": style, 
-                "buyer": buyer, 
-                "colors": colors, 
-                "item_type": "", 
-                "challans": challans
+                "style": style, "buyer": buyer, "colors": colors, 
+                "item_type": "", "challans": challans
             }
             save_accessories_db(db_acc)
         except:
             flash("Connection Error with ERP")
             return redirect(url_for('accessories_search_page'))
 
-    return render_template_string(
-        ACCESSORIES_INPUT_TEMPLATE, 
-        ref=ref_no, 
-        colors=colors, 
-        style=style, 
-        buyer=buyer, 
-        challans=challans
-    )
+    return render_template_string(ACCESSORIES_INPUT_TEMPLATE, ref=ref_no, colors=colors, style=style, buyer=buyer, challans=challans)
 
 @app.route('/admin/accessories/input_direct')
 def accessories_input_direct():
@@ -2416,15 +5006,13 @@ def accessories_input_direct():
 
 @app.route('/admin/accessories/save', methods=['POST'])
 def accessories_save():
-    if not session.get('logged_in'): 
-        return redirect(url_for('index'))
+    if not session.get('logged_in'): return redirect(url_for('index'))
     
     ref = request.form.get('ref').strip().upper()
     db_acc = load_accessories_db()
     
     if ref in db_acc:
-        if request.form.get('item_type'): 
-            db_acc[ref]['item_type'] = request.form.get('item_type')
+        if request.form.get('item_type'): db_acc[ref]['item_type'] = request.form.get('item_type')
         
         for item in db_acc[ref]['challans']:
             item['status'] = "✔"
@@ -2444,14 +5032,12 @@ def accessories_save():
 
 @app.route('/admin/accessories/print', methods=['GET'])
 def accessories_print_view():
-    if not session.get('logged_in'): 
-        return redirect(url_for('index'))
+    if not session.get('logged_in'): return redirect(url_for('index'))
     
     ref = request.args.get('ref').strip().upper()
     db_acc = load_accessories_db()
     
-    if ref not in db_acc: 
-        return redirect(url_for('accessories_search_page'))
+    if ref not in db_acc: return redirect(url_for('accessories_search_page'))
     
     data = db_acc[ref]
     challans = data['challans']
@@ -2459,35 +5045,20 @@ def accessories_print_view():
     line_summary = {}
     for c in challans:
         ln = c['line']
-        try: 
-            q = int(c['qty'])
-        except: 
-            q = 0
+        try: q = int(c['qty'])
+        except: q = 0
         line_summary[ln] = line_summary.get(ln, 0) + q
     sorted_line_summary = dict(sorted(line_summary.items()))
 
-    return render_template_string(
-        ACCESSORIES_REPORT_TEMPLATE, 
-        ref=ref, 
-        buyer=data['buyer'], 
-        style=data['style'],
-        item_type=data.get('item_type', ''), 
-        challans=challans,
-        line_summary=sorted_line_summary, 
-        count=len(challans),
-        today=get_bd_date_str()
-    )
+    return render_template_string(ACCESSORIES_REPORT_TEMPLATE, ref=ref, buyer=data['buyer'], style=data['style'], item_type=data.get('item_type', ''), challans=challans, line_summary=sorted_line_summary, count=len(challans), today=get_bd_date_str())
 
 @app.route('/admin/accessories/edit', methods=['GET'])
 def accessories_edit():
-    if not session.get('logged_in'): 
-        return redirect(url_for('index'))
+    if not session.get('logged_in'): return redirect(url_for('index'))
     
     ref = request.args.get('ref')
-    try: 
-        index = int(request.args.get('index'))
-    except: 
-        return redirect(url_for('accessories_search_page'))
+    try: index = int(request.args.get('index'))
+    except: return redirect(url_for('accessories_search_page'))
     
     db_acc = load_accessories_db()
     if ref in db_acc and 0 <= index < len(db_acc[ref]['challans']):
@@ -2498,8 +5069,7 @@ def accessories_edit():
 
 @app.route('/admin/accessories/update', methods=['POST'])
 def accessories_update():
-    if not session.get('logged_in'): 
-        return redirect(url_for('index'))
+    if not session.get('logged_in'): return redirect(url_for('index'))
     
     ref = request.form.get('ref')
     index = int(request.form.get('index'))
@@ -2516,8 +5086,7 @@ def accessories_update():
 
 @app.route('/admin/accessories/delete', methods=['POST'])
 def accessories_delete():
-    if not session.get('logged_in') or session.get('role') != 'admin':
-        return redirect(url_for('index'))
+    if not session.get('logged_in') or session.get('role') != 'admin': return redirect(url_for('index'))
     
     ref = request.form.get('ref')
     index = int(request.form.get('index'))
@@ -2529,14 +5098,9 @@ def accessories_delete():
     
     return redirect(url_for('accessories_input_direct', ref=ref))
 
-# ==============================================================================
-# PO SHEET ROUTE
-# ==============================================================================
-
 @app.route('/generate-po-report', methods=['POST'])
 def generate_po_report():
-    if not session.get('logged_in'): 
-        return redirect(url_for('index'))
+    if not session.get('logged_in'): return redirect(url_for('index'))
 
     if os.path.exists(UPLOAD_FOLDER): 
         shutil.rmtree(UPLOAD_FOLDER)
@@ -2548,15 +5112,12 @@ def generate_po_report():
         final_meta = {'buyer': 'N/A', 'booking': 'N/A', 'style': 'N/A', 'season': 'N/A', 'dept': 'N/A', 'item': 'N/A'}
         
         for file in uploaded_files:
-            if file.filename == '': 
-                continue
+            if file.filename == '': continue
             file_path = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
             file.save(file_path)
             data, meta = extract_data_dynamic(file_path)
-            if meta['buyer'] != 'N/A': 
-                final_meta = meta
-            if data: 
-                all_data.extend(data)
+            if meta['buyer'] != 'N/A': final_meta = meta
+            if data: all_data.extend(data)
         
         if not all_data:
             return render_template_string(PO_REPORT_TEMPLATE, tables=None, message="No PO data found in uploaded files.")
@@ -2573,21 +5134,13 @@ def generate_po_report():
 
         for color in unique_colors:
             color_df = df[df['Color'] == color]
-            pivot = color_df.pivot_table(
-                index='P.O NO', 
-                columns='Size', 
-                values='Quantity', 
-                aggfunc='sum', 
-                fill_value=0
-            )
-            
+            pivot = color_df.pivot_table(index='P.O NO', columns='Size', values='Quantity', aggfunc='sum', fill_value=0)
             pivot.columns.name = None
             
             try:
                 sorted_cols = sort_sizes(pivot.columns.tolist())
                 pivot = pivot[sorted_cols]
-            except: 
-                pass
+            except: pass
             
             pivot['Total'] = pivot.sum(axis=1)
             grand_total_qty += pivot['Total'].sum()
@@ -2602,31 +5155,18 @@ def generate_po_report():
             pivot_final = pivot_final.rename(columns={'index': 'P.O NO'})
             
             pd.set_option('colheader_justify', 'center')
-            html_table = pivot_final.to_html(
-                classes='table table-bordered table-striped', 
-                index=False, 
-                border=0
-            )
+            html_table = pivot_final.to_html(classes='table table-bordered table-striped', index=False, border=0)
             
             html_table = re.sub(r'<tr>\s*<td>', '<tr><td class="order-col">', html_table)
             html_table = html_table.replace('<th>Total</th>', '<th class="total-col-header">Total</th>')
             html_table = html_table.replace('<td>Total</td>', '<td class="total-col">Total</td>')
             html_table = html_table.replace('<td>Actual Qty</td>', '<td class="summary-label">Actual Qty</td>')
             html_table = html_table.replace('<td>3% Order Qty</td>', '<td class="summary-label">3% Order Qty</td>')
-            html_table = re.sub(
-                r'<tr>\s*<td class="summary-label">', 
-                '<tr class="summary-row"><td class="summary-label">', 
-                html_table
-            )
+            html_table = re.sub(r'<tr>\s*<td class="summary-label">', '<tr class="summary-row"><td class="summary-label">', html_table)
 
             final_tables.append({'color': color, 'table': html_table})
             
-        return render_template_string(
-            PO_REPORT_TEMPLATE, 
-            tables=final_tables, 
-            meta=final_meta, 
-            grand_total=f"{grand_total_qty:,}"
-        )
+        return render_template_string(PO_REPORT_TEMPLATE, tables=final_tables, meta=final_meta, grand_total=f"{grand_total_qty:,}")
     except Exception as e:
         flash(f"Error processing files: {str(e)}")
         return redirect(url_for('index'))
@@ -2637,4 +5177,6 @@ def generate_po_report():
 # ==============================================================================
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5000)
+    # Render-এ রান করার জন্য host='0.0.0.0' এবং port এনভায়রনমেন্ট ভেরিয়েবল থেকে নিতে হবে
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host='0.0.0.0', port=port, debug=True)
