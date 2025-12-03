@@ -1989,7 +1989,7 @@ def parse_report_data(html_content):
         return all_report_data
     except Exception as e:
         return None
-        def create_formatted_excel_report(report_data, internal_ref_no=""):
+   def create_formatted_excel_report(report_data, internal_ref_no=""):
     if not report_data:
         return None
     wb = openpyxl.Workbook()
@@ -5334,5 +5334,6 @@ def generate_po_report():
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
+
 
 
