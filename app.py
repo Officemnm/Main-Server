@@ -2107,7 +2107,7 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
                 if cell.row != 1: 
                     new_font = Font(name=existing_font.name, size=16.5, bold=existing_font.bold, italic=existing_font.italic, vertAlign=existing_font.vertAlign, underline=existing_font.underline, strike=existing_font.strike, color=existing_font.color)
                     cell.font = new_font
-    ws.column_dimensions['A'].width = 23
+        ws.column_dimensions['A'].width = 23
     ws.column_dimensions['B'].width = 8.5
     ws.column_dimensions['C'].width = 20
     ws.column_dimensions['D'].width = 17
@@ -2155,7 +2155,7 @@ LOGIN_TEMPLATE = f"""
             overflow-x: hidden;
         }}
         
-        body {
+        body {{
             background: var(--bg-body);
             min-height: 100vh;
             display: flex;
@@ -2163,37 +2163,37 @@ LOGIN_TEMPLATE = f"""
             align-items: center;
             position: relative;
             overflow-y: auto;
-        }
+        }}
         
         /* Animated Background Orbs */
-        .bg-orb {
+        .bg-orb {{
             position: fixed;
             border-radius: 50%;
             filter: blur(80px);
             opacity: 0.4;
             animation: orbFloat 20s ease-in-out infinite;
             pointer-events: none;
-        }
+        }}
         
-        .orb-1 {
+        .orb-1 {{
             width: 300px;
             height: 300px;
             background: var(--accent-orange);
             top: -100px;
             left: -100px;
             animation-delay: 0s;
-        }
+        }}
         
-        .orb-2 {
+        .orb-2 {{
             width: 250px;
             height: 250px;
             background: var(--accent-purple);
             bottom: -50px;
             right: -50px;
             animation-delay: -5s;
-        }
+        }}
         
-        .orb-3 {
+        .orb-3 {{
             width: 150px;
             height: 150px;
             background: var(--accent-green);
@@ -2201,16 +2201,16 @@ LOGIN_TEMPLATE = f"""
             left: 50%;
             transform: translate(-50%, -50%);
             animation-delay: -10s;
-        }
+        }}
         
-        @keyframes orbFloat {
-            0%, 100% { transform: translate(0, 0) scale(1); }
-            25% { transform: translate(30px, -30px) scale(1.05); }
-            50% { transform: translate(-20px, 20px) scale(0.95); }
-            75% { transform: translate(15px, 30px) scale(1.02); }
-        }
+        @keyframes orbFloat {{
+            0%, 100% {{ transform: translate(0, 0) scale(1); }}
+            25% {{ transform: translate(30px, -30px) scale(1.05); }}
+            50% {{ transform: translate(-20px, 20px) scale(0.95); }}
+            75% {{ transform: translate(15px, 30px) scale(1.02); }}
+        }}
         
-        .login-container {
+        .login-container {{
             position: relative;
             z-index: 10;
             width: 100%;
@@ -2221,9 +2221,9 @@ LOGIN_TEMPLATE = f"""
             flex-direction: column;
             justify-content: center;
             min-height: 100vh;
-        }
+        }}
         
-        .login-card {
+        .login-card {{
             background: var(--gradient-card);
             border: 1px solid var(--border-color);
             border-radius: 24px;
@@ -2231,24 +2231,24 @@ LOGIN_TEMPLATE = f"""
             backdrop-filter: blur(20px);
             box-shadow: 0 25px 80px rgba(0, 0, 0, 0.5), 0 0 60px var(--accent-orange-glow);
             animation: loginCardAppear 0.8s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        @keyframes loginCardAppear {
-            from {
+        }}
+        @keyframes loginCardAppear {{
+            from {{
                 opacity: 0;
                 transform: translateY(30px) scale(0.95);
-            }
-            to {
+            }}
+            to {{
                 opacity: 1;
                 transform: translateY(0) scale(1);
-            }
-        }
+            }}
+        }}
         
-        .brand-section {
+        .brand-section {{
             text-align: center;
             margin-bottom: 35px;
-        }
+        }}
         
-        .brand-icon {
+        .brand-icon {{
             width: 70px;
             height: 70px;
             background: var(--gradient-orange);
@@ -2261,59 +2261,59 @@ LOGIN_TEMPLATE = f"""
             margin-bottom: 18px;
             box-shadow: 0 15px 40px var(--accent-orange-glow);
             animation: brandIconPulse 3s ease-in-out infinite;
-        }
+        }}
         
-        @keyframes brandIconPulse {
-            0%, 100% { transform: scale(1) rotate(0deg); box-shadow: 0 15px 40px var(--accent-orange-glow); }
-            50% { transform: scale(1.05) rotate(5deg); box-shadow: 0 20px 50px var(--accent-orange-glow); }
-        }
+        @keyframes brandIconPulse {{
+            0%, 100% {{ transform: scale(1) rotate(0deg); box-shadow: 0 15px 40px var(--accent-orange-glow); }}
+            50% {{ transform: scale(1.05) rotate(5deg); box-shadow: 0 20px 50px var(--accent-orange-glow); }}
+        }}
         
-        .brand-name {
+        .brand-name {{
             font-size: 28px;
             font-weight: 900;
             color: white;
             letter-spacing: -1px;
-        }
+        }}
         
-        .brand-name span {
+        .brand-name span {{
             background: var(--gradient-orange);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
-        }
+        }}
         
-        .brand-tagline {
+        .brand-tagline {{
             color: var(--text-secondary);
             font-size: 11px;
             letter-spacing: 2px;
             margin-top: 6px;
             font-weight: 600;
             text-transform: uppercase;
-        }
+        }}
         
-        .login-form .input-group {
+        .login-form .input-group {{
             margin-bottom: 20px;
-        }
+        }}
         
-        .login-form .input-group label {
+        .login-form .input-group label {{
             display: flex;
             align-items: center;
             gap: 8px;
             margin-bottom: 8px;
-        }
+        }}
         
-        .login-form .input-group label i {
+        .login-form .input-group label i {{
             color: var(--accent-orange);
             font-size: 13px;
-        }
+        }}
         
-        .login-form input {
+        .login-form input {{
             padding: 14px 18px;
             font-size: 14px;
             border-radius: 12px;
-        }
+        }}
         
-        .login-btn {
+        .login-btn {{
             margin-top: 8px;
             padding: 14px 24px;
             font-size: 15px;
@@ -2322,17 +2322,17 @@ LOGIN_TEMPLATE = f"""
             align-items: center;
             justify-content: center;
             gap: 10px;
-        }
+        }}
         
-        .login-btn i {
+        .login-btn i {{
             transition: transform 0.3s;
-        }
+        }}
         
-        .login-btn:hover i {
+        .login-btn:hover i {{
             transform: translateX(5px);
-        }
+        }}
         
-        .error-box {
+        .error-box {{
             margin-top: 20px;
             padding: 14px 18px;
             background: rgba(239, 68, 68, 0.1);
@@ -2344,82 +2344,82 @@ LOGIN_TEMPLATE = f"""
             align-items: center;
             gap: 10px;
             animation: errorShake 0.5s ease-out;
-        }
+        }}
         
-        @keyframes errorShake {
-            0%, 100% { transform: translateX(0); }
-            20%, 60% { transform: translateX(-5px); }
-            40%, 80% { transform: translateX(5px); }
-        }
+        @keyframes errorShake {{
+            0%, 100% {{ transform: translateX(0); }}
+            20%, 60% {{ transform: translateX(-5px); }}
+            40%, 80% {{ transform: translateX(5px); }}
+        }}
         
-        .footer-credit {
+        .footer-credit {{
             text-align: center;
             margin-top: 25px;
             color: var(--text-secondary);
             font-size: 11px;
             opacity: 0.5;
             font-weight: 500;
-        }
+        }}
         
-        .footer-credit a {
+        .footer-credit a {{
             color: var(--accent-orange);
             text-decoration: none;
-        }
+        }}
         
         /* Responsive Fixes */
-        @media (max-width: 480px) {
-            .login-container {
+        @media (max-width: 480px) {{
+            .login-container {{
                 padding: 15px;
-            }
+            }}
             
-            .login-card {
+            .login-card {{
                 padding: 30px 25px;
                 border-radius: 20px;
-            }
+            }}
             
-            .brand-icon {
+            .brand-icon {{
                 width: 60px;
                 height: 60px;
                 font-size: 28px;
-            }
+            }}
             
-            .brand-name {
+            .brand-name {{
                 font-size: 24px;
-            }
+            }}
             
-            .brand-tagline {
+            .brand-tagline {{
                 font-size: 10px;
-            }
+            }}
             
-            .login-form input {
+            .login-form input {{
                 padding: 12px 16px;
                 font-size: 14px;
-            }
+            }}
             
-            .login-btn {
+            .login-btn {{
                 padding: 12px 20px;
                 font-size: 14px;
-            }
-        }
+            }}
+        }}
         
-        @media (max-height: 700px) {
-            .login-container {
+        @media (max-height: 700px) {{
+            .login-container {{
                 min-height: auto;
                 padding-top: 30px;
                 padding-bottom: 30px;
-            }
+            }}
             
-            .brand-section {
+            .brand-section {{
                 margin-bottom: 25px;
-            }
+            }}
             
-            .brand-icon {
+            .brand-icon {{
                 width: 60px;
                 height: 60px;
                 font-size: 26px;
                 margin-bottom: 12px;
-            }
-        }
+            }}
+        }}
     </style>
 </head>
 <body>
@@ -2481,6 +2481,7 @@ LOGIN_TEMPLATE = f"""
 </body>
 </html>
 """
+
 # ==============================================================================
 # ADMIN DASHBOARD TEMPLATE - MODERN UI WITH DEW STYLE CHART
 # ==============================================================================
@@ -2630,609 +2631,6 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
                     </div>
                 </div>
             </div>
-
-            <div class="dashboard-grid-2">
-                <div class="card">
-                    <div class="section-header">
-                        <span>Daily Activity Chart</span>
-                        <div class="realtime-indicator">
-                            <div class="realtime-dot"></div>
-                            <span>Real-time</span>
-                        </div>
-                    </div>
-                    <div class="chart-container" style="height: 320px;">
-                        <canvas id="mainChart"></canvas>
-                    </div>
-                </div>
-                <div class="card">
-                    <div class="section-header">
-                        <span>Module Usage</span>
-                        <i class="fas fa-chart-bar" style="color: var(--accent-orange);"></i>
-                    </div>
-                    
-                    <div class="progress-item">
-                        <div class="progress-header">
-                            <span>Closing Report</span>
-                            <span class="progress-value">{{{{ stats.closing.count }}}} Lifetime</span>
-                        </div>
-                        <div class="progress-bar-container">
-                            <div class="progress-bar-fill progress-orange" style="width: 85%;"></div>
-                        </div>
-                    </div>
-                    
-                    <div class="progress-item">
-                        <div class="progress-header">
-                            <span>Accessories</span>
-                            <span class="progress-value">{{{{ stats.accessories.count }}}} Challans</span>
-                        </div>
-                        <div class="progress-bar-container">
-                            <div class="progress-bar-fill progress-purple" style="width: 65%;"></div>
-                        </div>
-                    </div>
-                    
-                    <div class="progress-item">
-                        <div class="progress-header">
-                            <span>PO Generator</span>
-                            <span class="progress-value">{{{{ stats.po.count }}}} Files</span>
-                        </div>
-                        <div class="progress-bar-container">
-                            <div class="progress-bar-fill progress-green" style="width: 45%;"></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="card">
-                <div class="section-header">
-                    <span>Recent Activity Log</span>
-                    <i class="fas fa-history" style="color: var(--text-secondary);"></i>
-                </div>
-                <div style="overflow-x: auto;">
-                    <table class="dark-table">
-                        <thead>
-                            <tr>
-                                <th>Time</th>
-                                <th>User</th>
-                                <th>Action</th>
-                                <th>Reference</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {{% for log in stats.history[:10] %}}
-                            <tr style="animation: fadeInUp 0.5s ease-out {{{{ loop.index * 0.05 }}}}s backwards;">
-                                <td>
-                                    <div class="time-badge">
-                                        <i class="far fa-clock"></i>
-                                        {{{{ log.time }}}}
-                                    </div>
-                                </td>
-                                <td style="font-weight: 600; color: white;">{{{{ log.user }}}}</td>
-                                <td>
-                                    <span class="table-badge" style="
-                                        {{% if log.type == 'Closing Report' %}}
-                                        background: rgba(255, 122, 0, 0.1); color: var(--accent-orange);
-                                        {{% elif log.type == 'PO Sheet' %}}
-                                        background: rgba(16, 185, 129, 0.1); color: var(--accent-green);
-                                        {{% else %}}
-                                        background: rgba(139, 92, 246, 0.1); color: var(--accent-purple);
-                                        {{% endif %}}
-                                    ">{{{{ log.type }}}}</span>
-                                </td>
-                                <td style="color: var(--text-secondary);">{{{{ log.ref if log.ref else '-' }}}}</td>
-                            </tr>
-                            {{% else %}}
-                            <tr>
-                                <td colspan="4" style="text-align: center; padding: 40px; color: var(--text-secondary);">
-                                    <i class="fas fa-inbox" style="font-size: 40px; opacity: 0.3; margin-bottom: 15px; display: block;"></i>
-                                    No activity recorded yet. 
-                                </td>
-                            </tr>
-                            {{% endfor %}}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-
-        <div id="section-analytics" style="display:none;">
-            <div class="header-section">
-                <div>
-                    <div class="page-title">Closing Report</div>
-                    <div class="page-subtitle">Generate production closing reports</div>
-                </div>
-            </div>
-            <div class="card" style="max-width: 550px; margin: 0 auto; margin-top: 30px;">
-                <div class="section-header">
-                    <span><i class="fas fa-magic" style="margin-right: 10px; color: var(--accent-orange);"></i>Generate Report</span>
-                </div>
-                <form action="/generate-report" method="post" onsubmit="return showLoading()">
-                    <div class="input-group">
-                        <label><i class="fas fa-bookmark" style="margin-right: 5px;"></i> INTERNAL REF NO</label>
-                        <input type="text" name="ref_no" placeholder="e.g. IB-12345 or Booking-123" required>
-                    </div>
-                    <button type="submit">
-                        <i class="fas fa-bolt" style="margin-right: 10px;"></i> Generate Report
-                    </button>
-                </form>
-            </div>
-        </div>
-
-        <div id="section-help" style="display:none;">
-            <div class="header-section">
-                <div>
-                    <div class="page-title">PO Sheet Generator</div>
-                    <div class="page-subtitle">Process and generate PO summary sheets</div>
-                </div>
-            </div>
-            <div class="card" style="max-width: 650px; margin: 0 auto; margin-top: 30px;">
-                <div class="section-header">
-                    <span><i class="fas fa-file-pdf" style="margin-right: 10px; color: var(--accent-green);"></i>Upload PDF Files</span>
-                </div>
-                <form action="/generate-po-report" method="post" enctype="multipart/form-data" onsubmit="return showLoading()">
-                    <div class="upload-zone" id="uploadZone" onclick="document.getElementById('file-upload').click()">
-                        <input type="file" name="pdf_files" multiple accept=".pdf" required style="display: none;" id="file-upload">
-                        <div class="upload-icon">
-                            <i class="fas fa-cloud-upload-alt"></i>
-                        </div>
-                        <div class="upload-text">Click or Drag to Upload PDF Files</div>
-                        <div class="upload-hint">Supports multiple PDF files</div>
-                        <div id="file-count">No files selected</div>
-                    </div>
-                    <button type="submit" style="margin-top: 25px; background: linear-gradient(135deg, #10B981 0%, #34D399 100%);">
-                        <i class="fas fa-cogs" style="margin-right: 10px;"></i> Process Files
-                    </button>
-                </form>
-            </div>
-        </div>
-
-        <div id="section-settings" style="display:none;">
-            <div class="header-section">
-                <div>
-                    <div class="page-title">User Management</div>
-                    <div class="page-subtitle">Manage user accounts and permissions</div>
-                </div>
-            </div>
-            <div class="dashboard-grid-2">
-                <div class="card">
-                    <div class="section-header">
-                        <span>User Directory</span>
-                        <span class="table-badge" style="background: var(--accent-orange); color: white;">{{{{ stats.users.count }}}} Users</span>
-                    </div>
-                    <div id="userTableContainer" style="max-height: 450px; overflow-y: auto;">
-                        <div class="skeleton" style="height: 50px; margin-bottom: 10px;"></div>
-                        <div class="skeleton" style="height: 50px; margin-bottom: 10px;"></div>
-                        <div class="skeleton" style="height: 50px;"></div>
-                    </div>
-                </div>
-                <div class="card">
-                    <div class="section-header">
-                        <span>Create / Edit User</span>
-                        <i class="fas fa-user-plus" style="color: var(--accent-orange);"></i>
-                    </div>
-                    <form id="userForm">
-                        <input type="hidden" id="action_type" value="create">
-                        <div class="input-group">
-                            <label><i class="fas fa-user" style="margin-right: 5px;"></i> USERNAME</label>
-                            <input type="text" id="new_username" required placeholder="Enter username">
-                        </div>
-                        <div class="input-group">
-                            <label><i class="fas fa-key" style="margin-right: 5px;"></i> PASSWORD</label>
-                            <input type="text" id="new_password" required placeholder="Enter password">
-                        </div>
-                        <div class="input-group">
-                            <label><i class="fas fa-shield-alt" style="margin-right: 5px;"></i> PERMISSIONS</label>
-                            <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 5px;">
-                                <label class="perm-checkbox">
-                                    <input type="checkbox" id="perm_closing" checked>
-                                    <span>Closing</span>
-                                </label>
-                                <label class="perm-checkbox">
-                                    <input type="checkbox" id="perm_po">
-                                    <span>PO Sheet</span>
-                                </label>
-                                <label class="perm-checkbox">
-                                    <input type="checkbox" id="perm_acc">
-                                    <span>Accessories</span>
-                                </label>
-                            </div>
-                        </div>
-                        <button type="button" onclick="handleUserSubmit()" id="saveUserBtn">
-                            <i class="fas fa-save" style="margin-right: 10px;"></i> Save User
-                        </button>
-                        <button type="button" onclick="resetForm()" style="margin-top: 12px; background: rgba(255,255,255,0.05); border: 1px solid var(--border-color);">
-                            <i class="fas fa-undo" style="margin-right: 10px;"></i> Reset Form
-                        </button>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
-    <script>
-        // ===== WELCOME POPUP WITH TIME-BASED GREETING =====
-        function showWelcomePopup() {{
-            const hour = new Date().getHours();
-            let greeting, icon;
-            
-            if (hour >= 5 && hour < 12) {{
-                greeting = "Good Morning";
-                icon = "🌅";
-            }} else if (hour >= 12 && hour < 17) {{
-                greeting = "Good Afternoon";
-                icon = "☀️";
-            }} else if (hour >= 17 && hour < 21) {{
-                greeting = "Good Evening";
-                icon = "🌆";
-            }} else {{
-                greeting = "Good Night";
-                icon = "🌙";
-            }}
-            
-            document.getElementById('greetingText').textContent = greeting;
-            document.getElementById('welcomeIcon').textContent = icon;
-            document.getElementById('welcomeModal').style.display = 'flex';
-        }}
-        
-        function closeWelcome() {{
-            const modal = document.getElementById('welcomeModal');
-            modal.style.animation = 'modalFadeOut 0.3s ease-out forwards';
-            setTimeout(() => {{
-                modal.style.display = 'none';
-                sessionStorage.setItem('welcomeShown', 'true');
-            }}, 300);
-        }}
-        
-        if (!sessionStorage.getItem('welcomeShown')) {{
-            setTimeout(showWelcomePopup, 500);
-        }}
-        
-        // ===== SECTION NAVIGATION =====
-        function showSection(id, element) {{
-            ['dashboard', 'analytics', 'help', 'settings'].forEach(sid => {{
-                document.getElementById('section-' + sid).style.display = 'none';
-            }});
-            document.getElementById('section-' + id).style.display = 'block';
-            
-            if (element) {{
-                document.querySelectorAll('.nav-link').forEach(el => el.classList.remove('active'));
-                element.classList.add('active');
-            }}
-            
-            if (id === 'settings') loadUsers();
-            if (window.innerWidth < 1024) document.querySelector('.sidebar').classList.remove('active');
-        }}
-        
-        // ===== FILE UPLOAD HANDLER =====
-        const fileUpload = document.getElementById('file-upload');
-        const uploadZone = document.getElementById('uploadZone');
-        
-        if (fileUpload) {{
-            fileUpload.addEventListener('change', function() {{
-                const count = this.files.length;
-                document.getElementById('file-count').innerHTML = count > 0 
-                    ? `<i class="fas fa-check-circle" style="margin-right: 5px;"></i>${{count}} file(s) selected`
-                    : 'No files selected';
-            }});
-            uploadZone.addEventListener('dragover', (e) => {{
-                e.preventDefault();
-                uploadZone.classList.add('dragover');
-            }});
-            uploadZone.addEventListener('dragleave', () => {{
-                uploadZone.classList.remove('dragover');
-            }});
-            uploadZone.addEventListener('drop', (e) => {{
-                e.preventDefault();
-                uploadZone.classList.remove('dragover');
-                fileUpload.files = e.dataTransfer.files;
-                fileUpload.dispatchEvent(new Event('change'));
-            }});
-        }}
-        
-        // ===== DEW STYLE DAILY CHART =====
-        const ctx = document.getElementById('mainChart').getContext('2d');
-        const gradientOrange = ctx.createLinearGradient(0, 0, 0, 300);
-        gradientOrange.addColorStop(0, 'rgba(255, 122, 0, 0.5)');
-        gradientOrange.addColorStop(1, 'rgba(255, 122, 0, 0.0)');
-        const gradientPurple = ctx.createLinearGradient(0, 0, 0, 300);
-        gradientPurple.addColorStop(0, 'rgba(139, 92, 246, 0.5)');
-        gradientPurple.addColorStop(1, 'rgba(139, 92, 246, 0.0)');
-        const gradientGreen = ctx.createLinearGradient(0, 0, 0, 300);
-        gradientGreen.addColorStop(0, 'rgba(16, 185, 129, 0.5)');
-        gradientGreen.addColorStop(1, 'rgba(16, 185, 129, 0.0)');
-        new Chart(ctx, {{
-            type: 'line',
-            data: {{
-                labels: {{{{ stats.chart.labels | tojson }}}},
-                datasets: [
-                    {{
-                        label: 'Closing',
-                        data: {{{{ stats.chart.closing | tojson }}}},
-                        borderColor: '#FF7A00',
-                        backgroundColor: gradientOrange,
-                        tension: 0.4,
-                        fill: true,
-                        pointBackgroundColor: '#FF7A00',
-                        pointBorderColor: '#fff',
-                        pointBorderWidth: 2,
-                        pointRadius: 4,
-                        pointHoverRadius: 7,
-                        borderWidth: 3
-                    }},
-                    {{
-                        label: 'Accessories',
-                        data: {{{{ stats.chart.acc | tojson }}}},
-                        borderColor: '#8B5CF6',
-                        backgroundColor: gradientPurple,
-                        tension: 0.4,
-                        fill: true,
-                        pointBackgroundColor: '#8B5CF6',
-                        pointBorderColor: '#fff',
-                        pointBorderWidth: 2,
-                        pointRadius: 4,
-                        pointHoverRadius: 7,
-                        borderWidth: 3
-                    }},
-                    {{
-                        label: 'PO Sheets',
-                        data: {{{{ stats.chart.po | tojson }}}},
-                        borderColor: '#10B981',
-                        backgroundColor: gradientGreen,
-                        tension: 0.4,
-                        fill: true,
-                        pointBackgroundColor: '#10B981',
-                        pointBorderColor: '#fff',
-                        pointBorderWidth: 2,
-                        pointRadius: 4,
-                        pointHoverRadius: 7,
-                        borderWidth: 3
-                    }}
-                ]
-            }},
-            options: {{
-                plugins: {{
-                    legend: {{
-                        display: true,
-                        position: 'top',
-                        labels: {{
-                            color: '#8b8b9e',
-                            font: {{ size: 11, weight: 500 }},
-                            usePointStyle: true,
-                            padding: 15,
-                            boxWidth: 8
-                        }}
-                    }},
-                    tooltip: {{
-                        mode: 'index',
-                        intersect: false,
-                        backgroundColor: 'rgba(22, 22, 31, 0.95)',
-                        titleColor: '#fff',
-                        bodyColor: '#8b8b9e',
-                        borderColor: 'rgba(255, 122, 0, 0.3)',
-                        borderWidth: 1,
-                        padding: 12,
-                        cornerRadius: 10,
-                        displayColors: true
-                    }}
-                }},
-                scales: {{
-                    x: {{
-                        grid: {{ 
-                            display: false 
-                        }},
-                        ticks: {{ 
-                            color: '#8b8b9e', 
-                            font: {{ size: 10 }},
-                            maxRotation: 45,
-                            minRotation: 45
-                        }}
-                    }},
-                    y: {{
-                        grid: {{ 
-                            color: 'rgba(255,255,255,0.03)',
-                            drawBorder: false
-                        }},
-                        ticks: {{ 
-                            color: '#8b8b9e', 
-                            font: {{ size: 10 }},
-                            stepSize: 1
-                        }},
-                        beginAtZero: true
-                    }}
-                }},
-                responsive: true,
-                maintainAspectRatio: false,
-                interaction: {{
-                    intersect: false,
-                    mode: 'index'
-                }},
-                animation: {{
-                    duration: 2000,
-                    easing: 'easeOutQuart'
-                }}
-            }}
-        }});
-
-        // ===== COUNT UP ANIMATION =====
-        function animateCountUp() {{
-            document.querySelectorAll('.count-up').forEach(counter => {{
-                const target = parseInt(counter.getAttribute('data-target'));
-                const duration = 2000;
-                const step = target / (duration / 16);
-                let current = 0;
-                
-                const updateCounter = () => {{
-                    current += step;
-                    if (current < target) {{
-                        counter.textContent = Math.floor(current);
-                        requestAnimationFrame(updateCounter);
-                    }} else {{
-                        counter.textContent = target;
-                    }}
-                }};
-                
-                updateCounter();
-            }});
-        }}
-        
-        setTimeout(animateCountUp, 500);
-
-        // ===== LOADING ANIMATION =====
-        function showLoading() {{
-            const overlay = document.getElementById('loading-overlay');
-            const spinner = document.getElementById('spinner-anim').parentElement;
-            const success = document.getElementById('success-anim');
-            const fail = document.getElementById('fail-anim');
-            const text = document.getElementById('loading-text');
-            
-            overlay.style.display = 'flex';
-            spinner.style.display = 'block';
-            success.style.display = 'none';
-            fail.style.display = 'none';
-            text.style.display = 'block';
-            text.textContent = 'Processing Request...';
-            
-            return true;
-        }}
-
-        function showSuccess() {{
-            const overlay = document.getElementById('loading-overlay');
-            const spinner = document.getElementById('spinner-anim').parentElement;
-            const success = document.getElementById('success-anim');
-            const text = document.getElementById('loading-text');
-            
-            spinner.style.display = 'none';
-            success.style.display = 'block';
-            text.style.display = 'none';
-            
-            setTimeout(() => {{ overlay.style.display = 'none'; }}, 1500);
-        }}
-
-        // ===== USER MANAGEMENT =====
-        function loadUsers() {{
-            fetch('/admin/get-users')
-                .then(res => res.json())
-                .then(data => {{
-                    let html = '<table class="dark-table"><thead><tr><th>User</th><th>Role</th><th style="text-align:right;">Actions</th></tr></thead><tbody>';
-                    
-                    for (const [u, d] of Object.entries(data)) {{
-                        const roleClass = d.role === 'admin' ? 'background: rgba(255, 122, 0, 0.1); color: var(--accent-orange);' : 'background: rgba(139, 92, 246, 0.1); color: var(--accent-purple);';
-                        
-                        html += `<tr>
-                            <td style="font-weight: 600;">${{u}}</td>
-                            <td><span class="table-badge" style="${{roleClass}}">${{d.role}}</span></td>
-                            <td style="text-align:right;">
-                                ${{d.role !== 'admin' ? `
-                                    <div class="action-cell">
-                                        <button class="action-btn btn-edit" onclick="editUser('${{u}}', '${{d.password}}', '${{d.permissions.join(',')}}')">
-                                            <i class="fas fa-edit"></i>
-                                        </button> 
-                                        <button class="action-btn btn-del" onclick="deleteUser('${{u}}')">
-                                            <i class="fas fa-trash"></i>
-                                        </button>
-                                    </div>
-                                ` : '<i class="fas fa-shield-alt" style="color: var(--accent-orange); opacity: 0.5;"></i>'}}
-                            </td>
-                        </tr>`;
-                    }}
-                    
-                    document.getElementById('userTableContainer').innerHTML = html + '</tbody></table>';
-                }});
-        }}
-        
-        function handleUserSubmit() {{
-            const u = document.getElementById('new_username').value;
-            const p = document.getElementById('new_password').value;
-            const a = document.getElementById('action_type').value;
-            
-            let perms = [];
-            if (document.getElementById('perm_closing').checked) perms.push('closing');
-            if (document.getElementById('perm_po').checked) perms.push('po_sheet');
-            if (document.getElementById('perm_acc').checked) perms.push('accessories');
-            
-            showLoading();
-            
-            fetch('/admin/save-user', {{
-                method: 'POST',
-                headers: {{'Content-Type': 'application/json'}},
-                body: JSON.stringify({{ username: u, password: p, permissions: perms, action_type: a }})
-            }})
-            .then(r => r.json())
-            .then(d => {{
-                if (d.status === 'success') {{
-                    showSuccess();
-                    loadUsers();
-                    resetForm();
-                }} else {{
-                    alert(d.message);
-                    document.getElementById('loading-overlay').style.display = 'none';
-                }}
-            }});
-        }}
-        
-        function editUser(u, p, permsStr) {{
-            document.getElementById('new_username').value = u;
-            document.getElementById('new_username').readOnly = true;
-            document.getElementById('new_password').value = p;
-            document.getElementById('action_type').value = 'update';
-            document.getElementById('saveUserBtn').innerHTML = '<i class="fas fa-sync" style="margin-right: 10px;"></i> Update User';
-            const pArr = permsStr.split(',');
-            document.getElementById('perm_closing').checked = pArr.includes('closing');
-            document.getElementById('perm_po').checked = pArr.includes('po_sheet');
-            document.getElementById('perm_acc').checked = pArr.includes('accessories');
-        }}
-        
-        function resetForm() {{
-            document.getElementById('userForm').reset();
-            document.getElementById('action_type').value = 'create';
-            document.getElementById('saveUserBtn').innerHTML = '<i class="fas fa-save" style="margin-right: 10px;"></i> Save User';
-            document.getElementById('new_username').readOnly = false;
-            document.getElementById('perm_closing').checked = true;
-        }}
-        
-        function deleteUser(u) {{
-            if (confirm('Are you sure you want to delete "' + u + '"?')) {{
-                fetch('/admin/delete-user', {{
-                    method: 'POST',
-                    headers: {{'Content-Type': 'application/json'}},
-                    body: JSON.stringify({{ username: u }})
-                }}).then(() => loadUsers());
-            }}
-        }}
-        
-        // ===== PARTICLES.JS INITIALIZATION =====
-        if (typeof particlesJS !== 'undefined') {{
-            particlesJS('particles-js', {{
-                particles: {{
-                    number: {{ value: 50, density: {{ enable: true, value_area: 800 }} }},
-                    color: {{ value: '#FF7A00' }},
-                    shape: {{ type: 'circle' }},
-                    opacity: {{ value: 0.3, random: true }},
-                    size: {{ value: 3, random: true }},
-                    line_linked: {{ enable: true, distance: 150, color: '#FF7A00', opacity: 0.1, width: 1 }},
-                    move: {{ enable: true, speed: 1, direction: 'none', random: true, out_mode: 'out' }}
-                }},
-                interactivity: {{
-                    events: {{ onhover: {{ enable: true, mode: 'grab' }} }},
-                    modes: {{ grab: {{ distance: 140, line_linked: {{ opacity: 0.3 }} }} }}
-                }}
-            }});
-        }}
-        
-        // Add CSS for fadeInUp animation
-        const style = document.createElement('style');
-        style.textContent = `
-            @keyframes fadeInUp {{
-                from {{ opacity: 0; transform: translateY(20px); }}
-                to {{ opacity: 1; transform: translateY(0); }}
-            }}
-            @keyframes modalFadeOut {{
-                to {{ opacity: 0; }}
-            }}
-        `;
-        document.head.appendChild(style);
-    </script>
-</body>
-</html>
-"""
 # ==============================================================================
 # USER DASHBOARD TEMPLATE - MODERN UI
 # ==============================================================================
@@ -4777,7 +4175,6 @@ PO_REPORT_TEMPLATE = """
 </body>
 </html>
 """
-
 # ==============================================================================
 # FLASK ROUTES (CONTROLLER LOGIC)
 # ==============================================================================
