@@ -1,11 +1,11 @@
 import requests
 import openpyxl
-from openpyxl. styles import Font, Alignment, Border, Side, PatternFill
+from openpyxl.styles import Font, Alignment, Border, Side, PatternFill
 from bs4 import BeautifulSoup
 from datetime import datetime, timedelta
 import pytz 
 from io import BytesIO
-from openpyxl. drawing.image import Image
+from openpyxl.drawing.image import Image
 from PIL import Image as PILImage
 import time
 import json
@@ -30,7 +30,7 @@ app.secret_key = 'super-secret-secure-key-bd'
 
 # PO ফাইলের জন্য আপলোড ফোল্ডার
 UPLOAD_FOLDER = 'uploads'
-if not os.path. exists(UPLOAD_FOLDER):
+if not os.path.exists(UPLOAD_FOLDER):
     os.makedirs(UPLOAD_FOLDER)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
@@ -38,13 +38,13 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=2) 
 
 # টাইমজোন কনফিগারেশন (বাংলাদেশ)
-bd_tz = pytz. timezone('Asia/Dhaka')
+bd_tz = pytz.timezone('Asia/Dhaka')
 
 def get_bd_time():
     return datetime.now(bd_tz)
 
 def get_bd_date_str():
-    return get_bd_time(). strftime('%d-%m-%Y')
+    return get_bd_time().strftime('%d-%m-%Y')
 
 # ==============================================================================
 # Browser Cache Control (ব্যাক বাটন ফিক্স)
@@ -78,10 +78,10 @@ except Exception as e:
 # ==============================================================================
 COMMON_STYLES = """
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all. min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4. 1.1/animate.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min. js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
     <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
     <style>
         :root {
@@ -166,7 +166,7 @@ COMMON_STYLES = """
 
         /* Glassmorphism Effect */
         .glass {
-            background: rgba(22, 22, 31, 0. 7);
+            background: rgba(22, 22, 31, 0.7);
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
             border: 1px solid var(--border-color);
@@ -231,7 +231,7 @@ COMMON_STYLES = """
             50% { transform: translateY(-5px) rotate(5deg); }
         }
         
-        . nav-menu { 
+        .nav-menu { 
             flex-grow: 1; 
             display: flex; 
             flex-direction: column; 
@@ -253,7 +253,7 @@ COMMON_STYLES = """
             overflow: hidden;
         }
 
-        . nav-link::before {
+        .nav-link::before {
             content: '';
             position: absolute;
             left: 0;
@@ -265,9 +265,9 @@ COMMON_STYLES = """
             z-index: -1;
         }
 
-        .nav-link:hover::before, .nav-link. active::before { width: 100%; }
+        .nav-link:hover::before, .nav-link.active::before { width: 100%; }
 
-        .nav-link:hover, .nav-link. active { 
+        .nav-link:hover, .nav-link.active { 
             color: var(--accent-orange); 
             transform: translateX(5px);
         }
@@ -287,11 +287,11 @@ COMMON_STYLES = """
         }
 
         .nav-link:hover i {
-            transform: scale(1. 2);
+            transform: scale(1.2);
             filter: drop-shadow(0 0 8px var(--accent-orange));
         }
 
-        .nav-link . nav-badge {
+        .nav-link .nav-badge {
             margin-left: auto;
             background: var(--accent-orange);
             color: white;
@@ -328,7 +328,7 @@ COMMON_STYLES = """
             min-height: 100vh;
         }
 
-        . header-section { 
+        .header-section { 
             display: flex; 
             justify-content: space-between; 
             align-items: flex-start; 
@@ -375,7 +375,7 @@ COMMON_STYLES = """
 
         .status-badge:hover {
             border-color: var(--accent-green);
-            box-shadow: 0 0 20px rgba(16, 185, 129, 0. 2);
+            box-shadow: 0 0 20px rgba(16, 185, 129, 0.2);
         }
 
         .status-dot {
@@ -418,7 +418,7 @@ COMMON_STYLES = """
             overflow: hidden;
         }
 
-        . card::before {
+        .card::before {
             content: '';
             position: absolute;
             top: 0;
@@ -502,13 +502,13 @@ COMMON_STYLES = """
             box-shadow: 0 0 30px var(--accent-orange-glow);
         }
 
-        . stat-card:hover .stat-icon i {
+        .stat-card:hover .stat-icon i {
             animation: iconBounce 0.5s ease-out;
         }
 
         @keyframes iconBounce {
             0%, 100% { transform: scale(1); }
-            50% { transform: scale(1. 3); }
+            50% { transform: scale(1.3); }
         }
 
         .stat-info h3 { 
@@ -529,7 +529,7 @@ COMMON_STYLES = """
             color: var(--text-secondary); 
             margin: 6px 0 0 0; 
             text-transform: uppercase;
-            letter-spacing: 1. 5px;
+            letter-spacing: 1.5px;
             font-weight: 600;
         }
 
@@ -555,7 +555,7 @@ COMMON_STYLES = """
             font-weight: 600;
         }
 
-        . progress-bar-container {
+        .progress-bar-container {
             height: 8px;
             background: rgba(255, 255, 255, 0.05);
             border-radius: 10px;
@@ -571,7 +571,7 @@ COMMON_STYLES = """
             transform-origin: left;
         }
 
-        . progress-bar-fill::after {
+        .progress-bar-fill::after {
             content: '';
             position: absolute;
             top: 0;
@@ -592,9 +592,9 @@ COMMON_STYLES = """
             100% { transform: translateX(100%); }
         }
 
-        . progress-orange { background: var(--gradient-orange); }
+        .progress-orange { background: var(--gradient-orange); }
         .progress-purple { background: linear-gradient(135deg, #8B5CF6 0%, #A78BFA 100%); }
-        . progress-green { background: linear-gradient(135deg, #10B981 0%, #34D399 100%); }
+        .progress-green { background: linear-gradient(135deg, #10B981 0%, #34D399 100%); }
         /* Enhanced Forms */
         .input-group { margin-bottom: 20px; }
 
@@ -635,7 +635,7 @@ COMMON_STYLES = """
         select {
             cursor: pointer;
             appearance: none;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3. org/2000/svg' fill='%23FF7A00' viewBox='0 0 24 24'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%23FF7A00' viewBox='0 0 24 24'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
             background-repeat: no-repeat;
             background-position: right 12px center;
             background-size: 24px;
@@ -752,7 +752,7 @@ COMMON_STYLES = """
             overflow: hidden;
         }
 
-        . btn-edit { 
+        .btn-edit { 
             background: rgba(139, 92, 246, 0.15); 
             color: #A78BFA; 
         }
@@ -765,7 +765,7 @@ COMMON_STYLES = """
         }
 
         .btn-del { 
-            background: rgba(239, 68, 68, 0. 15); 
+            background: rgba(239, 68, 68, 0.15); 
             color: #F87171; 
         }
 
@@ -773,7 +773,7 @@ COMMON_STYLES = """
             background: var(--accent-red); 
             color: white;
             transform: scale(1.1);
-            box-shadow: 0 0 20px rgba(239, 68, 68, 0. 4);
+            box-shadow: 0 0 20px rgba(239, 68, 68, 0.4);
         }
         /* Enhanced Loading Overlay */
         #loading-overlay { 
@@ -810,14 +810,14 @@ COMMON_STYLES = """
             box-shadow: 0 0 30px var(--accent-orange-glow);
         }
 
-        . spinner-inner {
+        .spinner-inner {
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
             width: 50px;
             height: 50px;
-            border: 3px solid rgba(139, 92, 246, 0. 1);
+            border: 3px solid rgba(139, 92, 246, 0.1);
             border-bottom: 3px solid var(--accent-purple);
             border-left: 3px solid var(--accent-purple);
             border-radius: 50%;
@@ -844,10 +844,10 @@ COMMON_STYLES = """
             border: 3px solid var(--accent-green);
             margin-bottom: 24px;
             animation: success-anim 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-            box-shadow: 0 0 40px rgba(16, 185, 129, 0. 3);
+            box-shadow: 0 0 40px rgba(16, 185, 129, 0.3);
         }
 
-        . checkmark-circle::before {
+        .checkmark-circle::before {
             content: ''; 
             display: block; 
             width: 30px; 
@@ -859,11 +859,11 @@ COMMON_STYLES = """
             left: 35px;
             transform: rotate(45deg); 
             opacity: 0;
-            animation: checkmark-anim 0.4s 0. 4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+            animation: checkmark-anim 0.4s 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
         }
         
         /* Fail Cross Animation */
-        . fail-container { 
+        .fail-container { 
             display: none; 
             text-align: center; 
         }
@@ -876,7 +876,7 @@ COMMON_STYLES = """
             border-radius: 50%; 
             border: 3px solid var(--accent-red);
             margin-bottom: 24px;
-            animation: fail-anim 0.6s cubic-bezier(0. 4, 0, 0.2, 1) forwards;
+            animation: fail-anim 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
             box-shadow: 0 0 40px rgba(239, 68, 68, 0.3);
         }
 
@@ -893,12 +893,12 @@ COMMON_STYLES = """
             opacity: 0;
         }
 
-        . fail-circle::before { transform: rotate(45deg); }
+        .fail-circle::before { transform: rotate(45deg); }
         .fail-circle::after { transform: rotate(-45deg); }
 
         @keyframes success-anim { 
             0% { transform: scale(0); opacity: 0; } 
-            50% { transform: scale(1. 2); } 
+            50% { transform: scale(1.2); } 
             100% { transform: scale(1); opacity: 1; } 
         }
 
@@ -918,7 +918,7 @@ COMMON_STYLES = """
             100% { opacity: 1; transform: rotate(45deg) scale(1); }
         }
 
-        . anim-text { 
+        .anim-text { 
             font-size: 24px; 
             font-weight: 800; 
             color: white; 
@@ -926,18 +926,18 @@ COMMON_STYLES = """
             letter-spacing: 1px;
         }
 
-        . loading-text {
+        .loading-text {
             color: var(--text-secondary);
             font-size: 15px;
             margin-top: 20px;
             font-weight: 500;
             letter-spacing: 2px;
             text-transform: uppercase;
-            animation: textPulse 1. 5s ease-in-out infinite;
+            animation: textPulse 1.5s ease-in-out infinite;
         }
 
         @keyframes textPulse {
-            0%, 100% { opacity: 0. 5; }
+            0%, 100% { opacity: 0.5; }
             50% { opacity: 1; }
         }
 
@@ -949,13 +949,13 @@ COMMON_STYLES = """
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(10, 10, 15, 0. 9);
+            background: rgba(10, 10, 15, 0.9);
             backdrop-filter: blur(10px);
             -webkit-backdrop-filter: blur(10px);
             z-index: 10000;
             justify-content: center;
             align-items: center;
-            animation: modalFadeIn 0. 3s ease-out;
+            animation: modalFadeIn 0.3s ease-out;
         }
 
         @keyframes modalFadeIn {
@@ -963,7 +963,7 @@ COMMON_STYLES = """
             to { opacity: 1; }
         }
 
-        . welcome-content {
+        .welcome-content {
             background: var(--gradient-card);
             border: 1px solid var(--border-color);
             border-radius: 24px;
@@ -971,13 +971,13 @@ COMMON_STYLES = """
             text-align: center;
             max-width: 500px;
             width: 90%;
-            animation: welcomeSlideIn 0. 5s cubic-bezier(0.4, 0, 0.2, 1);
+            animation: welcomeSlideIn 0.5s cubic-bezier(0.4, 0, 0.2, 1);
             box-shadow: 0 25px 80px rgba(0, 0, 0, 0.5), 0 0 60px var(--accent-orange-glow);
             position: relative;
             overflow: hidden;
         }
 
-        . welcome-content::before {
+        .welcome-content::before {
             content: '';
             position: absolute;
             top: -50%;
@@ -986,7 +986,7 @@ COMMON_STYLES = """
             height: 200%;
             background: radial-gradient(circle, var(--accent-orange-glow) 0%, transparent 60%);
             animation: welcomeGlow 3s ease-in-out infinite;
-            opacity: 0. 3;
+            opacity: 0.3;
         }
         @keyframes welcomeSlideIn {
             from { 
@@ -1017,7 +1017,7 @@ COMMON_STYLES = """
             100% { transform: scale(1) rotate(0deg); }
         }
 
-        . welcome-greeting {
+        .welcome-greeting {
             font-size: 16px;
             color: var(--accent-orange);
             font-weight: 600;
@@ -1133,7 +1133,7 @@ COMMON_STYLES = """
         .upload-zone.dragover {
             border-color: var(--accent-orange);
             background: rgba(255, 122, 0, 0.1);
-            transform: scale(1. 02);
+            transform: scale(1.02);
         }
 
         .upload-icon {
@@ -1149,14 +1149,14 @@ COMMON_STYLES = """
             50% { transform: translateY(-10px); }
         }
 
-        . upload-text {
+        .upload-text {
             color: var(--accent-orange);
             font-weight: 600;
             font-size: 16px;
             margin-bottom: 8px;
         }
 
-        . upload-hint {
+        .upload-hint {
             color: var(--text-secondary);
             font-size: 13px;
         }
@@ -1169,7 +1169,7 @@ COMMON_STYLES = """
         }
 
         /* Flash Messages */
-        . flash-message {
+        .flash-message {
             margin-bottom: 20px;
             padding: 16px 20px;
             border-radius: 12px;
@@ -1193,13 +1193,13 @@ COMMON_STYLES = """
         }
 
         .flash-error {
-            background: rgba(239, 68, 68, 0. 1);
+            background: rgba(239, 68, 68, 0.1);
             border: 1px solid rgba(239, 68, 68, 0.2);
             color: #F87171;
         }
 
         .flash-success {
-            background: rgba(16, 185, 129, 0. 1);
+            background: rgba(16, 185, 129, 0.1);
             border: 1px solid rgba(16, 185, 129, 0.2);
             color: #34D399;
         }
@@ -1226,7 +1226,7 @@ COMMON_STYLES = """
         }
 
         /* Mobile */
-        . mobile-toggle { 
+        .mobile-toggle { 
             display: none; 
             position: fixed; 
             top: 20px; 
@@ -1250,10 +1250,10 @@ COMMON_STYLES = """
                 transform: translateX(-100%); 
                 width: 280px;
             } 
-            .sidebar. active { 
+            .sidebar.active { 
                 transform: translateX(0); 
             }
-            . main-content { 
+            .main-content { 
                 margin-left: 0; 
                 width: 100%; 
                 padding: 20px; 
@@ -1273,7 +1273,7 @@ COMMON_STYLES = """
         }
 
         @media (max-width: 768px) {
-            . stats-grid {
+            .stats-grid {
                 grid-template-columns: 1fr;
             }
             .page-title {
@@ -1288,7 +1288,7 @@ COMMON_STYLES = """
         }
 
         /* Skeleton Loading */
-        . skeleton {
+        .skeleton {
             background: linear-gradient(90deg, var(--bg-card) 25%, rgba(255,255,255,0.05) 50%, var(--bg-card) 75%);
             background-size: 200% 100%;
             animation: skeletonLoad 1.5s infinite;
@@ -1333,12 +1333,12 @@ COMMON_STYLES = """
             font-size: 12px;
             color: var(--text-secondary);
             padding: 6px 12px;
-            background: rgba(16, 185, 129, 0. 1);
+            background: rgba(16, 185, 129, 0.1);
             border-radius: 20px;
             border: 1px solid rgba(16, 185, 129, 0.2);
         }
 
-        . realtime-dot {
+        .realtime-dot {
             width: 8px;
             height: 8px;
             background: var(--accent-green);
@@ -1372,7 +1372,7 @@ COMMON_STYLES = """
         }
 
         .fab:hover {
-            transform: scale(1. 1) rotate(90deg);
+            transform: scale(1.1) rotate(90deg);
             box-shadow: 0 12px 40px var(--accent-orange-glow);
         }
         /* Glow Text */
@@ -1401,7 +1401,7 @@ COMMON_STYLES = """
             transition: opacity 0.3s;
         }
 
-        . animated-border:hover::after {
+        .animated-border:hover::after {
             opacity: 1;
         }
 
@@ -1412,7 +1412,7 @@ COMMON_STYLES = """
         }
 
         /* Permission Checkbox Styles */
-        . perm-checkbox {
+        .perm-checkbox {
             background: rgba(255, 255, 255, 0.03);
             padding: 14px 18px;
             border-radius: 12px;
@@ -1442,12 +1442,12 @@ COMMON_STYLES = """
             color: var(--text-secondary);
         }
 
-        . perm-checkbox:has(input:checked) {
+        .perm-checkbox:has(input:checked) {
             border-color: var(--accent-orange);
-            background: rgba(255, 122, 0, 0. 1);
+            background: rgba(255, 122, 0, 0.1);
         }
 
-        . perm-checkbox:has(input:checked) span {
+        .perm-checkbox:has(input:checked) span {
             color: var(--accent-orange);
         }
 
@@ -1519,7 +1519,7 @@ def update_stats(ref_no, username):
     new_record = {
         "ref": ref_no,
         "user": username,
-        "date": now. strftime('%d-%m-%Y'),
+        "date": now.strftime('%d-%m-%Y'),
         "time": now.strftime('%I:%M %p'),
         "type": "Closing Report",
         "iso_time": now.isoformat()
@@ -1538,9 +1538,9 @@ def update_po_stats(username, file_count):
         "user": username,
         "file_count": file_count,
         "date": now.strftime('%d-%m-%Y'),
-        "time": now. strftime('%I:%M %p'),
+        "time": now.strftime('%I:%M %p'),
         "type": "PO Sheet",
-        "iso_time": now. isoformat()
+        "iso_time": now.isoformat()
     }
     if 'downloads' not in data:
         data['downloads'] = []
@@ -1572,15 +1572,15 @@ def get_dashboard_summary_v2():
     now = get_bd_time()
     today_str = now.strftime('%d-%m-%Y')
     
-    # 1. User Stats
+    # 1.User Stats
     user_details = []
-    for u, d in users_data. items():
+    for u, d in users_data.items():
         user_details.append({
             "username": u,
-            "role": d. get('role', 'user'),
-            "created_at": d. get('created_at', 'N/A'),
+            "role": d.get('role', 'user'),
+            "created_at": d.get('created_at', 'N/A'),
             "last_login": d.get('last_login', 'Never'),
-            "last_duration": d. get('last_duration', 'N/A')
+            "last_duration": d.get('last_duration', 'N/A')
         })
 
     # 2.  Accessories LIFETIME & Daily Analytics
@@ -1590,7 +1590,7 @@ def get_dashboard_summary_v2():
     # Daily Analytics Container
     daily_data = defaultdict(lambda: {'closing': 0, 'po': 0, 'acc': 0})
 
-    for ref, data in acc_db. items():
+    for ref, data in acc_db.items():
         for challan in data.get('challans', []):
             acc_lifetime_count += 1
             c_date = challan.get('date')
@@ -1606,7 +1606,7 @@ def get_dashboard_summary_v2():
             # Daily Analytics Calculation
             try:
                 dt_obj = datetime.strptime(c_date, '%d-%m-%Y')
-                sort_key = dt_obj. strftime('%Y-%m-%d')
+                sort_key = dt_obj.strftime('%Y-%m-%d')
                 daily_data[sort_key]['acc'] += 1
                 daily_data[sort_key]['label'] = dt_obj.strftime('%d-%b')
             except:
@@ -1621,7 +1621,7 @@ def get_dashboard_summary_v2():
     history = stats_data.get('downloads', [])
     for item in history:
         item_date = item.get('date', '')
-        if item. get('type') == 'PO Sheet':
+        if item.get('type') == 'PO Sheet':
             po_lifetime_count += 1
             if item_date == today_str:
                 po_list.append(item)
@@ -1665,7 +1665,7 @@ def get_dashboard_summary_v2():
     else:
         for k in sorted_keys:
             d = daily_data[k]
-            chart_labels.append(d. get('label', k))
+            chart_labels.append(d.get('label', k))
             chart_closing.append(d['closing'])
             chart_po.append(d['po'])
             chart_acc.append(d['acc'])
@@ -1690,8 +1690,8 @@ def get_dashboard_summary_v2():
 # ==============================================================================
 
 def is_potential_size(header):
-    h = header.strip(). upper()
-    if h in ["COLO", "SIZE", "TOTAL", "QUANTITY", "PRICE", "AMOUNT", "CURRENCY", "ORDER NO", "P. O NO"]:
+    h = header.strip().upper()
+    if h in ["COLO", "SIZE", "TOTAL", "QUANTITY", "PRICE", "AMOUNT", "CURRENCY", "ORDER NO", "P.O NO"]:
         return False
     if re.match(r'^\d+$', h):
         return True
@@ -1727,16 +1727,16 @@ def extract_metadata(first_page_text):
         'buyer': 'N/A', 'booking': 'N/A', 'style': 'N/A', 
         'season': 'N/A', 'dept': 'N/A', 'item': 'N/A'
     }
-    if "KIABI" in first_page_text. upper():
+    if "KIABI" in first_page_text.upper():
         meta['buyer'] = "KIABI"
     else:
-        buyer_match = re. search(r"Buyer.*?Name[\s\S]*?([\w\s&]+)(? :\n|$)", first_page_text)
+        buyer_match = re.search(r"Buyer.*?Name[\s\S]*?([\w\s&]+)(? :\n|$)", first_page_text)
         if buyer_match:
             meta['buyer'] = buyer_match.group(1).strip()
 
     booking_block_match = re.search(r"(? :Internal )?Booking NO\.  ? [:\s]*([\s\S]*?)(? :System NO|Control No|Buyer)", first_page_text, re.IGNORECASE)
     if booking_block_match:
-        raw_booking = booking_block_match.group(1). strip()
+        raw_booking = booking_block_match.group(1).strip()
         clean_booking = raw_booking.replace('\n', '').replace('\r', '').replace(' ', '')
         if "System" in clean_booking:
             clean_booking = clean_booking.split("System")[0]
@@ -1887,7 +1887,7 @@ def get_authenticated_session(username, password):
     })
     try:
         response = session_req.post(login_url, data=login_payload, timeout=300)
-        if "dashboard. php" in response.url or "Invalid" not in response.text:
+        if "dashboard.php" in response.url or "Invalid" not in response.text:
             return session_req
         else:
             return None
@@ -1896,11 +1896,11 @@ def get_authenticated_session(username, password):
         return None
 
 def fetch_closing_report_data(internal_ref_no):
-    active_session = get_authenticated_session("input2. clothing-cutting", "123456")
+    active_session = get_authenticated_session("input2.clothing-cutting", "123456")
     if not active_session:
         return None
 
-    report_url = 'http://180. 92.235.190:8022/erp/prod_planning/reports/requires/cutting_lay_production_report_controller.php'
+    report_url = 'http://180.92.235.190:8022/erp/prod_planning/reports/requires/cutting_lay_production_report_controller.php'
     payload_template = {'action': 'report_generate', 'cbo_wo_company_name': '2', 'cbo_location_name': '2', 'cbo_floor_id': '0', 'cbo_buyer_name': '0', 'txt_internal_ref_no': internal_ref_no, 'reportType': '3'}
     found_data = None
    
@@ -1911,7 +1911,7 @@ def fetch_closing_report_data(internal_ref_no):
             payload['cbo_company_name'] = str(company_id)
             try:
                 response = active_session.post(report_url, data=payload, timeout=300)
-                if response.status_code == 200 and "Data not Found" not in response. text:
+                if response.status_code == 200 and "Data not Found" not in response.text:
                     found_data = response.text
                     break
             except:
@@ -1931,8 +1931,8 @@ def parse_report_data(html_content):
         if not header_row:
             return None
         all_th = header_row.find_all('th')
-        headers = [th.get_text(strip=True) for th in all_th if 'total' not in th.get_text(strip=True). lower()]
-        data_rows = soup. select('div#scroll_body table tbody tr')
+        headers = [th.get_text(strip=True) for th in all_th if 'total' not in th.get_text(strip=True).lower()]
+        data_rows = soup.select('div#scroll_body table tbody tr')
         item_blocks = []
         current_block = []
         for row in data_rows:
@@ -1941,7 +1941,7 @@ def parse_report_data(html_content):
                     item_blocks.append(current_block)
                 current_block = []
             else:
-                current_block. append(row)
+                current_block.append(row)
         if current_block:
             item_blocks.append(current_block)
         for block in item_blocks:
@@ -1949,7 +1949,7 @@ def parse_report_data(html_content):
             for row in block:
                 cells = row.find_all('td')
                 if len(cells) > 2:
-                    criteria_main = cells[0]. get_text(strip=True)
+                    criteria_main = cells[0].get_text(strip=True)
                     criteria_sub = cells[2].get_text(strip=True)
                     main_lower, sub_lower = criteria_main.lower(), criteria_sub.lower()
                     if main_lower == "style":
@@ -1999,7 +1999,7 @@ def parse_report_data(html_content):
     # Styles
     bold_font = Font(bold=True)
     title_font = Font(size=32, bold=True, color="7B261A")
-    white_bold_font = Font(size=16. 5, bold=True, color="FFFFFF")
+    white_bold_font = Font(size=16.5, bold=True, color="FFFFFF")
     center_align = Alignment(horizontal='center', vertical='center')
     left_align = Alignment(horizontal='left', vertical='center')
     color_align = Alignment(horizontal='center', vertical='center', wrap_text=True)
@@ -2015,21 +2015,21 @@ def parse_report_data(html_content):
 
     NUM_COLUMNS, TABLE_START_ROW = 9, 8
     ws.merge_cells(start_row=1, start_column=1, end_row=1, end_column=NUM_COLUMNS)
-    ws['A1']. value = "COTTON CLOTHING BD LTD"
+    ws['A1'].value = "COTTON CLOTHING BD LTD"
     ws['A1'].font = title_font
     ws['A1'].alignment = center_align
 
-    ws. merge_cells(start_row=2, start_column=1, end_row=2, end_column=NUM_COLUMNS)
+    ws.merge_cells(start_row=2, start_column=1, end_row=2, end_column=NUM_COLUMNS)
     ws['A2'].value = "CLOSING REPORT [ INPUT SECTION ]"
     ws['A2'].font = Font(size=15, bold=True)
     ws['A2'].alignment = center_align
-    ws. row_dimensions[3].height = 6
+    ws.row_dimensions[3].height = 6
 
-    formatted_ref_no = internal_ref_no. upper()
-    current_date = get_bd_time(). strftime("%d/%m/%Y")
+    formatted_ref_no = internal_ref_no.upper()
+    current_date = get_bd_time().strftime("%d/%m/%Y")
     
     left_sub_headers = {
-        'A4': 'BUYER', 'B4': report_data[0]. get('buyer', ''),
+        'A4': 'BUYER', 'B4': report_data[0].get('buyer', ''),
         'A5': 'IR/IB NO', 'B5': formatted_ref_no,
         'A6': 'STYLE NO', 'B6': report_data[0].get('style', '')
     }
@@ -2038,16 +2038,16 @@ def parse_report_data(html_content):
         cell = ws[cell_ref]
         cell.value = value
         cell.font = bold_font
-        cell. alignment = left_align
+        cell.alignment = left_align
         cell.border = thin_border
         if cell_ref == 'B5':
             cell.fill = ir_ib_fill
             cell.font = white_bold_font
         else:
-            cell. fill = dark_green_fill
+            cell.fill = dark_green_fill
 
     ws.merge_cells('B4:G4')
-    ws. merge_cells('B5:G5')
+    ws.merge_cells('B5:G5')
     ws.merge_cells('B6:G6')
     
     right_sub_headers = {
@@ -2058,14 +2058,14 @@ def parse_report_data(html_content):
     for cell_ref, value in right_sub_headers.items():
         cell = ws[cell_ref]
         cell.value = value
-        cell. font = bold_font
+        cell.font = bold_font
         cell.alignment = left_align
         cell.border = thin_border
         cell.fill = dark_green_fill
 
     for row in range(4, 7):
         for col in range(3, 8):
-            cell = ws. cell(row=row, column=col)
+            cell = ws.cell(row=row, column=col)
             cell.border = thin_border
        
     current_row = TABLE_START_ROW
@@ -2075,7 +2075,7 @@ def parse_report_data(html_content):
             cell = ws.cell(row=current_row, column=col_idx, value=header)
             cell.font = bold_font
             cell.alignment = center_align
-            cell. border = medium_border
+            cell.border = medium_border
             cell.fill = header_row_fill
 
         current_row += 1
@@ -2084,15 +2084,15 @@ def parse_report_data(html_content):
 
         for i, size in enumerate(block['headers']):
             color_to_write = full_color_name if i == 0 else ""
-            actual_qty = int(block['gmts_qty'][i]. replace(',', '') or 0)
+            actual_qty = int(block['gmts_qty'][i].replace(',', '') or 0)
             input_qty = int(block['sewing_input'][i].replace(',', '') or 0) if i < len(block['sewing_input']) else 0
-            cutting_qc_val = int(block. get('cutting_qc', [])[i].replace(',', '') or 0) if i < len(block.get('cutting_qc', [])) else 0
+            cutting_qc_val = int(block.get('cutting_qc', [])[i].replace(',', '') or 0) if i < len(block.get('cutting_qc', [])) else 0
             
             ws.cell(row=current_row, column=1, value=color_to_write)
             ws.cell(row=current_row, column=2, value=size)
             ws.cell(row=current_row, column=4, value=actual_qty)
             ws.cell(row=current_row, column=5, value=cutting_qc_val)
-            ws. cell(row=current_row, column=6, value=input_qty)
+            ws.cell(row=current_row, column=6, value=input_qty)
             
             ws.cell(row=current_row, column=3, value=f"=ROUND(D{current_row}*1.03, 0)")
             ws.cell(row=current_row, column=7, value=f"=E{current_row}-F{current_row}")
@@ -2119,9 +2119,9 @@ def parse_report_data(html_content):
             
         end_merge_row = current_row - 1
         if start_merge_row <= end_merge_row:
-            ws. merge_cells(start_row=start_merge_row, start_column=1, end_row=end_merge_row, end_column=1)
-            merged_cell = ws. cell(row=start_merge_row, column=1)
-            merged_cell. alignment = color_align
+            ws.merge_cells(start_row=start_merge_row, start_column=1, end_row=end_merge_row, end_column=1)
+            merged_cell = ws.cell(row=start_merge_row, column=1)
+            merged_cell.alignment = color_align
             if not merged_cell.font.bold:
                 merged_cell.font = bold_font
         total_row_str = str(current_row)
@@ -2149,20 +2149,20 @@ def parse_report_data(html_content):
                 cell.number_format = '0.00%'
         
         for col_idx in range(2, NUM_COLUMNS + 1):
-            cell = ws. cell(row=current_row, column=col_idx)
+            cell = ws.cell(row=current_row, column=col_idx)
             if not cell.value:
-                cell. fill = dark_green_fill
+                cell.fill = dark_green_fill
                 cell.border = medium_border
         current_row += 2
        
     image_row = current_row + 1
    
     try:
-        direct_image_url = 'https://i.ibb.co/v6bp0jQW/rockybilly-regular. webp'
+        direct_image_url = 'https://i.ibb.co/v6bp0jQW/rockybilly-regular.webp'
         image_response = requests.get(direct_image_url)
         image_response.raise_for_status()
         original_img = PILImage.open(BytesIO(image_response.content))
-        padded_img = PILImage.new('RGBA', (original_img.width + 400, original_img. height), (0, 0, 0, 0))
+        padded_img = PILImage.new('RGBA', (original_img.width + 400, original_img.height), (0, 0, 0, 0))
         padded_img.paste(original_img, (400, 0))
         padded_image_io = BytesIO()
         padded_img.save(padded_image_io, format='PNG')
@@ -2178,9 +2178,9 @@ def parse_report_data(html_content):
     signature_row = image_row + 1
     ws.merge_cells(start_row=signature_row, start_column=1, end_row=signature_row, end_column=NUM_COLUMNS)
     titles = ["Prepared By", "Input Incharge", "Cutting Incharge", "IE & Planning", "Sewing Manager", "Cutting Manager"]
-    signature_cell = ws. cell(row=signature_row, column=1)
-    signature_cell.value = "                 ". join(titles)
-    signature_cell. font = Font(bold=True, size=15)
+    signature_cell = ws.cell(row=signature_row, column=1)
+    signature_cell.value = "                 ".join(titles)
+    signature_cell.font = Font(bold=True, size=15)
     signature_cell.alignment = Alignment(horizontal='center', vertical='center')
 
     last_data_row = current_row - 2
@@ -2191,26 +2191,26 @@ def parse_report_data(html_content):
             if cell.font:
                 existing_font = cell.font
                 if cell.row != 1:
-                    new_font = Font(name=existing_font. name, size=16. 5, bold=existing_font.bold, italic=existing_font. italic, vertAlign=existing_font. vertAlign, underline=existing_font.underline, strike=existing_font. strike, color=existing_font.color)
+                    new_font = Font(name=existing_font.name, size=16.5, bold=existing_font.bold, italic=existing_font.italic, vertAlign=existing_font.vertAlign, underline=existing_font.underline, strike=existing_font.strike, color=existing_font.color)
                     cell.font = new_font
    
-    ws.column_dimensions['A']. width = 23
-    ws.column_dimensions['B']. width = 8. 5
-    ws. column_dimensions['C'].width = 20
-    ws.column_dimensions['D']. width = 17
-    ws.column_dimensions['E']. width = 17
+    ws.column_dimensions['A'].width = 23
+    ws.column_dimensions['B'].width = 8.5
+    ws.column_dimensions['C'].width = 20
+    ws.column_dimensions['D'].width = 17
+    ws.column_dimensions['E'].width = 17
     ws.column_dimensions['F'].width = 15
-    ws.column_dimensions['G']. width = 13. 5
-    ws. column_dimensions['H'].width = 23
-    ws.column_dimensions['I']. width = 18
+    ws.column_dimensions['G'].width = 13.5
+    ws.column_dimensions['H'].width = 23
+    ws.column_dimensions['I'].width = 18
    
-    ws.page_setup.orientation = ws. ORIENTATION_PORTRAIT
+    ws.page_setup.orientation = ws.ORIENTATION_PORTRAIT
     ws.page_setup.fitToPage = True
-    ws.page_setup. fitToWidth = 1
+    ws.page_setup.fitToWidth = 1
     ws.page_setup.fitToHeight = 1
     ws.page_setup.horizontalCentered = True
     ws.page_setup.verticalCentered = False
-    ws.page_setup.left = 0. 25
+    ws.page_setup.left = 0.25
     ws.page_setup.right = 0.25
     ws.page_setup.top = 0.45
     ws.page_setup.bottom = 0.45
@@ -2232,7 +2232,7 @@ LOGIN_TEMPLATE = f"""
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1. 0, maximum-scale=1. 0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Login - MNM Software</title>
     {COMMON_STYLES}
     <style>
@@ -2263,7 +2263,7 @@ LOGIN_TEMPLATE = f"""
             pointer-events: none;
         }}
         
-        . orb-1 {{
+        .orb-1 {{
             width: 300px;
             height: 300px;
             background: var(--accent-orange);
@@ -2281,7 +2281,7 @@ LOGIN_TEMPLATE = f"""
             animation-delay: -5s;
         }}
         
-        . orb-3 {{
+        .orb-3 {{
             width: 150px;
             height: 150px;
             background: var(--accent-green);
@@ -2298,7 +2298,7 @@ LOGIN_TEMPLATE = f"""
             75% {{ transform: translate(15px, 30px) scale(1.02); }}
         }}
         
-        . login-container {{
+        .login-container {{
             position: relative;
             z-index: 10;
             width: 100%;
@@ -2311,7 +2311,7 @@ LOGIN_TEMPLATE = f"""
             min-height: 100vh;
         }}
         
-        . login-card {{
+        .login-card {{
             background: var(--gradient-card);
             border: 1px solid var(--border-color);
             border-radius: 24px;
@@ -2337,7 +2337,7 @@ LOGIN_TEMPLATE = f"""
             margin-bottom: 35px;
         }}
         
-        . brand-icon {{
+        .brand-icon {{
             width: 70px;
             height: 70px;
             background: var(--gradient-orange);
@@ -2357,7 +2357,7 @@ LOGIN_TEMPLATE = f"""
             50% {{ transform: scale(1.05) rotate(5deg); box-shadow: 0 20px 50px var(--accent-orange-glow); }}
         }}
         
-        . brand-name {{
+        .brand-name {{
             font-size: 28px;
             font-weight: 900;
             color: white;
@@ -2380,23 +2380,23 @@ LOGIN_TEMPLATE = f"""
             text-transform: uppercase;
         }}
         
-        .login-form . input-group {{
+        .login-form .input-group {{
             margin-bottom: 20px;
         }}
         
-        .login-form . input-group label {{
+        .login-form .input-group label {{
             display: flex;
             align-items: center;
             gap: 8px;
             margin-bottom: 8px;
         }}
         
-        .login-form . input-group label i {{
+        .login-form .input-group label i {{
             color: var(--accent-orange);
             font-size: 13px;
         }}
         
-        . login-form input {{
+        .login-form input {{
             padding: 14px 18px;
             font-size: 14px;
             border-radius: 12px;
@@ -2421,10 +2421,10 @@ LOGIN_TEMPLATE = f"""
             transform: translateX(5px);
         }}
         
-        . error-box {{
+        .error-box {{
             margin-top: 20px;
             padding: 14px 18px;
-            background: rgba(239, 68, 68, 0. 1);
+            background: rgba(239, 68, 68, 0.1);
             border: 1px solid rgba(239, 68, 68, 0.2);
             border-radius: 10px;
             color: #F87171;
@@ -2466,13 +2466,13 @@ LOGIN_TEMPLATE = f"""
                 border-radius: 20px;
             }}
             
-            . brand-icon {{
+            .brand-icon {{
                 width: 60px;
                 height: 60px;
                 font-size: 28px;
             }}
             
-            . brand-name {{
+            .brand-name {{
                 font-size: 24px;
             }}
             
@@ -2480,12 +2480,12 @@ LOGIN_TEMPLATE = f"""
                 font-size: 10px;
             }}
             
-            . login-form input {{
+            .login-form input {{
                 padding: 12px 16px;
                 font-size: 14px;
             }}
             
-            . login-btn {{
+            .login-btn {{
                 padding: 12px 20px;
                 font-size: 14px;
             }}
@@ -2502,7 +2502,7 @@ LOGIN_TEMPLATE = f"""
                 margin-bottom: 25px;
             }}
             
-            . brand-icon {{
+            .brand-icon {{
                 width: 60px;
                 height: 60px;
                 font-size: 26px;
@@ -2556,12 +2556,12 @@ LOGIN_TEMPLATE = f"""
     </div>
     
     <script>
-        document.querySelector('.login-btn'). addEventListener('click', function(e) {{
+        document.querySelector('.login-btn').addEventListener('click', function(e) {{
             const ripple = document.createElement('span');
-            ripple.classList. add('ripple-effect');
+            ripple.classList.add('ripple-effect');
             const rect = this.getBoundingClientRect();
             ripple.style.left = (e.clientX - rect.left) + 'px';
-            ripple.style. top = (e. clientY - rect. top) + 'px';
+            ripple.style.top = (e.clientY - rect.top) + 'px';
             this.appendChild(ripple);
             setTimeout(() => ripple.remove(), 600);
         }});
@@ -2590,9 +2590,9 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
         <div class="welcome-content">
             <div class="welcome-icon" id="welcomeIcon">👋</div>
             <div class="welcome-greeting" id="greetingText">Good Morning</div>
-            <div class="welcome-title">Welcome Back, <span>{{{{ session. user }}}}</span>!</div>
+            <div class="welcome-title">Welcome Back, <span>{{{{ session.user }}}}</span>!</div>
             <div class="welcome-message">
-                You're now logged into the MNM Software Dashboard. 
+                You're now logged into the MNM Software Dashboard.
                 All systems are operational and ready for your commands.
             </div>
             <button class="welcome-close" onclick="closeWelcome()">
@@ -2683,10 +2683,10 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
             {{% endwith %}}
 
             <div class="stats-grid">
-                <div class="card stat-card" style="animation-delay: 0. 1s;">
+                <div class="card stat-card" style="animation-delay: 0.1s;">
                     <div class="stat-icon"><i class="fas fa-file-export"></i></div>
                     <div class="stat-info">
-                        <h3 class="count-up" data-target="{{{{ stats.closing. count }}}}">0</h3>
+                        <h3 class="count-up" data-target="{{{{ stats.closing.count }}}}">0</h3>
                         <p>Lifetime Closing</p>
                     </div>
                 </div>
@@ -2704,12 +2704,12 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
                         <i class="fas fa-file-pdf" style="color: var(--accent-green);"></i>
                     </div>
                     <div class="stat-info">
-                        <h3 class="count-up" data-target="{{{{ stats.po. count }}}}">0</h3>
+                        <h3 class="count-up" data-target="{{{{ stats.po.count }}}}">0</h3>
                         <p>Lifetime PO Sheets</p>
                     </div>
                 </div>
                 <div class="card stat-card" style="animation-delay: 0.4s;">
-                    <div class="stat-icon" style="background: linear-gradient(145deg, rgba(59, 130, 246, 0. 15), rgba(59, 130, 246, 0. 05));">
+                    <div class="stat-icon" style="background: linear-gradient(145deg, rgba(59, 130, 246, 0.15), rgba(59, 130, 246, 0.05));">
                         <i class="fas fa-users" style="color: var(--accent-blue);"></i>
                     </div>
                     <div class="stat-info">
@@ -2741,7 +2741,7 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
                     <div class="progress-item">
                         <div class="progress-header">
                             <span>Closing Report</span>
-                            <span class="progress-value">{{{{ stats. closing.count }}}} Lifetime</span>
+                            <span class="progress-value">{{{{ stats.closing.count }}}} Lifetime</span>
                         </div>
                         <div class="progress-bar-container">
                             <div class="progress-bar-fill progress-orange" style="width: 85%;"></div>
@@ -2761,7 +2761,7 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
                     <div class="progress-item">
                         <div class="progress-header">
                             <span>PO Generator</span>
-                            <span class="progress-value">{{{{ stats.po. count }}}} Files</span>
+                            <span class="progress-value">{{{{ stats.po.count }}}} Files</span>
                         </div>
                         <div class="progress-bar-container">
                             <div class="progress-bar-fill progress-green" style="width: 45%;"></div>
@@ -2799,12 +2799,12 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
                                     <span class="table-badge" style="
                                         {{% if log.type == 'Closing Report' %}}
                                         background: rgba(255, 122, 0, 0.1); color: var(--accent-orange);
-                                        {{% elif log. type == 'PO Sheet' %}}
-                                        background: rgba(16, 185, 129, 0. 1); color: var(--accent-green);
+                                        {{% elif log.type == 'PO Sheet' %}}
+                                        background: rgba(16, 185, 129, 0.1); color: var(--accent-green);
                                         {{% else %}}
-                                        background: rgba(139, 92, 246, 0. 1); color: var(--accent-purple);
+                                        background: rgba(139, 92, 246, 0.1); color: var(--accent-purple);
                                         {{% endif %}}
-                                    ">{{{{ log. type }}}}</span>
+                                    ">{{{{ log.type }}}}</span>
                                 </td>
                                 <td style="color: var(--text-secondary);">{{{{ log.ref if log.ref else '-' }}}}</td>
                             </tr>
@@ -2812,7 +2812,7 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
                             <tr>
                                 <td colspan="4" style="text-align: center; padding: 40px; color: var(--text-secondary);">
                                     <i class="fas fa-inbox" style="font-size: 40px; opacity: 0.3; margin-bottom: 15px; display: block;"></i>
-                                    No activity recorded yet. 
+                                    No activity recorded yet.
                                 </td>
                             </tr>
                             {{% endfor %}}
@@ -2836,7 +2836,7 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
                 <form action="/generate-report" method="post" onsubmit="return showLoading()">
                     <div class="input-group">
                         <label><i class="fas fa-bookmark" style="margin-right: 5px;"></i> INTERNAL REF NO</label>
-                        <input type="text" name="ref_no" placeholder="e.g. IB-12345 or Booking-123" required>
+                        <input type="text" name="ref_no" placeholder="e.g.IB-12345 or Booking-123" required>
                     </div>
                     <button type="submit">
                         <i class="fas fa-bolt" style="margin-right: 10px;"></i> Generate Report
@@ -2884,7 +2884,7 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
                 <div class="card">
                     <div class="section-header">
                         <span>User Directory</span>
-                        <span class="table-badge" style="background: var(--accent-orange); color: white;">{{{{ stats.users. count }}}} Users</span>
+                        <span class="table-badge" style="background: var(--accent-orange); color: white;">{{{{ stats.users.count }}}} Users</span>
                     </div>
                     <div id="userTableContainer" style="max-height: 450px; overflow-y: auto;">
                         <div class="skeleton" style="height: 50px; margin-bottom: 10px;"></div>
@@ -2962,7 +2962,7 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
         
         function closeWelcome() {{
             const modal = document.getElementById('welcomeModal');
-            modal.style.animation = 'modalFadeOut 0. 3s ease-out forwards';
+            modal.style.animation = 'modalFadeOut 0.3s ease-out forwards';
             setTimeout(() => {{
                 modal.style.display = 'none';
                 sessionStorage.setItem('welcomeShown', 'true');
@@ -2986,16 +2986,16 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
             }}
             
             if (id === 'settings') loadUsers();
-            if (window.innerWidth < 1024) document.querySelector('.sidebar').classList. remove('active');
+            if (window.innerWidth < 1024) document.querySelector('.sidebar').classList.remove('active');
         }}
         
         // ===== FILE UPLOAD HANDLER =====
         const fileUpload = document.getElementById('file-upload');
-        const uploadZone = document. getElementById('uploadZone');
+        const uploadZone = document.getElementById('uploadZone');
         
         if (fileUpload) {{
             fileUpload.addEventListener('change', function() {{
-                const count = this.files. length;
+                const count = this.files.length;
                 document.getElementById('file-count').innerHTML = count > 0 
                     ? `<i class="fas fa-check-circle" style="margin-right: 5px;"></i>${{count}} file(s) selected`
                     : 'No files selected';
@@ -3013,7 +3013,7 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
             uploadZone.addEventListener('drop', (e) => {{
                 e.preventDefault();
                 uploadZone.classList.remove('dragover');
-                fileUpload.files = e.dataTransfer. files;
+                fileUpload.files = e.dataTransfer.files;
                 fileUpload.dispatchEvent(new Event('change'));
             }});
         }}
@@ -3023,15 +3023,15 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
         
         const gradientOrange = ctx.createLinearGradient(0, 0, 0, 300);
         gradientOrange.addColorStop(0, 'rgba(255, 122, 0, 0.5)');
-        gradientOrange.addColorStop(1, 'rgba(255, 122, 0, 0. 0)');
+        gradientOrange.addColorStop(1, 'rgba(255, 122, 0, 0.0)');
         
         const gradientPurple = ctx.createLinearGradient(0, 0, 0, 300);
-        gradientPurple. addColorStop(0, 'rgba(139, 92, 246, 0.5)');
+        gradientPurple.addColorStop(0, 'rgba(139, 92, 246, 0.5)');
         gradientPurple.addColorStop(1, 'rgba(139, 92, 246, 0.0)');
         
         const gradientGreen = ctx.createLinearGradient(0, 0, 0, 300);
-        gradientGreen.addColorStop(0, 'rgba(16, 185, 129, 0. 5)');
-        gradientGreen. addColorStop(1, 'rgba(16, 185, 129, 0.0)');
+        gradientGreen.addColorStop(0, 'rgba(16, 185, 129, 0.5)');
+        gradientGreen.addColorStop(1, 'rgba(16, 185, 129, 0.0)');
         
         new Chart(ctx, {{
             type: 'line',
@@ -3043,7 +3043,7 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
                         data: {{{{ stats.chart.closing | tojson }}}},
                         borderColor: '#FF7A00',
                         backgroundColor: gradientOrange,
-                        tension: 0. 4,
+                        tension: 0.4,
                         fill: true,
                         pointBackgroundColor: '#FF7A00',
                         pointBorderColor: '#fff',
@@ -3164,13 +3164,13 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
         // ===== LOADING ANIMATION =====
         function showLoading() {{
             const overlay = document.getElementById('loading-overlay');
-            const spinner = document.getElementById('spinner-anim'). parentElement;
+            const spinner = document.getElementById('spinner-anim').parentElement;
             const success = document.getElementById('success-anim');
             const fail = document.getElementById('fail-anim');
             const text = document.getElementById('loading-text');
             
-            overlay. style.display = 'flex';
-            spinner. style.display = 'block';
+            overlay.style.display = 'flex';
+            spinner.style.display = 'block';
             success.style.display = 'none';
             fail.style.display = 'none';
             text.style.display = 'block';
@@ -3180,14 +3180,14 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
         }}
 
         function showSuccess() {{
-            const overlay = document. getElementById('loading-overlay');
-            const spinner = document.getElementById('spinner-anim'). parentElement;
-            const success = document. getElementById('success-anim');
+            const overlay = document.getElementById('loading-overlay');
+            const spinner = document.getElementById('spinner-anim').parentElement;
+            const success = document.getElementById('success-anim');
             const text = document.getElementById('loading-text');
             
             spinner.style.display = 'none';
-            success.style. display = 'block';
-            text. style.display = 'none';
+            success.style.display = 'block';
+            text.style.display = 'none';
             
             setTimeout(() => {{ overlay.style.display = 'none'; }}, 1500);
         }}
@@ -3232,7 +3232,7 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
             let perms = [];
             if (document.getElementById('perm_closing').checked) perms.push('closing');
             if (document.getElementById('perm_po').checked) perms.push('po_sheet');
-            if (document.getElementById('perm_acc'). checked) perms. push('accessories');
+            if (document.getElementById('perm_acc').checked) perms.push('accessories');
             
             showLoading();
             
@@ -3248,23 +3248,23 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
                     loadUsers();
                     resetForm();
                 }} else {{
-                    alert(d. message);
-                    document.getElementById('loading-overlay').style. display = 'none';
+                    alert(d.message);
+                    document.getElementById('loading-overlay').style.display = 'none';
                 }}
             }});
         }}
         
         function editUser(u, p, permsStr) {{
             document.getElementById('new_username').value = u;
-            document. getElementById('new_username').readOnly = true;
+            document.getElementById('new_username').readOnly = true;
             document.getElementById('new_password').value = p;
             document.getElementById('action_type').value = 'update';
-            document. getElementById('saveUserBtn').innerHTML = '<i class="fas fa-sync" style="margin-right: 10px;"></i> Update User';
+            document.getElementById('saveUserBtn').innerHTML = '<i class="fas fa-sync" style="margin-right: 10px;"></i> Update User';
             
-            const pArr = permsStr. split(',');
+            const pArr = permsStr.split(',');
             document.getElementById('perm_closing').checked = pArr.includes('closing');
             document.getElementById('perm_po').checked = pArr.includes('po_sheet');
-            document.getElementById('perm_acc'). checked = pArr. includes('accessories');
+            document.getElementById('perm_acc').checked = pArr.includes('accessories');
         }}
         
         function resetForm() {{
@@ -3281,11 +3281,11 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
                     method: 'POST',
                     headers: {{'Content-Type': 'application/json'}},
                     body: JSON.stringify({{ username: u }})
-                }}). then(() => loadUsers());
+                }}).then(() => loadUsers());
             }}
         }}
         
-        // ===== PARTICLES. JS INITIALIZATION =====
+        // ===== PARTICLES.JS INITIALIZATION =====
         if (typeof particlesJS !== 'undefined') {{
             particlesJS('particles-js', {{
                 particles: {{
@@ -3399,7 +3399,7 @@ USER_DASHBOARD_TEMPLATE = f"""
         {{% endwith %}}
 
         <div class="stats-grid">
-            {{% if 'closing' in session. permissions %}}
+            {{% if 'closing' in session.permissions %}}
             <div class="card" style="animation: fadeInUp 0.5s ease-out 0.1s backwards;">
                 <div class="section-header">
                     <span><i class="fas fa-file-export" style="margin-right: 10px; color: var(--accent-orange);"></i>Closing Report</span>
@@ -3419,7 +3419,7 @@ USER_DASHBOARD_TEMPLATE = f"""
             </div>
             {{% endif %}}
             
-            {{% if 'po_sheet' in session. permissions %}}
+            {{% if 'po_sheet' in session.permissions %}}
             <div class="card" style="animation: fadeInUp 0.5s ease-out 0.2s backwards;">
                 <div class="section-header">
                     <span><i class="fas fa-file-pdf" style="margin-right: 10px; color: var(--accent-green);"></i>PO Sheet</span>
@@ -3477,8 +3477,8 @@ USER_DASHBOARD_TEMPLATE = f"""
             }}
             
             document.getElementById('greetingText').textContent = greeting;
-            document. getElementById('welcomeIcon').textContent = icon;
-            document. getElementById('welcomeModal').style.display = 'flex';
+            document.getElementById('welcomeIcon').textContent = icon;
+            document.getElementById('welcomeModal').style.display = 'flex';
         }}
         
         function closeWelcome() {{
@@ -3598,7 +3598,7 @@ ACCESSORIES_SEARCH_TEMPLATE = f"""
             border-top: 1px solid var(--border-color);
         }}
         
-        . nav-links a {{
+        .nav-links a {{
             color: var(--text-secondary);
             text-decoration: none;
             font-size: 13px;
@@ -3613,7 +3613,7 @@ ACCESSORIES_SEARCH_TEMPLATE = f"""
             color: var(--accent-orange);
         }}
         
-        .nav-links a. logout {{
+        .nav-links a.logout {{
             color: var(--accent-red);
         }}
         
@@ -3677,7 +3677,7 @@ ACCESSORIES_INPUT_TEMPLATE = f"""
     <title>Accessories Entry - MNM Software</title>
     {COMMON_STYLES}
     <style>
-        . ref-badge {{
+        .ref-badge {{
             display: inline-flex;
             align-items: center;
             gap: 10px;
@@ -3688,7 +3688,7 @@ ACCESSORIES_INPUT_TEMPLATE = f"""
             margin-top: 10px;
         }}
         
-        .ref-badge . ref-no {{
+        .ref-badge .ref-no {{
             font-size: 18px;
             font-weight: 800;
             color: var(--accent-orange);
@@ -3700,13 +3700,13 @@ ACCESSORIES_INPUT_TEMPLATE = f"""
             font-weight: 500;
         }}
         
-        . history-scroll {{
+        .history-scroll {{
             max-height: 500px;
             overflow-y: auto;
             padding-right: 5px;
         }}
         
-        . challan-row {{
+        .challan-row {{
             display: grid;
             grid-template-columns: 60px 1fr 80px 60px 80px;
             gap: 10px;
@@ -3724,7 +3724,7 @@ ACCESSORIES_INPUT_TEMPLATE = f"""
             border-color: var(--border-glow);
         }}
         
-        . line-badge {{
+        .line-badge {{
             background: var(--gradient-orange);
             color: white;
             padding: 6px 12px;
@@ -3761,13 +3761,13 @@ ACCESSORIES_INPUT_TEMPLATE = f"""
             margin-bottom: 15px;
         }}
         
-        . grid-2-cols {{
+        .grid-2-cols {{
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 20px;
         }}
         
-        . count-badge {{
+        .count-badge {{
             background: var(--accent-purple);
             color: white;
             padding: 4px 12px;
@@ -3896,7 +3896,7 @@ ACCESSORIES_INPUT_TEMPLATE = f"""
                         <div class="challan-row" style="animation: fadeInUp 0.3s ease-out {{{{ loop.index * 0.05 }}}}s backwards;">
                             <div class="line-badge">{{{{ item.line }}}}</div>
                             <div style="color: white; font-weight: 500; font-size: 13px;">{{{{ item.color }}}}</div>
-                            <div class="qty-value">{{{{ item. qty }}}}</div>
+                            <div class="qty-value">{{{{ item.qty }}}}</div>
                             <div class="status-check">{{{{ item.status if item.status else '●' }}}}</div>
                             <div class="action-cell">
                                 {{% if session.role == 'admin' %}}
@@ -3929,12 +3929,12 @@ ACCESSORIES_INPUT_TEMPLATE = f"""
     <script>
         function showLoading() {{
             const overlay = document.getElementById('loading-overlay');
-            const spinner = document.getElementById('spinner-anim'). parentElement;
+            const spinner = document.getElementById('spinner-anim').parentElement;
             const success = document.getElementById('success-anim');
             const text = document.getElementById('loading-text');
             
-            overlay. style.display = 'flex';
-            spinner. style.display = 'block';
+            overlay.style.display = 'flex';
+            spinner.style.display = 'block';
             success.style.display = 'none';
             text.style.display = 'block';
             text.textContent = 'Saving Entry... ';
@@ -3992,12 +3992,12 @@ ACCESSORIES_EDIT_TEMPLATE = f"""
             to {{ opacity: 1; transform: scale(1); }}
         }}
         
-        . edit-header {{
+        .edit-header {{
             text-align: center;
             margin-bottom: 35px;
         }}
         
-        . edit-icon {{
+        .edit-icon {{
             width: 70px;
             height: 70px;
             background: linear-gradient(145deg, rgba(139, 92, 246, 0.2), rgba(139, 92, 246, 0.05));
@@ -4054,7 +4054,7 @@ ACCESSORIES_EDIT_TEMPLATE = f"""
                 
                 <div class="input-group">
                     <label><i class="fas fa-palette" style="margin-right: 5px;"></i> COLOR</label>
-                    <input type="text" name="color" value="{{{{ item. color }}}}" required>
+                    <input type="text" name="color" value="{{{{ item.color }}}}" required>
                 </div>
                 
                 <div class="input-group">
@@ -5334,3 +5334,4 @@ def generate_po_report():
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
+
