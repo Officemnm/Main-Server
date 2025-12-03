@@ -1583,7 +1583,7 @@ def get_dashboard_summary_v2():
             "last_duration": d.get('last_duration', 'N/A')
         })
 
-    # 2.  Accessories LIFETIME & Daily Analytics
+    # 2. Accessories LIFETIME & Daily Analytics
     acc_lifetime_count = 0
     acc_today_list = []
     
@@ -1612,7 +1612,7 @@ def get_dashboard_summary_v2():
             except:
                 pass
 
-    # 3.  Closing & PO LIFETIME & Daily Analytics
+    # 3. Closing & PO LIFETIME & Daily Analytics
     closing_lifetime_count = 0
     po_lifetime_count = 0
     closing_list = []
@@ -1734,7 +1734,7 @@ def extract_metadata(first_page_text):
         if buyer_match:
             meta['buyer'] = buyer_match.group(1).strip()
 
-    booking_block_match = re.search(r"(? :Internal )?Booking NO\.  ? [:\s]*([\s\S]*?)(? :System NO|Control No|Buyer)", first_page_text, re.IGNORECASE)
+    booking_block_match = re.search(r"(? :Internal )?Booking NO\. ? [:\s]*([\s\S]*?)(? :System NO|Control No|Buyer)", first_page_text, re.IGNORECASE)
     if booking_block_match:
         raw_booking = booking_block_match.group(1).strip()
         clean_booking = raw_booking.replace('\n', '').replace('\r', '').replace(' ', '')
@@ -1742,25 +1742,25 @@ def extract_metadata(first_page_text):
             clean_booking = clean_booking.split("System")[0]
         meta['booking'] = clean_booking
 
-    style_match = re.search(r"Style Ref\. ?[:\s]*([\w-]+)", first_page_text, re.IGNORECASE)
+    style_match = re.search(r"Style Ref\.?[:\s]*([\w-]+)", first_page_text, re.IGNORECASE)
     if style_match:
-        meta['style'] = style_match.group(1). strip()
+        meta['style'] = style_match.group(1).strip()
     else:
-        style_match = re.search(r"Style Des\. ? [\s\S]*?([\w-]+)", first_page_text, re.IGNORECASE)
+        style_match = re.search(r"Style Des\.? [\s\S]*?([\w-]+)", first_page_text, re.IGNORECASE)
         if style_match:
-            meta['style'] = style_match.group(1). strip()
+            meta['style'] = style_match.group(1).strip()
 
-    season_match = re. search(r"Season\s*[:\n\"]*([\w\d-]+)", first_page_text, re. IGNORECASE)
+    season_match = re.search(r"Season\s*[:\n\"]*([\w\d-]+)", first_page_text, re.IGNORECASE)
     if season_match:
         meta['season'] = season_match.group(1).strip()
 
-    dept_match = re.search(r"Dept\.  ?[\s\n:]*([A-Za-z]+)", first_page_text, re. IGNORECASE)
+    dept_match = re.search(r"Dept\. ?[\s\n:]*([A-Za-z]+)", first_page_text, re.IGNORECASE)
     if dept_match:
         meta['dept'] = dept_match.group(1).strip()
 
     item_match = re.search(r"Garments?   Item[\s\n:]*([^\n\r]+)", first_page_text, re.IGNORECASE)
     if item_match:
-        item_text = item_match. group(1).strip()
+        item_text = item_match.group(1).strip()
         if "Style" in item_text:
             item_text = item_text.split("Style")[0].strip()
         meta['item'] = item_text
@@ -1787,12 +1787,12 @@ def extract_data_dynamic(file_path):
         if order_match:
             order_no = order_match.group(1)
         else:
-            alt_match = re.search(r"Order\s*[:\.]?\s*(\d+)", first_page_text, re. IGNORECASE)
+            alt_match = re.search(r"Order\s*[:\.]?\s*(\d+)", first_page_text, re.IGNORECASE)
             if alt_match:
                 order_no = alt_match.group(1)
         
         order_no = str(order_no).strip()
-        if order_no. endswith("00"):
+        if order_no.endswith("00"):
             order_no = order_no[:-2]
 
         for page in reader.pages:
@@ -1829,17 +1829,17 @@ def extract_data_dynamic(file_path):
                         capturing_data = False
                         continue
                     
-                    lower_line = line. lower()
+                    lower_line = line.lower()
                     if "quantity" in lower_line or "currency" in lower_line or "price" in lower_line or "amount" in lower_line:
                         continue
                         
-                    clean_line = line. replace("Spec. price", ""). replace("Spec", ""). strip()
+                    clean_line = line.replace("Spec.price", "").replace("Spec", "").strip()
                     if not re.search(r'[a-zA-Z]', clean_line):
                         continue
                     if re.match(r'^[A-Z]\d+$', clean_line) or "Assortment" in clean_line:
                         continue
 
-                    numbers_in_line = re. findall(r'\b\d+\b', line)
+                    numbers_in_line = re.findall(r'\b\d+\b', line)
                     quantities = [int(n) for n in numbers_in_line]
                     color_name = clean_line
                     final_qtys = []
@@ -1849,12 +1849,12 @@ def extract_data_dynamic(file_path):
                             final_qtys = quantities[:-1]
                         else:
                             final_qtys = quantities[:len(sizes)]
-                        color_name = re.sub(r'\s\d+$', '', color_name). strip()
+                        color_name = re.sub(r'\s\d+$', '', color_name).strip()
                     elif len(quantities) < len(sizes):
                         vertical_qtys = []
                         for next_line in lines[i+1:]:
                             next_line = next_line.strip()
-                            if "Total" in next_line or re.search(r'[a-zA-Z]', next_line. replace("Spec", "").replace("price", "")):
+                            if "Total" in next_line or re.search(r'[a-zA-Z]', next_line.replace("Spec", "").replace("price", "")):
                                 break
                             if re.match(r'^\d+$', next_line):
                                 vertical_qtys.append(int(next_line))
@@ -1879,7 +1879,7 @@ def extract_data_dynamic(file_path):
 # ==============================================================================
 
 def get_authenticated_session(username, password):
-    login_url = 'http://180.92.235.190:8022/erp/login. php'
+    login_url = 'http://180.92.235.190:8022/erp/login.php'
     login_payload = {'txt_userid': username, 'txt_password': password, 'submit': 'Login'}
     session_req = requests.Session()
     session_req.headers.update({
@@ -1954,11 +1954,11 @@ def parse_report_data(html_content):
                     main_lower, sub_lower = criteria_main.lower(), criteria_sub.lower()
                     if main_lower == "style":
                         style = cells[1].get_text(strip=True)
-                    elif main_lower == "color & gmts.   item":
-                        color = cells[1]. get_text(strip=True)
+                    elif main_lower == "color & gmts.  item":
+                        color = cells[1].get_text(strip=True)
                     elif "buyer" in main_lower:
                         buyer_name = cells[1].get_text(strip=True)
-                    if sub_lower == "gmts.  color /country qty":
+                    if sub_lower == "gmts. color /country qty":
                         gmts_qty_data = [cell.get_text(strip=True) for cell in cells[3:len(headers)+3]]
                     if "sewing input" in main_lower:
                         sewing_input_data = [cell.get_text(strip=True) for cell in cells[1:len(headers)+1]]
@@ -1972,11 +1972,11 @@ def parse_report_data(html_content):
                 plus_3_percent_data = []
                 for value in gmts_qty_data:
                     try:
-                        new_qty = round(int(value. replace(',', '')) * 1.03)
+                        new_qty = round(int(value.replace(',', '')) * 1.03)
                         plus_3_percent_data.append(str(new_qty))
                     except (ValueError, TypeError):
                         plus_3_percent_data.append(value)
-                all_report_data. append({
+                all_report_data.append({
                     'style': style,
                     'buyer': buyer_name,
                     'color': color,
@@ -1992,8 +1992,8 @@ def parse_report_data(html_content):
         def create_formatted_excel_report(report_data, internal_ref_no=""):
     if not report_data:
         return None
-    wb = openpyxl. Workbook()
-    ws = wb. active
+    wb = openpyxl.Workbook()
+    ws = wb.active
     ws.title = "Closing Report"
     
     # Styles
@@ -3200,7 +3200,7 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
                     let html = '<table class="dark-table"><thead><tr><th>User</th><th>Role</th><th style="text-align:right;">Actions</th></tr></thead><tbody>';
                     
                     for (const [u, d] of Object.entries(data)) {{
-                        const roleClass = d.role === 'admin' ?  'background: rgba(255, 122, 0, 0.1); color: var(--accent-orange);' : 'background: rgba(139, 92, 246, 0. 1); color: var(--accent-purple);';
+                        const roleClass = d.role === 'admin' ?  'background: rgba(255, 122, 0, 0.1); color: var(--accent-orange);' : 'background: rgba(139, 92, 246, 0.1); color: var(--accent-purple);';
                         
                         html += `<tr>
                             <td style="font-weight: 600;">${{u}}</td>
@@ -3208,7 +3208,7 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
                             <td style="text-align:right;">
                                 ${{d.role !== 'admin' ?  `
                                     <div class="action-cell">
-                                        <button class="action-btn btn-edit" onclick="editUser('${{u}}', '${{d.password}}', '${{d. permissions. join(',')}}')">
+                                        <button class="action-btn btn-edit" onclick="editUser('${{u}}', '${{d.password}}', '${{d.permissions.join(',')}}')">
                                             <i class="fas fa-edit"></i>
                                         </button> 
                                         <button class="action-btn btn-del" onclick="deleteUser('${{u}}')">
@@ -3343,7 +3343,7 @@ USER_DASHBOARD_TEMPLATE = f"""
             <div class="welcome-greeting" id="greetingText">Good Morning</div>
             <div class="welcome-title">Welcome, <span>{{{{ session.user }}}}</span>! </div>
             <div class="welcome-message">
-                Your workspace is ready.  Access your assigned modules below. 
+                Your workspace is ready. Access your assigned modules below.
             </div>
             <button class="welcome-close" onclick="closeWelcome()">
                 <i class="fas fa-rocket" style="margin-right: 8px;"></i> Get Started
@@ -3356,7 +3356,7 @@ USER_DASHBOARD_TEMPLATE = f"""
             <div class="spinner"></div>
             <div class="spinner-inner"></div>
         </div>
-        <div class="loading-text">Processing... </div>
+        <div class="loading-text">Processing...</div>
     </div>
     
     <div class="sidebar">
@@ -3405,7 +3405,7 @@ USER_DASHBOARD_TEMPLATE = f"""
                     <span><i class="fas fa-file-export" style="margin-right: 10px; color: var(--accent-orange);"></i>Closing Report</span>
                 </div>
                 <p style="color: var(--text-secondary); margin-bottom: 20px; font-size: 14px; line-height: 1.6;">
-                    Generate production closing reports with real-time data. 
+                    Generate production closing reports with real-time data.
                 </p>
                 <form action="/generate-report" method="post" onsubmit="showLoading()">
                     <div class="input-group">
@@ -3638,7 +3638,7 @@ ACCESSORIES_SEARCH_TEMPLATE = f"""
             <form action="/admin/accessories/input" method="post">
                 <div class="input-group">
                     <label><i class="fas fa-search" style="margin-right: 5px;"></i> BOOKING REFERENCE</label>
-                    <input type="text" name="ref_no" required placeholder="e.g.  IB-12345" autocomplete="off">
+                    <input type="text" name="ref_no" required placeholder="e.g. IB-12345" autocomplete="off">
                 </div>
                 <button type="submit" style="background: linear-gradient(135deg, #8B5CF6 0%, #A78BFA 100%);">
                     Proceed to Entry <i class="fas fa-arrow-right" style="margin-left: 10px;"></i>
@@ -3866,7 +3866,7 @@ ACCESSORIES_INPUT_TEMPLATE = f"""
                     <div class="grid-2-cols">
                         <div class="input-group">
                             <label><i class="fas fa-industry" style="margin-right: 5px;"></i> LINE NO</label>
-                            <input type="text" name="line_no" required placeholder="e.g. L-01">
+                            <input type="text" name="line_no" required placeholder="e.g.L-01">
                         </div>
                         <div class="input-group">
                             <label><i class="fas fa-ruler" style="margin-right: 5px;"></i> SIZE</label>
@@ -3937,7 +3937,7 @@ ACCESSORIES_INPUT_TEMPLATE = f"""
             spinner.style.display = 'block';
             success.style.display = 'none';
             text.style.display = 'block';
-            text.textContent = 'Saving Entry... ';
+            text.textContent = 'Saving Entry...';
             
             return true;
         }}
@@ -3984,7 +3984,7 @@ ACCESSORIES_EDIT_TEMPLATE = f"""
             padding: 45px;
             backdrop-filter: blur(20px);
             box-shadow: 0 25px 80px rgba(0, 0, 0, 0.5);
-            animation: cardAppear 0. 5s ease-out;
+            animation: cardAppear 0.5s ease-out;
         }}
         
         @keyframes cardAppear {{
@@ -4064,7 +4064,7 @@ ACCESSORIES_EDIT_TEMPLATE = f"""
                 
                 <div class="input-group">
                     <label><i class="fas fa-sort-numeric-up" style="margin-right: 5px;"></i> QUANTITY</label>
-                    <input type="number" name="qty" value="{{{{ item. qty }}}}" required>
+                    <input type="number" name="qty" value="{{{{ item.qty }}}}" required>
                 </div>
                 
                 <button type="submit" style="background: linear-gradient(135deg, #8B5CF6 0%, #A78BFA 100%);">
@@ -4091,10 +4091,10 @@ CLOSING_REPORT_PREVIEW_TEMPLATE = """
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1. 0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Closing Report Preview</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare. com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         body { background-color: #f8f9fa; padding: 30px 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; font-size: 1.1rem; }
         .container { max-width: 1400px; }
@@ -4105,15 +4105,15 @@ CLOSING_REPORT_PREVIEW_TEMPLATE = """
         .info-container { margin-bottom: 15px; background: white; padding: 15px; display: flex; justify-content: space-between; align-items: flex-end;}
         .info-row { display: flex; flex-direction: column; gap: 5px; }
         .info-item { font-size: 1.2rem; font-weight: 600; color: #444; }
-        . info-value { color: #000; font-weight: 800; }
+        .info-value { color: #000; font-weight: 800; }
         .booking-box { background: #2c3e50; color: white; padding: 10px 20px; border-radius: 5px; text-align: right; box-shadow: 0 4px 10px rgba(44, 62, 80, 0.3); display: flex; flex-direction: column; justify-content: center; min-width: 200px; }
-        .booking-label { font-size: 1. 1rem; opacity: 0.9; text-transform: uppercase; letter-spacing: 1px; font-weight: 700; }
-        . booking-value { font-size: 1.8rem; font-weight: 800; line-height: 1.1; }
+        .booking-label { font-size: 1.1rem; opacity: 0.9; text-transform: uppercase; letter-spacing: 1px; font-weight: 700; }
+        .booking-value { font-size: 1.8rem; font-weight: 800; line-height: 1.1; }
         .table-card { background: white; border-radius: 0; margin-bottom: 30px; border: none; }
         .color-header { background-color: #2c3e50 !important; color: white; padding: 10px 15px; font-size: 1.4rem; font-weight: 800; text-transform: uppercase; border: 1px solid #000;}
         .table { margin-bottom: 0; width: 100%; border-collapse: collapse; font-size: 1rem; }
-        . table th { background-color: #fff ! important; color: #000 !important; text-align: center; border: 1px solid #000; padding: 8px; vertical-align: middle; font-weight: 900; font-size: 1. 2rem; }
-        .table td { text-align: center; vertical-align: middle; border: 1px solid #000; padding: 6px; color: #000; font-weight: 600; font-size: 1. 1rem; }
+        .table th { background-color: #fff ! important; color: #000 !important; text-align: center; border: 1px solid #000; padding: 8px; vertical-align: middle; font-weight: 900; font-size: 1.2rem; }
+        .table td { text-align: center; vertical-align: middle; border: 1px solid #000; padding: 6px; color: #000; font-weight: 600; font-size: 1.1rem; }
         .col-3pct { background-color: #B9C2DF ! important; font-weight: 700; }
         .col-input { background-color: #C4D09D !important; font-weight: 700; }
         .col-balance { font-weight: 700; color: #c0392b; }
@@ -4122,7 +4122,7 @@ CLOSING_REPORT_PREVIEW_TEMPLATE = """
         .btn-print { background-color: #2c3e50; color: white; border-radius: 50px; padding: 10px 30px; font-weight: 600; border: none; }
         .btn-excel { background-color: #27ae60; color: white; border-radius: 50px; padding: 10px 30px; font-weight: 600; text-decoration: none; display: inline-block; }
         .btn-excel:hover { color: white; background-color: #219150; }
-        . footer-credit { text-align: center; margin-top: 40px; margin-bottom: 20px; font-size: 1rem; color: #2c3e50; padding-top: 10px; border-top: 1px solid #000; font-weight: 600;}
+        .footer-credit { text-align: center; margin-top: 40px; margin-bottom: 20px; font-size: 1rem; color: #2c3e50; padding-top: 10px; border-top: 1px solid #000; font-weight: 600;}
         @media print {
             @page { margin: 5mm; size: portrait; } 
             body { background-color: white; padding: 0; }
@@ -4133,7 +4133,7 @@ CLOSING_REPORT_PREVIEW_TEMPLATE = """
             .color-header { background-color: #2c3e50 !important; -webkit-print-color-adjust: exact; color: white !important;}
             .col-3pct { background-color: #B9C2DF !important; -webkit-print-color-adjust: exact; }
             .col-input { background-color: #C4D09D !important; -webkit-print-color-adjust: exact; }
-            . booking-box { background-color: #2c3e50 ! important; -webkit-print-color-adjust: exact; color: white !important; border: 1px solid #000;}
+            .booking-box { background-color: #2c3e50 ! important; -webkit-print-color-adjust: exact; color: white !important; border: 1px solid #000;}
             .total-row td { font-weight: 900 !important; color: #000 ! important; }
         }
     </style>
@@ -4179,7 +4179,7 @@ CLOSING_REPORT_PREVIEW_TEMPLATE = """
                 </thead>
                 <tbody>
                     {% set ns = namespace(tot_3=0, tot_act=0, tot_cut=0, tot_inp=0, tot_bal=0, tot_sp=0) %}
-                    {% for i in range(block. headers|length) %}
+                    {% for i in range(block.headers|length) %}
                         {% set actual = block.gmts_qty[i]|replace(',', '')|int %}
                         {% set qty_3 = (actual * 1.03)|round|int %}
                         {% set cut_qc = 0 %}
@@ -4196,12 +4196,12 @@ CLOSING_REPORT_PREVIEW_TEMPLATE = """
                         {% if qty_3 > 0 %}
                             {% set percentage = (short_plus / qty_3) * 100 %}
                         {% endif %}
-                        {% set ns. tot_3 = ns.tot_3 + qty_3 %}
-                        {% set ns.tot_act = ns. tot_act + actual %}
+                        {% set ns.tot_3 = ns.tot_3 + qty_3 %}
+                        {% set ns.tot_act = ns.tot_act + actual %}
                         {% set ns.tot_cut = ns.tot_cut + cut_qc %}
-                        {% set ns. tot_inp = ns.tot_inp + inp_qty %}
+                        {% set ns.tot_inp = ns.tot_inp + inp_qty %}
                         {% set ns.tot_bal = ns.tot_bal + balance %}
-                        {% set ns. tot_sp = ns.tot_sp + short_plus %}
+                        {% set ns.tot_sp = ns.tot_sp + short_plus %}
                         <tr>
                             <td>{{ block.headers[i] }}</td>
                             <td class="col-3pct">{{ qty_3 }}</td>
@@ -4225,7 +4225,7 @@ CLOSING_REPORT_PREVIEW_TEMPLATE = """
                             {% if ns.tot_3 > 0 %}
                                 {{ "%.2f"|format((ns.tot_sp / ns.tot_3) * 100) }}%
                             {% else %}
-                                0. 00%
+                                0.00%
                             {% endif %}
                         </td>
                     </tr>
@@ -4238,7 +4238,7 @@ CLOSING_REPORT_PREVIEW_TEMPLATE = """
     </div>
     <script>
         const dateObj = new Date();
-        document.getElementById('date'). innerText = dateObj. toLocaleDateString('en-GB');
+        document.getElementById('date').innerText = dateObj.toLocaleDateString('en-GB');
     </script>
 </body>
 </html>
@@ -4254,7 +4254,7 @@ ACCESSORIES_REPORT_TEMPLATE = """
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         body { font-family: 'Poppins', sans-serif; background: #fff; padding: 20px; color: #000; }
-        . container { max-width: 1000px; margin: 0 auto; border: 2px solid #000; padding: 20px; min-height: 90vh; position: relative; }
+        .container { max-width: 1000px; margin: 0 auto; border: 2px solid #000; padding: 20px; min-height: 90vh; position: relative; }
         .header { text-align: center; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 20px; position: relative; }
         .company-name { font-size: 28px; font-weight: 800; text-transform: uppercase; color: #2c3e50; line-height: 1; }
         .company-address { font-size: 12px; font-weight: 600; color: #444; margin-top: 5px; margin-bottom: 10px; }
@@ -4263,7 +4263,7 @@ ACCESSORIES_REPORT_TEMPLATE = """
         .info-left { flex: 2; border: 1px dashed #555; padding: 15px; margin-right: 15px; }
         .info-row { display: flex; margin-bottom: 5px; font-size: 14px; align-items: center; }
         .info-label { font-weight: 800; width: 80px; color: #444; }
-        . info-val { font-weight: 700; font-size: 15px; color: #000; }
+        .info-val { font-weight: 700; font-size: 15px; color: #000; }
         .booking-border { border: 2px solid #000; padding: 2px 8px; display: inline-block; font-weight: 900; }
         .info-right { flex: 1; display: flex; flex-direction: column; justify-content: space-between; height: 100%; border-left: 1px solid #ddd; padding-left: 15px; }
         .right-item { font-size: 14px; margin-bottom: 8px; font-weight: 700; }
@@ -4276,20 +4276,20 @@ ACCESSORIES_REPORT_TEMPLATE = """
         .main-table th { background: #2c3e50 !important; color: white ! important; padding: 10px; border: 1px solid #000; font-size: 14px; text-transform: uppercase; -webkit-print-color-adjust: exact; }
         .main-table td { border: 1px solid #000; padding: 6px; text-align: center; vertical-align: middle; color: #000; font-weight: 600; }
         .line-card { display: inline-block; padding: 4px 10px; border: 2px solid #000; font-size: 16px; font-weight: 900; border-radius: 4px; box-shadow: 2px 2px 0 #000; background: #fff; }
-        . line-text-bold { font-size: 14px; font-weight: 800; opacity: 0.7; }
-        . status-cell { font-size: 20px; color: green; font-weight: 900; }
-        . qty-cell { font-size: 16px; font-weight: 800; }
+        .line-text-bold { font-size: 14px; font-weight: 800; opacity: 0.7; }
+        .status-cell { font-size: 20px; color: green; font-weight: 900; }
+        .qty-cell { font-size: 16px; font-weight: 800; }
         .action-btn { color: white; padding: 4px 8px; border-radius: 4px; text-decoration: none; font-size: 12px; margin: 0 2px; display: inline-block; }
         .btn-edit-row { background-color: #f39c12; }
         .btn-del-row { background-color: #e74c3c; }
         .footer-total { margin-top: 20px; display: flex; justify-content: flex-end; }
         .total-box { border: 3px solid #000; padding: 8px 30px; font-size: 20px; font-weight: 900; background: #ddd; -webkit-print-color-adjust: exact; }
         .no-print { margin-bottom: 20px; text-align: right; }
-        . btn { padding: 8px 20px; background: #2c3e50; color: white; border: none; cursor: pointer; text-decoration: none; display: inline-block; border-radius: 4px; font-size: 14px; }
+        .btn { padding: 8px 20px; background: #2c3e50; color: white; border: none; cursor: pointer; text-decoration: none; display: inline-block; border-radius: 4px; font-size: 14px; }
         .btn-add { background: #27ae60; }
         .generator-sig { text-align: right; font-size: 10px; margin-top: 5px; color: #555; }
         @media print {
-            . no-print { display: none; }
+            .no-print { display: none; }
             .action-col { display: none; }
             .container { border: none; padding: 0; margin: 0; max-width: 100%; }
             body { padding: 0; }
@@ -4304,7 +4304,7 @@ ACCESSORIES_REPORT_TEMPLATE = """
 <div class="container">
     <div class="header">
         <div class="company-name">COTTON CLOTHING BD LTD</div>
-        <div class="company-address">Kazi Tower, 27 Road, Gazipura, Tongi, Gazipur. </div>
+        <div class="company-address">Kazi Tower, 27 Road, Gazipura, Tongi, Gazipur.</div>
         <div class="report-title">ACCESSORIES DELIVERY CHALLAN</div>
     </div>
     <div class="info-grid">
@@ -4407,27 +4407,27 @@ PO_REPORT_TEMPLATE = """
         .container { max-width: 1200px; }
         .company-header { text-align: center; margin-bottom: 20px; border-bottom: 2px solid #000; padding-bottom: 10px; }
         .company-name { font-size: 2.2rem; font-weight: 800; color: #2c3e50; text-transform: uppercase; letter-spacing: 1px; line-height: 1; }
-        . report-title { font-size: 1.1rem; color: #555; font-weight: 600; text-transform: uppercase; margin-top: 5px; }
+        .report-title { font-size: 1.1rem; color: #555; font-weight: 600; text-transform: uppercase; margin-top: 5px; }
         .date-section { font-size: 1.2rem; font-weight: 800; color: #000; margin-top: 5px; }
         .info-container { display: flex; justify-content: space-between; margin-bottom: 15px; gap: 15px; }
         .info-box { background: white; border: 1px solid #ddd; border-left: 5px solid #2c3e50; padding: 10px 15px; border-radius: 5px; flex: 2; box-shadow: 0 2px 5px rgba(0,0,0,0.05); display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
         .total-box { background: #2c3e50; color: white; padding: 10px 15px; border-radius: 5px; width: 240px; text-align: right; display: flex; flex-direction: column; justify-content: center; box-shadow: 0 4px 10px rgba(44, 62, 80, 0.3); }
-        . info-item { margin-bottom: 6px; font-size: 1.3rem; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        . info-label { font-weight: 800; color: #444; width: 90px; display: inline-block; }
+        .info-item { margin-bottom: 6px; font-size: 1.3rem; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .info-label { font-weight: 800; color: #444; width: 90px; display: inline-block; }
         .info-value { font-weight: 800; color: #000; }
         .total-label { font-size: 1.1rem; opacity: 0.9; text-transform: uppercase; letter-spacing: 1px; font-weight: 700; }
-        . total-value { font-size: 2.5rem; font-weight: 800; line-height: 1.1; }
+        .total-value { font-size: 2.5rem; font-weight: 800; line-height: 1.1; }
         .table-card { background: white; border-radius: 0; margin-bottom: 20px; overflow: hidden; border: 1px solid #dee2e6; }
         .color-header { background-color: #e9ecef; color: #2c3e50; padding: 10px 12px; font-size: 1.5rem; font-weight: 900; border-bottom: 1px solid #dee2e6; text-transform: uppercase; }
         .table { margin-bottom: 0; width: 100%; border-collapse: collapse; }
         .table th { background-color: #2c3e50; color: white; font-weight: 900; font-size: 1.2rem; text-align: center; border: 1px solid #34495e; padding: 8px 4px; vertical-align: middle; }
-        . table th:empty { background-color: white ! important; border: none; }
+        .table th:empty { background-color: white ! important; border: none; }
         .table td { text-align: center; vertical-align: middle; border: 1px solid #dee2e6; padding: 6px 3px; color: #000; font-weight: 800; font-size: 1.15rem; }
         .table-striped tbody tr:nth-of-type(odd) { background-color: #f8f9fa; }
         .order-col { font-weight: 900 !important; text-align: center ! important; background-color: #fdfdfd; white-space: nowrap; width: 1%; }
         .total-col { font-weight: 900; background-color: #e8f6f3 !important; color: #16a085; border-left: 2px solid #1abc9c ! important; }
         .total-col-header { background-color: #e8f6f3 !important; color: #000 !important; font-weight: 900 !important; border: 1px solid #34495e !important; }
-        .table-striped tbody tr. summary-row, .table-striped tbody tr.summary-row td { background-color: #d1ecff ! important; --bs-table-accent-bg: #d1ecff !important; color: #000 ! important; font-weight: 900 !important; border-top: 2px solid #aaa !important; font-size: 1.2rem !important; }
+        .table-striped tbody tr.summary-row, .table-striped tbody tr.summary-row td { background-color: #d1ecff ! important; --bs-table-accent-bg: #d1ecff !important; color: #000 ! important; font-weight: 900 !important; border-top: 2px solid #aaa !important; font-size: 1.2rem !important; }
         .summary-label { text-align: right ! important; padding-right: 15px ! important; color: #000 !important; }
         .action-bar { margin-bottom: 20px; display: flex; justify-content: flex-end; gap: 10px; }
         .btn-print { background-color: #e74c3c; color: white; border-radius: 50px; padding: 8px 30px; font-weight: 600; border: none; }
@@ -4438,14 +4438,14 @@ PO_REPORT_TEMPLATE = """
             .container { max-width: 100% !important; width: 100% ! important; padding: 0; margin: 0; }
             .no-print { display: none !important; }
             .company-header { border-bottom: 2px solid #000; margin-bottom: 5px; padding-bottom: 5px; }
-            .company-name { font-size: 1. 8rem; } 
+            .company-name { font-size: 1.8rem; } 
             .info-container { margin-bottom: 10px; }
             .info-box { border: 1px solid #000 !important; border-left: 5px solid #000 !important; padding: 5px 10px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
             .total-box { border: 2px solid #000 !important; background: white !important; color: black !important; padding: 5px 10px; }
             .info-item { font-size: 13pt ! important; font-weight: 800 !important; }
             .table th, .table td { border: 1px solid #000 !important; padding: 2px ! important; font-size: 13pt !important; font-weight: 800 !important; }
             .table th:empty { background-color: white !important; border: none !important; }
-            .table-striped tbody tr. summary-row td { background-color: #d1ecff !important; box-shadow: inset 0 0 0 9999px #d1ecff ! important; color: #000 ! important; font-weight: 900 ! important; }
+            .table-striped tbody tr.summary-row td { background-color: #d1ecff !important; box-shadow: inset 0 0 0 9999px #d1ecff ! important; color: #000 ! important; font-weight: 900 ! important; }
             .color-header { background-color: #f1f1f1 !important; border: 1px solid #000 !important; font-size: 1.4rem !important; font-weight: 900; padding: 5px; margin-top: 10px; box-shadow: inset 0 0 0 9999px #f1f1f1 !important; }
             .total-col-header { background-color: #e8f6f3 !important; box-shadow: inset 0 0 0 9999px #e8f6f3 !important; color: #000 !important; }
             .table-card { border: none; margin-bottom: 10px; break-inside: avoid; }
@@ -4499,9 +4499,9 @@ PO_REPORT_TEMPLATE = """
     <script>
         const dateObj = new Date();
         const day = String(dateObj.getDate()).padStart(2, '0');
-        const month = String(dateObj. getMonth() + 1).padStart(2, '0');
+        const month = String(dateObj.getMonth() + 1).padStart(2, '0');
         const year = dateObj.getFullYear();
-        document.getElementById('date'). innerText = `${day}-${month}-${year}`;
+        document.getElementById('date').innerText = `${day}-${month}-${year}`;
     </script>
 </body>
 </html>
@@ -4521,7 +4521,7 @@ STORE_DASHBOARD_TEMPLATE = f"""
     <title>Store Dashboard - MNM Software</title>
     {COMMON_STYLES}
     <style>
-        . store-card {{
+        .store-card {{
             background: var(--gradient-card);
             border: 1px solid var(--border-color);
             border-radius: 20px;
@@ -4570,28 +4570,28 @@ STORE_DASHBOARD_TEMPLATE = f"""
             transform: scale(1.1) rotate(-5deg);
         }}
         
-        . icon-orange {{ background: linear-gradient(145deg, rgba(255, 122, 0, 0.2), rgba(255, 122, 0, 0.05)); color: var(--accent-orange); }}
-        . icon-purple {{ background: linear-gradient(145deg, rgba(139, 92, 246, 0.2), rgba(139, 92, 246, 0.05)); color: var(--accent-purple); }}
+        .icon-orange {{ background: linear-gradient(145deg, rgba(255, 122, 0, 0.2), rgba(255, 122, 0, 0.05)); color: var(--accent-orange); }}
+        .icon-purple {{ background: linear-gradient(145deg, rgba(139, 92, 246, 0.2), rgba(139, 92, 246, 0.05)); color: var(--accent-purple); }}
         .icon-green {{ background: linear-gradient(145deg, rgba(16, 185, 129, 0.2), rgba(16, 185, 129, 0.05)); color: var(--accent-green); }}
-        .icon-blue {{ background: linear-gradient(145deg, rgba(59, 130, 246, 0. 2), rgba(59, 130, 246, 0. 05)); color: var(--accent-blue); }}
-        . icon-cyan {{ background: linear-gradient(145deg, rgba(6, 182, 212, 0.2), rgba(6, 182, 212, 0.05)); color: var(--accent-cyan); }}
+        .icon-blue {{ background: linear-gradient(145deg, rgba(59, 130, 246, 0.2), rgba(59, 130, 246, 0.05)); color: var(--accent-blue); }}
+        .icon-cyan {{ background: linear-gradient(145deg, rgba(6, 182, 212, 0.2), rgba(6, 182, 212, 0.05)); color: var(--accent-cyan); }}
         .icon-red {{ background: linear-gradient(145deg, rgba(239, 68, 68, 0.2), rgba(239, 68, 68, 0.05)); color: var(--accent-red); }}
         
-             . store-card-title {{
+             .store-card-title {{
             font-size: 20px;
             font-weight: 700;
             color: white;
             margin-bottom: 8px;
         }}
         
-        . store-card-desc {{
+        .store-card-desc {{
             font-size: 13px;
             color: var(--text-secondary);
             line-height: 1.5;
             margin-bottom: 20px;
         }}
         
-        . store-card-stat {{
+        .store-card-stat {{
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -4612,14 +4612,14 @@ STORE_DASHBOARD_TEMPLATE = f"""
             letter-spacing: 1px;
         }}
         
-        . store-grid {{
+        .store-grid {{
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
             gap: 24px;
             margin-top: 30px;
         }}
         
-        . coming-soon-badge {{
+        .coming-soon-badge {{
             position: absolute;
             top: 15px;
             right: 15px;
@@ -4654,7 +4654,7 @@ STORE_DASHBOARD_TEMPLATE = f"""
 <body>
     <div class="animated-bg"></div>
 
-    <div class="mobile-toggle" onclick="document.querySelector('. sidebar').classList.toggle('active')">
+    <div class="mobile-toggle" onclick="document.querySelector('.sidebar').classList.toggle('active')">
         <i class="fas fa-bars"></i>
     </div>
 
@@ -4674,7 +4674,7 @@ STORE_DASHBOARD_TEMPLATE = f"""
                 <i class="fas fa-box"></i> Products
                 <span class="nav-badge" style="background: var(--accent-purple);">Soon</span>
             </div>
-            <div class="nav-link" style="opacity: 0. 5; cursor: not-allowed;">
+            <div class="nav-link" style="opacity: 0.5; cursor: not-allowed;">
                 <i class="fas fa-users"></i> Customers
                 <span class="nav-badge" style="background: var(--accent-purple);">Soon</span>
             </div>
@@ -4711,7 +4711,7 @@ STORE_DASHBOARD_TEMPLATE = f"""
                 </div>
                 <div class="store-card-title">Product Inventory</div>
                 <div class="store-card-desc">
-                    Manage aluminum products, profiles, sheets, and accessories.  Track stock levels and reorder points.
+                    Manage aluminum products, profiles, sheets, and accessories. Track stock levels and reorder points.
                 </div>
                 <div class="store-card-stat">
                     <div>
@@ -4846,13 +4846,13 @@ STORE_DASHBOARD_TEMPLATE = f"""
 # FLASK ROUTES (CONTROLLER LOGIC)
 # ==============================================================================
 
-@app. route('/')
+@app.route('/')
 def index():
     load_users()
     if not session.get('logged_in'):
         return render_template_string(LOGIN_TEMPLATE)
     else:
-        if session. get('role') == 'admin':
+        if session.get('role') == 'admin':
             stats = get_dashboard_summary_v2()
             return render_template_string(ADMIN_DASHBOARD_TEMPLATE, stats=stats)
         else:
@@ -4865,19 +4865,19 @@ def index():
 @app.route('/login', methods=['POST'])
 def login():
     username = request.form.get('username')
-    password = request.form. get('password')
+    password = request.form.get('password')
 
     users_db = load_users()
 
     if username in users_db and users_db[username]['password'] == password:
-        session. permanent = True
+        session.permanent = True
         session['logged_in'] = True
         session['user'] = username
         session['role'] = users_db[username]['role']
-        session['permissions'] = users_db[username]. get('permissions', [])
+        session['permissions'] = users_db[username].get('permissions', [])
         
         now = get_bd_time()
-        session['login_start'] = now. isoformat()
+        session['login_start'] = now.isoformat()
         
         users_db[username]['last_login'] = now.strftime('%I:%M %p, %d %b')
         save_users(users_db)
@@ -4887,7 +4887,7 @@ def login():
         flash('Invalid Username or Password.')
         return redirect(url_for('index'))
 
-@app. route('/logout')
+@app.route('/logout')
 def logout():
     if session.get('logged_in') and 'login_start' in session:
         try:
@@ -4927,7 +4927,7 @@ def save_user():
     
     data = request.json
     username = data.get('username', '').strip()
-    password = data.get('password', ''). strip()
+    password = data.get('password', '').strip()
     permissions = data.get('permissions', [])
     action = data.get('action_type')
     
@@ -4956,12 +4956,12 @@ def save_user():
     save_users(users_db)
     return jsonify({'status': 'success', 'message': 'User saved successfully!'})
 
-@app. route('/admin/delete-user', methods=['POST'])
+@app.route('/admin/delete-user', methods=['POST'])
 def delete_user():
     if not session.get('logged_in') or session.get('role') != 'admin':
         return jsonify({'status': 'error', 'message': 'Unauthorized'})
     
-    username = request.json. get('username')
+    username = request.json.get('username')
     users_db = load_users()
     
     if username == 'Admin':
@@ -5028,8 +5028,8 @@ def download_closing_excel():
             return make_response(send_file(
                 excel_file,
                 as_attachment=True,
-                download_name=f"Report-{internal_ref_no. replace('/', '_')}.xlsx",
-                mimetype='application/vnd. openxmlformats-officedocument.spreadsheetml.sheet'
+                download_name=f"Report-{internal_ref_no.replace('/', '_')}.xlsx",
+                mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
             ))
         else:
             flash("Data source returned empty.")
@@ -5047,7 +5047,7 @@ def download_closing_excel():
 def accessories_search_page():
     if not session.get('logged_in'):
         return redirect(url_for('index'))
-    if 'accessories' not in session. get('permissions', []):
+    if 'accessories' not in session.get('permissions', []):
         flash("Access Denied")
         return redirect(url_for('index'))
     return render_template_string(ACCESSORIES_SEARCH_TEMPLATE)
@@ -5057,9 +5057,9 @@ def accessories_input_page():
     if not session.get('logged_in'):
         return redirect(url_for('index'))
     
-    ref_no = request. form.get('ref_no') or request.args.get('ref')
+    ref_no = request.form.get('ref_no') or request.args.get('ref')
     if ref_no:
-        ref_no = ref_no.strip(). upper()
+        ref_no = ref_no.strip().upper()
     
     if not ref_no:
         return redirect(url_for('accessories_search_page'))
@@ -5080,7 +5080,7 @@ def accessories_input_page():
                 return redirect(url_for('accessories_search_page'))
             
             colors = sorted(list(set([item['color'] for item in api_data])))
-            style = api_data[0]. get('style', 'N/A')
+            style = api_data[0].get('style', 'N/A')
             buyer = api_data[0].get('buyer', 'N/A')
             challans = []
             
@@ -5114,12 +5114,12 @@ def accessories_save():
     if not session.get('logged_in'):
         return redirect(url_for('index'))
     
-    ref = request.form.get('ref'). strip(). upper()
+    ref = request.form.get('ref').strip().upper()
     db_acc = load_accessories_db()
     
     if ref in db_acc:
         if request.form.get('item_type'):
-            db_acc[ref]['item_type'] = request.form. get('item_type')
+            db_acc[ref]['item_type'] = request.form.get('item_type')
         
         for item in db_acc[ref]['challans']:
             item['status'] = "✔"
@@ -5127,9 +5127,9 @@ def accessories_save():
         new_entry = {
             "date": get_bd_date_str(),
             "line": request.form.get('line_no'),
-            "color": request.form. get('color'),
-            "size": request.form. get('size'),
-            "qty": request.form. get('qty'),
+            "color": request.form.get('color'),
+            "size": request.form.get('size'),
+            "qty": request.form.get('qty'),
             "status": ""
         }
         db_acc[ref]['challans'].append(new_entry)
@@ -5142,7 +5142,7 @@ def accessories_print_view():
     if not session.get('logged_in'):
         return redirect(url_for('index'))
     
-    ref = request.args.get('ref'). strip().upper()
+    ref = request.args.get('ref').strip().upper()
     db_acc = load_accessories_db()
     
     if ref not in db_acc:
@@ -5166,7 +5166,7 @@ def accessories_print_view():
         ref=ref,
         buyer=data['buyer'],
         style=data['style'],
-        item_type=data. get('item_type', ''),
+        item_type=data.get('item_type', ''),
         challans=challans,
         line_summary=sorted_line_summary,
         count=len(challans),
@@ -5197,13 +5197,13 @@ def accessories_update():
         return redirect(url_for('index'))
     
     ref = request.form.get('ref')
-    index = int(request.form. get('index'))
+    index = int(request.form.get('index'))
     db_acc = load_accessories_db()
 
     if ref in db_acc and 0 <= index < len(db_acc[ref]['challans']):
-        db_acc[ref]['challans'][index]['line'] = request.form. get('line_no')
+        db_acc[ref]['challans'][index]['line'] = request.form.get('line_no')
         db_acc[ref]['challans'][index]['color'] = request.form.get('color')
-        db_acc[ref]['challans'][index]['size'] = request.form. get('size')
+        db_acc[ref]['challans'][index]['size'] = request.form.get('size')
         db_acc[ref]['challans'][index]['qty'] = request.form.get('qty')
         save_accessories_db(db_acc)
     
@@ -5215,7 +5215,7 @@ def accessories_delete():
         return redirect(url_for('index'))
     
     ref = request.form.get('ref')
-    index = int(request. form.get('index'))
+    index = int(request.form.get('index'))
     db_acc = load_accessories_db()
 
     if ref in db_acc and 0 <= index < len(db_acc[ref]['challans']):
@@ -5231,7 +5231,7 @@ def accessories_delete():
 
 @app.route('/generate-po-report', methods=['POST'])
 def generate_po_report():
-    if not session. get('logged_in'):
+    if not session.get('logged_in'):
         return redirect(url_for('index'))
 
     if os.path.exists(UPLOAD_FOLDER):
@@ -5239,14 +5239,14 @@ def generate_po_report():
     os.makedirs(UPLOAD_FOLDER)
 
     try:
-        uploaded_files = request. files.getlist('pdf_files')
+        uploaded_files = request.files.getlist('pdf_files')
         all_data = []
         final_meta = {'buyer': 'N/A', 'booking': 'N/A', 'style': 'N/A', 'season': 'N/A', 'dept': 'N/A', 'item': 'N/A'}
         
         for file in uploaded_files:
-            if file. filename == '':
+            if file.filename == '':
                 continue
-            file_path = os. path.join(app.config['UPLOAD_FOLDER'], file.filename)
+            file_path = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
             file.save(file_path)
             data, meta = extract_data_dynamic(file_path)
             if meta['buyer'] != 'N/A':
@@ -5277,10 +5277,10 @@ def generate_po_report():
                 fill_value=0
             )
             
-            pivot.columns. name = None
+            pivot.columns.name = None
             
             try:
-                sorted_cols = sort_sizes(pivot. columns. tolist())
+                sorted_cols = sort_sizes(pivot.columns.tolist())
                 pivot = pivot[sorted_cols]
             except:
                 pass
@@ -5288,14 +5288,14 @@ def generate_po_report():
             pivot['Total'] = pivot.sum(axis=1)
             grand_total_qty += pivot['Total'].sum()
 
-            actual_qty = pivot. sum()
-            actual_qty. name = 'Actual Qty'
-            qty_plus_3 = (actual_qty * 1.03).round(). astype(int)
+            actual_qty = pivot.sum()
+            actual_qty.name = 'Actual Qty'
+            qty_plus_3 = (actual_qty * 1.03).round().astype(int)
             qty_plus_3.name = '3% Order Qty'
             
-            pivot_final = pd.concat([pivot, actual_qty. to_frame(). T, qty_plus_3.to_frame().T])
+            pivot_final = pd.concat([pivot, actual_qty.to_frame().T, qty_plus_3.to_frame().T])
             pivot_final = pivot_final.reset_index()
-            pivot_final = pivot_final.rename(columns={'index': 'P. O NO'})
+            pivot_final = pivot_final.rename(columns={'index': 'P.O NO'})
             
             pd.set_option('colheader_justify', 'center')
             html_table = pivot_final.to_html(
@@ -5315,7 +5315,7 @@ def generate_po_report():
                 html_table
             )
 
-            final_tables. append({'color': color, 'table': html_table})
+            final_tables.append({'color': color, 'table': html_table})
             
         return render_template_string(
             PO_REPORT_TEMPLATE,
@@ -5334,4 +5334,5 @@ def generate_po_report():
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
+
 
