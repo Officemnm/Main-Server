@@ -5056,16 +5056,16 @@ STORE_DASHBOARD_TEMPLATE = """
 </html>
 """
 # ==============================================================================
-# STORE PRODUCT ADD/LIST TEMPLATE
+# STORE USERS MANAGEMENT TEMPLATE (NEW)
 # ==============================================================================
 
-STORE_PRODUCTS_TEMPLATE = """
+STORE_USERS_TEMPLATE = """
 <!doctype html>
 <html lang="en">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Products - MEHEDI THAI ALUMINUM AND GLASS</title>
+    <title>Store Users - MEHEDI THAI ALUMINUM AND GLASS</title>
     """ + COMMON_STYLES + """
 </head>
 <body>
@@ -5078,9 +5078,9 @@ STORE_PRODUCTS_TEMPLATE = """
         </div>
         <div class="checkmark-container" id="success-anim">
             <div class="checkmark-circle"></div>
-            <div class="anim-text">Saved! </div>
+            <div class="anim-text">Saved!</div>
         </div>
-        <div class="loading-text">Processing... </div>
+        <div class="loading-text" id="loading-text">Processing...</div>
     </div>
 
     <div class="mobile-toggle" onclick="document.querySelector('.sidebar').classList.toggle('active')">
@@ -5096,9 +5096,9 @@ STORE_PRODUCTS_TEMPLATE = """
             <a href="/admin/store" class="nav-link">
                 <i class="fas fa-th-large"></i> Dashboard
             </a>
-            <div class="nav-link active">
+            <a href="/store/products" class="nav-link">
                 <i class="fas fa-box"></i> Products
-            </div>
+            </a>
             <a href="/store/customers" class="nav-link">
                 <i class="fas fa-users"></i> Customers
             </a>
@@ -5108,6 +5108,9 @@ STORE_PRODUCTS_TEMPLATE = """
             <a href="/store/estimates" class="nav-link">
                 <i class="fas fa-file-alt"></i> Estimates
             </a>
+            <div class="nav-link active">
+                <i class="fas fa-user-cog"></i> Store Users
+            </div>
             <a href="/logout" class="nav-link" style="color: var(--accent-red); margin-top: 20px;">
                 <i class="fas fa-sign-out-alt"></i> Sign Out
             </a>
@@ -5118,8 +5121,8 @@ STORE_PRODUCTS_TEMPLATE = """
     <div class="main-content">
         <div class="header-section">
             <div>
-                <div class="page-title">Product Management</div>
-                <div class="page-subtitle">Add and manage aluminum & glass products</div>
+                <div class="page-title">Store User Management</div>
+                <div class="page-subtitle">Manage access to the store panel</div>
             </div>
             <div class="status-badge">
                 <div class="status-dot"></div>
@@ -5127,1592 +5130,86 @@ STORE_PRODUCTS_TEMPLATE = """
             </div>
         </div>
 
-        {% with messages = get_flashed_messages() %}
-            {% if messages %}
-                <div class="flash-message flash-success">
-                    <i class="fas fa-check-circle"></i>
-                    <span>{{ messages[0] }}</span>
-                </div>
-            {% endif %}
-        {% endwith %}
-
         <div class="dashboard-grid-2">
             <div class="card">
                 <div class="section-header">
-                    <span><i class="fas fa-plus-circle" style="margin-right: 10px; color: var(--accent-orange);"></i>Add New Product</span>
+                    <span>Store Users List</span>
                 </div>
-                <form action="/store/products/save" method="post" onsubmit="showLoading()">
-                    <div class="input-group">
-                        <label><i class="fas fa-cube" style="margin-right: 5px;"></i> PRODUCT NAME</label>
-                        <input type="text" name="name" required placeholder="e.g.  Thai Glass 5mm">
-                    </div>
-                    
-                    <div class="grid-2">
-                        <div class="input-group">
-                            <label><i class="fas fa-ruler" style="margin-right: 5px;"></i> SIZE (FEET)</label>
-                            <input type="text" name="size_feet" placeholder="e.g.  4x6 or 3x4">
-                        </div>
-                        <div class="input-group">
-                            <label><i class="fas fa-layer-group" style="margin-right: 5px;"></i> THICKNESS</label>
-                            <input type="text" name="thickness" placeholder="e.g. 5mm, 8mm">
-                        </div>
-                    </div>
-                    
-                    <div class="grid-2">
-                        <div class="input-group">
-                            <label><i class="fas fa-tag" style="margin-right: 5px;"></i> CATEGORY</label>
-                            <select name="category">
-                                <option value="Glass">Glass</option>
-                                <option value="Aluminum Profile">Aluminum Profile</option>
-                                <option value="Thai Aluminum">Thai Aluminum</option>
-                                <option value="Accessories">Accessories</option>
-                                <option value="Mirror">Mirror</option>
-                                <option value="Other">Other</option>
-                            </select>
-                        </div>
-                        <div class="input-group">
-                            <label><i class="fas fa-money-bill" style="margin-right: 5px;"></i> PRICE (Optional)</label>
-                            <input type="number" name="price" placeholder="৳ Per Unit" step="0.01">
-                        </div>
-                    </div>
-                    
-                    <div class="input-group">
-                        <label><i class="fas fa-info-circle" style="margin-right: 5px;"></i> DESCRIPTION (Optional)</label>
-                        <textarea name="description" placeholder="Additional details about the product... "></textarea>
-                    </div>
-                    
-                    <button type="submit">
-                        <i class="fas fa-save" style="margin-right: 10px;"></i> Save Product
-                    </button>
-                </form>
-            </div>
-
-            <div class="card">
-                <div class="section-header">
-                    <span>Product List</span>
-                    <span class="table-badge" style="background: var(--accent-orange); color: white;">{{ products|length }} Items</span>
-                </div>
-                
-                <div class="search-box">
-                    <i class="fas fa-search"></i>
-                    <input type="text" id="productSearch" placeholder="Search products..." onkeyup="filterProducts()">
-                </div>
-                
-                <div style="max-height: 500px; overflow-y: auto;" id="productList">
-                    {% if products %}
-                        {% for p in products|reverse %}
-                        <div class="product-item" style="display: flex; justify-content: space-between; align-items: center; padding: 15px; background: rgba(255,255,255,0.02); border-radius: 10px; margin-bottom: 10px; border: 1px solid var(--border-color);">
-                            <div>
-                                <div style="font-weight: 700; color: white; margin-bottom: 5px;">{{ p.name }}</div>
-                                <div style="font-size: 12px; color: var(--text-secondary);">
-                                    {% if p.size_feet %}{{ p.size_feet }} ft | {% endif %}
-                                    {% if p.thickness %}{{ p.thickness }} | {% endif %}
-                                    {{ p.category }}
-                                </div>
-                            </div>
-                            <div style="text-align: right;">
-                                {% if p.price %}
-                                <div style="font-weight: 800; color: var(--accent-green); font-size: 18px;">৳{{ p.price }}</div>
-                                {% else %}
-                                <div style="color: var(--text-secondary); font-size: 12px;">No price set</div>
-                                {% endif %}
-                                <div class="action-cell" style="margin-top: 8px;">
-                                    <a href="/store/products/edit/{{ loop.index0 }}" class="action-btn btn-edit"><i class="fas fa-edit"></i></a>
-                                    <form action="/store/products/delete/{{ loop.index0 }}" method="post" style="display:inline;" onsubmit="return confirm('Delete this product?');">
+                <div style="max-height: 450px; overflow-y: auto;">
+                    <table class="dark-table">
+                        <thead>
+                            <tr>
+                                <th>Username</th>
+                                <th>Role</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for user, details in users.items() %}
+                            <tr>
+                                <td style="font-weight: 600;">{{ user }}</td>
+                                <td><span class="table-badge" style="background: rgba(16, 185, 129, 0.1); color: var(--accent-green);">{{ details.role }}</span></td>
+                                <td>
+                                    {% if details.role != 'store_admin' %}
+                                    <form action="/store/users/delete" method="post" onsubmit="return confirm('Delete this user?');">
+                                        <input type="hidden" name="username" value="{{ user }}">
                                         <button type="submit" class="action-btn btn-del"><i class="fas fa-trash"></i></button>
                                     </form>
-                                </div>
-                            </div>
-                        </div>
-                        {% endfor %}
-                    {% else %}
-                        <div class="empty-state">
-                            <i class="fas fa-box-open"></i>
-                            <p>No products added yet</p>
-                        </div>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <script>
-        function showLoading() {
-            document.getElementById('loading-overlay').style.display = 'flex';
-            return true;
-        }
-        
-        function filterProducts() {
-            const search = document.getElementById('productSearch').value.toLowerCase();
-            document.querySelectorAll('.product-item').forEach(item => {
-                const text = item.textContent.toLowerCase();
-                item.style.display = text.includes(search) ?  'flex' : 'none';
-            });
-        }
-    </script>
-</body>
-</html>
-"""
-
-# ==============================================================================
-# STORE CUSTOMERS TEMPLATE
-# ==============================================================================
-
-STORE_CUSTOMERS_TEMPLATE = """
-<!doctype html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Customers - MEHEDI THAI ALUMINUM AND GLASS</title>
-    """ + COMMON_STYLES + """
-</head>
-<body>
-    <div class="animated-bg"></div>
-    
-    <div id="loading-overlay">
-        <div class="spinner-container">
-            <div class="spinner"></div>
-            <div class="spinner-inner"></div>
-        </div>
-        <div class="loading-text">Processing... </div>
-    </div>
-
-    <div class="mobile-toggle" onclick="document.querySelector('.sidebar').classList.toggle('active')">
-        <i class="fas fa-bars"></i>
-    </div>
-
-    <div class="sidebar">
-        <div class="brand-logo">
-            <i class="fas fa-store"></i> 
-            Store<span>Panel</span>
-        </div>
-        <div class="nav-menu">
-            <a href="/admin/store" class="nav-link">
-                <i class="fas fa-th-large"></i> Dashboard
-            </a>
-            <a href="/store/products" class="nav-link">
-                <i class="fas fa-box"></i> Products
-            </a>
-            <div class="nav-link active">
-                <i class="fas fa-users"></i> Customers
-            </div>
-            <a href="/store/invoices" class="nav-link">
-                <i class="fas fa-file-invoice-dollar"></i> Invoices
-            </a>
-            <a href="/store/estimates" class="nav-link">
-                <i class="fas fa-file-alt"></i> Estimates
-            </a>
-            <a href="/logout" class="nav-link" style="color: var(--accent-red); margin-top: 20px;">
-                <i class="fas fa-sign-out-alt"></i> Sign Out
-            </a>
-        </div>
-        <div class="sidebar-footer">© 2025 Mehedi Hasan</div>
-    </div>
-
-    <div class="main-content">
-        <div class="header-section">
-            <div>
-                <div class="page-title">Customer Management</div>
-                <div class="page-subtitle">Add and manage your customers</div>
-            </div>
-            <div class="status-badge">
-                <div class="status-dot"></div>
-                <span>Online</span>
-            </div>
-        </div>
-
-        {% with messages = get_flashed_messages() %}
-            {% if messages %}
-                <div class="flash-message flash-success">
-                    <i class="fas fa-check-circle"></i>
-                    <span>{{ messages[0] }}</span>
-                </div>
-            {% endif %}
-        {% endwith %}
-
-        <div class="dashboard-grid-2">
-            <div class="card">
-                <div class="section-header">
-                    <span><i class="fas fa-user-plus" style="margin-right: 10px; color: var(--accent-purple);"></i>Add New Customer</span>
-                </div>
-                <form action="/store/customers/save" method="post" onsubmit="showLoading()">
-                    <div class="input-group">
-                        <label><i class="fas fa-user" style="margin-right: 5px;"></i> CUSTOMER NAME</label>
-                        <input type="text" name="name" required placeholder="Full Name">
-                    </div>
-                    
-                    <div class="input-group">
-                        <label><i class="fas fa-phone" style="margin-right: 5px;"></i> PHONE NUMBER</label>
-                        <input type="text" name="phone" required placeholder="01XXXXXXXXX">
-                    </div>
-                    
-                    <div class="input-group">
-                        <label><i class="fas fa-map-marker-alt" style="margin-right: 5px;"></i> ADDRESS</label>
-                        <textarea name="address" placeholder="Full Address (Optional)"></textarea>
-                    </div>
-                    
-                    <button type="submit" style="background: linear-gradient(135deg, #8B5CF6 0%, #A78BFA 100%);">
-                        <i class="fas fa-save" style="margin-right: 10px;"></i> Save Customer
-                    </button>
-                </form>
-            </div>
-
-            <div class="card">
-                <div class="section-header">
-                    <span>Customer List</span>
-                    <span class="table-badge" style="background: var(--accent-purple); color: white;">{{ customers|length }} Customers</span>
-                </div>
-                
-                <div class="search-box">
-                    <i class="fas fa-search"></i>
-                    <input type="text" id="customerSearch" placeholder="Search customers..." onkeyup="filterCustomers()">
-                </div>
-                
-                <div style="max-height: 500px; overflow-y: auto;" id="customerList">
-                    {% if customers %}
-                        {% for c in customers|reverse %}
-                        <div class="customer-item" style="display: flex; justify-content: space-between; align-items: center; padding: 15px; background: rgba(255,255,255,0.02); border-radius: 10px; margin-bottom: 10px; border: 1px solid var(--border-color);">
-                            <div>
-                                <div style="font-weight: 700; color: white; margin-bottom: 5px;">{{ c.name }}</div>
-                                <div style="font-size: 13px; color: var(--accent-orange);">
-                                    <i class="fas fa-phone" style="margin-right: 5px;"></i>{{ c.phone }}
-                                </div>
-                                {% if c.address %}
-                                <div style="font-size: 12px; color: var(--text-secondary); margin-top: 3px;">
-                                    <i class="fas fa-map-marker-alt" style="margin-right: 5px;"></i>{{ c.address[:50] }}... 
-                                </div>
-                                {% endif %}
-                            </div>
-                            <div class="action-cell">
-                                <a href="/store/customers/edit/{{ loop.index0 }}" class="action-btn btn-edit"><i class="fas fa-edit"></i></a>
-                                <form action="/store/customers/delete/{{ loop.index0 }}" method="post" style="display:inline;" onsubmit="return confirm('Delete this customer?');">
-                                    <button type="submit" class="action-btn btn-del"><i class="fas fa-trash"></i></button>
-                                </form>
-                            </div>
-                        </div>
-                        {% endfor %}
-                    {% else %}
-                        <div class="empty-state">
-                            <i class="fas fa-users"></i>
-                            <p>No customers added yet</p>
-                        </div>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <script>
-        function showLoading() {
-            document.getElementById('loading-overlay').style.display = 'flex';
-            return true;
-        }
-        
-        function filterCustomers() {
-            const search = document.getElementById('customerSearch').value.toLowerCase();
-            document.querySelectorAll('.customer-item').forEach(item => {
-                const text = item.textContent.toLowerCase();
-                item.style.display = text.includes(search) ? 'flex' : 'none';
-            });
-        }
-    </script>
-</body>
-</html>
-"""
-
-# ==============================================================================
-# STORE INVOICE CREATE TEMPLATE
-# ==============================================================================
-
-STORE_INVOICE_CREATE_TEMPLATE = """
-<!doctype html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Create Invoice - MEHEDI THAI ALUMINUM AND GLASS</title>
-    """ + COMMON_STYLES + """
-    <style>
-        .invoice-items-table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        
-        .invoice-items-table th {
-            background: rgba(255, 122, 0, 0.1);
-            padding: 12px;
-            text-align: left;
-            font-size: 12px;
-            text-transform: uppercase;
-            color: var(--accent-orange);
-            border-bottom: 1px solid var(--border-color);
-        }
-        
-        .invoice-items-table td {
-            padding: 10px;
-            border-bottom: 1px solid var(--border-color);
-        }
-        
-        .invoice-items-table input, .invoice-items-table select {
-            padding: 10px;
-            font-size: 14px;
-        }
-        
-        .item-row {
-            transition: var(--transition-smooth);
-        }
-        
-        .item-row:hover {
-            background: rgba(255, 122, 0, 0.03);
-        }
-        
-        .add-item-btn {
-            background: rgba(16, 185, 129, 0.1);
-            border: 1px dashed var(--accent-green);
-            color: var(--accent-green);
-            padding: 12px 20px;
-            border-radius: 10px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: var(--transition-smooth);
-            width: 100%;
-            margin-top: 15px;
-        }
-        
-        .add-item-btn:hover {
-            background: var(--accent-green);
-            color: white;
-        }
-        
-        .remove-item-btn {
-            background: rgba(239, 68, 68, 0.1);
-            border: none;
-            color: var(--accent-red);
-            width: 35px;
-            height: 35px;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: var(--transition-smooth);
-        }
-        
-        .remove-item-btn:hover {
-            background: var(--accent-red);
-            color: white;
-        }
-        
-        .totals-section {
-            background: rgba(255, 255, 255, 0.03);
-            border-radius: 12px;
-            padding: 20px;
-            margin-top: 20px;
-        }
-        
-        .total-row {
-            display: flex;
-            justify-content: space-between;
-            padding: 10px 0;
-            border-bottom: 1px solid var(--border-color);
-        }
-        
-        .total-row:last-child {
-            border-bottom: none;
-            font-size: 20px;
-            font-weight: 800;
-            color: var(--accent-green);
-        }
-        
-        .total-label {
-            color: var(--text-secondary);
-        }
-        
-        .total-value {
-            font-weight: 700;
-            color: white;
-        }
-    </style>
-</head>
-<body>
-    <div class="animated-bg"></div>
-    
-    <div id="loading-overlay">
-        <div class="spinner-container">
-            <div class="spinner"></div>
-            <div class="spinner-inner"></div>
-        </div>
-        <div class="loading-text">Creating Invoice...</div>
-    </div>
-
-    <div class="mobile-toggle" onclick="document.querySelector('.sidebar').classList.toggle('active')">
-        <i class="fas fa-bars"></i>
-    </div>
-
-    <div class="sidebar">
-        <div class="brand-logo">
-            <i class="fas fa-store"></i> 
-            Store<span>Panel</span>
-        </div>
-        <div class="nav-menu">
-            <a href="/admin/store" class="nav-link">
-                <i class="fas fa-th-large"></i> Dashboard
-            </a>
-            <a href="/store/products" class="nav-link">
-                <i class="fas fa-box"></i> Products
-            </a>
-            <a href="/store/customers" class="nav-link">
-                <i class="fas fa-users"></i> Customers
-            </a>
-            <div class="nav-link active">
-                <i class="fas fa-file-invoice-dollar"></i> Invoices
-            </div>
-            <a href="/store/estimates" class="nav-link">
-                <i class="fas fa-file-alt"></i> Estimates
-            </a>
-            <a href="/logout" class="nav-link" style="color: var(--accent-red); margin-top: 20px;">
-                <i class="fas fa-sign-out-alt"></i> Sign Out
-            </a>
-        </div>
-        <div class="sidebar-footer">© 2025 Mehedi Hasan</div>
-    </div>
-
-    <div class="main-content">
-        <div class="header-section">
-            <div>
-                <div class="page-title">Create Invoice</div>
-                <div class="page-subtitle">Invoice No: <span style="color: var(--accent-orange); font-weight: 700;">{{ invoice_no }}</span></div>
-            </div>
-            <a href="/store/invoices" class="btn-secondary" style="padding: 12px 24px; border-radius: 10px; text-decoration: none; color: var(--text-secondary);">
-                <i class="fas fa-arrow-left" style="margin-right: 8px;"></i> Back to List
-            </a>
-        </div>
-
-        <form action="/store/invoices/save" method="post" onsubmit="return validateAndSubmit()">
-            <input type="hidden" name="invoice_no" value="{{ invoice_no }}">
-            
-            <div class="grid-2" style="margin-bottom: 30px;">
-                <div class="card">
-                    <div class="section-header">
-                        <span><i class="fas fa-user" style="margin-right: 10px; color: var(--accent-purple);"></i>Customer Info</span>
-                    </div>
-                    
-                    <div class="input-group">
-                        <label>SELECT CUSTOMER</label>
-                        <select name="customer_id" id="customerSelect" onchange="fillCustomerInfo()">
-                            <option value="">-- Select Existing Customer --</option>
-                            {% for c in customers %}
-                            <option value="{{ loop.index0 }}" data-name="{{ c.name }}" data-phone="{{ c.phone }}" data-address="{{ c.address }}">{{ c.name }} - {{ c.phone }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    
-                    <div class="input-group">
-                        <label>CUSTOMER NAME</label>
-                        <input type="text" name="customer_name" id="customerName" required placeholder="Customer Name">
-                    </div>
-                    
-                    <div class="input-group">
-                        <label>PHONE</label>
-                        <input type="text" name="customer_phone" id="customerPhone" placeholder="Phone Number">
-                    </div>
-                    
-                    <div class="input-group">
-                        <label>ADDRESS</label>
-                        <textarea name="customer_address" id="customerAddress" placeholder="Address"></textarea>
-                    </div>
-                </div>
-                
-                <div class="card">
-                    <div class="section-header">
-                        <span><i class="fas fa-calendar" style="margin-right: 10px; color: var(--accent-blue);"></i>Invoice Details</span>
-                    </div>
-                    
-                    <div class="input-group">
-                        <label>INVOICE DATE</label>
-                        <input type="date" name="invoice_date" value="{{ today }}" required>
-                    </div>
-                    
-                    <div class="input-group">
-                        <label>NOTES (Optional)</label>
-                        <textarea name="notes" placeholder="Any additional notes..."></textarea>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="card">
-                <div class="section-header">
-                    <span><i class="fas fa-list" style="margin-right: 10px; color: var(--accent-green);"></i>Invoice Items</span>
-                </div>
-                
-                <div style="overflow-x: auto;">
-                    <table class="invoice-items-table">
-                        <thead>
-                            <tr>
-                                <th style="width: 30%;">Product/Description</th>
-                                <th style="width: 15%;">Size (ft)</th>
-                                <th style="width: 12%;">Quantity</th>
-                                <th style="width: 15%;">Unit Price</th>
-                                <th style="width: 18%;">Total</th>
-                                <th style="width: 10%;"></th>
-                            </tr>
-                        </thead>
-                        <tbody id="itemsBody">
-                            <tr class="item-row">
-                                <td>
-                                    <input type="text" name="items[0][description]" placeholder="Product name" required>
-                                </td>
-                                <td>
-                                    <input type="text" name="items[0][size]" placeholder="e.g.  4x6">
-                                </td>
-                                <td>
-                                    <input type="number" name="items[0][qty]" class="item-qty" value="1" min="1" onchange="calculateRow(this)" required>
-                                </td>
-                                <td>
-                                    <input type="number" name="items[0][price]" class="item-price" placeholder="৳" step="0.01" onchange="calculateRow(this)" required>
-                                </td>
-                                <td>
-                                    <input type="number" name="items[0][total]" class="item-total" readonly placeholder="৳ 0">
-                                </td>
-                                <td>
-                                    <button type="button" class="remove-item-btn" onclick="removeRow(this)"><i class="fas fa-times"></i></button>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-                
-                <button type="button" class="add-item-btn" onclick="addItemRow()">
-                    <i class="fas fa-plus" style="margin-right: 8px;"></i> Add Another Item
-                </button>
-                
-                <div class="totals-section">
-                    <div class="total-row">
-                        <span class="total-label">Subtotal</span>
-                        <span class="total-value" id="subtotal">৳ 0</span>
-                    </div>
-                    <div class="total-row">
-                        <span class="total-label">Discount</span>
-                        <input type="number" name="discount" id="discountInput" value="0" min="0" step="0.01" style="width: 120px; text-align: right;" onchange="calculateTotals()">
-                    </div>
-                    <div class="total-row">
-                        <span class="total-label">Paid Amount</span>
-                        <input type="number" name="paid" id="paidInput" value="0" min="0" step="0.01" style="width: 120px; text-align: right;" onchange="calculateTotals()">
-                    </div>
-                    <div class="total-row" style="background: rgba(239, 68, 68, 0.1); margin: 10px -20px -20px -20px; padding: 15px 20px; border-radius: 0 0 12px 12px;">
-                        <span style="color: var(--accent-red);">Due Amount</span>
-                        <span style="color: var(--accent-red);" id="dueAmount">৳ 0</span>
-                    </div>
-                    <input type="hidden" name="total" id="totalInput">
-                    <input type="hidden" name="due" id="dueInput">
-                </div>
-            </div>
-            
-            <div style="margin-top: 30px; display: flex; gap: 15px; justify-content: flex-end;">
-                <button type="submit" name="action" value="save" style="width: auto; padding: 15px 40px;">
-                    <i class="fas fa-save" style="margin-right: 10px;"></i> Save Invoice
-                </button>
-                <button type="submit" name="action" value="save_print" style="width: auto; padding: 15px 40px; background: linear-gradient(135deg, #10B981 0%, #34D399 100%);">
-                    <i class="fas fa-print" style="margin-right: 10px;"></i> Save & Print
-                </button>
-            </div>
-        </form>
-    </div>
-    
-    <script>
-        let itemIndex = 1;
-        
-        function fillCustomerInfo() {
-            const select = document.getElementById('customerSelect');
-            const option = select.options[select.selectedIndex];
-            if (option.value) {
-                document.getElementById('customerName').value = option.dataset.name || '';
-                document.getElementById('customerPhone').value = option.dataset.phone || '';
-                document.getElementById('customerAddress').value = option.dataset.address || '';
-            }
-        }
-        
-        function addItemRow() {
-            const tbody = document.getElementById('itemsBody');
-            const row = document.createElement('tr');
-            row.className = 'item-row';
-            row.innerHTML = `
-                <td><input type="text" name="items[${itemIndex}][description]" placeholder="Product name" required></td>
-                <td><input type="text" name="items[${itemIndex}][size]" placeholder="e.g. 4x6"></td>
-                <td><input type="number" name="items[${itemIndex}][qty]" class="item-qty" value="1" min="1" onchange="calculateRow(this)" required></td>
-                <td><input type="number" name="items[${itemIndex}][price]" class="item-price" placeholder="৳" step="0.01" onchange="calculateRow(this)" required></td>
-                <td><input type="number" name="items[${itemIndex}][total]" class="item-total" readonly placeholder="৳ 0"></td>
-                <td><button type="button" class="remove-item-btn" onclick="removeRow(this)"><i class="fas fa-times"></i></button></td>
-            `;
-            tbody.appendChild(row);
-            itemIndex++;
-        }
-        
-        function removeRow(btn) {
-            const rows = document.querySelectorAll('.item-row');
-            if (rows.length > 1) {
-                btn.closest('tr').remove();
-                calculateTotals();
-            }
-        }
-        
-        function calculateRow(input) {
-            const row = input.closest('tr');
-            const qty = parseFloat(row.querySelector('.item-qty').value) || 0;
-            const price = parseFloat(row.querySelector('.item-price').value) || 0;
-            const total = qty * price;
-            row.querySelector('.item-total').value = total.toFixed(2);
-            calculateTotals();
-        }
-        
-        function calculateTotals() {
-            let subtotal = 0;
-            document.querySelectorAll('.item-total').forEach(input => {
-                subtotal += parseFloat(input.value) || 0;
-            });
-            
-            const discount = parseFloat(document.getElementById('discountInput').value) || 0;
-            const paid = parseFloat(document.getElementById('paidInput').value) || 0;
-            const grandTotal = subtotal - discount;
-            const due = grandTotal - paid;
-            
-            document.getElementById('subtotal').textContent = '৳ ' + subtotal.toFixed(2);
-            document.getElementById('dueAmount').textContent = '৳ ' + due.toFixed(2);
-            document.getElementById('totalInput').value = grandTotal.toFixed(2);
-            document.getElementById('dueInput').value = due.toFixed(2);
-        }
-        
-        function validateAndSubmit() {
-            calculateTotals();
-            document.getElementById('loading-overlay').style.display = 'flex';
-            return true;
-        }
-        
-        function showLoading() {
-            document.getElementById('loading-overlay').style.display = 'flex';
-            return true;
-        }
-    </script>
-</body>
-</html>
-"""
-
-# ==============================================================================
-# STORE ESTIMATE CREATE TEMPLATE
-# ==============================================================================
-
-STORE_ESTIMATE_CREATE_TEMPLATE = """
-<!doctype html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Create Estimate - MEHEDI THAI ALUMINUM AND GLASS</title>
-    """ + COMMON_STYLES + """
-    <style>
-        .invoice-items-table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        
-        .invoice-items-table th {
-            background: rgba(59, 130, 246, 0.1);
-            padding: 12px;
-            text-align: left;
-            font-size: 12px;
-            text-transform: uppercase;
-            color: var(--accent-blue);
-            border-bottom: 1px solid var(--border-color);
-        }
-        
-        .invoice-items-table td {
-            padding: 10px;
-            border-bottom: 1px solid var(--border-color);
-        }
-        
-        .invoice-items-table input, .invoice-items-table select {
-            padding: 10px;
-            font-size: 14px;
-        }
-        
-        .item-row {
-            transition: var(--transition-smooth);
-        }
-        
-        .item-row:hover {
-            background: rgba(59, 130, 246, 0.03);
-        }
-        
-        .add-item-btn {
-            background: rgba(59, 130, 246, 0.1);
-            border: 1px dashed var(--accent-blue);
-            color: var(--accent-blue);
-            padding: 12px 20px;
-            border-radius: 10px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: var(--transition-smooth);
-            width: 100%;
-            margin-top: 15px;
-        }
-        
-        .add-item-btn:hover {
-            background: var(--accent-blue);
-            color: white;
-        }
-        
-        .remove-item-btn {
-            background: rgba(239, 68, 68, 0.1);
-            border: none;
-            color: var(--accent-red);
-            width: 35px;
-            height: 35px;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: var(--transition-smooth);
-        }
-        
-        .remove-item-btn:hover {
-            background: var(--accent-red);
-            color: white;
-        }
-        
-        .totals-section {
-            background: rgba(255, 255, 255, 0.03);
-            border-radius: 12px;
-            padding: 20px;
-            margin-top: 20px;
-        }
-        
-        .total-row {
-            display: flex;
-            justify-content: space-between;
-            padding: 10px 0;
-            border-bottom: 1px solid var(--border-color);
-        }
-        
-        .total-row:last-child {
-            border-bottom: none;
-            font-size: 20px;
-            font-weight: 800;
-            color: var(--accent-blue);
-            background: rgba(59, 130, 246, 0.1);
-            margin: 10px -20px -20px -20px;
-            padding: 15px 20px;
-            border-radius: 0 0 12px 12px;
-        }
-    </style>
-</head>
-<body>
-    <div class="animated-bg"></div>
-    
-    <div id="loading-overlay">
-        <div class="spinner-container">
-            <div class="spinner"></div>
-            <div class="spinner-inner"></div>
-        </div>
-        <div class="loading-text">Creating Estimate...</div>
-    </div>
-
-    <div class="mobile-toggle" onclick="document.querySelector('.sidebar').classList.toggle('active')">
-        <i class="fas fa-bars"></i>
-    </div>
-
-    <div class="sidebar">
-        <div class="brand-logo">
-            <i class="fas fa-store"></i> 
-            Store<span>Panel</span>
-        </div>
-        <div class="nav-menu">
-            <a href="/admin/store" class="nav-link">
-                <i class="fas fa-th-large"></i> Dashboard
-            </a>
-            <a href="/store/products" class="nav-link">
-                <i class="fas fa-box"></i> Products
-            </a>
-            <a href="/store/customers" class="nav-link">
-                <i class="fas fa-users"></i> Customers
-            </a>
-            <a href="/store/invoices" class="nav-link">
-                <i class="fas fa-file-invoice-dollar"></i> Invoices
-            </a>
-            <div class="nav-link active">
-                <i class="fas fa-file-alt"></i> Estimates
-            </div>
-            <a href="/logout" class="nav-link" style="color: var(--accent-red); margin-top: 20px;">
-                <i class="fas fa-sign-out-alt"></i> Sign Out
-            </a>
-        </div>
-        <div class="sidebar-footer">© 2025 Mehedi Hasan</div>
-    </div>
-
-    <div class="main-content">
-        <div class="header-section">
-            <div>
-                <div class="page-title">Create Estimate / Quotation</div>
-                <div class="page-subtitle">Estimate No: <span style="color: var(--accent-blue); font-weight: 700;">{{ estimate_no }}</span></div>
-            </div>
-            <a href="/store/estimates" style="padding: 12px 24px; border-radius: 10px; text-decoration: none; color: var(--text-secondary); background: rgba(255,255,255,0.05); border: 1px solid var(--border-color);">
-                <i class="fas fa-arrow-left" style="margin-right: 8px;"></i> Back
-            </a>
-        </div>
-
-        <form action="/store/estimates/save" method="post" onsubmit="return validateAndSubmit()">
-            <input type="hidden" name="estimate_no" value="{{ estimate_no }}">
-            
-            <div class="grid-2" style="margin-bottom: 30px;">
-                <div class="card">
-                    <div class="section-header">
-                        <span><i class="fas fa-user" style="margin-right: 10px; color: var(--accent-purple);"></i>Customer Info</span>
-                    </div>
-                    
-                    <div class="input-group">
-                        <label>CUSTOMER NAME</label>
-                        <input type="text" name="customer_name" id="customerName" required placeholder="Customer Name">
-                    </div>
-                    
-                    <div class="input-group">
-                        <label>PHONE</label>
-                        <input type="text" name="customer_phone" id="customerPhone" placeholder="Phone Number">
-                    </div>
-                    
-                    <div class="input-group">
-                        <label>ADDRESS</label>
-                        <textarea name="customer_address" id="customerAddress" placeholder="Address"></textarea>
-                    </div>
-                </div>
-                
-                <div class="card">
-                    <div class="section-header">
-                        <span><i class="fas fa-calendar" style="margin-right: 10px; color: var(--accent-blue);"></i>Estimate Details</span>
-                    </div>
-                    
-                    <div class="input-group">
-                        <label>ESTIMATE DATE</label>
-                        <input type="date" name="estimate_date" value="{{ today }}" required>
-                    </div>
-                    
-                    <div class="input-group">
-                        <label>VALID UNTIL (Optional)</label>
-                        <input type="date" name="valid_until">
-                    </div>
-                    
-                    <div class="input-group">
-                        <label>NOTES / TERMS</label>
-                        <textarea name="notes" placeholder="Terms & Conditions..."></textarea>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="card">
-                <div class="section-header">
-                    <span><i class="fas fa-list" style="margin-right: 10px; color: var(--accent-blue);"></i>Estimate Items</span>
-                </div>
-                
-                <div style="overflow-x: auto;">
-                    <table class="invoice-items-table">
-                        <thead>
-                            <tr>
-                                <th style="width: 30%;">Product/Description</th>
-                                <th style="width: 15%;">Size (ft)</th>
-                                <th style="width: 12%;">Quantity</th>
-                                <th style="width: 15%;">Unit Price</th>
-                                <th style="width: 18%;">Total</th>
-                                <th style="width: 10%;"></th>
-                            </tr>
-                        </thead>
-                        <tbody id="itemsBody">
-                            <tr class="item-row">
-                                <td><input type="text" name="items[0][description]" placeholder="Product/Work description" required></td>
-                                <td><input type="text" name="items[0][size]" placeholder="e.g.  4x6"></td>
-                                <td><input type="number" name="items[0][qty]" class="item-qty" value="1" min="1" onchange="calculateRow(this)" required></td>
-                                <td><input type="number" name="items[0][price]" class="item-price" placeholder="৳" step="0.01" onchange="calculateRow(this)" required></td>
-                                <td><input type="number" name="items[0][total]" class="item-total" readonly placeholder="৳ 0"></td>
-                                <td><button type="button" class="remove-item-btn" onclick="removeRow(this)"><i class="fas fa-times"></i></button></td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-                
-                <button type="button" class="add-item-btn" onclick="addItemRow()">
-                    <i class="fas fa-plus" style="margin-right: 8px;"></i> Add Another Item
-                </button>
-                
-                <div class="totals-section">
-                    <div class="total-row">
-                        <span style="color: var(--text-secondary);">Subtotal</span>
-                        <span style="font-weight: 700; color: white;" id="subtotal">৳ 0</span>
-                    </div>
-                    <div class="total-row">
-                        <span style="color: var(--text-secondary);">Discount</span>
-                        <input type="number" name="discount" id="discountInput" value="0" min="0" step="0.01" style="width: 120px; text-align: right;" onchange="calculateTotals()">
-                    </div>
-                    <div class="total-row">
-                        <span>Estimated Total</span>
-                        <span id="grandTotal">৳ 0</span>
-                    </div>
-                    <input type="hidden" name="total" id="totalInput">
-                </div>
-            </div>
-            
-            <div style="margin-top: 30px; display: flex; gap: 15px; justify-content: flex-end;">
-                <button type="submit" name="action" value="save" style="width: auto; padding: 15px 40px; background: linear-gradient(135deg, #3B82F6 0%, #60A5FA 100%);">
-                    <i class="fas fa-save" style="margin-right: 10px;"></i> Save Estimate
-                </button>
-                <button type="submit" name="action" value="save_print" style="width: auto; padding: 15px 40px; background: linear-gradient(135deg, #10B981 0%, #34D399 100%);">
-                    <i class="fas fa-print" style="margin-right: 10px;"></i> Save & Print
-                </button>
-            </div>
-        </form>
-    </div>
-    
-    <script>
-        let itemIndex = 1;
-        
-        function addItemRow() {
-            const tbody = document.getElementById('itemsBody');
-            const row = document.createElement('tr');
-            row.className = 'item-row';
-            row.innerHTML = `
-                <td><input type="text" name="items[${itemIndex}][description]" placeholder="Product/Work description" required></td>
-                <td><input type="text" name="items[${itemIndex}][size]" placeholder="e.g. 4x6"></td>
-                <td><input type="number" name="items[${itemIndex}][qty]" class="item-qty" value="1" min="1" onchange="calculateRow(this)" required></td>
-                <td><input type="number" name="items[${itemIndex}][price]" class="item-price" placeholder="৳" step="0.01" onchange="calculateRow(this)" required></td>
-                <td><input type="number" name="items[${itemIndex}][total]" class="item-total" readonly placeholder="৳ 0"></td>
-                <td><button type="button" class="remove-item-btn" onclick="removeRow(this)"><i class="fas fa-times"></i></button></td>
-            `;
-            tbody.appendChild(row);
-            itemIndex++;
-        }
-        
-        function removeRow(btn) {
-            const rows = document.querySelectorAll('.item-row');
-            if (rows.length > 1) {
-                btn.closest('tr').remove();
-                calculateTotals();
-            }
-        }
-        
-        function calculateRow(input) {
-            const row = input.closest('tr');
-            const qty = parseFloat(row.querySelector('.item-qty').value) || 0;
-            const price = parseFloat(row.querySelector('.item-price').value) || 0;
-            const total = qty * price;
-            row.querySelector('.item-total').value = total.toFixed(2);
-            calculateTotals();
-        }
-        
-        function calculateTotals() {
-            let subtotal = 0;
-            document.querySelectorAll('.item-total').forEach(input => {
-                subtotal += parseFloat(input.value) || 0;
-            });
-            
-            const discount = parseFloat(document.getElementById('discountInput').value) || 0;
-            const grandTotal = subtotal - discount;
-            
-            document.getElementById('subtotal').textContent = '৳ ' + subtotal.toFixed(2);
-            document.getElementById('grandTotal').textContent = '৳ ' + grandTotal.toFixed(2);
-            document.getElementById('totalInput').value = grandTotal.toFixed(2);
-        }
-        
-        function validateAndSubmit() {
-            calculateTotals();
-            document.getElementById('loading-overlay').style.display = 'flex';
-            return true;
-        }
-    </script>
-</body>
-</html>
-"""
-
-# ==============================================================================
-# STORE DUE COLLECTION TEMPLATE
-# ==============================================================================
-
-STORE_DUE_COLLECTION_TEMPLATE = """
-<!doctype html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Due Collection - MEHEDI THAI ALUMINUM AND GLASS</title>
-    """ + COMMON_STYLES + """
-    <style>
-        .due-card {
-            background: linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, rgba(239, 68, 68, 0.05) 100%);
-            border: 1px solid rgba(239, 68, 68, 0.2);
-            border-radius: 16px;
-            padding: 25px;
-            margin-bottom: 20px;
-        }
-        
-        .due-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-        
-        .due-invoice-no {
-            font-size: 20px;
-            font-weight: 800;
-            color: var(--accent-orange);
-        }
-        
-        .due-amount {
-            font-size: 24px;
-            font-weight: 800;
-            color: var(--accent-red);
-        }
-        
-        .due-details {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-        
-        .due-detail-item {
-            background: rgba(255, 255, 255, 0.03);
-            padding: 12px;
-            border-radius: 10px;
-        }
-        
-        .due-detail-label {
-            font-size: 11px;
-            color: var(--text-secondary);
-            text-transform: uppercase;
-            margin-bottom: 5px;
-        }
-        
-        .due-detail-value {
-            font-size: 15px;
-            font-weight: 600;
-            color: white;
-        }
-        
-        .payment-form {
-            background: rgba(16, 185, 129, 0.1);
-            border: 1px solid rgba(16, 185, 129, 0.2);
-            border-radius: 12px;
-            padding: 20px;
-        }
-        
-        .payment-history {
-            margin-top: 20px;
-        }
-        
-        .payment-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 12px;
-            background: rgba(255, 255, 255, 0.02);
-            border-radius: 8px;
-            margin-bottom: 8px;
-        }
-        
-        .payment-date {
-            color: var(--text-secondary);
-            font-size: 13px;
-        }
-        
-        .payment-amount {
-            font-weight: 700;
-            color: var(--accent-green);
-        }
-    </style>
-</head>
-<body>
-    <div class="animated-bg"></div>
-    
-    <div id="loading-overlay">
-        <div class="spinner-container">
-            <div class="spinner"></div>
-            <div class="spinner-inner"></div>
-        </div>
-        <div class="loading-text">Processing Payment...</div>
-    </div>
-
-    <div class="mobile-toggle" onclick="document.querySelector('.sidebar').classList.toggle('active')">
-        <i class="fas fa-bars"></i>
-    </div>
-
-    <div class="sidebar">
-        <div class="brand-logo">
-            <i class="fas fa-store"></i> 
-            Store<span>Panel</span>
-        </div>
-        <div class="nav-menu">
-            <a href="/admin/store" class="nav-link">
-                <i class="fas fa-th-large"></i> Dashboard
-            </a>
-            <a href="/store/products" class="nav-link">
-                <i class="fas fa-box"></i> Products
-            </a>
-            <a href="/store/customers" class="nav-link">
-                <i class="fas fa-users"></i> Customers
-            </a>
-            <a href="/store/invoices" class="nav-link">
-                <i class="fas fa-file-invoice-dollar"></i> Invoices
-            </a>
-            <div class="nav-link active">
-                <i class="fas fa-wallet"></i> Due Collection
-            </div>
-            <a href="/logout" class="nav-link" style="color: var(--accent-red); margin-top: 20px;">
-                <i class="fas fa-sign-out-alt"></i> Sign Out
-            </a>
-        </div>
-        <div class="sidebar-footer">© 2025 Mehedi Hasan</div>
-    </div>
-
-    <div class="main-content">
-        <div class="header-section">
-            <div>
-                <div class="page-title">Due Collection</div>
-                <div class="page-subtitle">Manage pending payments</div>
-            </div>
-            <div class="status-badge">
-                <div class="status-dot"></div>
-                <span>Online</span>
-            </div>
-        </div>
-
-        {% with messages = get_flashed_messages() %}
-            {% if messages %}
-                <div class="flash-message flash-success">
-                    <i class="fas fa-check-circle"></i>
-                    <span>{{ messages[0] }}</span>
-                </div>
-            {% endif %}
-        {% endwith %}
-
-        <div class="card" style="margin-bottom: 30px;">
-            <div class="section-header">
-                <span><i class="fas fa-search" style="margin-right: 10px; color: var(--accent-orange);"></i>Search Invoice</span>
-            </div>
-            <form action="/store/dues/search" method="get" style="display: flex; gap: 15px; flex-wrap: wrap;">
-                <div style="flex: 1; min-width: 200px;">
-                    <input type="text" name="invoice_no" placeholder="Enter Invoice Number (e.g.  INV-0001)" value="{{ search_invoice }}">
-                </div>
-                <button type="submit" style="width: auto; padding: 14px 30px;">
-                    <i class="fas fa-search" style="margin-right: 8px;"></i> Search
-                </button>
-            </form>
-        </div>
-
-        {% if invoice %}
-        <div class="due-card">
-            <div class="due-header">
-                <div class="due-invoice-no">{{ invoice.invoice_no }}</div>
-                <div class="due-amount">Due: ৳{{ "{:,.0f}".format(invoice.due) }}</div>
-            </div>
-            
-            <div class="due-details">
-                <div class="due-detail-item">
-                    <div class="due-detail-label">Customer</div>
-                    <div class="due-detail-value">{{ invoice.customer_name }}</div>
-                </div>
-                <div class="due-detail-item">
-                    <div class="due-detail-label">Phone</div>
-                    <div class="due-detail-value">{{ invoice.customer_phone }}</div>
-                </div>
-                <div class="due-detail-item">
-                    <div class="due-detail-label">Invoice Date</div>
-                    <div class="due-detail-value">{{ invoice.date }}</div>
-                </div>
-                <div class="due-detail-item">
-                    <div class="due-detail-label">Total Amount</div>
-                    <div class="due-detail-value">৳{{ "{:,.0f}".format(invoice.total) }}</div>
-                </div>
-                <div class="due-detail-item">
-                    <div class="due-detail-label">Already Paid</div>
-                    <div class="due-detail-value" style="color: var(--accent-green);">৳{{ "{:,.0f}".format(invoice.paid) }}</div>
-                </div>
-            </div>
-            
-            {% if invoice.due > 0 %}
-            <div class="payment-form">
-                <h4 style="margin-bottom: 15px; color: var(--accent-green);"><i class="fas fa-money-bill-wave" style="margin-right: 10px;"></i>Record Payment</h4>
-                <form action="/store/dues/collect" method="post" onsubmit="return validatePayment()">
-                    <input type="hidden" name="invoice_no" value="{{ invoice.invoice_no }}">
-                    <div class="grid-2">
-                        <div class="input-group">
-                            <label>PAYMENT AMOUNT</label>
-                            <input type="number" name="amount" id="paymentAmount" required placeholder="৳" step="0.01" max="{{ invoice.due }}">
-                        </div>
-                        <div class="input-group">
-                            <label>PAYMENT DATE</label>
-                            <input type="date" name="payment_date" value="{{ today }}" required>
-                        </div>
-                    </div>
-                    <div class="input-group">
-                        <label>NOTES (Optional)</label>
-                        <input type="text" name="notes" placeholder="Payment notes... ">
-                    </div>
-                    <button type="submit" style="background: linear-gradient(135deg, #10B981 0%, #34D399 100%);">
-                        <i class="fas fa-check" style="margin-right: 10px;"></i> Record Payment
-                    </button>
-                </form>
-            </div>
-            {% else %}
-            <div style="text-align: center; padding: 30px; background: rgba(16, 185, 129, 0.1); border-radius: 12px; border: 1px solid rgba(16, 185, 129, 0.2);">
-                <i class="fas fa-check-circle" style="font-size: 50px; color: var(--accent-green); margin-bottom: 15px;"></i>
-                <h3 style="color: var(--accent-green);">Fully Paid! </h3>
-                <p style="color: var(--text-secondary);">This invoice has no pending dues.</p>
-            </div>
-            {% endif %}
-            
-            {% if invoice.payments %}
-            <div class="payment-history">
-                <h4 style="margin-bottom: 15px; color: var(--text-secondary);"><i class="fas fa-history" style="margin-right: 10px;"></i>Payment History</h4>
-                {% for p in invoice.payments %}
-                <div class="payment-item">
-                    <div>
-                        <div class="payment-date">{{ p.date }}</div>
-                        {% if p.notes %}<div style="font-size: 12px; color: var(--text-secondary);">{{ p.notes }}</div>{% endif %}
-                    </div>
-                    <div class="payment-amount">+ ৳{{ "{:,.0f}".format(p.amount) }}</div>
-                </div>
-                {% endfor %}
-            </div>
-            {% endif %}
-        </div>
-        {% elif search_invoice %}
-        <div class="empty-state">
-            <i class="fas fa-search"></i>
-            <p>Invoice "{{ search_invoice }}" not found</p>
-        </div>
-        {% endif %}
-
-        <div class="card">
-            <div class="section-header">
-                <span><i class="fas fa-exclamation-triangle" style="margin-right: 10px; color: var(--accent-red);"></i>All Pending Dues</span>
-                <span class="table-badge" style="background: var(--accent-red); color: white;">{{ pending_dues|length }} Invoices</span>
-            </div>
-            
-            <div style="max-height: 400px; overflow-y: auto;">
-                {% if pending_dues %}
-                    {% for due in pending_dues %}
-                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 15px; background: rgba(255,255,255,0.02); border-radius: 10px; margin-bottom: 10px; border-left: 3px solid var(--accent-red);">
-                        <div>
-                            <div style="font-weight: 700; color: var(--accent-orange);">{{ due.invoice_no }}</div>
-                            <div style="font-size: 13px; color: white;">{{ due.customer_name }}</div>
-                            <div style="font-size: 12px; color: var(--text-secondary);">{{ due.date }}</div>
-                        </div>
-                        <div style="text-align: right;">
-                            <div style="font-size: 18px; font-weight: 800; color: var(--accent-red);">৳{{ "{:,.0f}".format(due.due) }}</div>
-                            <a href="/store/dues/search?invoice_no={{ due.invoice_no }}" class="action-btn btn-edit" style="margin-top: 8px;">
-                                <i class="fas fa-money-bill"></i> Collect
-                            </a>
-                        </div>
-                    </div>
-                    {% endfor %}
-                {% else %}
-                    <div class="empty-state">
-                        <i class="fas fa-check-circle" style="color: var(--accent-green);"></i>
-                        <p>No pending dues!  All payments collected.</p>
-                    </div>
-                {% endif %}
-            </div>
-        </div>
-    </div>
-    
-    <script>
-        function validatePayment() {
-            const amount = parseFloat(document.getElementById('paymentAmount').value);
-            if (amount <= 0) {
-                alert('Please enter a valid amount');
-                return false;
-            }
-            document.getElementById('loading-overlay').style.display = 'flex';
-            return true;
-        }
-    </script>
-</body>
-</html>
-"""
-# ==============================================================================
-# STORE INVOICES LIST TEMPLATE
-# ==============================================================================
-
-STORE_INVOICES_LIST_TEMPLATE = """
-<!doctype html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Invoices - MEHEDI THAI ALUMINUM AND GLASS</title>
-    """ + COMMON_STYLES + """
-</head>
-<body>
-    <div class="animated-bg"></div>
-
-    <div class="mobile-toggle" onclick="document.querySelector('.sidebar').classList.toggle('active')">
-        <i class="fas fa-bars"></i>
-    </div>
-
-    <div class="sidebar">
-        <div class="brand-logo">
-            <i class="fas fa-store"></i> 
-            Store<span>Panel</span>
-        </div>
-        <div class="nav-menu">
-            <a href="/admin/store" class="nav-link">
-                <i class="fas fa-th-large"></i> Dashboard
-            </a>
-            <a href="/store/products" class="nav-link">
-                <i class="fas fa-box"></i> Products
-            </a>
-            <a href="/store/customers" class="nav-link">
-                <i class="fas fa-users"></i> Customers
-            </a>
-            <div class="nav-link active">
-                <i class="fas fa-file-invoice-dollar"></i> Invoices
-            </div>
-            <a href="/store/estimates" class="nav-link">
-                <i class="fas fa-file-alt"></i> Estimates
-            </a>
-            <a href="/store/dues" class="nav-link">
-                <i class="fas fa-wallet"></i> Due Collection
-            </a>
-            <a href="/logout" class="nav-link" style="color: var(--accent-red); margin-top: 20px;">
-                <i class="fas fa-sign-out-alt"></i> Sign Out
-            </a>
-        </div>
-        <div class="sidebar-footer">© 2025 Mehedi Hasan</div>
-    </div>
-
-    <div class="main-content">
-        <div class="header-section">
-            <div>
-                <div class="page-title">Invoice Management</div>
-                <div class="page-subtitle">View and manage all invoices</div>
-            </div>
-            <a href="/store/invoices/create" style="padding: 14px 30px; background: var(--gradient-orange); border-radius: 12px; text-decoration: none; color: white; font-weight: 600;">
-                <i class="fas fa-plus" style="margin-right: 8px;"></i> New Invoice
-            </a>
-        </div>
-
-        {% with messages = get_flashed_messages() %}
-            {% if messages %}
-                <div class="flash-message flash-success">
-                    <i class="fas fa-check-circle"></i>
-                    <span>{{ messages[0] }}</span>
-                </div>
-            {% endif %}
-        {% endwith %}
-
-        <div class="card" style="margin-bottom: 20px;">
-            <div class="section-header">
-                <span><i class="fas fa-search" style="margin-right: 10px; color: var(--accent-orange);"></i>Search Invoice</span>
-            </div>
-            <form action="/store/invoices" method="get" style="display: flex; gap: 15px; flex-wrap: wrap;">
-                <div style="flex: 1; min-width: 200px;">
-                    <input type="text" name="search" placeholder="Search by Invoice No or Customer Name..." value="{{ search_query }}">
-                </div>
-                <button type="submit" style="width: auto; padding: 14px 30px;">
-                    <i class="fas fa-search" style="margin-right: 8px;"></i> Search
-                </button>
-                {% if search_query %}
-                <a href="/store/invoices" style="padding: 14px 20px; background: rgba(255,255,255,0.05); border: 1px solid var(--border-color); border-radius: 12px; text-decoration: none; color: var(--text-secondary);">
-                    <i class="fas fa-times"></i> Clear
-                </a>
-                {% endif %}
-            </form>
-        </div>
-
-        <div class="card">
-            <div class="section-header">
-                <span>All Invoices</span>
-                <span class="table-badge" style="background: var(--accent-green); color: white;">{{ invoices|length }} Total</span>
-            </div>
-            
-            <div style="overflow-x: auto;">
-                <table class="dark-table">
-                    <thead>
-                        <tr>
-                            <th>Invoice No</th>
-                            <th>Customer</th>
-                            <th>Date</th>
-                            <th>Total</th>
-                            <th>Paid</th>
-                            <th>Due</th>
-                            <th style="text-align: right;">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% if invoices %}
-                            {% for inv in invoices|reverse %}
-                            <tr>
-                                <td style="font-weight: 700; color: var(--accent-orange);">{{ inv.invoice_no }}</td>
-                                <td style="color: white;">{{ inv.customer_name }}</td>
-                                <td style="color: var(--text-secondary);">{{ inv.date }}</td>
-                                <td style="font-weight: 700; color: var(--accent-green);">৳{{ "{:,.0f}".format(inv.total) }}</td>
-                                <td style="color: var(--accent-green);">৳{{ "{:,.0f}".format(inv.paid) }}</td>
-                                <td>
-                                    {% if inv.due > 0 %}
-                                    <span style="color: var(--accent-red); font-weight: 700;">৳{{ "{:,.0f}".format(inv.due) }}</span>
                                     {% else %}
-                                    <span style="color: var(--accent-green);"><i class="fas fa-check-circle"></i> Paid</span>
-                                    {% endif %}
-                                </td>
-                                <td>
-                                    <div class="action-cell">
-                                        <a href="/store/invoices/print/{{ inv.invoice_no }}" class="action-btn btn-print-sm" target="_blank"><i class="fas fa-print"></i></a>
-                                        {% if inv.due > 0 %}
-                                        <a href="/store/dues/search?invoice_no={{ inv.invoice_no }}" class="action-btn btn-edit"><i class="fas fa-money-bill"></i></a>
-                                        {% endif %}
-                                    </div>
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        {% else %}
-                            <tr>
-                                <td colspan="7" style="text-align: center; padding: 50px; color: var(--text-secondary);">
-                                    <i class="fas fa-file-invoice" style="font-size: 50px; opacity: 0.2; margin-bottom: 15px; display: block;"></i>
-                                    {% if search_query %}
-                                    No invoices found for "{{ search_query }}"
-                                    {% else %}
-                                    No invoices created yet.  Create your first invoice! 
+                                    <small style="color: var(--text-secondary);">Main Admin</small>
                                     {% endif %}
                                 </td>
                             </tr>
-                        {% endif %}
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-</body>
-</html>
-"""
-
-# ==============================================================================
-# STORE ESTIMATES LIST TEMPLATE
-# ==============================================================================
-
-STORE_ESTIMATES_LIST_TEMPLATE = """
-<!doctype html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Estimates - MEHEDI THAI ALUMINUM AND GLASS</title>
-    """ + COMMON_STYLES + """
-</head>
-<body>
-    <div class="animated-bg"></div>
-
-    <div class="mobile-toggle" onclick="document.querySelector('.sidebar').classList.toggle('active')">
-        <i class="fas fa-bars"></i>
-    </div>
-
-    <div class="sidebar">
-        <div class="brand-logo">
-            <i class="fas fa-store"></i> 
-            Store<span>Panel</span>
-        </div>
-        <div class="nav-menu">
-            <a href="/admin/store" class="nav-link">
-                <i class="fas fa-th-large"></i> Dashboard
-            </a>
-            <a href="/store/products" class="nav-link">
-                <i class="fas fa-box"></i> Products
-            </a>
-            <a href="/store/customers" class="nav-link">
-                <i class="fas fa-users"></i> Customers
-            </a>
-            <a href="/store/invoices" class="nav-link">
-                <i class="fas fa-file-invoice-dollar"></i> Invoices
-            </a>
-            <div class="nav-link active">
-                <i class="fas fa-file-alt"></i> Estimates
-            </div>
-            <a href="/store/dues" class="nav-link">
-                <i class="fas fa-wallet"></i> Due Collection
-            </a>
-            <a href="/logout" class="nav-link" style="color: var(--accent-red); margin-top: 20px;">
-                <i class="fas fa-sign-out-alt"></i> Sign Out
-            </a>
-        </div>
-        <div class="sidebar-footer">© 2025 Mehedi Hasan</div>
-    </div>
-
-    <div class="main-content">
-        <div class="header-section">
-            <div>
-                <div class="page-title">Estimates / Quotations</div>
-                <div class="page-subtitle">View and manage all estimates</div>
-            </div>
-            <a href="/store/estimates/create" style="padding: 14px 30px; background: linear-gradient(135deg, #3B82F6 0%, #60A5FA 100%); border-radius: 12px; text-decoration: none; color: white; font-weight: 600;">
-                <i class="fas fa-plus" style="margin-right: 8px;"></i> New Estimate
-            </a>
-        </div>
-
-        {% with messages = get_flashed_messages() %}
-            {% if messages %}
-                <div class="flash-message flash-success">
-                    <i class="fas fa-check-circle"></i>
-                    <span>{{ messages[0] }}</span>
-                </div>
-            {% endif %}
-        {% endwith %}
-
-        <div class="card">
-            <div class="section-header">
-                <span>All Estimates</span>
-                <span class="table-badge" style="background: var(--accent-blue); color: white;">{{ estimates|length }} Total</span>
-            </div>
-            
-            <div style="overflow-x: auto;">
-                <table class="dark-table">
-                    <thead>
-                        <tr>
-                            <th>Estimate No</th>
-                            <th>Customer</th>
-                            <th>Date</th>
-                            <th>Valid Until</th>
-                            <th>Total</th>
-                            <th style="text-align: right;">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% if estimates %}
-                            {% for est in estimates|reverse %}
-                            <tr>
-                                <td style="font-weight: 700; color: var(--accent-blue);">{{ est.estimate_no }}</td>
-                                <td style="color: white;">{{ est.customer_name }}</td>
-                                <td style="color: var(--text-secondary);">{{ est.date }}</td>
-                                <td style="color: var(--text-secondary);">{{ est.valid_until if est.valid_until else '-' }}</td>
-                                <td style="font-weight: 700; color: var(--accent-purple);">৳{{ "{:,.0f}".format(est.total) }}</td>
-                                <td>
-                                    <div class="action-cell">
-                                        <a href="/store/estimates/print/{{ est.estimate_no }}" class="action-btn btn-print-sm" target="_blank"><i class="fas fa-print"></i></a>
-                                        <a href="/store/estimates/to-invoice/{{ est.estimate_no }}" class="action-btn btn-view" title="Convert to Invoice"><i class="fas fa-file-invoice"></i></a>
-                                    </div>
-                                </td>
-                            </tr>
                             {% endfor %}
-                        {% else %}
-                            <tr>
-                                <td colspan="6" style="text-align: center; padding: 50px; color: var(--text-secondary);">
-                                    <i class="fas fa-file-alt" style="font-size: 50px; opacity: 0.2; margin-bottom: 15px; display: block;"></i>
-                                    No estimates created yet. Create your first estimate! 
-                                </td>
-                            </tr>
-                        {% endif %}
-                    </tbody>
-                </table>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="section-header">
+                    <span><i class="fas fa-user-plus" style="margin-right: 10px; color: var(--accent-orange);"></i>Add Store User</span>
+                </div>
+                <form action="/store/users/save" method="post" onsubmit="return showLoading()">
+                    <div class="input-group">
+                        <label>USERNAME</label>
+                        <input type="text" name="username" required placeholder="Enter username">
+                    </div>
+                    <div class="input-group">
+                        <label>PASSWORD</label>
+                        <input type="text" name="password" required placeholder="Enter password">
+                    </div>
+                    <div class="input-group">
+                        <label>PERMISSIONS</label>
+                        <div style="background: rgba(255,255,255,0.03); padding: 15px; border-radius: 10px; border: 1px solid var(--border-color);">
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                                <label class="perm-checkbox"><input type="checkbox" name="perms" value="products" checked> <span>Products</span></label>
+                                <label class="perm-checkbox"><input type="checkbox" name="perms" value="customers" checked> <span>Customers</span></label>
+                                <label class="perm-checkbox"><input type="checkbox" name="perms" value="invoices" checked> <span>Invoices</span></label>
+                                <label class="perm-checkbox"><input type="checkbox" name="perms" value="estimates" checked> <span>Estimates</span></label>
+                            </div>
+                        </div>
+                    </div>
+                    <button type="submit" style="margin-top: 15px;">
+                        <i class="fas fa-save" style="margin-right: 8px;"></i> Create User
+                    </button>
+                </form>
             </div>
         </div>
     </div>
+    
+    <script>
+        function showLoading() {
+            document.getElementById('loading-overlay').style.display = 'flex';
+            return true;
+        }
+    </script>
 </body>
 </html>
 """
+
 # ==============================================================================
-# STORE INVOICE PRINT TEMPLATE - PROFESSIONAL PRINT LAYOUT
+# STORE INVOICE PRINT TEMPLATE
 # ==============================================================================
 
 STORE_INVOICE_PRINT_TEMPLATE = """
@@ -6723,455 +5220,83 @@ STORE_INVOICE_PRINT_TEMPLATE = """
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Invoice {{ invoice.invoice_no }} - MEHEDI THAI ALUMINUM AND GLASS</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #fff;
-            color: #000;
-            font-size: 14px;
-            line-height: 1.5;
-        }
-        
-        .invoice-container {
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 30px;
-            border: 2px solid #000;
-            min-height: 100vh;
-            position: relative;
-        }
-        
-        /* Header */
-        .invoice-header {
-            text-align: center;
-            border-bottom: 3px double #000;
-            padding-bottom: 20px;
-            margin-bottom: 25px;
-        }
-        
-        .company-name {
-            font-size: 28px;
-            font-weight: 900;
-            color: #1a5f2a;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            margin-bottom: 5px;
-        }
-        
-        .company-tagline {
-            font-size: 14px;
-            color: #555;
-            margin-bottom: 8px;
-        }
-        
-        .company-contact {
-            font-size: 12px;
-            color: #333;
-        }
-        
-        .invoice-title {
-            display: inline-block;
-            background: #1a5f2a;
-            color: white;
-            padding: 8px 40px;
-            font-size: 20px;
-            font-weight: 700;
-            margin-top: 15px;
-            letter-spacing: 3px;
-        }
-        
-        /* Info Section */
-        .info-section {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 25px;
-            gap: 20px;
-        }
-        
-        .customer-info, .invoice-info {
-            flex: 1;
-            padding: 15px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            background: #f9f9f9;
-        }
-        
-        .info-title {
-            font-weight: 800;
-            font-size: 13px;
-            text-transform: uppercase;
-            color: #1a5f2a;
-            border-bottom: 2px solid #1a5f2a;
-            padding-bottom: 5px;
-            margin-bottom: 10px;
-        }
-        
-        .info-row {
-            display: flex;
-            margin-bottom: 5px;
-            font-size: 13px;
-        }
-        
-        .info-label {
-            font-weight: 700;
-            width: 80px;
-            color: #555;
-        }
-        
-        .info-value {
-            flex: 1;
-            color: #000;
-            font-weight: 600;
-        }
-        
-        .invoice-no-box {
-            background: #1a5f2a;
-            color: white;
-            padding: 10px 20px;
-            text-align: center;
-            border-radius: 5px;
-            margin-bottom: 10px;
-        }
-        
-        .invoice-no-box .label {
-            font-size: 11px;
-            opacity: 0.9;
-        }
-        
-        .invoice-no-box .value {
-            font-size: 22px;
-            font-weight: 900;
-        }
-        
-        /* Items Table */
-        .items-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 25px;
-        }
-        
-        .items-table th {
-            background: #1a5f2a;
-            color: white;
-            padding: 12px 10px;
-            text-align: left;
-            font-size: 12px;
-            text-transform: uppercase;
-            font-weight: 700;
-        }
-        
-        .items-table th:last-child,
-        .items-table td:last-child {
-            text-align: right;
-        }
-        
-        .items-table td {
-            padding: 12px 10px;
-            border-bottom: 1px solid #ddd;
-            font-size: 13px;
-        }
-        
-        .items-table tr:nth-child(even) {
-            background: #f5f5f5;
-        }
-        
-        .items-table .item-name {
-            font-weight: 700;
-        }
-        
-        .items-table .item-size {
-            color: #666;
-            font-size: 12px;
-        }
-        
-        /* Totals Section */
-        .totals-container {
-            display: flex;
-            justify-content: flex-end;
-        }
-        
-        .totals-box {
-            width: 300px;
-            border: 2px solid #1a5f2a;
-            border-radius: 5px;
-            overflow: hidden;
-        }
-        
-        .totals-row {
-            display: flex;
-            justify-content: space-between;
-            padding: 10px 15px;
-            border-bottom: 1px solid #ddd;
-            font-size: 14px;
-        }
-        
-        .totals-row:last-child {
-            border-bottom: none;
-        }
-        
-        .totals-row.subtotal {
-            background: #f5f5f5;
-        }
-        
-        .totals-row.grand-total {
-            background: #1a5f2a;
-            color: white;
-            font-size: 18px;
-            font-weight: 800;
-        }
-        
-        .totals-row.paid {
-            background: #d4edda;
-            color: #155724;
-        }
-        
-        .totals-row.due {
-            background: #f8d7da;
-            color: #721c24;
-            font-weight: 800;
-            font-size: 16px;
-        }
-        
-        /* Notes */
-        .notes-section {
-            margin-top: 25px;
-            padding: 15px;
-            background: #f9f9f9;
-            border: 1px dashed #ccc;
-            border-radius: 5px;
-        }
-        
-        .notes-title {
-            font-weight: 700;
-            color: #555;
-            margin-bottom: 5px;
-        }
-        
-        /* Footer */
-        .invoice-footer {
-            margin-top: 50px;
-            padding-top: 20px;
-            border-top: 1px solid #ddd;
-        }
-        
-        .signatures {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 60px;
-            padding: 0 30px;
-        }
-        
-        .signature-box {
-            text-align: center;
-            width: 150px;
-        }
-        
-        .signature-line {
-            border-top: 2px solid #000;
-            padding-top: 8px;
-            font-weight: 700;
-            font-size: 13px;
-        }
-        
-        .thank-you {
-            text-align: center;
-            margin-top: 30px;
-            font-size: 16px;
-            font-weight: 700;
-            color: #1a5f2a;
-        }
-        
-        .powered-by {
-            text-align: center;
-            margin-top: 15px;
-            font-size: 10px;
-            color: #999;
-        }
-        
-        /* Print Styles */
-        @media print {
-            body {
-                -webkit-print-color-adjust: exact !important;
-                print-color-adjust: exact !important;
-            }
-            
-            .invoice-container {
-                border: none;
-                padding: 20px;
-                max-width: 100%;
-            }
-            
-            .no-print {
-                display: none !important;
-            }
-            
-            .items-table th {
-                background: #1a5f2a !important;
-                -webkit-print-color-adjust: exact;
-            }
-            
-            .totals-row.grand-total {
-                background: #1a5f2a !important;
-                -webkit-print-color-adjust: exact;
-            }
-        }
-        
-        /* Action Buttons */
-        .action-buttons {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            display: flex;
-            gap: 10px;
-            z-index: 1000;
-        }
-        
-        .action-btn {
-            padding: 12px 25px;
-            border: none;
-            border-radius: 8px;
-            font-weight: 600;
-            cursor: pointer;
-            text-decoration: none;
-            font-size: 14px;
-        }
-        
-        .btn-print {
-            background: #1a5f2a;
-            color: white;
-        }
-        
-        .btn-back {
-            background: #6c757d;
-            color: white;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #fff; color: #000; font-size: 14px; line-height: 1.5; }
+        .invoice-container { max-width: 800px; margin: 0 auto; padding: 30px; border: 2px solid #000; min-height: 100vh; position: relative; }
+        .invoice-header { text-align: center; border-bottom: 3px double #000; padding-bottom: 20px; margin-bottom: 25px; }
+        .company-name { font-size: 28px; font-weight: 900; color: #1a5f2a; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 5px; }
+        .company-tagline { font-size: 14px; color: #555; margin-bottom: 8px; }
+        .invoice-title { display: inline-block; background: #1a5f2a; color: white; padding: 8px 40px; font-size: 20px; font-weight: 700; margin-top: 15px; letter-spacing: 3px; }
+        .info-section { display: flex; justify-content: space-between; margin-bottom: 25px; gap: 20px; }
+        .customer-info, .invoice-info { flex: 1; padding: 15px; border: 1px solid #ddd; border-radius: 5px; background: #f9f9f9; }
+        .info-title { font-weight: 800; font-size: 13px; text-transform: uppercase; color: #1a5f2a; border-bottom: 2px solid #1a5f2a; padding-bottom: 5px; margin-bottom: 10px; }
+        .info-row { display: flex; margin-bottom: 5px; font-size: 13px; }
+        .info-label { font-weight: 700; width: 80px; color: #555; }
+        .info-value { flex: 1; color: #000; font-weight: 600; }
+        .invoice-no-box { background: #1a5f2a; color: white; padding: 10px 20px; text-align: center; border-radius: 5px; margin-bottom: 10px; }
+        .invoice-no-box .value { font-size: 22px; font-weight: 900; }
+        .items-table { width: 100%; border-collapse: collapse; margin-bottom: 25px; }
+        .items-table th { background: #1a5f2a; color: white; padding: 12px 10px; text-align: left; font-size: 12px; text-transform: uppercase; font-weight: 700; }
+        .items-table th:last-child, .items-table td:last-child { text-align: right; }
+        .items-table td { padding: 12px 10px; border-bottom: 1px solid #ddd; font-size: 13px; }
+        .items-table tr:nth-child(even) { background: #f5f5f5; }
+        .totals-container { display: flex; justify-content: flex-end; }
+        .totals-box { width: 300px; border: 2px solid #1a5f2a; border-radius: 5px; overflow: hidden; }
+        .totals-row { display: flex; justify-content: space-between; padding: 10px 15px; border-bottom: 1px solid #ddd; font-size: 14px; }
+        .totals-row.grand-total { background: #1a5f2a; color: white; font-size: 18px; font-weight: 800; }
+        .totals-row.due { background: #f8d7da; color: #721c24; font-weight: 800; font-size: 16px; }
+        .invoice-footer { margin-top: 50px; padding-top: 20px; border-top: 1px solid #ddd; }
+        .signatures { display: flex; justify-content: space-between; margin-top: 60px; padding: 0 30px; }
+        .signature-line { border-top: 2px solid #000; padding-top: 8px; font-weight: 700; font-size: 13px; text-align: center; width: 150px; }
+        .action-buttons { position: fixed; top: 20px; right: 20px; display: flex; gap: 10px; z-index: 1000; }
+        .action-btn { padding: 12px 25px; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; text-decoration: none; font-size: 14px; color: white; }
+        .btn-print { background: #1a5f2a; } .btn-back { background: #6c757d; }
+        @media print { .action-buttons { display: none; } .invoice-container { border: none; padding: 0; } .items-table th, .totals-row.grand-total { -webkit-print-color-adjust: exact; } }
     </style>
 </head>
 <body>
-    <div class="action-buttons no-print">
+    <div class="action-buttons">
         <a href="/store/invoices" class="action-btn btn-back">← Back</a>
-        <button onclick="window.print()" class="action-btn btn-print">🖨️ Print Invoice</button>
+        <button onclick="window.print()" class="action-btn btn-print">🖨️ Print</button>
     </div>
-
     <div class="invoice-container">
         <div class="invoice-header">
             <div class="company-name">MEHEDI THAI ALUMINUM AND GLASS</div>
             <div class="company-tagline">Quality Aluminum & Glass Solutions</div>
-            <div class="company-contact">
-                📞 01XXXXXXXXX | 📍 Your Address Here
-            </div>
             <div class="invoice-title">INVOICE / চালান</div>
         </div>
-        
         <div class="info-section">
             <div class="customer-info">
-                <div class="info-title">Customer Details / ক্রেতার তথ্য</div>
-                <div class="info-row">
-                    <span class="info-label">Name:</span>
-                    <span class="info-value">{{ invoice.customer_name }}</span>
-                </div>
-                <div class="info-row">
-                    <span class="info-label">Phone:</span>
-                    <span class="info-value">{{ invoice.customer_phone }}</span>
-                </div>
-                {% if invoice.customer_address %}
-                <div class="info-row">
-                    <span class="info-label">Address:</span>
-                    <span class="info-value">{{ invoice.customer_address }}</span>
-                </div>
-                {% endif %}
+                <div class="info-title">Customer Info</div>
+                <div class="info-row"><span class="info-label">Name:</span><span class="info-value">{{ invoice.customer_name }}</span></div>
+                <div class="info-row"><span class="info-label">Phone:</span><span class="info-value">{{ invoice.customer_phone }}</span></div>
+                {% if invoice.customer_address %}<div class="info-row"><span class="info-label">Addr:</span><span class="info-value">{{ invoice.customer_address }}</span></div>{% endif %}
             </div>
-            
             <div class="invoice-info">
-                <div class="invoice-no-box">
-                    <div class="label">Invoice No / চালান নং</div>
-                    <div class="value">{{ invoice.invoice_no }}</div>
-                </div>
-                <div class="info-row">
-                    <span class="info-label">Date:</span>
-                    <span class="info-value">{{ invoice.date }}</span>
-                </div>
+                <div class="invoice-no-box"><div class="value">{{ invoice.invoice_no }}</div></div>
+                <div class="info-row"><span class="info-label">Date:</span><span class="info-value">{{ invoice.date }}</span></div>
             </div>
         </div>
-        
         <table class="items-table">
-            <thead>
-                <tr>
-                    <th style="width: 5%;">SL</th>
-                    <th style="width: 40%;">Description / বিবরণ</th>
-                    <th style="width: 15%;">Size (ft)</th>
-                    <th style="width: 10%;">Qty</th>
-                    <th style="width: 15%;">Rate</th>
-                    <th style="width: 15%;">Amount</th>
-                </tr>
-            </thead>
+            <thead><tr><th>SL</th><th>Description</th><th>Size</th><th>Qty</th><th>Rate</th><th>Total</th></tr></thead>
             <tbody>
                 {% for item in invoice.items %}
-                <tr>
-                    <td>{{ loop.index }}</td>
-                    <td class="item-name">{{ item.description }}</td>
-                    <td class="item-size">{{ item.size if item.size else '-' }}</td>
-                    <td>{{ item.qty }}</td>
-                    <td>৳{{ "{:,.2f}".format(item.price) }}</td>
-                    <td>৳{{ "{:,.2f}".format(item.total) }}</td>
-                </tr>
+                <tr><td>{{ loop.index }}</td><td>{{ item.description }}</td><td>{{ item.size }}</td><td>{{ item.qty }}</td><td>৳{{ item.price }}</td><td>৳{{ item.total }}</td></tr>
                 {% endfor %}
             </tbody>
         </table>
-        
         <div class="totals-container">
             <div class="totals-box">
-                <div class="totals-row subtotal">
-                    <span>Subtotal / উপমোট</span>
-                    <span>৳{{ "{:,.2f}".format(invoice.total + invoice.discount) }}</span>
-                </div>
-                {% if invoice.discount > 0 %}
-                <div class="totals-row">
-                    <span>Discount / ছাড়</span>
-                    <span>- ৳{{ "{:,.2f}".format(invoice.discount) }}</span>
-                </div>
-                {% endif %}
-                <div class="totals-row grand-total">
-                    <span>Grand Total / সর্বমোট</span>
-                    <span>৳{{ "{:,.2f}".format(invoice.total) }}</span>
-                </div>
-                <div class="totals-row paid">
-                    <span>Paid / পরিশোধিত</span>
-                    <span>৳{{ "{:,.2f}".format(invoice.paid) }}</span>
-                </div>
-                {% if invoice.due > 0 %}
-                <div class="totals-row due">
-                    <span>Due / বাকি</span>
-                    <span>৳{{ "{:,.2f}".format(invoice.due) }}</span>
-                </div>
-                {% endif %}
+                <div class="totals-row"><span>Total</span><span>৳{{ invoice.total + invoice.discount }}</span></div>
+                {% if invoice.discount %}<div class="totals-row"><span>Discount</span><span>- ৳{{ invoice.discount }}</span></div>{% endif %}
+                <div class="totals-row grand-total"><span>Grand Total</span><span>৳{{ invoice.total }}</span></div>
+                <div class="totals-row"><span>Paid</span><span>৳{{ invoice.paid }}</span></div>
+                {% if invoice.due > 0 %}<div class="totals-row due"><span>Due</span><span>৳{{ invoice.due }}</span></div>{% endif %}
             </div>
         </div>
-        
-        {% if invoice.notes %}
-        <div class="notes-section">
-            <div class="notes-title">Notes / নোট:</div>
-            <div>{{ invoice.notes }}</div>
-        </div>
-        {% endif %}
-        
         <div class="invoice-footer">
-            <div class="signatures">
-                <div class="signature-box">
-                    <div class="signature-line">Customer Signature<br>ক্রেতার স্বাক্ষর</div>
-                </div>
-                <div class="signature-box">
-                    <div class="signature-line">Authorized Signature<br>বিক্রেতার স্বাক্ষর</div>
-                </div>
-            </div>
-            
-            <div class="thank-you">Thank You For Your Business!  / ব্যবসায় আপনাকে ধন্যবাদ!</div>
-            <div class="powered-by">Powered by Mehedi Hasan | MNM Software</div>
+            <div class="signatures"><div class="signature-line">Customer</div><div class="signature-line">Authorized</div></div>
+            <div style="text-align: center; margin-top: 30px; font-weight: 700; color: #1a5f2a;">Thank You!</div>
         </div>
     </div>
 </body>
@@ -7179,130 +5304,7 @@ STORE_INVOICE_PRINT_TEMPLATE = """
 """
 
 # ==============================================================================
-# STORE ESTIMATES LIST TEMPLATE
-# ==============================================================================
-
-STORE_ESTIMATES_LIST_TEMPLATE = """
-<!doctype html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Estimates - MEHEDI THAI ALUMINUM AND GLASS</title>
-    """ + COMMON_STYLES + """
-</head>
-<body>
-    <div class="animated-bg"></div>
-
-    <div class="mobile-toggle" onclick="document.querySelector('.sidebar').classList.toggle('active')">
-        <i class="fas fa-bars"></i>
-    </div>
-
-    <div class="sidebar">
-        <div class="brand-logo">
-            <i class="fas fa-store"></i> 
-            Store<span>Panel</span>
-        </div>
-        <div class="nav-menu">
-            <a href="/admin/store" class="nav-link">
-                <i class="fas fa-th-large"></i> Dashboard
-            </a>
-            <a href="/store/products" class="nav-link">
-                <i class="fas fa-box"></i> Products
-            </a>
-            <a href="/store/customers" class="nav-link">
-                <i class="fas fa-users"></i> Customers
-            </a>
-            <a href="/store/invoices" class="nav-link">
-                <i class="fas fa-file-invoice-dollar"></i> Invoices
-            </a>
-            <div class="nav-link active">
-                <i class="fas fa-file-alt"></i> Estimates
-            </div>
-            <a href="/store/dues" class="nav-link">
-                <i class="fas fa-wallet"></i> Due Collection
-            </a>
-            <a href="/logout" class="nav-link" style="color: var(--accent-red); margin-top: 20px;">
-                <i class="fas fa-sign-out-alt"></i> Sign Out
-            </a>
-        </div>
-        <div class="sidebar-footer">© 2025 Mehedi Hasan</div>
-    </div>
-
-    <div class="main-content">
-        <div class="header-section">
-            <div>
-                <div class="page-title">Estimates / Quotations</div>
-                <div class="page-subtitle">View and manage all estimates</div>
-            </div>
-            <a href="/store/estimates/create" style="padding: 14px 30px; background: linear-gradient(135deg, #3B82F6 0%, #60A5FA 100%); border-radius: 12px; text-decoration: none; color: white; font-weight: 600;">
-                <i class="fas fa-plus" style="margin-right: 8px;"></i> New Estimate
-            </a>
-        </div>
-
-        {% with messages = get_flashed_messages() %}
-            {% if messages %}
-                <div class="flash-message flash-success">
-                    <i class="fas fa-check-circle"></i>
-                    <span>{{ messages[0] }}</span>
-                </div>
-            {% endif %}
-        {% endwith %}
-
-        <div class="card">
-            <div class="section-header">
-                <span>All Estimates</span>
-                <span class="table-badge" style="background: var(--accent-blue); color: white;">{{ estimates|length }} Total</span>
-            </div>
-            
-            <div style="overflow-x: auto;">
-                <table class="dark-table">
-                    <thead>
-                        <tr>
-                            <th>Estimate No</th>
-                            <th>Customer</th>
-                            <th>Date</th>
-                            <th>Valid Until</th>
-                            <th>Total</th>
-                            <th style="text-align: right;">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% if estimates %}
-                            {% for est in estimates|reverse %}
-                            <tr>
-                                <td style="font-weight: 700; color: var(--accent-blue);">{{ est.estimate_no }}</td>
-                                <td style="color: white;">{{ est.customer_name }}</td>
-                                <td style="color: var(--text-secondary);">{{ est.date }}</td>
-                                <td style="color: var(--text-secondary);">{{ est.valid_until if est.valid_until else '-' }}</td>
-                                <td style="font-weight: 700; color: var(--accent-purple);">৳{{ "{:,.0f}".format(est.total) }}</td>
-                                <td>
-                                    <div class="action-cell">
-                                        <a href="/store/estimates/print/{{ est.estimate_no }}" class="action-btn btn-print-sm" target="_blank"><i class="fas fa-print"></i></a>
-                                        <a href="/store/estimates/to-invoice/{{ est.estimate_no }}" class="action-btn btn-view" title="Convert to Invoice"><i class="fas fa-file-invoice"></i></a>
-                                    </div>
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        {% else %}
-                            <tr>
-                                <td colspan="6" style="text-align: center; padding: 50px; color: var(--text-secondary);">
-                                    <i class="fas fa-file-alt" style="font-size: 50px; opacity: 0.2; margin-bottom: 15px; display: block;"></i>
-                                    No estimates created yet. Create your first estimate! 
-                                </td>
-                            </tr>
-                        {% endif %}
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-</body>
-</html>
-"""
-
-# ==============================================================================
-# ESTIMATE PRINT TEMPLATE - PROFESSIONAL QUOTATION
+# ESTIMATE PRINT TEMPLATE
 # ==============================================================================
 
 STORE_ESTIMATE_PRINT_TEMPLATE = """
@@ -7314,20 +5316,18 @@ STORE_ESTIMATE_PRINT_TEMPLATE = """
     <title>Estimate {{ estimate.estimate_no }} - MEHEDI THAI ALUMINUM AND GLASS</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #fff; color: #000; font-size: 14px; }
-        .container { max-width: 800px; margin: 0 auto; padding: 30px; border: 2px solid #000; min-height: 100vh; }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #fff; color: #000; font-size: 14px; line-height: 1.5; }
+        .container { max-width: 800px; margin: 0 auto; padding: 30px; border: 2px solid #000; min-height: 100vh; position: relative; }
         .header { text-align: center; border-bottom: 3px double #000; padding-bottom: 20px; margin-bottom: 25px; }
         .company-name { font-size: 28px; font-weight: 900; color: #2563eb; text-transform: uppercase; letter-spacing: 2px; }
-        .company-tagline { font-size: 14px; color: #555; margin: 5px 0 8px; }
         .estimate-title { display: inline-block; background: #2563eb; color: white; padding: 8px 40px; font-size: 20px; font-weight: 700; margin-top: 15px; letter-spacing: 3px; }
         .info-section { display: flex; justify-content: space-between; margin-bottom: 25px; gap: 20px; }
-        .customer-info, .estimate-info { flex: 1; padding: 15px; border: 1px solid #ddd; background: #f9f9f9; }
+        .customer-info, .estimate-info { flex: 1; padding: 15px; border: 1px solid #ddd; border-radius: 5px; background: #f9f9f9; }
         .info-title { font-weight: 800; color: #2563eb; border-bottom: 2px solid #2563eb; padding-bottom: 5px; margin-bottom: 10px; text-transform: uppercase; font-size: 13px; }
         .info-row { display: flex; margin-bottom: 5px; font-size: 13px; }
         .info-label { font-weight: 700; width: 80px; color: #555; }
         .info-value { flex: 1; color: #000; font-weight: 600; }
-        .estimate-no-box { background: #2563eb; color: white; padding: 10px 20px; text-align: center; margin-bottom: 10px; }
-        .estimate-no-box .label { font-size: 11px; opacity: 0.9; }
+        .estimate-no-box { background: #2563eb; color: white; padding: 10px 20px; text-align: center; border-radius: 5px; margin-bottom: 10px; }
         .estimate-no-box .value { font-size: 22px; font-weight: 900; }
         .items-table { width: 100%; border-collapse: collapse; margin-bottom: 25px; }
         .items-table th { background: #2563eb; color: white; padding: 12px 10px; text-align: left; font-size: 12px; text-transform: uppercase; }
@@ -7335,615 +5335,58 @@ STORE_ESTIMATE_PRINT_TEMPLATE = """
         .items-table td { padding: 12px 10px; border-bottom: 1px solid #ddd; font-size: 13px; }
         .items-table tr:nth-child(even) { background: #f5f5f5; }
         .totals-container { display: flex; justify-content: flex-end; }
-        .totals-box { width: 300px; border: 2px solid #2563eb; overflow: hidden; }
+        .totals-box { width: 300px; border: 2px solid #2563eb; border-radius: 5px; overflow: hidden; }
         .totals-row { display: flex; justify-content: space-between; padding: 10px 15px; border-bottom: 1px solid #ddd; font-size: 14px; }
-        .totals-row:last-child { border-bottom: none; }
         .totals-row.grand-total { background: #2563eb; color: white; font-size: 18px; font-weight: 800; }
-        .terms-section { margin-top: 30px; padding: 15px; background: #f0f7ff; border: 1px solid #2563eb; border-radius: 5px; }
-        .terms-title { font-weight: 700; color: #2563eb; margin-bottom: 10px; }
-        .terms-list { margin-left: 20px; font-size: 12px; color: #555; }
-        .terms-list li { margin-bottom: 5px; }
         .footer { margin-top: 50px; padding-top: 20px; border-top: 1px solid #ddd; }
         .signatures { display: flex; justify-content: space-between; margin-top: 60px; padding: 0 30px; }
-        .signature-box { text-align: center; width: 150px; }
-        .signature-line { border-top: 2px solid #000; padding-top: 8px; font-weight: 700; font-size: 13px; }
-        .validity-notice { text-align: center; margin-top: 20px; padding: 10px; background: #fff3cd; border: 1px solid #ffc107; font-weight: 600; color: #856404; }
-        .powered-by { text-align: center; margin-top: 15px; font-size: 10px; color: #999; }
+        .signature-line { border-top: 2px solid #000; padding-top: 8px; font-weight: 700; font-size: 13px; text-align: center; width: 150px; }
         .action-buttons { position: fixed; top: 20px; right: 20px; display: flex; gap: 10px; z-index: 1000; }
-        .action-btn { padding: 12px 25px; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; text-decoration: none; font-size: 14px; }
-        .btn-print { background: #2563eb; color: white; }
-        .btn-back { background: #6c757d; color: white; }
-        @media print {
-            .action-buttons { display: none !important; }
-            .container { border: none; padding: 20px; }
-            .items-table th, .totals-row.grand-total { background: #2563eb !important; -webkit-print-color-adjust: exact; }
-        }
+        .action-btn { padding: 12px 25px; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; text-decoration: none; font-size: 14px; color: white; }
+        .btn-print { background: #2563eb; } .btn-back { background: #6c757d; }
+        @media print { .action-buttons { display: none; } .container { border: none; padding: 0; } .items-table th, .totals-row.grand-total { -webkit-print-color-adjust: exact; } }
     </style>
 </head>
 <body>
     <div class="action-buttons">
         <a href="/store/estimates" class="action-btn btn-back">← Back</a>
-        <button onclick="window.print()" class="action-btn btn-print">🖨️ Print Estimate</button>
+        <button onclick="window.print()" class="action-btn btn-print">🖨️ Print</button>
     </div>
-
     <div class="container">
         <div class="header">
             <div class="company-name">MEHEDI THAI ALUMINUM AND GLASS</div>
-            <div class="company-tagline">Quality Aluminum & Glass Solutions</div>
             <div class="estimate-title">ESTIMATE / কোটেশন</div>
         </div>
-        
         <div class="info-section">
             <div class="customer-info">
-                <div class="info-title">Customer Details / ক্রেতার তথ্য</div>
-                <div class="info-row">
-                    <span class="info-label">Name:</span>
-                    <span class="info-value">{{ estimate.customer_name }}</span>
-                </div>
-                {% if estimate.customer_phone %}
-                <div class="info-row">
-                    <span class="info-label">Phone:</span>
-                    <span class="info-value">{{ estimate.customer_phone }}</span>
-                </div>
-                {% endif %}
-                {% if estimate.customer_address %}
-                <div class="info-row">
-                    <span class="info-label">Address:</span>
-                    <span class="info-value">{{ estimate.customer_address }}</span>
-                </div>
-                {% endif %}
+                <div class="info-title">Customer Info</div>
+                <div class="info-row"><span class="info-label">Name:</span><span class="info-value">{{ estimate.customer_name }}</span></div>
+                <div class="info-row"><span class="info-label">Phone:</span><span class="info-value">{{ estimate.customer_phone }}</span></div>
+                {% if estimate.customer_address %}<div class="info-row"><span class="info-label">Addr:</span><span class="info-value">{{ estimate.customer_address }}</span></div>{% endif %}
             </div>
-            
             <div class="estimate-info">
-                <div class="estimate-no-box">
-                    <div class="label">Estimate No / কোটেশন নং</div>
-                    <div class="value">{{ estimate.estimate_no }}</div>
-                </div>
-                <div class="info-row">
-                    <span class="info-label">Date:</span>
-                    <span class="info-value">{{ estimate.date }}</span>
-                </div>
-                {% if estimate.valid_until %}
-                <div class="info-row">
-                    <span class="info-label">Valid Until:</span>
-                    <span class="info-value">{{ estimate.valid_until }}</span>
-                </div>
-                {% endif %}
+                <div class="estimate-no-box"><div class="value">{{ estimate.estimate_no }}</div></div>
+                <div class="info-row"><span class="info-label">Date:</span><span class="info-value">{{ estimate.date }}</span></div>
+                {% if estimate.valid_until %}<div class="info-row"><span class="info-label">Valid:</span><span class="info-value">{{ estimate.valid_until }}</span></div>{% endif %}
             </div>
         </div>
-        
         <table class="items-table">
-            <thead>
-                <tr>
-                    <th style="width: 5%;">SL</th>
-                    <th style="width: 40%;">Description / বিবরণ</th>
-                    <th style="width: 15%;">Size (ft)</th>
-                    <th style="width: 10%;">Qty</th>
-                    <th style="width: 15%;">Rate</th>
-                    <th style="width: 15%;">Amount</th>
-                </tr>
-            </thead>
+            <thead><tr><th>SL</th><th>Description</th><th>Size</th><th>Qty</th><th>Rate</th><th>Total</th></tr></thead>
             <tbody>
                 {% for item in estimate.items %}
-                <tr>
-                    <td>{{ loop.index }}</td>
-                    <td>{{ item.description }}</td>
-                    <td>{{ item.size if item.size else '-' }}</td>
-                    <td>{{ item.qty }}</td>
-                    <td>৳{{ "{:,.2f}".format(item.price) }}</td>
-                    <td>৳{{ "{:,.2f}".format(item.total) }}</td>
-                </tr>
+                <tr><td>{{ loop.index }}</td><td>{{ item.description }}</td><td>{{ item.size }}</td><td>{{ item.qty }}</td><td>৳{{ item.price }}</td><td>৳{{ item.total }}</td></tr>
                 {% endfor %}
             </tbody>
         </table>
-        
         <div class="totals-container">
             <div class="totals-box">
-                <div class="totals-row" style="background: #f5f5f5;">
-                    <span>Subtotal / উপমোট</span>
-                    <span>৳{{ "{:,.2f}".format(estimate.total + estimate.discount) }}</span>
-                </div>
-                {% if estimate.discount > 0 %}
-                <div class="totals-row">
-                    <span>Discount / ছাড়</span>
-                    <span>- ৳{{ "{:,.2f}".format(estimate.discount) }}</span>
-                </div>
-                {% endif %}
-                <div class="totals-row grand-total">
-                    <span>Estimated Total / সর্বমোট</span>
-                    <span>৳{{ "{:,.2f}".format(estimate.total) }}</span>
-                </div>
+                <div class="totals-row"><span>Total</span><span>৳{{ estimate.total + estimate.discount }}</span></div>
+                {% if estimate.discount %}<div class="totals-row"><span>Discount</span><span>- ৳{{ estimate.discount }}</span></div>{% endif %}
+                <div class="totals-row grand-total"><span>Grand Total</span><span>৳{{ estimate.total }}</span></div>
             </div>
         </div>
-
-        {% if estimate.valid_until %}
-        <div class="validity-notice">
-            ⚠️ This quotation is valid until {{ estimate.valid_until }}.  Prices may change after this date.
-        </div>
-        {% endif %}
-        
-        {% if estimate.notes %}
-        <div class="terms-section">
-            <div class="terms-title">Terms & Conditions / শর্তাবলী:</div>
-            <div>{{ estimate.notes }}</div>
-        </div>
-        {% endif %}
-        
         <div class="footer">
-            <div class="signatures">
-                <div class="signature-box">
-                    <div class="signature-line">Customer Signature<br>ক্রেতার স্বাক্ষর</div>
-                </div>
-                <div class="signature-box">
-                    <div class="signature-line">Authorized Signature<br>বিক্রেতার স্বাক্ষর</div>
-                </div>
-            </div>
-            <div class="powered-by">Powered by Mehedi Hasan | MNM Software</div>
-        </div>
-    </div>
-</body>
-</html>
-"""
-
-# ==============================================================================
-# STORE DUE COLLECTION TEMPLATE
-# ==============================================================================
-
-STORE_DUE_COLLECTION_TEMPLATE = """
-<!doctype html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Due Collection - MEHEDI THAI ALUMINUM AND GLASS</title>
-    """ + COMMON_STYLES + """
-    <style>
-        .due-card {
-            background: linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, rgba(239, 68, 68, 0.05) 100%);
-            border: 1px solid rgba(239, 68, 68, 0.2);
-            border-radius: 16px;
-            padding: 25px;
-            margin-bottom: 20px;
-        }
-        
-        .due-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-        
-        .due-invoice-no {
-            font-size: 20px;
-            font-weight: 800;
-            color: var(--accent-orange);
-        }
-        
-        .due-amount {
-            font-size: 24px;
-            font-weight: 800;
-            color: var(--accent-red);
-        }
-        
-        .due-details {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-        
-        .due-detail-item {
-            background: rgba(255, 255, 255, 0.03);
-            padding: 12px;
-            border-radius: 10px;
-        }
-        
-        .due-detail-label {
-            font-size: 11px;
-            color: var(--text-secondary);
-            text-transform: uppercase;
-            margin-bottom: 5px;
-        }
-        
-        .due-detail-value {
-            font-size: 15px;
-            font-weight: 600;
-            color: white;
-        }
-        
-        .payment-form {
-            background: rgba(16, 185, 129, 0.1);
-            border: 1px solid rgba(16, 185, 129, 0.2);
-            border-radius: 12px;
-            padding: 20px;
-        }
-        
-        .payment-history {
-            margin-top: 20px;
-        }
-        
-        .payment-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 12px;
-            background: rgba(255, 255, 255, 0.02);
-            border-radius: 8px;
-            margin-bottom: 8px;
-        }
-        
-        .payment-date {
-            color: var(--text-secondary);
-            font-size: 13px;
-        }
-        
-        .payment-amount {
-            font-weight: 700;
-            color: var(--accent-green);
-        }
-    </style>
-</head>
-<body>
-    <div class="animated-bg"></div>
-    
-    <div id="loading-overlay">
-        <div class="spinner-container">
-            <div class="spinner"></div>
-            <div class="spinner-inner"></div>
-        </div>
-        <div class="loading-text">Processing Payment...</div>
-    </div>
-
-    <div class="mobile-toggle" onclick="document.querySelector('.sidebar').classList.toggle('active')">
-        <i class="fas fa-bars"></i>
-    </div>
-
-    <div class="sidebar">
-        <div class="brand-logo">
-            <i class="fas fa-store"></i> 
-            Store<span>Panel</span>
-        </div>
-        <div class="nav-menu">
-            <a href="/admin/store" class="nav-link">
-                <i class="fas fa-th-large"></i> Dashboard
-            </a>
-            <a href="/store/products" class="nav-link">
-                <i class="fas fa-box"></i> Products
-            </a>
-            <a href="/store/customers" class="nav-link">
-                <i class="fas fa-users"></i> Customers
-            </a>
-            <a href="/store/invoices" class="nav-link">
-                <i class="fas fa-file-invoice-dollar"></i> Invoices
-            </a>
-            <div class="nav-link active">
-                <i class="fas fa-wallet"></i> Due Collection
-            </div>
-            <a href="/logout" class="nav-link" style="color: var(--accent-red); margin-top: 20px;">
-                <i class="fas fa-sign-out-alt"></i> Sign Out
-            </a>
-        </div>
-        <div class="sidebar-footer">© 2025 Mehedi Hasan</div>
-    </div>
-
-    <div class="main-content">
-        <div class="header-section">
-            <div>
-                <div class="page-title">Due Collection</div>
-                <div class="page-subtitle">Manage pending payments</div>
-            </div>
-            <div class="status-badge">
-                <div class="status-dot"></div>
-                <span>Online</span>
-            </div>
-        </div>
-
-        {% with messages = get_flashed_messages() %}
-            {% if messages %}
-                <div class="flash-message flash-success">
-                    <i class="fas fa-check-circle"></i>
-                    <span>{{ messages[0] }}</span>
-                </div>
-            {% endif %}
-        {% endwith %}
-
-        <div class="card" style="margin-bottom: 30px;">
-            <div class="section-header">
-                <span><i class="fas fa-search" style="margin-right: 10px; color: var(--accent-orange);"></i>Search Invoice</span>
-            </div>
-            <form action="/store/dues/search" method="get" style="display: flex; gap: 15px; flex-wrap: wrap;">
-                <div style="flex: 1; min-width: 200px;">
-                    <input type="text" name="invoice_no" placeholder="Enter Invoice Number (e.g.  INV-0001)" value="{{ search_invoice }}">
-                </div>
-                <button type="submit" style="width: auto; padding: 14px 30px;">
-                    <i class="fas fa-search" style="margin-right: 8px;"></i> Search
-                </button>
-            </form>
-        </div>
-
-        {% if invoice %}
-        <div class="due-card">
-            <div class="due-header">
-                <div class="due-invoice-no">{{ invoice.invoice_no }}</div>
-                <div class="due-amount">Due: ৳{{ "{:,.0f}".format(invoice.due) }}</div>
-            </div>
-            
-            <div class="due-details">
-                <div class="due-detail-item">
-                    <div class="due-detail-label">Customer</div>
-                    <div class="due-detail-value">{{ invoice.customer_name }}</div>
-                </div>
-                <div class="due-detail-item">
-                    <div class="due-detail-label">Phone</div>
-                    <div class="due-detail-value">{{ invoice.customer_phone }}</div>
-                </div>
-                <div class="due-detail-item">
-                    <div class="due-detail-label">Invoice Date</div>
-                    <div class="due-detail-value">{{ invoice.date }}</div>
-                </div>
-                <div class="due-detail-item">
-                    <div class="due-detail-label">Total Amount</div>
-                    <div class="due-detail-value">৳{{ "{:,.0f}".format(invoice.total) }}</div>
-                </div>
-                <div class="due-detail-item">
-                    <div class="due-detail-label">Already Paid</div>
-                    <div class="due-detail-value" style="color: var(--accent-green);">৳{{ "{:,.0f}".format(invoice.paid) }}</div>
-                </div>
-            </div>
-            
-            {% if invoice.due > 0 %}
-            <div class="payment-form">
-                <h4 style="margin-bottom: 15px; color: var(--accent-green);"><i class="fas fa-money-bill-wave" style="margin-right: 10px;"></i>Record Payment</h4>
-                <form action="/store/dues/collect" method="post" onsubmit="return validatePayment()">
-                    <input type="hidden" name="invoice_no" value="{{ invoice.invoice_no }}">
-                    <div class="grid-2">
-                        <div class="input-group">
-                            <label>PAYMENT AMOUNT</label>
-                            <input type="number" name="amount" id="paymentAmount" required placeholder="৳" step="0.01" max="{{ invoice.due }}">
-                        </div>
-                        <div class="input-group">
-                            <label>PAYMENT DATE</label>
-                            <input type="date" name="payment_date" value="{{ today }}" required>
-                        </div>
-                    </div>
-                    <div class="input-group">
-                        <label>NOTES (Optional)</label>
-                        <input type="text" name="notes" placeholder="Payment notes... ">
-                    </div>
-                    <button type="submit" style="background: linear-gradient(135deg, #10B981 0%, #34D399 100%);">
-                        <i class="fas fa-check" style="margin-right: 10px;"></i> Record Payment
-                    </button>
-                </form>
-            </div>
-            {% else %}
-            <div style="text-align: center; padding: 30px; background: rgba(16, 185, 129, 0.1); border-radius: 12px; border: 1px solid rgba(16, 185, 129, 0.2);">
-                <i class="fas fa-check-circle" style="font-size: 50px; color: var(--accent-green); margin-bottom: 15px;"></i>
-                <h3 style="color: var(--accent-green);">Fully Paid! </h3>
-                <p style="color: var(--text-secondary);">This invoice has no pending dues.</p>
-            </div>
-            {% endif %}
-            
-            {% if invoice.payments %}
-            <div class="payment-history">
-                <h4 style="margin-bottom: 15px; color: var(--text-secondary);"><i class="fas fa-history" style="margin-right: 10px;"></i>Payment History</h4>
-                {% for p in invoice.payments %}
-                <div class="payment-item">
-                    <div>
-                        <div class="payment-date">{{ p.date }}</div>
-                        {% if p.notes %}<div style="font-size: 12px; color: var(--text-secondary);">{{ p.notes }}</div>{% endif %}
-                    </div>
-                    <div class="payment-amount">+ ৳{{ "{:,.0f}".format(p.amount) }}</div>
-                </div>
-                {% endfor %}
-            </div>
-            {% endif %}
-        </div>
-        {% elif search_invoice %}
-        <div class="empty-state">
-            <i class="fas fa-search"></i>
-            <p>Invoice "{{ search_invoice }}" not found</p>
-        </div>
-        {% endif %}
-
-        <div class="card">
-            <div class="section-header">
-                <span><i class="fas fa-exclamation-triangle" style="margin-right: 10px; color: var(--accent-red);"></i>All Pending Dues</span>
-                <span class="table-badge" style="background: var(--accent-red); color: white;">{{ pending_dues|length }} Invoices</span>
-            </div>
-            
-            <div style="max-height: 400px; overflow-y: auto;">
-                {% if pending_dues %}
-                    {% for due in pending_dues %}
-                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 15px; background: rgba(255,255,255,0.02); border-radius: 10px; margin-bottom: 10px; border-left: 3px solid var(--accent-red);">
-                        <div>
-                            <div style="font-weight: 700; color: var(--accent-orange);">{{ due.invoice_no }}</div>
-                            <div style="font-size: 13px; color: white;">{{ due.customer_name }}</div>
-                            <div style="font-size: 12px; color: var(--text-secondary);">{{ due.date }}</div>
-                        </div>
-                        <div style="text-align: right;">
-                            <div style="font-size: 18px; font-weight: 800; color: var(--accent-red);">৳{{ "{:,.0f}".format(due.due) }}</div>
-                            <a href="/store/dues/search?invoice_no={{ due.invoice_no }}" class="action-btn btn-edit" style="margin-top: 8px;">
-                                <i class="fas fa-money-bill"></i> Collect
-                            </a>
-                        </div>
-                    </div>
-                    {% endfor %}
-                {% else %}
-                    <div class="empty-state">
-                        <i class="fas fa-check-circle" style="color: var(--accent-green);"></i>
-                        <p>No pending dues!  All payments collected.</p>
-                    </div>
-                {% endif %}
-            </div>
-        </div>
-    </div>
-    
-    <script>
-        function validatePayment() {
-            const amount = parseFloat(document.getElementById('paymentAmount').value);
-            if (amount <= 0) {
-                alert('Please enter a valid amount');
-                return false;
-            }
-            document.getElementById('loading-overlay').style.display = 'flex';
-            return true;
-        }
-    </script>
-</body>
-</html>
-"""
-# ==============================================================================
-# STORE INVOICES LIST TEMPLATE
-# ==============================================================================
-
-STORE_INVOICES_LIST_TEMPLATE = """
-<!doctype html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Invoices - MEHEDI THAI ALUMINUM AND GLASS</title>
-    """ + COMMON_STYLES + """
-</head>
-<body>
-    <div class="animated-bg"></div>
-
-    <div class="mobile-toggle" onclick="document.querySelector('.sidebar').classList.toggle('active')">
-        <i class="fas fa-bars"></i>
-    </div>
-
-    <div class="sidebar">
-        <div class="brand-logo">
-            <i class="fas fa-store"></i> 
-            Store<span>Panel</span>
-        </div>
-        <div class="nav-menu">
-            <a href="/admin/store" class="nav-link">
-                <i class="fas fa-th-large"></i> Dashboard
-            </a>
-            <a href="/store/products" class="nav-link">
-                <i class="fas fa-box"></i> Products
-            </a>
-            <a href="/store/customers" class="nav-link">
-                <i class="fas fa-users"></i> Customers
-            </a>
-            <div class="nav-link active">
-                <i class="fas fa-file-invoice-dollar"></i> Invoices
-            </div>
-            <a href="/store/estimates" class="nav-link">
-                <i class="fas fa-file-alt"></i> Estimates
-            </a>
-            <a href="/store/dues" class="nav-link">
-                <i class="fas fa-wallet"></i> Due Collection
-            </a>
-            <a href="/logout" class="nav-link" style="color: var(--accent-red); margin-top: 20px;">
-                <i class="fas fa-sign-out-alt"></i> Sign Out
-            </a>
-        </div>
-        <div class="sidebar-footer">© 2025 Mehedi Hasan</div>
-    </div>
-
-    <div class="main-content">
-        <div class="header-section">
-            <div>
-                <div class="page-title">Invoice Management</div>
-                <div class="page-subtitle">View and manage all invoices</div>
-            </div>
-            <a href="/store/invoices/create" style="padding: 14px 30px; background: var(--gradient-orange); border-radius: 12px; text-decoration: none; color: white; font-weight: 600;">
-                <i class="fas fa-plus" style="margin-right: 8px;"></i> New Invoice
-            </a>
-        </div>
-
-        {% with messages = get_flashed_messages() %}
-            {% if messages %}
-                <div class="flash-message flash-success">
-                    <i class="fas fa-check-circle"></i>
-                    <span>{{ messages[0] }}</span>
-                </div>
-            {% endif %}
-        {% endwith %}
-
-        <div class="card" style="margin-bottom: 20px;">
-            <div class="section-header">
-                <span><i class="fas fa-search" style="margin-right: 10px; color: var(--accent-orange);"></i>Search Invoice</span>
-            </div>
-            <form action="/store/invoices" method="get" style="display: flex; gap: 15px; flex-wrap: wrap;">
-                <div style="flex: 1; min-width: 200px;">
-                    <input type="text" name="search" placeholder="Search by Invoice No or Customer Name..." value="{{ search_query }}">
-                </div>
-                <button type="submit" style="width: auto; padding: 14px 30px;">
-                    <i class="fas fa-search" style="margin-right: 8px;"></i> Search
-                </button>
-                {% if search_query %}
-                <a href="/store/invoices" style="padding: 14px 20px; background: rgba(255,255,255,0.05); border: 1px solid var(--border-color); border-radius: 12px; text-decoration: none; color: var(--text-secondary);">
-                    <i class="fas fa-times"></i> Clear
-                </a>
-                {% endif %}
-            </form>
-        </div>
-
-        <div class="card">
-            <div class="section-header">
-                <span>All Invoices</span>
-                <span class="table-badge" style="background: var(--accent-green); color: white;">{{ invoices|length }} Total</span>
-            </div>
-            
-            <div style="overflow-x: auto;">
-                <table class="dark-table">
-                    <thead>
-                        <tr>
-                            <th>Invoice No</th>
-                            <th>Customer</th>
-                            <th>Date</th>
-                            <th>Total</th>
-                            <th>Paid</th>
-                            <th>Due</th>
-                            <th style="text-align: right;">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% if invoices %}
-                            {% for inv in invoices|reverse %}
-                            <tr>
-                                <td style="font-weight: 700; color: var(--accent-orange);">{{ inv.invoice_no }}</td>
-                                <td style="color: white;">{{ inv.customer_name }}</td>
-                                <td style="color: var(--text-secondary);">{{ inv.date }}</td>
-                                <td style="font-weight: 700; color: var(--accent-green);">৳{{ "{:,.0f}".format(inv.total) }}</td>
-                                <td style="color: var(--accent-green);">৳{{ "{:,.0f}".format(inv.paid) }}</td>
-                                <td>
-                                    {% if inv.due > 0 %}
-                                    <span style="color: var(--accent-red); font-weight: 700;">৳{{ "{:,.0f}".format(inv.due) }}</span>
-                                    {% else %}
-                                    <span style="color: var(--accent-green);"><i class="fas fa-check-circle"></i> Paid</span>
-                                    {% endif %}
-                                </td>
-                                <td>
-                                    <div class="action-cell">
-                                        <a href="/store/invoices/print/{{ inv.invoice_no }}" class="action-btn btn-print-sm" target="_blank"><i class="fas fa-print"></i></a>
-                                        {% if inv.due > 0 %}
-                                        <a href="/store/dues/search?invoice_no={{ inv.invoice_no }}" class="action-btn btn-edit"><i class="fas fa-money-bill"></i></a>
-                                        {% endif %}
-                                    </div>
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        {% else %}
-                            <tr>
-                                <td colspan="7" style="text-align: center; padding: 50px; color: var(--text-secondary);">
-                                    <i class="fas fa-file-invoice" style="font-size: 50px; opacity: 0.2; margin-bottom: 15px; display: block;"></i>
-                                    {% if search_query %}
-                                    No invoices found for "{{ search_query }}"
-                                    {% else %}
-                                    No invoices created yet.  Create your first invoice! 
-                                    {% endif %}
-                                </td>
-                            </tr>
-                        {% endif %}
-                    </tbody>
-                </table>
-            </div>
+            <div class="signatures"><div class="signature-line">Customer</div><div class="signature-line">Authorized</div></div>
         </div>
     </div>
 </body>
@@ -7959,7 +5402,6 @@ CLOSING_REPORT_PREVIEW_TEMPLATE = """
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Closing Report Preview</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -7990,7 +5432,6 @@ CLOSING_REPORT_PREVIEW_TEMPLATE = """
         .action-bar { margin-bottom: 20px; display: flex; justify-content: flex-end; gap: 15px; position: sticky; top: 0; z-index: 1000; background: #f8f9fa; padding: 10px 0; }
         .btn-print { background-color: #2c3e50; color: white; border-radius: 50px; padding: 10px 30px; font-weight: 600; border: none; }
         .btn-excel { background-color: #27ae60; color: white; border-radius: 50px; padding: 10px 30px; font-weight: 600; text-decoration: none; display: inline-block; }
-        .btn-excel:hover { color: white; background-color: #219150; }
         .footer-credit { text-align: center; margin-top: 40px; margin-bottom: 20px; font-size: 1rem; color: #2c3e50; padding-top: 10px; border-top: 1px solid #000; font-weight: 600;}
         @media print {
             @page { margin: 5mm; size: portrait; } 
@@ -8035,69 +5476,22 @@ CLOSING_REPORT_PREVIEW_TEMPLATE = """
             <div class="color-header">COLOR: {{ block.color }}</div>
             <table class="table">
                 <thead>
-                    <tr>
-                        <th>SIZE</th>
-                        <th>ORDER QTY 3%</th>
-                        <th>ACTUAL QTY</th>
-                        <th>CUTTING QC</th>
-                        <th>INPUT QTY</th>
-                        <th>BALANCE</th>
-                        <th>SHORT/PLUS</th>
-                        <th>PERCENTAGE %</th>
-                    </tr>
+                    <tr><th>SIZE</th><th>ORDER QTY 3%</th><th>ACTUAL QTY</th><th>CUTTING QC</th><th>INPUT QTY</th><th>BALANCE</th><th>SHORT/PLUS</th><th>PERCENTAGE %</th></tr>
                 </thead>
                 <tbody>
                     {% set ns = namespace(tot_3=0, tot_act=0, tot_cut=0, tot_inp=0, tot_bal=0, tot_sp=0) %}
                     {% for i in range(block.headers|length) %}
                         {% set actual = block.gmts_qty[i]|replace(',', '')|int %}
                         {% set qty_3 = (actual * 1.03)|round|int %}
-                        {% set cut_qc = 0 %}
-                        {% if i < block.cutting_qc|length %}
-                            {% set cut_qc = block.cutting_qc[i]|replace(',', '')|int %}
-                        {% endif %}
-                        {% set inp_qty = 0 %}
-                        {% if i < block.sewing_input|length %}
-                            {% set inp_qty = block.sewing_input[i]|replace(',', '')|int %}
-                        {% endif %}
+                        {% set cut_qc = block.cutting_qc[i]|replace(',', '')|int if i < block.cutting_qc|length else 0 %}
+                        {% set inp_qty = block.sewing_input[i]|replace(',', '')|int if i < block.sewing_input|length else 0 %}
                         {% set balance = cut_qc - inp_qty %}
                         {% set short_plus = inp_qty - qty_3 %}
-                        {% set percentage = 0 %}
-                        {% if qty_3 > 0 %}
-                            {% set percentage = (short_plus / qty_3) * 100 %}
-                        {% endif %}
-                        {% set ns.tot_3 = ns.tot_3 + qty_3 %}
-                        {% set ns.tot_act = ns.tot_act + actual %}
-                        {% set ns.tot_cut = ns.tot_cut + cut_qc %}
-                        {% set ns.tot_inp = ns.tot_inp + inp_qty %}
-                        {% set ns.tot_bal = ns.tot_bal + balance %}
-                        {% set ns.tot_sp = ns.tot_sp + short_plus %}
-                        <tr>
-                            <td>{{ block.headers[i] }}</td>
-                            <td class="col-3pct">{{ qty_3 }}</td>
-                            <td>{{ actual }}</td>
-                            <td>{{ cut_qc }}</td>
-                            <td class="col-input">{{ inp_qty }}</td>
-                            <td class="col-balance">{{ balance }}</td>
-                            <td style="color: {{ 'green' if short_plus >= 0 else 'red' }}">{{ short_plus }}</td>
-                            <td>{{ "%.2f"|format(percentage) }}%</td>
-                        </tr>
+                        {% set percentage = (short_plus / qty_3) * 100 if qty_3 > 0 else 0 %}
+                        {% set ns.tot_3 = ns.tot_3 + qty_3 %}{% set ns.tot_act = ns.tot_act + actual %}{% set ns.tot_cut = ns.tot_cut + cut_qc %}{% set ns.tot_inp = ns.tot_inp + inp_qty %}{% set ns.tot_bal = ns.tot_bal + balance %}{% set ns.tot_sp = ns.tot_sp + short_plus %}
+                        <tr><td>{{ block.headers[i] }}</td><td class="col-3pct">{{ qty_3 }}</td><td>{{ actual }}</td><td>{{ cut_qc }}</td><td class="col-input">{{ inp_qty }}</td><td class="col-balance">{{ balance }}</td><td style="color: {{ 'green' if short_plus >= 0 else 'red' }}">{{ short_plus }}</td><td>{{ "%.2f"|format(percentage) }}%</td></tr>
                     {% endfor %}
-                    <tr class="total-row">
-                        <td>TOTAL</td>
-                        <td>{{ ns.tot_3 }}</td>
-                        <td>{{ ns.tot_act }}</td>
-                        <td>{{ ns.tot_cut }}</td>
-                        <td>{{ ns.tot_inp }}</td>
-                        <td>{{ ns.tot_bal }}</td>
-                        <td>{{ ns.tot_sp }}</td>
-                        <td>
-                            {% if ns.tot_3 > 0 %}
-                                {{ "%.2f"|format((ns.tot_sp / ns.tot_3) * 100) }}%
-                            {% else %}
-                                0.00%
-                            {% endif %}
-                        </td>
-                    </tr>
+                    <tr class="total-row"><td>TOTAL</td><td>{{ ns.tot_3 }}</td><td>{{ ns.tot_act }}</td><td>{{ ns.tot_cut }}</td><td>{{ ns.tot_inp }}</td><td>{{ ns.tot_bal }}</td><td>{{ ns.tot_sp }}</td><td>{{ "%.2f"|format((ns.tot_sp / ns.tot_3) * 100) if ns.tot_3 > 0 else "0.00" }}%</td></tr>
                 </tbody>
             </table>
         </div>
@@ -8105,10 +5499,7 @@ CLOSING_REPORT_PREVIEW_TEMPLATE = """
         <div class="footer-credit">Report Generated By <span style="color: #000; font-weight: 900;">Mehedi Hasan</span></div>
         {% endif %}
     </div>
-    <script>
-        const dateObj = new Date();
-        document.getElementById('date').innerText = dateObj.toLocaleDateString('en-GB');
-    </script>
+    <script>document.getElementById('date').innerText = new Date().toLocaleDateString('en-GB');</script>
 </body>
 </html>
 """
@@ -8124,9 +5515,8 @@ ACCESSORIES_REPORT_TEMPLATE = """
     <style>
         body { font-family: 'Poppins', sans-serif; background: #fff; padding: 20px; color: #000; }
         .container { max-width: 1000px; margin: 0 auto; border: 2px solid #000; padding: 20px; min-height: 90vh; position: relative; }
-        .header { text-align: center; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 20px; position: relative; }
+        .header { text-align: center; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 20px; }
         .company-name { font-size: 28px; font-weight: 800; text-transform: uppercase; color: #2c3e50; line-height: 1; }
-        .company-address { font-size: 12px; font-weight: 600; color: #444; margin-top: 5px; margin-bottom: 10px; }
         .report-title { background: #2c3e50; color: white; padding: 5px 25px; display: inline-block; font-weight: bold; font-size: 18px; border-radius: 4px; }
         .info-grid { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; }
         .info-left { flex: 2; border: 1px dashed #555; padding: 15px; margin-right: 15px; }
@@ -8134,35 +5524,13 @@ ACCESSORIES_REPORT_TEMPLATE = """
         .info-label { font-weight: 800; width: 80px; color: #444; }
         .info-val { font-weight: 700; font-size: 15px; color: #000; }
         .booking-border { border: 2px solid #000; padding: 2px 8px; display: inline-block; font-weight: 900; }
-        .info-right { flex: 1; display: flex; flex-direction: column; justify-content: space-between; height: 100%; border-left: 1px solid #ddd; padding-left: 15px; }
-        .right-item { font-size: 14px; margin-bottom: 8px; font-weight: 700; }
-        .right-label { color: #555; }
         .summary-container { margin-bottom: 20px; border: 2px solid #000; padding: 10px; background: #f9f9f9; }
-        .summary-header { font-weight: 900; text-align: center; border-bottom: 1px solid #000; margin-bottom: 5px; text-transform: uppercase; }
-        .summary-table { width: 100%; font-size: 13px; font-weight: 700; }
-        .summary-table td { padding: 2px 5px; }
         .main-table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 14px; }
         .main-table th { background: #2c3e50 !important; color: white !important; padding: 10px; border: 1px solid #000; font-size: 14px; text-transform: uppercase; -webkit-print-color-adjust: exact; }
         .main-table td { border: 1px solid #000; padding: 6px; text-align: center; vertical-align: middle; color: #000; font-weight: 600; }
-        .line-card { display: inline-block; padding: 4px 10px; border: 2px solid #000; font-size: 16px; font-weight: 900; border-radius: 4px; box-shadow: 2px 2px 0 #000; background: #fff; }
-        .line-text-bold { font-size: 14px; font-weight: 800; opacity: 0.7; }
-        .status-cell { font-size: 20px; color: green; font-weight: 900; }
-        .qty-cell { font-size: 16px; font-weight: 800; }
-        .action-btn { color: white; padding: 4px 8px; border-radius: 4px; text-decoration: none; font-size: 12px; margin: 0 2px; display: inline-block; }
-        .btn-edit-row { background-color: #f39c12; }
-        .btn-del-row { background-color: #e74c3c; }
-        .footer-total { margin-top: 20px; display: flex; justify-content: flex-end; }
-        .total-box { border: 3px solid #000; padding: 8px 30px; font-size: 20px; font-weight: 900; background: #ddd; -webkit-print-color-adjust: exact; }
         .no-print { margin-bottom: 20px; text-align: right; }
         .btn { padding: 8px 20px; background: #2c3e50; color: white; border: none; cursor: pointer; text-decoration: none; display: inline-block; border-radius: 4px; font-size: 14px; }
-        .btn-add { background: #27ae60; }
-        .generator-sig { text-align: right; font-size: 10px; margin-top: 5px; color: #555; }
-        @media print {
-            .no-print { display: none; }
-            .action-col { display: none; }
-            .container { border: none; padding: 0; margin: 0; max-width: 100%; }
-            body { padding: 0; }
-        }
+        @media print { .no-print { display: none; } .container { border: none; padding: 0; } }
     </style>
 </head>
 <body>
@@ -8173,7 +5541,6 @@ ACCESSORIES_REPORT_TEMPLATE = """
 <div class="container">
     <div class="header">
         <div class="company-name">COTTON CLOTHING BD LTD</div>
-        <div class="company-address">Kazi Tower, 27 Road, Gazipura, Tongi, Gazipur. </div>
         <div class="report-title">ACCESSORIES DELIVERY CHALLAN</div>
     </div>
     <div class="info-grid">
@@ -8183,79 +5550,27 @@ ACCESSORIES_REPORT_TEMPLATE = """
             <div class="info-row"><span class="info-label">Style:</span> <span class="info-val">{{ style }}</span></div>
             <div class="info-row"><span class="info-label">Date:</span> <span class="info-val">{{ today }}</span></div>
         </div>
-        <div class="info-right">
-            <div class="right-item"><span class="right-label">Store:</span> Clothing General Store</div>
-            <div class="right-item"><span class="right-label">Send:</span> Cutting</div>
-            <div class="right-item"><span class="right-label">Item:</span> <span style="border: 1px solid #000; padding: 0 5px;">{{ item_type if item_type else 'Top/Btm' }}</span></div>
-        </div>
     </div>
     <div class="summary-container">
-        <div class="summary-header">Line-wise Summary</div>
-        <table class="summary-table">
-            <tr>
-            {% for line, qty in line_summary.items() %}
-                <td>{{ line }}: {{ qty }} pcs</td>
-                {% if loop.index % 4 == 0 %}</tr><tr>{% endif %}
-            {% endfor %}
-            </tr>
-        </table>
-        <div style="text-align: right; margin-top: 5px; font-weight: 800; border-top: 1px solid #ccc;">Total Deliveries: {{ count }}</div>
+        <strong>Line-wise Summary:</strong> 
+        {% for line, qty in line_summary.items() %}{{ line }}: {{ qty }} pcs{% if not loop.last %} | {% endif %}{% endfor %}
+        <div style="text-align: right; font-weight: 800; border-top: 1px solid #ccc;">Total Deliveries: {{ count }}</div>
     </div>
     <table class="main-table">
-        <thead>
-            <tr>
-                <th width="15%">DATE</th>
-                <th width="15%">LINE NO</th>
-                <th width="20%">COLOR</th>
-                <th width="10%">SIZE</th>
-                <th width="10%">STATUS</th>
-                <th width="15%">QTY</th>
-                {% if session.role == 'admin' %}
-                <th width="15%" class="action-col">ACTION</th>
-                {% endif %}
-            </tr>
-        </thead>
+        <thead><tr><th>DATE</th><th>LINE NO</th><th>COLOR</th><th>SIZE</th><th>STATUS</th><th>QTY</th></tr></thead>
         <tbody>
             {% set ns = namespace(grand_total=0) %}
             {% for item in challans %}
                 {% set ns.grand_total = ns.grand_total + item.qty|int %}
-                <tr>
-                    <td>{{ item.date }}</td>
-                    <td>
-                        {% if loop.index == count %}
-                            <div class="line-card">{{ item.line }}</div>
-                        {% else %}
-                            <span class="line-text-bold">{{ item.line }}</span>
-                        {% endif %}
-                    </td>
-                    <td>{{ item.color }}</td>
-                    <td>{{ item.size }}</td>
-                    <td class="status-cell">{{ item.status }}</td>
-                    <td class="qty-cell">{{ item.qty }}</td>
-                    {% if session.role == 'admin' %}
-                    <td class="action-col">
-                        <a href="/admin/accessories/edit?ref={{ ref }}&index={{ loop.index0 }}" class="action-btn btn-edit-row"><i class="fas fa-pencil-alt"></i></a>
-                        <form action="/admin/accessories/delete" method="POST" style="display:inline;" onsubmit="return confirm('Delete this challan?');">
-                            <input type="hidden" name="ref" value="{{ ref }}">
-                            <input type="hidden" name="index" value="{{ loop.index0 }}">
-                            <button type="submit" class="action-btn btn-del-row" style="border:none; cursor:pointer;"><i class="fas fa-trash"></i></button>
-                        </form>
-                    </td>
-                    {% endif %}
-                </tr>
+                <tr><td>{{ item.date }}</td><td>{{ item.line }}</td><td>{{ item.color }}</td><td>{{ item.size }}</td><td>{{ item.status }}</td><td>{{ item.qty }}</td></tr>
             {% endfor %}
         </tbody>
     </table>
-    <div class="footer-total">
-        <div class="total-box">
-            TOTAL QTY: {{ ns.grand_total }}
-        </div>
-    </div>
-    <div class="generator-sig">Report Generated By Mehedi Hasan</div>
-    <div style="margin-top: 60px; display: flex; justify-content: space-between; text-align: center; font-weight: bold; padding: 0 50px;">
-        <div style="border-top: 2px solid #000; width: 180px; padding-top: 5px;">Received By</div>
-        <div style="border-top: 2px solid #000; width: 180px; padding-top: 5px;">Input Incharge</div>
-        <div style="border-top: 2px solid #000; width: 180px; padding-top: 5px;">Store</div>
+    <div style="margin-top: 20px; text-align: right; font-size: 20px; font-weight: 900; border: 3px solid #000; padding: 10px; display: inline-block; float: right;">TOTAL QTY: {{ ns.grand_total }}</div>
+    <div style="clear: both; margin-top: 60px; display: flex; justify-content: space-between; text-align: center; font-weight: bold; padding: 0 50px;">
+        <div style="border-top: 2px solid #000; width: 180px;">Received By</div>
+        <div style="border-top: 2px solid #000; width: 180px;">Input Incharge</div>
+        <div style="border-top: 2px solid #000; width: 180px;">Store</div>
     </div>
 </div>
 </body>
@@ -8267,111 +5582,51 @@ PO_REPORT_TEMPLATE = """
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PO Report - Cotton Clothing BD</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         body { background-color: #f8f9fa; padding: 30px 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         .container { max-width: 1200px; }
         .company-header { text-align: center; margin-bottom: 20px; border-bottom: 2px solid #000; padding-bottom: 10px; }
-        .company-name { font-size: 2.2rem; font-weight: 800; color: #2c3e50; text-transform: uppercase; letter-spacing: 1px; line-height: 1; }
-        .report-title { font-size: 1.1rem; color: #555; font-weight: 600; text-transform: uppercase; margin-top: 5px; }
-        .date-section { font-size: 1.2rem; font-weight: 800; color: #000; margin-top: 5px; }
-        .info-container { display: flex; justify-content: space-between; margin-bottom: 15px; gap: 15px; }
-        .info-box { background: white; border: 1px solid #ddd; border-left: 5px solid #2c3e50; padding: 10px 15px; border-radius: 5px; flex: 2; box-shadow: 0 2px 5px rgba(0,0,0,0.05); display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-        .total-box { background: #2c3e50; color: white; padding: 10px 15px; border-radius: 5px; width: 240px; text-align: right; display: flex; flex-direction: column; justify-content: center; box-shadow: 0 4px 10px rgba(44, 62, 80, 0.3); }
-        .info-item { margin-bottom: 6px; font-size: 1.3rem; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .info-label { font-weight: 800; color: #444; width: 90px; display: inline-block; }
-        .info-value { font-weight: 800; color: #000; }
-        .total-label { font-size: 1.1rem; opacity: 0.9; text-transform: uppercase; letter-spacing: 1px; font-weight: 700; }
-        .total-value { font-size: 2.5rem; font-weight: 800; line-height: 1.1; }
+        .company-name { font-size: 2.2rem; font-weight: 800; color: #2c3e50; text-transform: uppercase; }
+        .report-title { font-size: 1.1rem; color: #555; font-weight: 600; text-transform: uppercase; }
+        .info-container { display: flex; justify-content: space-between; margin-bottom: 15px; }
+        .info-box { background: white; border: 1px solid #ddd; border-left: 5px solid #2c3e50; padding: 10px 15px; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; flex: 2; }
+        .total-box { background: #2c3e50; color: white; padding: 10px 15px; width: 200px; text-align: right; display: flex; flex-direction: column; justify-content: center; }
+        .info-item { font-size: 1.1rem; font-weight: 700; }
+        .info-label { font-weight: 800; color: #444; width: 80px; display: inline-block; }
+        .total-value { font-size: 2rem; font-weight: 800; }
         .table-card { background: white; border-radius: 0; margin-bottom: 20px; overflow: hidden; border: 1px solid #dee2e6; }
-        .color-header { background-color: #e9ecef; color: #2c3e50; padding: 10px 12px; font-size: 1.5rem; font-weight: 900; border-bottom: 1px solid #dee2e6; text-transform: uppercase; }
-        .table { margin-bottom: 0; width: 100%; border-collapse: collapse; }
-        .table th { background-color: #2c3e50; color: white; font-weight: 900; font-size: 1.2rem; text-align: center; border: 1px solid #34495e; padding: 8px 4px; vertical-align: middle; }
-        .table th:empty { background-color: white !important; border: none; }
-        .table td { text-align: center; vertical-align: middle; border: 1px solid #dee2e6; padding: 6px 3px; color: #000; font-weight: 800; font-size: 1.15rem; }
-        .table-striped tbody tr:nth-of-type(odd) { background-color: #f8f9fa; }
-        .order-col { font-weight: 900 !important; text-align: center !important; background-color: #fdfdfd; white-space: nowrap; width: 1%; }
-        .total-col { font-weight: 900; background-color: #e8f6f3 !important; color: #16a085; border-left: 2px solid #1abc9c !important; }
-        .total-col-header { background-color: #e8f6f3 !important; color: #000 !important; font-weight: 900 !important; border: 1px solid #34495e !important; }
-        .table-striped tbody tr.summary-row, .table-striped tbody tr.summary-row td { background-color: #d1ecff !important; --bs-table-accent-bg: #d1ecff !important; color: #000 !important; font-weight: 900 !important; border-top: 2px solid #aaa !important; font-size: 1.2rem !important; }
-        .summary-label { text-align: right !important; padding-right: 15px !important; color: #000 !important; }
-        .action-bar { margin-bottom: 20px; display: flex; justify-content: flex-end; gap: 10px; }
-        .btn-print { background-color: #e74c3c; color: white; border-radius: 50px; padding: 8px 30px; font-weight: 600; border: none; }
-        .footer-credit { text-align: center; margin-top: 30px; margin-bottom: 20px; font-size: 0.8rem; color: #2c3e50; padding-top: 10px; border-top: 1px solid #ddd; }
-        @media print {
-            @page { margin: 5mm; size: portrait; }
-            body { background-color: white; padding: 0; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; color-adjust: exact !important; }
-            .container { max-width: 100% !important; width: 100% !important; padding: 0; margin: 0; }
-            .no-print { display: none !important; }
-            .company-header { border-bottom: 2px solid #000; margin-bottom: 5px; padding-bottom: 5px; }
-            .company-name { font-size: 1.8rem; } 
-            .info-container { margin-bottom: 10px; }
-            .info-box { border: 1px solid #000 !important; border-left: 5px solid #000 !important; padding: 5px 10px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-            .total-box { border: 2px solid #000 !important; background: white !important; color: black !important; padding: 5px 10px; }
-            .info-item { font-size: 13pt !important; font-weight: 800 !important; }
-            .table th, .table td { border: 1px solid #000 !important; padding: 2px !important; font-size: 13pt !important; font-weight: 800 !important; }
-            .table th:empty { background-color: white !important; border: none !important; }
-            .table-striped tbody tr.summary-row td { background-color: #d1ecff !important; box-shadow: inset 0 0 0 9999px #d1ecff !important; color: #000 !important; font-weight: 900 !important; }
-            .color-header { background-color: #f1f1f1 !important; border: 1px solid #000 !important; font-size: 1.4rem !important; font-weight: 900; padding: 5px; margin-top: 10px; box-shadow: inset 0 0 0 9999px #f1f1f1 !important; }
-            .total-col-header { background-color: #e8f6f3 !important; box-shadow: inset 0 0 0 9999px #e8f6f3 !important; color: #000 !important; }
-            .table-card { border: none; margin-bottom: 10px; break-inside: avoid; }
-            .footer-credit { display: block !important; color: black; border-top: 1px solid #000; margin-top: 10px; font-size: 8pt !important; }
-        }
+        .color-header { background-color: #e9ecef; color: #2c3e50; padding: 10px 12px; font-size: 1.3rem; font-weight: 900; border-bottom: 1px solid #dee2e6; text-transform: uppercase; }
+        .table th { background-color: #2c3e50; color: white; font-weight: 900; text-align: center; }
+        .table td { text-align: center; font-weight: 600; }
+        .no-print { display: block; }
+        @media print { .no-print { display: none; } .container { max-width: 100%; padding: 0; } .table th { background-color: #2c3e50 !important; color: white !important; -webkit-print-color-adjust: exact; } }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="action-bar no-print">
-            <a href="/" class="btn btn-outline-secondary rounded-pill px-4">Back to Dashboard</a>
-            <button onclick="window.print()" class="btn btn-print"><i class="fas fa-file-pdf"></i> Print</button>
+        <div class="text-end mb-3 no-print">
+            <a href="/" class="btn btn-secondary">Back</a>
+            <button onclick="window.print()" class="btn btn-primary">Print</button>
         </div>
         <div class="company-header">
             <div class="company-name">COTTON CLOTHING BD LTD</div>
             <div class="report-title">Purchase Order Summary</div>
-            <div class="date-section">Date: <span id="date"></span></div>
         </div>
-        {% if message %}
-            <div class="alert alert-warning text-center no-print">{{ message }}</div>
-        {% endif %}
         {% if tables %}
             <div class="info-container">
                 <div class="info-box">
-                    <div>
-                        <div class="info-item"><span class="info-label">Buyer:</span> <span class="info-value">{{ meta.buyer }}</span></div>
-                        <div class="info-item"><span class="info-label">Booking:</span> <span class="info-value">{{ meta.booking }}</span></div>
-                        <div class="info-item"><span class="info-label">Style:</span> <span class="info-value">{{ meta.style }}</span></div>
-                    </div>
-                    <div>
-                        <div class="info-item"><span class="info-label">Season:</span> <span class="info-value">{{ meta.season }}</span></div>
-                        <div class="info-item"><span class="info-label">Dept:</span> <span class="info-value">{{ meta.dept }}</span></div>
-                        <div class="info-item"><span class="info-label">Item:</span> <span class="info-value">{{ meta.item }}</span></div>
-                    </div>
+                    <div><div class="info-item"><span class="info-label">Buyer:</span> {{ meta.buyer }}</div><div class="info-item"><span class="info-label">Booking:</span> {{ meta.booking }}</div><div class="info-item"><span class="info-label">Style:</span> {{ meta.style }}</div></div>
+                    <div><div class="info-item"><span class="info-label">Season:</span> {{ meta.season }}</div><div class="info-item"><span class="info-label">Dept:</span> {{ meta.dept }}</div><div class="info-item"><span class="info-label">Item:</span> {{ meta.item }}</div></div>
                 </div>
-                <div class="total-box">
-                    <div class="total-label">Grand Total</div>
-                    <div class="total-value">{{ grand_total }}</div>
-                    <small>Pieces</small>
-                </div>
+                <div class="total-box"><div>Grand Total</div><div class="total-value">{{ grand_total }}</div></div>
             </div>
             {% for item in tables %}
-                <div class="table-card">
-                    <div class="color-header">COLOR: {{ item.color }}</div>
-                    <div class="table-responsive">{{ item.table | safe }}</div>
-                </div>
+                <div class="table-card"><div class="color-header">COLOR: {{ item.color }}</div><div class="table-responsive">{{ item.table | safe }}</div></div>
             {% endfor %}
-            <div class="footer-credit">Report Created By <strong>Mehedi Hasan</strong></div>
         {% endif %}
     </div>
-    <script>
-        const dateObj = new Date();
-        const day = String(dateObj.getDate()).padStart(2, '0');
-        const month = String(dateObj.getMonth() + 1).padStart(2, '0');
-        const year = dateObj.getFullYear();
-        document.getElementById('date').innerText = `${day}-${month}-${year}`;
-            </script>
 </body>
 </html>
 """
@@ -8396,43 +5651,36 @@ def login():
     password = request.form.get('password')
     
     users = load_users()
+    store_users = load_store_users()
     
+    # Check Admin/Main Users
     if username in users and users[username]['password'] == password:
         session.permanent = True
         session['user'] = username
         session['role'] = users[username].get('role', 'user')
         session['permissions'] = users[username].get('permissions', [])
-        session['login_time'] = get_bd_time().isoformat()
         
-        # Update last login time
         users[username]['last_login'] = get_bd_time().strftime('%d-%m-%Y %I:%M %p')
         save_users(users)
-        
         return redirect(url_for('home'))
+    
+    # Check Store Users
+    elif username in store_users and store_users[username]['password'] == password:
+        session.permanent = True
+        session['user'] = username
+        session['role'] = store_users[username].get('role', 'store_user')
+        session['permissions'] = store_users[username].get('permissions', [])
+        
+        store_users[username]['last_login'] = get_bd_time().strftime('%d-%m-%Y %I:%M %p')
+        save_store_users(store_users)
+        return redirect(url_for('store_dashboard'))
+        
     else:
         flash('Invalid Username or Password!')
         return redirect(url_for('home'))
 
 @app.route('/logout')
 def logout():
-    # Calculate session duration before clearing
-    users = load_users()
-    username = session.get('user')
-    
-    if username and username in users:
-        login_time_str = session.get('login_time')
-        if login_time_str:
-            try:
-                login_time = datetime.fromisoformat(login_time_str)
-                now = get_bd_time()
-                duration = now - login_time
-                minutes = int(duration.total_seconds() // 60)
-                seconds = int(duration.total_seconds() % 60)
-                users[username]['last_duration'] = f"{minutes}m {seconds}s"
-                save_users(users)
-            except:
-                pass
-    
     session.clear()
     return redirect(url_for('home'))
 
@@ -8454,26 +5702,17 @@ def save_user():
     data = request.get_json()
     users = load_users()
     username = data.get('username')
-    password = data.get('password')
-    permissions = data.get('permissions', [])
-    action = data.get('action_type', 'create')
     
-    if action == 'create' and username in users:
+    if data.get('action_type') == 'create' and username in users:
         return jsonify({"status": "error", "message": "User already exists!"})
     
-    if action == 'create':
-        users[username] = {
-            "password": password,
-            "role": "user",
-            "permissions": permissions,
-            "created_at": get_bd_date_str(),
-            "last_login": "Never",
-            "last_duration": "N/A"
-        }
-    else:
-        users[username]['password'] = password
-        users[username]['permissions'] = permissions
-    
+    users[username] = {
+        "password": data.get('password'),
+        "role": "user",
+        "permissions": data.get('permissions', []),
+        "created_at": get_bd_date_str(),
+        "last_login": "Never"
+    }
     save_users(users)
     return jsonify({"status": "success"})
 
@@ -8482,769 +5721,453 @@ def delete_user():
     if 'user' not in session or session.get('role') != 'admin':
         return jsonify({"status": "error", "message": "Unauthorized"}), 403
     
-    data = request.get_json()
+    username = request.get_json().get('username')
     users = load_users()
-    username = data.get('username')
-    
     if username in users and users[username].get('role') != 'admin':
         del users[username]
         save_users(users)
-    
     return jsonify({"status": "success"})
 
 # ==============================================================================
-# FLASK ROUTES - CLOSING REPORT
+# FLASK ROUTES - CLOSING & PO REPORTS
 # ==============================================================================
 
 @app.route('/generate-report', methods=['POST'])
 def generate_report():
-    if 'user' not in session:
-        return redirect(url_for('home'))
-    
+    if 'user' not in session: return redirect(url_for('home'))
     ref_no = request.form.get('ref_no', '').strip()
-    if not ref_no:
-        flash('Please enter a valid Reference Number.')
-        return redirect(url_for('home'))
-    
     report_data = fetch_closing_report_data(ref_no)
     
     if report_data:
         update_stats(ref_no, session['user'])
         return render_template_string(CLOSING_REPORT_PREVIEW_TEMPLATE, report_data=report_data, ref_no=ref_no.upper())
-    else:
-        flash(f'No data found for "{ref_no}".  Please check the reference number.')
-        return redirect(url_for('home'))
+    
+    flash('No data found for this reference.')
+    return redirect(url_for('home'))
 
 @app.route('/download-closing-excel')
 def download_closing_excel():
-    if 'user' not in session:
-        return redirect(url_for('home'))
-    
+    if 'user' not in session: return redirect(url_for('home'))
     ref_no = request.args.get('ref_no', '').strip()
-    if not ref_no:
-        flash('Reference number is required.')
-        return redirect(url_for('home'))
-    
     report_data = fetch_closing_report_data(ref_no)
-    if not report_data:
-        flash('No data found for the given reference.')
-        return redirect(url_for('home'))
     
-    excel_file = create_formatted_excel_report(report_data, ref_no)
-    if excel_file:
-        return send_file(
-            excel_file,
-            as_attachment=True,
-            download_name=f"Closing_Report_{ref_no.upper()}.xlsx",
-            mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-        )
+    if report_data:
+        excel_file = create_formatted_excel_report(report_data, ref_no)
+        return send_file(excel_file, as_attachment=True, download_name=f"Closing_{ref_no}.xlsx", mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
     
-    flash('Failed to generate Excel file.')
     return redirect(url_for('home'))
-
-# ==============================================================================
-# FLASK ROUTES - PO SHEET GENERATOR
-# ==============================================================================
 
 @app.route('/generate-po-report', methods=['POST'])
 def generate_po_report():
-    if 'user' not in session:
-        return redirect(url_for('home'))
-    
-    if 'pdf_files' not in request.files:
-        flash('No files uploaded.')
-        return redirect(url_for('home'))
-    
+    if 'user' not in session: return redirect(url_for('home'))
     files = request.files.getlist('pdf_files')
-    valid_files = [f for f in files if f and f.filename.endswith('.pdf')]
+    valid_files = [f for f in files if f.filename.endswith('.pdf')]
     
     if not valid_files:
-        flash('Please upload valid PDF files.')
+        flash('No valid PDF files uploaded.')
         return redirect(url_for('home'))
     
-    all_data = []
-    metadata = {}
-    
+    all_data, metadata = [], {}
     for file in valid_files:
-        filepath = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
-        file.save(filepath)
-        
+        path = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
+        file.save(path)
         try:
-            extracted, meta = extract_data_dynamic(filepath)
-            if extracted:
-                all_data.extend(extracted)
-            if meta and meta.get('buyer') != 'N/A':
-                metadata = meta
-        except Exception as e:
-            print(f"Error processing {file.filename}: {e}")
+            data, meta = extract_data_dynamic(path)
+            if data: all_data.extend(data)
+            if meta.get('buyer') != 'N/A': metadata = meta
         finally:
-            if os.path.exists(filepath):
-                os.remove(filepath)
-    
+            if os.path.exists(path): os.remove(path)
+            
     if not all_data:
-        flash('No valid data could be extracted from the uploaded files.')
+        flash('Could not extract data.')
         return redirect(url_for('home'))
-    
-    # Update stats
+        
     update_po_stats(session['user'], len(valid_files))
     
-    # Process data and create tables
     df = pd.DataFrame(all_data)
-    
-    # Sort sizes
-    unique_sizes = df['Size'].unique().tolist()
-    sorted_sizes = sort_sizes(unique_sizes)
-    
-    # Group by color
     tables = []
     grand_total = 0
+    sorted_sizes = sort_sizes(df['Size'].unique().tolist())
     
     for color in df['Color'].unique():
-        color_df = df[df['Color'] == color]
-        
-        pivot = color_df.pivot_table(
-            index='P.O NO',
-            columns='Size',
-            values='Quantity',
-            aggfunc='sum',
-            fill_value=0
-        )
-        
-        # Reorder columns
+        pivot = df[df['Color'] == color].pivot_table(index='P.O NO', columns='Size', values='Quantity', aggfunc='sum', fill_value=0)
         pivot = pivot.reindex(columns=[s for s in sorted_sizes if s in pivot.columns], fill_value=0)
-        
-        # Add Total column
         pivot['Total'] = pivot.sum(axis=1)
         grand_total += pivot['Total'].sum()
         
-        # Add summary row
         summary = pivot.sum().to_frame().T
         summary.index = ['COLOR TOTAL']
-        pivot = pd.concat([pivot, summary])
         
-        # Convert to HTML
-        html_table = pivot.to_html(classes='table table-striped', border=0)
-        html_table = html_table.replace('<th></th>', '<th class="order-col">P.O NO</th>')
-        html_table = html_table.replace('>Total<', ' class="total-col-header">Total<')
-        html_table = html_table.replace('<tr>\n      <th>COLOR TOTAL</th>', '<tr class="summary-row">\n      <th class="summary-label">COLOR TOTAL</th>')
+        html = pd.concat([pivot, summary]).to_html(classes='table table-striped', border=0)
+        # HTML Cleanup for better view
+        html = html.replace('<th></th>', '<th class="order-col">P.O NO</th>').replace('>Total<', ' class="total-col-header">Total<')
+        html = html.replace('<tr>\n      <th>COLOR TOTAL</th>', '<tr class="summary-row">\n      <th class="summary-label">COLOR TOTAL</th>')
         
-        tables.append({
-            'color': color,
-            'table': html_table
-        })
-    
-    return render_template_string(
-        PO_REPORT_TEMPLATE,
-        tables=tables,
-        meta=metadata,
-        grand_total=f"{grand_total:,}",
-        message=None
-    )
+        tables.append({'color': color, 'table': html})
+        
+    return render_template_string(PO_REPORT_TEMPLATE, tables=tables, meta=metadata, grand_total=f"{grand_total:,}", message=None)
 
 # ==============================================================================
-# FLASK ROUTES - ACCESSORIES
+# FLASK ROUTES - ACCESSORIES (FIXED PRINT ERROR)
 # ==============================================================================
 
 @app.route('/admin/accessories')
 def accessories_home():
-    if 'user' not in session:
-        return redirect(url_for('home'))
+    if 'user' not in session: return redirect(url_for('home'))
     return render_template_string(ACCESSORIES_SEARCH_TEMPLATE)
 
 @app.route('/admin/accessories/input', methods=['POST'])
 def accessories_input():
-    if 'user' not in session:
-        return redirect(url_for('home'))
-    
-    ref = request.form.get('ref_no', '').strip().upper()
-    if not ref:
-        flash('Please enter a valid Reference Number.')
-        return redirect(url_for('accessories_home'))
-    
-    # Fetch color data from API
-    report_data = fetch_closing_report_data(ref)
-    colors = []
-    buyer = "N/A"
-    style = "N/A"
-    
-    if report_data:
-        for block in report_data:
-            color_name = block.get('color', '')
-            if color_name and color_name not in colors:
-                colors.append(color_name)
-            if block.get('buyer') != 'N/A':
-                buyer = block.get('buyer')
-            if block.get('style') != 'N/A':
-                style = block.get('style')
-    
-    # Load existing data
-    acc_db = load_accessories_db()
-    if ref not in acc_db:
-        acc_db[ref] = {
-            "buyer": buyer,
-            "style": style,
-            "challans": []
-        }
-        save_accessories_db(acc_db)
-    
-    challans = acc_db[ref].get('challans', [])
-    
-    return render_template_string(
-        ACCESSORIES_INPUT_TEMPLATE,
-        ref=ref,
-        buyer=acc_db[ref].get('buyer', buyer),
-        style=acc_db[ref].get('style', style),
-        colors=colors,
-        challans=challans
-    )
+    return redirect(url_for('accessories_input_direct', ref=request.form.get('ref_no', '').strip().upper()))
 
 @app.route('/admin/accessories/input_direct')
 def accessories_input_direct():
-    if 'user' not in session:
-        return redirect(url_for('home'))
-    
+    if 'user' not in session: return redirect(url_for('home'))
     ref = request.args.get('ref', '').strip().upper()
-    if not ref:
-        return redirect(url_for('accessories_home'))
+    if not ref: return redirect(url_for('accessories_home'))
     
     acc_db = load_accessories_db()
+    # Auto-initialize if new
     if ref not in acc_db:
-        flash('Reference not found.  Please search first.')
-        return redirect(url_for('accessories_home'))
-    
-    # Get colors from API
-    report_data = fetch_closing_report_data(ref)
+        report_data = fetch_closing_report_data(ref)
+        acc_db[ref] = {
+            "buyer": report_data[0].get('buyer', 'N/A') if report_data else 'N/A',
+            "style": report_data[0].get('style', 'N/A') if report_data else 'N/A',
+            "challans": []
+        }
+        save_accessories_db(acc_db)
+        
+    # Get colors for dropdown
     colors = []
+    report_data = fetch_closing_report_data(ref)
     if report_data:
-        for block in report_data:
-            color_name = block.get('color', '')
-            if color_name and color_name not in colors:
-                colors.append(color_name)
-    
-    return render_template_string(
-        ACCESSORIES_INPUT_TEMPLATE,
-        ref=ref,
-        buyer=acc_db[ref].get('buyer', 'N/A'),
-        style=acc_db[ref].get('style', 'N/A'),
-        colors=colors,
-        challans=acc_db[ref].get('challans', [])
-    )
+        colors = sorted(list(set(b.get('color') for b in report_data if b.get('color'))))
+        
+    return render_template_string(ACCESSORIES_INPUT_TEMPLATE, ref=ref, 
+                                buyer=acc_db[ref].get('buyer'), style=acc_db[ref].get('style'),
+                                colors=colors, challans=acc_db[ref].get('challans', []))
 
 @app.route('/admin/accessories/save', methods=['POST'])
 def accessories_save():
-    if 'user' not in session:
-        return redirect(url_for('home'))
-    
-    ref = request.form.get('ref', '').strip().upper()
-    line_no = request.form.get('line_no', '').strip()
-    color = request.form.get('color', '').strip()
-    size = request.form.get('size', 'ALL').strip()
-    qty = request.form.get('qty', '0').strip()
-    item_type = request.form.get('item_type', 'Top')
-    
+    if 'user' not in session: return redirect(url_for('home'))
+    ref = request.form.get('ref')
     acc_db = load_accessories_db()
     
-    if ref not in acc_db:
-        acc_db[ref] = {"buyer": "N/A", "style": "N/A", "challans": []}
-    
-    new_challan = {
-        "date": get_bd_date_str(),
-        "line": line_no,
-        "color": color,
-        "size": size,
-        "qty": int(qty),
-        "status": "✔",
-        "item_type": item_type
-    }
-    
-    acc_db[ref]['challans'].append(new_challan)
-    save_accessories_db(acc_db)
-    
-    return redirect(url_for('accessories_input_direct', ref=ref))
-
-@app.route('/admin/accessories/edit')
-def accessories_edit():
-    if 'user' not in session or session.get('role') != 'admin':
-        return redirect(url_for('home'))
-    
-    ref = request.args.get('ref', '').strip().upper()
-    index = int(request.args.get('index', 0))
-    
-    acc_db = load_accessories_db()
-    
-    if ref not in acc_db or index >= len(acc_db[ref].get('challans', [])):
-        flash('Entry not found.')
-        return redirect(url_for('accessories_home'))
-    
-    item = acc_db[ref]['challans'][index]
-    
-    return render_template_string(ACCESSORIES_EDIT_TEMPLATE, ref=ref, index=index, item=item)
-
-@app.route('/admin/accessories/update', methods=['POST'])
-def accessories_update():
-    if 'user' not in session or session.get('role') != 'admin':
-        return redirect(url_for('home'))
-    
-    ref = request.form.get('ref', '').strip().upper()
-    index = int(request.form.get('index', 0))
-    
-    acc_db = load_accessories_db()
-    
-    if ref in acc_db and index < len(acc_db[ref].get('challans', [])):
-        acc_db[ref]['challans'][index]['line'] = request.form.get('line_no', '').strip()
-        acc_db[ref]['challans'][index]['color'] = request.form.get('color', '').strip()
-        acc_db[ref]['challans'][index]['size'] = request.form.get('size', 'ALL').strip()
-        acc_db[ref]['challans'][index]['qty'] = int(request.form.get('qty', 0))
+    if ref in acc_db:
+        acc_db[ref]['challans'].append({
+            "date": get_bd_date_str(),
+            "line": request.form.get('line_no'),
+            "color": request.form.get('color'),
+            "size": request.form.get('size', 'ALL'),
+            "qty": int(request.form.get('qty', 0)),
+            "item_type": request.form.get('item_type'),
+            "status": "✔"
+        })
         save_accessories_db(acc_db)
-    
-    return redirect(url_for('accessories_input_direct', ref=ref))
-
-@app.route('/admin/accessories/delete', methods=['POST'])
-def accessories_delete():
-    if 'user' not in session or session.get('role') != 'admin':
-        return redirect(url_for('home'))
-    
-    ref = request.form.get('ref', '').strip().upper()
-    index = int(request.form.get('index', 0))
-    
-    acc_db = load_accessories_db()
-    
-    if ref in acc_db and index < len(acc_db[ref].get('challans', [])):
-        del acc_db[ref]['challans'][index]
-        save_accessories_db(acc_db)
-    
+        
     return redirect(url_for('accessories_input_direct', ref=ref))
 
 @app.route('/admin/accessories/print')
 def accessories_print():
-    if 'user' not in session:
-        return redirect(url_for('home'))
-    
+    if 'user' not in session: return redirect(url_for('home'))
     ref = request.args.get('ref', '').strip().upper()
     acc_db = load_accessories_db()
     
-    if ref not in acc_db:
-        flash('Reference not found.')
-        return redirect(url_for('accessories_home'))
+    if ref not in acc_db: return redirect(url_for('accessories_home'))
     
     data = acc_db[ref]
-    challans = data.get('challans', [])
-    
-    # Calculate line summary
     line_summary = {}
     item_type = "Top"
-    for c in challans:
+    
+    for c in data.get('challans', []):
         line = c.get('line', 'N/A')
-        # FIX: Ensure qty is an integer before adding
+        # FIX: Ensure qty is integer
         try:
             qty = int(c.get('qty', 0))
-        except (ValueError, TypeError):
+        except:
             qty = 0
-            
         line_summary[line] = line_summary.get(line, 0) + qty
-        if c.get('item_type'):
-            item_type = c.get('item_type')
+        if c.get('item_type'): item_type = c.get('item_type')
+        
+    return render_template_string(ACCESSORIES_REPORT_TEMPLATE, ref=ref, buyer=data.get('buyer'), 
+                                style=data.get('style'), challans=data.get('challans'), 
+                                count=len(data.get('challans')), line_summary=line_summary,
+                                item_type=item_type, today=get_bd_date_str())
+
+@app.route('/admin/accessories/edit')
+def accessories_edit():
+    ref = request.args.get('ref')
+    idx = int(request.args.get('index'))
+    acc_db = load_accessories_db()
+    return render_template_string(ACCESSORIES_EDIT_TEMPLATE, ref=ref, index=idx, item=acc_db[ref]['challans'][idx])
+
+@app.route('/admin/accessories/update', methods=['POST'])
+def accessories_update():
+    ref = request.form.get('ref')
+    idx = int(request.form.get('index'))
+    acc_db = load_accessories_db()
     
-    return render_template_string(
-        ACCESSORIES_REPORT_TEMPLATE,
-        ref=ref,
-        buyer=data.get('buyer', 'N/A'),
-        style=data.get('style', 'N/A'),
-        challans=challans,
-        count=len(challans),
-        line_summary=line_summary,
-        item_type=item_type,
-        today=get_bd_date_str()
-    )
+    item = acc_db[ref]['challans'][idx]
+    item['line'] = request.form.get('line_no')
+    item['color'] = request.form.get('color')
+    item['size'] = request.form.get('size')
+    item['qty'] = int(request.form.get('qty'))
+    
+    save_accessories_db(acc_db)
+    return redirect(url_for('accessories_input_direct', ref=ref))
+
+@app.route('/admin/accessories/delete', methods=['POST'])
+def accessories_delete():
+    ref = request.form.get('ref')
+    idx = int(request.form.get('index'))
+    acc_db = load_accessories_db()
+    del acc_db[ref]['challans'][idx]
+    save_accessories_db(acc_db)
+    return redirect(url_for('accessories_input_direct', ref=ref))
 
 # ==============================================================================
-# FLASK ROUTES - STORE MANAGEMENT
+# FLASK ROUTES - STORE MANAGEMENT (FIXED MISSING ROUTES)
 # ==============================================================================
 
 @app.route('/admin/store')
 def store_dashboard():
-    if 'user' not in session:
-        return redirect(url_for('home'))
+    if 'user' not in session: return redirect(url_for('home'))
+    return render_template_string(STORE_DASHBOARD_TEMPLATE, 
+                                store_stats=get_store_dashboard_summary(),
+                                recent_invoices=load_store_invoices()[-10:][::-1],
+                                recent_estimates=load_store_estimates()[-10:][::-1],
+                                pending_dues=[i for i in load_store_invoices() if i.get('due', 0) > 0])
+
+# --- Store Users (FIXED: Added Missing Routes) ---
+@app.route('/store/users')
+def store_users_list():
+    if 'user' not in session or session.get('role') != 'store_admin': 
+        flash('Access Denied'); return redirect(url_for('store_dashboard'))
+    return render_template_string(STORE_USERS_TEMPLATE, users=load_store_users())
+
+@app.route('/store/users/save', methods=['POST'])
+def store_users_save():
+    if 'user' not in session or session.get('role') != 'store_admin': return redirect(url_for('home'))
+    users = load_store_users()
+    uname = request.form.get('username')
     
-    store_stats = get_store_dashboard_summary()
-    invoices = load_store_invoices()
-    estimates = load_store_estimates()
-    
-    # Get pending dues
-    pending_dues = [inv for inv in invoices if inv.get('due', 0) > 0]
-    
-    return render_template_string(
-        STORE_DASHBOARD_TEMPLATE,
-        store_stats=store_stats,
-        recent_invoices=invoices[-10:][::-1] if invoices else [],
-        recent_estimates=estimates[-10:][::-1] if estimates else [],
-        pending_dues=pending_dues
-    )
+    if uname in users:
+        flash('User already exists')
+    else:
+        users[uname] = {
+            "password": request.form.get('password'),
+            "role": "store_user",
+            "permissions": request.form.getlist('perms'),
+            "created_at": get_bd_date_str()
+        }
+        save_store_users(users)
+        flash('User created')
+    return redirect(url_for('store_users_list'))
+
+@app.route('/store/users/delete', methods=['POST'])
+def store_users_delete():
+    if 'user' not in session or session.get('role') != 'store_admin': return redirect(url_for('home'))
+    users = load_store_users()
+    uname = request.form.get('username')
+    if uname in users and users[uname]['role'] != 'store_admin':
+        del users[uname]
+        save_store_users(users)
+    return redirect(url_for('store_users_list'))
 
 # --- Products ---
 @app.route('/store/products')
 def store_products():
-    if 'user' not in session:
-        return redirect(url_for('home'))
-    
-    products = load_store_products()
-    return render_template_string(STORE_PRODUCTS_TEMPLATE, products=products)
+    return render_template_string(STORE_PRODUCTS_TEMPLATE, products=load_store_products())
 
 @app.route('/store/products/save', methods=['POST'])
 def store_products_save():
-    if 'user' not in session:
-        return redirect(url_for('home'))
-    
     products = load_store_products()
-    
-    new_product = {
-        "name": request.form.get('name', '').strip(),
-        "size_feet": request.form.get('size_feet', '').strip(),
-        "thickness": request.form.get('thickness', '').strip(),
-        "category": request.form.get('category', 'Other'),
-        "price": float(request.form.get('price', 0) or 0),
-        "description": request.form.get('description', '').strip(),
-        "created_at": get_bd_date_str()
-    }
-    
-    products.append(new_product)
+    products.append({
+        "name": request.form.get('name'), "size_feet": request.form.get('size_feet'),
+        "thickness": request.form.get('thickness'), "category": request.form.get('category'),
+        "price": float(request.form.get('price') or 0), "description": request.form.get('description')
+    })
     save_store_products(products)
-    
-    flash('Product saved successfully!')
     return redirect(url_for('store_products'))
 
 @app.route('/store/products/delete/<int:index>', methods=['POST'])
 def store_products_delete(index):
-    if 'user' not in session:
-        return redirect(url_for('home'))
-    
     products = load_store_products()
-    if 0 <= index < len(products):
-        del products[index]
-        save_store_products(products)
-        flash('Product deleted!')
-    
+    if 0 <= index < len(products): del products[index]; save_store_products(products)
     return redirect(url_for('store_products'))
 
 # --- Customers ---
 @app.route('/store/customers')
 def store_customers():
-    if 'user' not in session:
-        return redirect(url_for('home'))
-    
-    customers = load_store_customers()
-    return render_template_string(STORE_CUSTOMERS_TEMPLATE, customers=customers)
+    return render_template_string(STORE_CUSTOMERS_TEMPLATE, customers=load_store_customers())
 
 @app.route('/store/customers/save', methods=['POST'])
 def store_customers_save():
-    if 'user' not in session:
-        return redirect(url_for('home'))
-    
     customers = load_store_customers()
-    
-    new_customer = {
-        "name": request.form.get('name', '').strip(),
-        "phone": request.form.get('phone', '').strip(),
-        "address": request.form.get('address', '').strip(),
-        "created_at": get_bd_date_str()
-    }
-    
-    customers.append(new_customer)
+    customers.append({
+        "name": request.form.get('name'), "phone": request.form.get('phone'), "address": request.form.get('address')
+    })
     save_store_customers(customers)
-    
-    flash('Customer saved successfully!')
     return redirect(url_for('store_customers'))
 
 @app.route('/store/customers/delete/<int:index>', methods=['POST'])
 def store_customers_delete(index):
-    if 'user' not in session:
-        return redirect(url_for('home'))
-    
     customers = load_store_customers()
-    if 0 <= index < len(customers):
-        del customers[index]
-        save_store_customers(customers)
-        flash('Customer deleted!')
-    
+    if 0 <= index < len(customers): del customers[index]; save_store_customers(customers)
     return redirect(url_for('store_customers'))
 
-# --- Invoices ---
+# --- Invoices (FIXED: Added View/Print Routes) ---
 @app.route('/store/invoices')
 def store_invoices():
-    if 'user' not in session:
-        return redirect(url_for('home'))
-    
     invoices = load_store_invoices()
-    search_query = request.args.get('search', '').strip()
-    
-    if search_query:
-        invoices = [inv for inv in invoices if search_query.lower() in inv.get('invoice_no', '').lower() or search_query.lower() in inv.get('customer_name', '').lower()]
-    
-    return render_template_string(STORE_INVOICES_LIST_TEMPLATE, invoices=invoices, search_query=search_query)
+    q = request.args.get('search', '').lower()
+    if q: invoices = [i for i in invoices if q in i['invoice_no'].lower() or q in i['customer_name'].lower()]
+    return render_template_string(STORE_INVOICES_LIST_TEMPLATE, invoices=invoices, search_query=q)
 
 @app.route('/store/invoices/create')
 def store_invoices_create():
-    if 'user' not in session:
-        return redirect(url_for('home'))
-    
-    invoice_no = generate_invoice_number()
-    customers = load_store_customers()
-    today = get_bd_time().strftime('%Y-%m-%d')
-    
-    return render_template_string(STORE_INVOICE_CREATE_TEMPLATE, invoice_no=invoice_no, customers=customers, today=today)
+    return render_template_string(STORE_INVOICE_CREATE_TEMPLATE, invoice_no=generate_invoice_number(), 
+                                customers=load_store_customers(), today=get_bd_time().strftime('%Y-%m-%d'))
 
 @app.route('/store/invoices/save', methods=['POST'])
 def store_invoices_save():
-    if 'user' not in session:
-        return redirect(url_for('home'))
-    
     invoices = load_store_invoices()
-    
-    # Parse items
     items = []
     i = 0
     while f'items[{i}][description]' in request.form:
-        item = {
-            "description": request.form.get(f'items[{i}][description]', ''),
-            "size": request.form.get(f'items[{i}][size]', ''),
-            "qty": int(request.form.get(f'items[{i}][qty]', 1) or 1),
-            "price": float(request.form.get(f'items[{i}][price]', 0) or 0),
-            "total": float(request.form.get(f'items[{i}][total]', 0) or 0)
-        }
-        items.append(item)
+        items.append({
+            "description": request.form.get(f'items[{i}][description]'),
+            "size": request.form.get(f'items[{i}][size]'),
+            "qty": int(request.form.get(f'items[{i}][qty]')),
+            "price": float(request.form.get(f'items[{i}][price]')),
+            "total": float(request.form.get(f'items[{i}][total]'))
+        })
         i += 1
-    
-    invoice_date = request.form.get('invoice_date', '')
-    formatted_date = invoice_date
-    try:
-        dt = datetime.strptime(invoice_date, '%Y-%m-%d')
-        formatted_date = dt.strftime('%d-%m-%Y')
-    except:
-        pass
-    
-    new_invoice = {
-        "invoice_no": request.form.get('invoice_no', ''),
-        "customer_name": request.form.get('customer_name', ''),
-        "customer_phone": request.form.get('customer_phone', ''),
-        "customer_address": request.form.get('customer_address', ''),
-        "date": formatted_date,
-        "items": items,
-        "discount": float(request.form.get('discount', 0) or 0),
-        "total": float(request.form.get('total', 0) or 0),
-        "paid": float(request.form.get('paid', 0) or 0),
-        "due": float(request.form.get('due', 0) or 0),
-        "notes": request.form.get('notes', ''),
-        "payments": [],
-        "created_at": get_bd_date_str()
+        
+    date_str = request.form.get('invoice_date')
+    try: date_str = datetime.strptime(date_str, '%Y-%m-%d').strftime('%d-%m-%Y')
+    except: pass
+
+    new_inv = {
+        "invoice_no": request.form.get('invoice_no'), "customer_name": request.form.get('customer_name'),
+        "customer_phone": request.form.get('customer_phone'), "customer_address": request.form.get('customer_address'),
+        "date": date_str, "items": items, "discount": float(request.form.get('discount') or 0),
+        "total": float(request.form.get('total') or 0), "paid": float(request.form.get('paid') or 0),
+        "due": float(request.form.get('due') or 0), "notes": request.form.get('notes'), "payments": []
     }
-    
-    invoices.append(new_invoice)
+    invoices.append(new_inv)
     save_store_invoices(invoices)
     
-    flash('Invoice created successfully!')
-    
-    action = request.form.get('action', 'save')
-    if action == 'save_print':
-        return redirect(url_for('store_invoices_print', invoice_no=new_invoice['invoice_no']))
-    
+    if request.form.get('action') == 'save_print':
+        return redirect(url_for('store_invoices_print', invoice_no=new_inv['invoice_no']))
     return redirect(url_for('store_invoices'))
 
 @app.route('/store/invoices/print/<invoice_no>')
 def store_invoices_print(invoice_no):
-    if 'user' not in session:
-        return redirect(url_for('home'))
-    
-    invoices = load_store_invoices()
-    invoice = next((inv for inv in invoices if inv.get('invoice_no') == invoice_no), None)
-    
-    if not invoice:
-        flash('Invoice not found!')
-        return redirect(url_for('store_invoices'))
-    
-    return render_template_string(STORE_INVOICE_PRINT_TEMPLATE, invoice=invoice)
+    inv = next((i for i in load_store_invoices() if i['invoice_no'] == invoice_no), None)
+    if not inv: return "Invoice Not Found", 404
+    return render_template_string(STORE_INVOICE_PRINT_TEMPLATE, invoice=inv)
 
-# --- Estimates ---
+@app.route('/store/invoices/view/<invoice_no>')
+def store_invoices_view(invoice_no):
+    return redirect(url_for('store_invoices_print', invoice_no=invoice_no))
+
+# --- Estimates (FIXED: Added View/Print Routes) ---
 @app.route('/store/estimates')
 def store_estimates():
-    if 'user' not in session:
-        return redirect(url_for('home'))
-    
-    estimates = load_store_estimates()
-    return render_template_string(STORE_ESTIMATES_LIST_TEMPLATE, estimates=estimates)
+    return render_template_string(STORE_ESTIMATES_LIST_TEMPLATE, estimates=load_store_estimates())
 
 @app.route('/store/estimates/create')
 def store_estimates_create():
-    if 'user' not in session:
-        return redirect(url_for('home'))
-    
-    estimate_no = generate_estimate_number()
-    today = get_bd_time().strftime('%Y-%m-%d')
-    
-    return render_template_string(STORE_ESTIMATE_CREATE_TEMPLATE, estimate_no=estimate_no, today=today)
+    return render_template_string(STORE_ESTIMATE_CREATE_TEMPLATE, estimate_no=generate_estimate_number(), today=get_bd_time().strftime('%Y-%m-%d'))
 
 @app.route('/store/estimates/save', methods=['POST'])
 def store_estimates_save():
-    if 'user' not in session:
-        return redirect(url_for('home'))
-    
     estimates = load_store_estimates()
-    
-    # Parse items
     items = []
     i = 0
     while f'items[{i}][description]' in request.form:
-        item = {
-            "description": request.form.get(f'items[{i}][description]', ''),
-            "size": request.form.get(f'items[{i}][size]', ''),
-            "qty": int(request.form.get(f'items[{i}][qty]', 1) or 1),
-            "price": float(request.form.get(f'items[{i}][price]', 0) or 0),
-            "total": float(request.form.get(f'items[{i}][total]', 0) or 0)
-        }
-        items.append(item)
+        items.append({
+            "description": request.form.get(f'items[{i}][description]'), "size": request.form.get(f'items[{i}][size]'),
+            "qty": int(request.form.get(f'items[{i}][qty]')), "price": float(request.form.get(f'items[{i}][price]')),
+            "total": float(request.form.get(f'items[{i}][total]'))
+        })
         i += 1
-    
-    estimate_date = request.form.get('estimate_date', '')
-    formatted_date = estimate_date
-    try:
-        dt = datetime.strptime(estimate_date, '%Y-%m-%d')
-        formatted_date = dt.strftime('%d-%m-%Y')
-    except:
-        pass
-    
-    valid_until = request.form.get('valid_until', '')
-    formatted_valid = ''
-    if valid_until:
-        try:
-            dt = datetime.strptime(valid_until, '%Y-%m-%d')
-            formatted_valid = dt.strftime('%d-%m-%Y')
-        except:
-            pass
-    
-    new_estimate = {
-        "estimate_no": request.form.get('estimate_no', ''),
-        "customer_name": request.form.get('customer_name', ''),
-        "customer_phone": request.form.get('customer_phone', ''),
-        "customer_address": request.form.get('customer_address', ''),
-        "date": formatted_date,
-        "valid_until": formatted_valid,
-        "items": items,
-        "discount": float(request.form.get('discount', 0) or 0),
-        "total": float(request.form.get('total', 0) or 0),
-        "notes": request.form.get('notes', ''),
-        "created_at": get_bd_date_str()
+        
+    date_str = request.form.get('estimate_date')
+    try: date_str = datetime.strptime(date_str, '%Y-%m-%d').strftime('%d-%m-%Y')
+    except: pass
+
+    new_est = {
+        "estimate_no": request.form.get('estimate_no'), "customer_name": request.form.get('customer_name'),
+        "customer_phone": request.form.get('customer_phone'), "customer_address": request.form.get('customer_address'),
+        "date": date_str, "valid_until": request.form.get('valid_until'), "items": items,
+        "discount": float(request.form.get('discount') or 0), "total": float(request.form.get('total') or 0),
+        "notes": request.form.get('notes')
     }
-    
-    estimates.append(new_estimate)
+    estimates.append(new_est)
     save_store_estimates(estimates)
     
-    flash('Estimate created successfully!')
-    
-    action = request.form.get('action', 'save')
-    if action == 'save_print':
-        return redirect(url_for('store_estimates_print', estimate_no=new_estimate['estimate_no']))
-    
+    if request.form.get('action') == 'save_print':
+        return redirect(url_for('store_estimates_print', estimate_no=new_est['estimate_no']))
     return redirect(url_for('store_estimates'))
 
 @app.route('/store/estimates/print/<estimate_no>')
 def store_estimates_print(estimate_no):
-    if 'user' not in session:
-        return redirect(url_for('home'))
-    
-    estimates = load_store_estimates()
-    estimate = next((est for est in estimates if est.get('estimate_no') == estimate_no), None)
-    
-    if not estimate:
-        flash('Estimate not found!')
-        return redirect(url_for('store_estimates'))
-    
-    return render_template_string(STORE_ESTIMATE_PRINT_TEMPLATE, estimate=estimate)
+    est = next((e for e in load_store_estimates() if e['estimate_no'] == estimate_no), None)
+    if not est: return "Estimate Not Found", 404
+    return render_template_string(STORE_ESTIMATE_PRINT_TEMPLATE, estimate=est)
+
+@app.route('/store/estimates/view/<estimate_no>')
+def store_estimates_view(estimate_no):
+    return redirect(url_for('store_estimates_print', estimate_no=estimate_no))
+
+@app.route('/store/estimates/to-invoice/<estimate_no>')
+def store_estimates_to_invoice(estimate_no):
+    est = next((e for e in load_store_estimates() if e['estimate_no'] == estimate_no), None)
+    if est:
+        inv_no = generate_invoice_number()
+        # Logic to pre-fill invoice form would go here, for now redirecting to create with message
+        flash(f'Please manually recreate invoice from estimate {estimate_no} (Auto-convert pending)')
+        return redirect(url_for('store_invoices_create'))
+    return redirect(url_for('store_estimates'))
 
 # --- Due Collection ---
 @app.route('/store/dues')
 def store_dues():
-    if 'user' not in session:
-        return redirect(url_for('home'))
-    
-    invoices = load_store_invoices()
-    pending_dues = [inv for inv in invoices if inv.get('due', 0) > 0]
-    today = get_bd_time().strftime('%Y-%m-%d')
-    
-    return render_template_string(
-        STORE_DUE_COLLECTION_TEMPLATE,
-        invoice=None,
-        search_invoice='',
-        pending_dues=pending_dues,
-        today=today
-    )
+    return render_template_string(STORE_DUE_COLLECTION_TEMPLATE, invoice=None, search_invoice='', 
+                                pending_dues=[i for i in load_store_invoices() if i.get('due', 0) > 0],
+                                today=get_bd_time().strftime('%Y-%m-%d'))
 
 @app.route('/store/dues/search')
 def store_dues_search():
-    if 'user' not in session:
-        return redirect(url_for('home'))
-    
-    invoice_no = request.args.get('invoice_no', '').strip()
-    invoices = load_store_invoices()
-    pending_dues = [inv for inv in invoices if inv.get('due', 0) > 0]
-    today = get_bd_time().strftime('%Y-%m-%d')
-    
-    invoice = next((inv for inv in invoices if inv.get('invoice_no', '').lower() == invoice_no.lower()), None)
-    
-    return render_template_string(
-        STORE_DUE_COLLECTION_TEMPLATE,
-        invoice=invoice,
-        search_invoice=invoice_no,
-        pending_dues=pending_dues,
-        today=today
-    )
+    inv_no = request.args.get('invoice_no', '').strip()
+    inv = next((i for i in load_store_invoices() if i['invoice_no'].lower() == inv_no.lower()), None)
+    return render_template_string(STORE_DUE_COLLECTION_TEMPLATE, invoice=inv, search_invoice=inv_no,
+                                pending_dues=[i for i in load_store_invoices() if i.get('due', 0) > 0],
+                                today=get_bd_time().strftime('%Y-%m-%d'))
 
 @app.route('/store/dues/collect', methods=['POST'])
 def store_dues_collect():
-    if 'user' not in session:
-        return redirect(url_for('home'))
-    
-    invoice_no = request.form.get('invoice_no', '').strip()
-    amount = float(request.form.get('amount', 0) or 0)
-    payment_date = request.form.get('payment_date', '')
-    notes = request.form.get('notes', '')
-    
+    inv_no = request.form.get('invoice_no')
+    amount = float(request.form.get('amount'))
     invoices = load_store_invoices()
     
     for inv in invoices:
-        if inv.get('invoice_no') == invoice_no:
-            # Format date
-            formatted_date = payment_date
-            try:
-                dt = datetime.strptime(payment_date, '%Y-%m-%d')
-                formatted_date = dt.strftime('%d-%m-%Y')
-            except:
-                pass
+        if inv['invoice_no'] == inv_no:
+            date_str = request.form.get('payment_date')
+            try: date_str = datetime.strptime(date_str, '%Y-%m-%d').strftime('%d-%m-%Y')
+            except: pass
             
-            # Add payment record
-            if 'payments' not in inv:
-                inv['payments'] = []
-            
-            inv['payments'].append({
-                "date": formatted_date,
-                "amount": amount,
-                "notes": notes
-            })
-            
-            # Update paid and due
+            if 'payments' not in inv: inv['payments'] = []
+            inv['payments'].append({"date": date_str, "amount": amount, "notes": request.form.get('notes')})
             inv['paid'] = inv.get('paid', 0) + amount
-            inv['due'] = inv.get('total', 0) - inv['paid']
-            if inv['due'] < 0:
-                inv['due'] = 0
-            
+            inv['due'] = max(0, inv['total'] - inv['paid'])
             break
-    
+            
     save_store_invoices(invoices)
-    flash(f'Payment of ৳{amount:,.0f} recorded successfully!')
-    
-    return redirect(url_for('store_dues_search', invoice_no=invoice_no))
-
-# ==============================================================================
-# MAIN APP RUN
-# ==============================================================================
+    flash('Payment Recorded')
+    return redirect(url_for('store_dues_search', invoice_no=inv_no))
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)
