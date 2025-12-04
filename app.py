@@ -139,7 +139,6 @@ def update_stats(ref_no, username):
         "iso_time": now.isoformat()
     }
     data['downloads'].insert(0, new_record)
-    # Analytics এর জন্য ডাটা লিমিট বাড়ানো হয়েছে
     if len(data['downloads']) > 3000:
         data['downloads'] = data['downloads'][:3000]
         
@@ -5056,7 +5055,1663 @@ STORE_DASHBOARD_TEMPLATE = """
 </html>
 """
 # ==============================================================================
-# STORE USERS MANAGEMENT TEMPLATE (NEW)
+# STORE PRODUCT ADD/LIST TEMPLATE
+# ==============================================================================
+
+STORE_PRODUCTS_TEMPLATE = """
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Products - MEHEDI THAI ALUMINUM AND GLASS</title>
+    """ + COMMON_STYLES + """
+</head>
+<body>
+    <div class="animated-bg"></div>
+    
+    <div id="loading-overlay">
+        <div class="spinner-container">
+            <div class="spinner"></div>
+            <div class="spinner-inner"></div>
+        </div>
+        <div class="checkmark-container" id="success-anim">
+            <div class="checkmark-circle"></div>
+            <div class="anim-text">Saved! </div>
+        </div>
+        <div class="loading-text">Processing... </div>
+    </div>
+
+    <div class="mobile-toggle" onclick="document.querySelector('.sidebar').classList.toggle('active')">
+        <i class="fas fa-bars"></i>
+    </div>
+
+    <div class="sidebar">
+        <div class="brand-logo">
+            <i class="fas fa-store"></i> 
+            Store<span>Panel</span>
+        </div>
+        <div class="nav-menu">
+            <a href="/admin/store" class="nav-link">
+                <i class="fas fa-th-large"></i> Dashboard
+            </a>
+            <div class="nav-link active">
+                <i class="fas fa-box"></i> Products
+            </div>
+            <a href="/store/customers" class="nav-link">
+                <i class="fas fa-users"></i> Customers
+            </a>
+            <a href="/store/invoices" class="nav-link">
+                <i class="fas fa-file-invoice-dollar"></i> Invoices
+            </a>
+            <a href="/store/estimates" class="nav-link">
+                <i class="fas fa-file-alt"></i> Estimates
+            </a>
+            <a href="/logout" class="nav-link" style="color: var(--accent-red); margin-top: 20px;">
+                <i class="fas fa-sign-out-alt"></i> Sign Out
+            </a>
+        </div>
+        <div class="sidebar-footer">© 2025 Mehedi Hasan</div>
+    </div>
+
+    <div class="main-content">
+        <div class="header-section">
+            <div>
+                <div class="page-title">Product Management</div>
+                <div class="page-subtitle">Add and manage aluminum & glass products</div>
+            </div>
+            <div class="status-badge">
+                <div class="status-dot"></div>
+                <span>Online</span>
+            </div>
+        </div>
+
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                <div class="flash-message flash-success">
+                    <i class="fas fa-check-circle"></i>
+                    <span>{{ messages[0] }}</span>
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <div class="dashboard-grid-2">
+            <div class="card">
+                <div class="section-header">
+                    <span><i class="fas fa-plus-circle" style="margin-right: 10px; color: var(--accent-orange);"></i>Add New Product</span>
+                </div>
+                <form action="/store/products/save" method="post" onsubmit="showLoading()">
+                    <div class="input-group">
+                        <label><i class="fas fa-cube" style="margin-right: 5px;"></i> PRODUCT NAME</label>
+                        <input type="text" name="name" required placeholder="e.g.  Thai Glass 5mm">
+                    </div>
+                    
+                    <div class="grid-2">
+                        <div class="input-group">
+                            <label><i class="fas fa-ruler" style="margin-right: 5px;"></i> SIZE (FEET)</label>
+                            <input type="text" name="size_feet" placeholder="e.g.  4x6 or 3x4">
+                        </div>
+                        <div class="input-group">
+                            <label><i class="fas fa-layer-group" style="margin-right: 5px;"></i> THICKNESS</label>
+                            <input type="text" name="thickness" placeholder="e.g. 5mm, 8mm">
+                        </div>
+                    </div>
+                    
+                    <div class="grid-2">
+                        <div class="input-group">
+                            <label><i class="fas fa-tag" style="margin-right: 5px;"></i> CATEGORY</label>
+                            <select name="category">
+                                <option value="Glass">Glass</option>
+                                <option value="Aluminum Profile">Aluminum Profile</option>
+                                <option value="Thai Aluminum">Thai Aluminum</option>
+                                <option value="Accessories">Accessories</option>
+                                <option value="Mirror">Mirror</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <label><i class="fas fa-money-bill" style="margin-right: 5px;"></i> PRICE (Optional)</label>
+                            <input type="number" name="price" placeholder="৳ Per Unit" step="0.01">
+                        </div>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label><i class="fas fa-info-circle" style="margin-right: 5px;"></i> DESCRIPTION (Optional)</label>
+                        <textarea name="description" placeholder="Additional details about the product... "></textarea>
+                    </div>
+                    
+                    <button type="submit">
+                        <i class="fas fa-save" style="margin-right: 10px;"></i> Save Product
+                    </button>
+                </form>
+            </div>
+
+            <div class="card">
+                <div class="section-header">
+                    <span>Product List</span>
+                    <span class="table-badge" style="background: var(--accent-orange); color: white;">{{ products|length }} Items</span>
+                </div>
+                
+                <div class="search-box">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="productSearch" placeholder="Search products..." onkeyup="filterProducts()">
+                </div>
+                
+                <div style="max-height: 500px; overflow-y: auto;" id="productList">
+                    {% if products %}
+                        {% for p in products|reverse %}
+                        <div class="product-item" style="display: flex; justify-content: space-between; align-items: center; padding: 15px; background: rgba(255,255,255,0.02); border-radius: 10px; margin-bottom: 10px; border: 1px solid var(--border-color);">
+                            <div>
+                                <div style="font-weight: 700; color: white; margin-bottom: 5px;">{{ p.name }}</div>
+                                <div style="font-size: 12px; color: var(--text-secondary);">
+                                    {% if p.size_feet %}{{ p.size_feet }} ft | {% endif %}
+                                    {% if p.thickness %}{{ p.thickness }} | {% endif %}
+                                    {{ p.category }}
+                                </div>
+                            </div>
+                            <div style="text-align: right;">
+                                {% if p.price %}
+                                <div style="font-weight: 800; color: var(--accent-green); font-size: 18px;">৳{{ p.price }}</div>
+                                {% else %}
+                                <div style="color: var(--text-secondary); font-size: 12px;">No price set</div>
+                                {% endif %}
+                                <div class="action-cell" style="margin-top: 8px;">
+                                    <a href="/store/products/edit/{{ loop.index0 }}" class="action-btn btn-edit"><i class="fas fa-edit"></i></a>
+                                    <form action="/store/products/delete/{{ loop.index0 }}" method="post" style="display:inline;" onsubmit="return confirm('Delete this product?');">
+                                        <button type="submit" class="action-btn btn-del"><i class="fas fa-trash"></i></button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="empty-state">
+                            <i class="fas fa-box-open"></i>
+                            <p>No products added yet</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function showLoading() {
+            document.getElementById('loading-overlay').style.display = 'flex';
+            return true;
+        }
+        
+        function filterProducts() {
+            const search = document.getElementById('productSearch').value.toLowerCase();
+            document.querySelectorAll('.product-item').forEach(item => {
+                const text = item.textContent.toLowerCase();
+                item.style.display = text.includes(search) ?  'flex' : 'none';
+            });
+        }
+    </script>
+</body>
+</html>
+"""
+
+# ==============================================================================
+# STORE CUSTOMERS TEMPLATE
+# ==============================================================================
+
+STORE_CUSTOMERS_TEMPLATE = """
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Customers - MEHEDI THAI ALUMINUM AND GLASS</title>
+    """ + COMMON_STYLES + """
+</head>
+<body>
+    <div class="animated-bg"></div>
+    
+    <div id="loading-overlay">
+        <div class="spinner-container">
+            <div class="spinner"></div>
+            <div class="spinner-inner"></div>
+        </div>
+        <div class="loading-text">Processing... </div>
+    </div>
+
+    <div class="mobile-toggle" onclick="document.querySelector('.sidebar').classList.toggle('active')">
+        <i class="fas fa-bars"></i>
+    </div>
+
+    <div class="sidebar">
+        <div class="brand-logo">
+            <i class="fas fa-store"></i> 
+            Store<span>Panel</span>
+        </div>
+        <div class="nav-menu">
+            <a href="/admin/store" class="nav-link">
+                <i class="fas fa-th-large"></i> Dashboard
+            </a>
+            <a href="/store/products" class="nav-link">
+                <i class="fas fa-box"></i> Products
+            </a>
+            <div class="nav-link active">
+                <i class="fas fa-users"></i> Customers
+            </div>
+            <a href="/store/invoices" class="nav-link">
+                <i class="fas fa-file-invoice-dollar"></i> Invoices
+            </a>
+            <a href="/store/estimates" class="nav-link">
+                <i class="fas fa-file-alt"></i> Estimates
+            </a>
+            <a href="/logout" class="nav-link" style="color: var(--accent-red); margin-top: 20px;">
+                <i class="fas fa-sign-out-alt"></i> Sign Out
+            </a>
+        </div>
+        <div class="sidebar-footer">© 2025 Mehedi Hasan</div>
+    </div>
+
+    <div class="main-content">
+        <div class="header-section">
+            <div>
+                <div class="page-title">Customer Management</div>
+                <div class="page-subtitle">Add and manage your customers</div>
+            </div>
+            <div class="status-badge">
+                <div class="status-dot"></div>
+                <span>Online</span>
+            </div>
+        </div>
+
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                <div class="flash-message flash-success">
+                    <i class="fas fa-check-circle"></i>
+                    <span>{{ messages[0] }}</span>
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <div class="dashboard-grid-2">
+            <div class="card">
+                <div class="section-header">
+                    <span><i class="fas fa-user-plus" style="margin-right: 10px; color: var(--accent-purple);"></i>Add New Customer</span>
+                </div>
+                <form action="/store/customers/save" method="post" onsubmit="showLoading()">
+                    <div class="input-group">
+                        <label><i class="fas fa-user" style="margin-right: 5px;"></i> CUSTOMER NAME</label>
+                        <input type="text" name="name" required placeholder="Full Name">
+                    </div>
+                    
+                    <div class="input-group">
+                        <label><i class="fas fa-phone" style="margin-right: 5px;"></i> PHONE NUMBER</label>
+                        <input type="text" name="phone" required placeholder="01XXXXXXXXX">
+                    </div>
+                    
+                    <div class="input-group">
+                        <label><i class="fas fa-map-marker-alt" style="margin-right: 5px;"></i> ADDRESS</label>
+                        <textarea name="address" placeholder="Full Address (Optional)"></textarea>
+                    </div>
+                    
+                    <button type="submit" style="background: linear-gradient(135deg, #8B5CF6 0%, #A78BFA 100%);">
+                        <i class="fas fa-save" style="margin-right: 10px;"></i> Save Customer
+                    </button>
+                </form>
+            </div>
+
+            <div class="card">
+                <div class="section-header">
+                    <span>Customer List</span>
+                    <span class="table-badge" style="background: var(--accent-purple); color: white;">{{ customers|length }} Customers</span>
+                </div>
+                
+                <div class="search-box">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="customerSearch" placeholder="Search customers..." onkeyup="filterCustomers()">
+                </div>
+                
+                <div style="max-height: 500px; overflow-y: auto;" id="customerList">
+                    {% if customers %}
+                        {% for c in customers|reverse %}
+                        <div class="customer-item" style="display: flex; justify-content: space-between; align-items: center; padding: 15px; background: rgba(255,255,255,0.02); border-radius: 10px; margin-bottom: 10px; border: 1px solid var(--border-color);">
+                            <div>
+                                <div style="font-weight: 700; color: white; margin-bottom: 5px;">{{ c.name }}</div>
+                                <div style="font-size: 13px; color: var(--accent-orange);">
+                                    <i class="fas fa-phone" style="margin-right: 5px;"></i>{{ c.phone }}
+                                </div>
+                                {% if c.address %}
+                                <div style="font-size: 12px; color: var(--text-secondary); margin-top: 3px;">
+                                    <i class="fas fa-map-marker-alt" style="margin-right: 5px;"></i>{{ c.address[:50] }}... 
+                                </div>
+                                {% endif %}
+                            </div>
+                            <div class="action-cell">
+                                <a href="/store/customers/edit/{{ loop.index0 }}" class="action-btn btn-edit"><i class="fas fa-edit"></i></a>
+                                <form action="/store/customers/delete/{{ loop.index0 }}" method="post" style="display:inline;" onsubmit="return confirm('Delete this customer?');">
+                                    <button type="submit" class="action-btn btn-del"><i class="fas fa-trash"></i></button>
+                                </form>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="empty-state">
+                            <i class="fas fa-users"></i>
+                            <p>No customers added yet</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function showLoading() {
+            document.getElementById('loading-overlay').style.display = 'flex';
+            return true;
+        }
+        
+        function filterCustomers() {
+            const search = document.getElementById('customerSearch').value.toLowerCase();
+            document.querySelectorAll('.customer-item').forEach(item => {
+                const text = item.textContent.toLowerCase();
+                item.style.display = text.includes(search) ? 'flex' : 'none';
+            });
+        }
+    </script>
+</body>
+</html>
+"""
+
+# ==============================================================================
+# STORE INVOICE CREATE TEMPLATE
+# ==============================================================================
+
+STORE_INVOICE_CREATE_TEMPLATE = """
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Create Invoice - MEHEDI THAI ALUMINUM AND GLASS</title>
+    """ + COMMON_STYLES + """
+    <style>
+        .invoice-items-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .invoice-items-table th {
+            background: rgba(255, 122, 0, 0.1);
+            padding: 12px;
+            text-align: left;
+            font-size: 12px;
+            text-transform: uppercase;
+            color: var(--accent-orange);
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .invoice-items-table td {
+            padding: 10px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .invoice-items-table input, .invoice-items-table select {
+            padding: 10px;
+            font-size: 14px;
+        }
+        
+        .item-row {
+            transition: var(--transition-smooth);
+        }
+        
+        .item-row:hover {
+            background: rgba(255, 122, 0, 0.03);
+        }
+        
+        .add-item-btn {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px dashed var(--accent-green);
+            color: var(--accent-green);
+            padding: 12px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: var(--transition-smooth);
+            width: 100%;
+            margin-top: 15px;
+        }
+        
+        .add-item-btn:hover {
+            background: var(--accent-green);
+            color: white;
+        }
+        
+        .remove-item-btn {
+            background: rgba(239, 68, 68, 0.1);
+            border: none;
+            color: var(--accent-red);
+            width: 35px;
+            height: 35px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+        }
+        
+        .remove-item-btn:hover {
+            background: var(--accent-red);
+            color: white;
+        }
+        
+        .totals-section {
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+        
+        .total-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .total-row:last-child {
+            border-bottom: none;
+            font-size: 20px;
+            font-weight: 800;
+            color: var(--accent-green);
+        }
+        
+        .total-label {
+            color: var(--text-secondary);
+        }
+        
+        .total-value {
+            font-weight: 700;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="animated-bg"></div>
+    
+    <div id="loading-overlay">
+        <div class="spinner-container">
+            <div class="spinner"></div>
+            <div class="spinner-inner"></div>
+        </div>
+        <div class="loading-text">Creating Invoice...</div>
+    </div>
+
+    <div class="mobile-toggle" onclick="document.querySelector('.sidebar').classList.toggle('active')">
+        <i class="fas fa-bars"></i>
+    </div>
+
+    <div class="sidebar">
+        <div class="brand-logo">
+            <i class="fas fa-store"></i> 
+            Store<span>Panel</span>
+        </div>
+        <div class="nav-menu">
+            <a href="/admin/store" class="nav-link">
+                <i class="fas fa-th-large"></i> Dashboard
+            </a>
+            <a href="/store/products" class="nav-link">
+                <i class="fas fa-box"></i> Products
+            </a>
+            <a href="/store/customers" class="nav-link">
+                <i class="fas fa-users"></i> Customers
+            </a>
+            <div class="nav-link active">
+                <i class="fas fa-file-invoice-dollar"></i> Invoices
+            </div>
+            <a href="/store/estimates" class="nav-link">
+                <i class="fas fa-file-alt"></i> Estimates
+            </a>
+            <a href="/logout" class="nav-link" style="color: var(--accent-red); margin-top: 20px;">
+                <i class="fas fa-sign-out-alt"></i> Sign Out
+            </a>
+        </div>
+        <div class="sidebar-footer">© 2025 Mehedi Hasan</div>
+    </div>
+
+    <div class="main-content">
+        <div class="header-section">
+            <div>
+                <div class="page-title">Create Invoice</div>
+                <div class="page-subtitle">Invoice No: <span style="color: var(--accent-orange); font-weight: 700;">{{ invoice_no }}</span></div>
+            </div>
+            <a href="/store/invoices" class="btn-secondary" style="padding: 12px 24px; border-radius: 10px; text-decoration: none; color: var(--text-secondary);">
+                <i class="fas fa-arrow-left" style="margin-right: 8px;"></i> Back to List
+            </a>
+        </div>
+
+        <form action="/store/invoices/save" method="post" onsubmit="return validateAndSubmit()">
+            <input type="hidden" name="invoice_no" value="{{ invoice_no }}">
+            
+            <div class="grid-2" style="margin-bottom: 30px;">
+                <div class="card">
+                    <div class="section-header">
+                        <span><i class="fas fa-user" style="margin-right: 10px; color: var(--accent-purple);"></i>Customer Info</span>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label>SELECT CUSTOMER</label>
+                        <select name="customer_id" id="customerSelect" onchange="fillCustomerInfo()">
+                            <option value="">-- Select Existing Customer --</option>
+                            {% for c in customers %}
+                            <option value="{{ loop.index0 }}" data-name="{{ c.name }}" data-phone="{{ c.phone }}" data-address="{{ c.address }}">{{ c.name }} - {{ c.phone }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label>CUSTOMER NAME</label>
+                        <input type="text" name="customer_name" id="customerName" required placeholder="Customer Name">
+                    </div>
+                    
+                    <div class="input-group">
+                        <label>PHONE</label>
+                        <input type="text" name="customer_phone" id="customerPhone" placeholder="Phone Number">
+                    </div>
+                    
+                    <div class="input-group">
+                        <label>ADDRESS</label>
+                        <textarea name="customer_address" id="customerAddress" placeholder="Address"></textarea>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="section-header">
+                        <span><i class="fas fa-calendar" style="margin-right: 10px; color: var(--accent-blue);"></i>Invoice Details</span>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label>INVOICE DATE</label>
+                        <input type="date" name="invoice_date" value="{{ today }}" required>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label>NOTES (Optional)</label>
+                        <textarea name="notes" placeholder="Any additional notes..."></textarea>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="section-header">
+                    <span><i class="fas fa-list" style="margin-right: 10px; color: var(--accent-green);"></i>Invoice Items</span>
+                </div>
+                
+                <div style="overflow-x: auto;">
+                    <table class="invoice-items-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 30%;">Product/Description</th>
+                                <th style="width: 15%;">Size (ft)</th>
+                                <th style="width: 12%;">Quantity</th>
+                                <th style="width: 15%;">Unit Price</th>
+                                <th style="width: 18%;">Total</th>
+                                <th style="width: 10%;"></th>
+                            </tr>
+                        </thead>
+                        <tbody id="itemsBody">
+                            <tr class="item-row">
+                                <td>
+                                    <input type="text" name="items[0][description]" placeholder="Product name" required>
+                                </td>
+                                <td>
+                                    <input type="text" name="items[0][size]" placeholder="e.g.  4x6">
+                                </td>
+                                <td>
+                                    <input type="number" name="items[0][qty]" class="item-qty" value="1" min="1" onchange="calculateRow(this)" required>
+                                </td>
+                                <td>
+                                    <input type="number" name="items[0][price]" class="item-price" placeholder="৳" step="0.01" onchange="calculateRow(this)" required>
+                                </td>
+                                <td>
+                                    <input type="number" name="items[0][total]" class="item-total" readonly placeholder="৳ 0">
+                                </td>
+                                <td>
+                                    <button type="button" class="remove-item-btn" onclick="removeRow(this)"><i class="fas fa-times"></i></button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <button type="button" class="add-item-btn" onclick="addItemRow()">
+                    <i class="fas fa-plus" style="margin-right: 8px;"></i> Add Another Item
+                </button>
+                
+                <div class="totals-section">
+                    <div class="total-row">
+                        <span class="total-label">Subtotal</span>
+                        <span class="total-value" id="subtotal">৳ 0</span>
+                    </div>
+                    <div class="total-row">
+                        <span class="total-label">Discount</span>
+                        <input type="number" name="discount" id="discountInput" value="0" min="0" step="0.01" style="width: 120px; text-align: right;" onchange="calculateTotals()">
+                    </div>
+                    <div class="total-row">
+                        <span class="total-label">Paid Amount</span>
+                        <input type="number" name="paid" id="paidInput" value="0" min="0" step="0.01" style="width: 120px; text-align: right;" onchange="calculateTotals()">
+                    </div>
+                    <div class="total-row" style="background: rgba(239, 68, 68, 0.1); margin: 10px -20px -20px -20px; padding: 15px 20px; border-radius: 0 0 12px 12px;">
+                        <span style="color: var(--accent-red);">Due Amount</span>
+                        <span style="color: var(--accent-red);" id="dueAmount">৳ 0</span>
+                    </div>
+                    <input type="hidden" name="total" id="totalInput">
+                    <input type="hidden" name="due" id="dueInput">
+                </div>
+            </div>
+            
+            <div style="margin-top: 30px; display: flex; gap: 15px; justify-content: flex-end;">
+                <button type="submit" name="action" value="save" style="width: auto; padding: 15px 40px;">
+                    <i class="fas fa-save" style="margin-right: 10px;"></i> Save Invoice
+                </button>
+                <button type="submit" name="action" value="save_print" style="width: auto; padding: 15px 40px; background: linear-gradient(135deg, #10B981 0%, #34D399 100%);">
+                    <i class="fas fa-print" style="margin-right: 10px;"></i> Save & Print
+                </button>
+            </div>
+        </form>
+    </div>
+    
+    <script>
+        let itemIndex = 1;
+        
+        function fillCustomerInfo() {
+            const select = document.getElementById('customerSelect');
+            const option = select.options[select.selectedIndex];
+            if (option.value) {
+                document.getElementById('customerName').value = option.dataset.name || '';
+                document.getElementById('customerPhone').value = option.dataset.phone || '';
+                document.getElementById('customerAddress').value = option.dataset.address || '';
+            }
+        }
+        
+        function addItemRow() {
+            const tbody = document.getElementById('itemsBody');
+            const row = document.createElement('tr');
+            row.className = 'item-row';
+            row.innerHTML = `
+                <td><input type="text" name="items[${itemIndex}][description]" placeholder="Product name" required></td>
+                <td><input type="text" name="items[${itemIndex}][size]" placeholder="e.g. 4x6"></td>
+                <td><input type="number" name="items[${itemIndex}][qty]" class="item-qty" value="1" min="1" onchange="calculateRow(this)" required></td>
+                <td><input type="number" name="items[${itemIndex}][price]" class="item-price" placeholder="৳" step="0.01" onchange="calculateRow(this)" required></td>
+                <td><input type="number" name="items[${itemIndex}][total]" class="item-total" readonly placeholder="৳ 0"></td>
+                <td><button type="button" class="remove-item-btn" onclick="removeRow(this)"><i class="fas fa-times"></i></button></td>
+            `;
+            tbody.appendChild(row);
+            itemIndex++;
+        }
+        
+        function removeRow(btn) {
+            const rows = document.querySelectorAll('.item-row');
+            if (rows.length > 1) {
+                btn.closest('tr').remove();
+                calculateTotals();
+            }
+        }
+        
+        function calculateRow(input) {
+            const row = input.closest('tr');
+            const qty = parseFloat(row.querySelector('.item-qty').value) || 0;
+            const price = parseFloat(row.querySelector('.item-price').value) || 0;
+            const total = qty * price;
+            row.querySelector('.item-total').value = total.toFixed(2);
+            calculateTotals();
+        }
+        
+        function calculateTotals() {
+            let subtotal = 0;
+            document.querySelectorAll('.item-total').forEach(input => {
+                subtotal += parseFloat(input.value) || 0;
+            });
+            
+            const discount = parseFloat(document.getElementById('discountInput').value) || 0;
+            const paid = parseFloat(document.getElementById('paidInput').value) || 0;
+            const grandTotal = subtotal - discount;
+            const due = grandTotal - paid;
+            
+            document.getElementById('subtotal').textContent = '৳ ' + subtotal.toFixed(2);
+            document.getElementById('dueAmount').textContent = '৳ ' + due.toFixed(2);
+            document.getElementById('totalInput').value = grandTotal.toFixed(2);
+            document.getElementById('dueInput').value = due.toFixed(2);
+        }
+        
+        function validateAndSubmit() {
+            calculateTotals();
+            document.getElementById('loading-overlay').style.display = 'flex';
+            return true;
+        }
+        
+        function showLoading() {
+            document.getElementById('loading-overlay').style.display = 'flex';
+            return true;
+        }
+    </script>
+</body>
+</html>
+"""
+
+# ==============================================================================
+# STORE ESTIMATE CREATE TEMPLATE
+# ==============================================================================
+
+STORE_ESTIMATE_CREATE_TEMPLATE = """
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Create Estimate - MEHEDI THAI ALUMINUM AND GLASS</title>
+    """ + COMMON_STYLES + """
+    <style>
+        .invoice-items-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .invoice-items-table th {
+            background: rgba(59, 130, 246, 0.1);
+            padding: 12px;
+            text-align: left;
+            font-size: 12px;
+            text-transform: uppercase;
+            color: var(--accent-blue);
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .invoice-items-table td {
+            padding: 10px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .invoice-items-table input, .invoice-items-table select {
+            padding: 10px;
+            font-size: 14px;
+        }
+        
+        .item-row {
+            transition: var(--transition-smooth);
+        }
+        
+        .item-row:hover {
+            background: rgba(59, 130, 246, 0.03);
+        }
+        
+        .add-item-btn {
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px dashed var(--accent-blue);
+            color: var(--accent-blue);
+            padding: 12px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: var(--transition-smooth);
+            width: 100%;
+            margin-top: 15px;
+        }
+        
+        .add-item-btn:hover {
+            background: var(--accent-blue);
+            color: white;
+        }
+        
+        .remove-item-btn {
+            background: rgba(239, 68, 68, 0.1);
+            border: none;
+            color: var(--accent-red);
+            width: 35px;
+            height: 35px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+        }
+        
+        .remove-item-btn:hover {
+            background: var(--accent-red);
+            color: white;
+        }
+        
+        .totals-section {
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+        
+        .total-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .total-row:last-child {
+            border-bottom: none;
+            font-size: 20px;
+            font-weight: 800;
+            color: var(--accent-blue);
+            background: rgba(59, 130, 246, 0.1);
+            margin: 10px -20px -20px -20px;
+            padding: 15px 20px;
+            border-radius: 0 0 12px 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="animated-bg"></div>
+    
+    <div id="loading-overlay">
+        <div class="spinner-container">
+            <div class="spinner"></div>
+            <div class="spinner-inner"></div>
+        </div>
+        <div class="loading-text">Creating Estimate...</div>
+    </div>
+
+    <div class="mobile-toggle" onclick="document.querySelector('.sidebar').classList.toggle('active')">
+        <i class="fas fa-bars"></i>
+    </div>
+
+    <div class="sidebar">
+        <div class="brand-logo">
+            <i class="fas fa-store"></i> 
+            Store<span>Panel</span>
+        </div>
+        <div class="nav-menu">
+            <a href="/admin/store" class="nav-link">
+                <i class="fas fa-th-large"></i> Dashboard
+            </a>
+            <a href="/store/products" class="nav-link">
+                <i class="fas fa-box"></i> Products
+            </a>
+            <a href="/store/customers" class="nav-link">
+                <i class="fas fa-users"></i> Customers
+            </a>
+            <a href="/store/invoices" class="nav-link">
+                <i class="fas fa-file-invoice-dollar"></i> Invoices
+            </a>
+            <div class="nav-link active">
+                <i class="fas fa-file-alt"></i> Estimates
+            </div>
+            <a href="/logout" class="nav-link" style="color: var(--accent-red); margin-top: 20px;">
+                <i class="fas fa-sign-out-alt"></i> Sign Out
+            </a>
+        </div>
+        <div class="sidebar-footer">© 2025 Mehedi Hasan</div>
+    </div>
+
+    <div class="main-content">
+        <div class="header-section">
+            <div>
+                <div class="page-title">Create Estimate / Quotation</div>
+                <div class="page-subtitle">Estimate No: <span style="color: var(--accent-blue); font-weight: 700;">{{ estimate_no }}</span></div>
+            </div>
+            <a href="/store/estimates" style="padding: 12px 24px; border-radius: 10px; text-decoration: none; color: var(--text-secondary); background: rgba(255,255,255,0.05); border: 1px solid var(--border-color);">
+                <i class="fas fa-arrow-left" style="margin-right: 8px;"></i> Back
+            </a>
+        </div>
+
+        <form action="/store/estimates/save" method="post" onsubmit="return validateAndSubmit()">
+            <input type="hidden" name="estimate_no" value="{{ estimate_no }}">
+            
+            <div class="grid-2" style="margin-bottom: 30px;">
+                <div class="card">
+                    <div class="section-header">
+                        <span><i class="fas fa-user" style="margin-right: 10px; color: var(--accent-purple);"></i>Customer Info</span>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label>CUSTOMER NAME</label>
+                        <input type="text" name="customer_name" id="customerName" required placeholder="Customer Name">
+                    </div>
+                    
+                    <div class="input-group">
+                        <label>PHONE</label>
+                        <input type="text" name="customer_phone" id="customerPhone" placeholder="Phone Number">
+                    </div>
+                    
+                    <div class="input-group">
+                        <label>ADDRESS</label>
+                        <textarea name="customer_address" id="customerAddress" placeholder="Address"></textarea>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="section-header">
+                        <span><i class="fas fa-calendar" style="margin-right: 10px; color: var(--accent-blue);"></i>Estimate Details</span>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label>ESTIMATE DATE</label>
+                        <input type="date" name="estimate_date" value="{{ today }}" required>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label>VALID UNTIL (Optional)</label>
+                        <input type="date" name="valid_until">
+                    </div>
+                    
+                    <div class="input-group">
+                        <label>NOTES / TERMS</label>
+                        <textarea name="notes" placeholder="Terms & Conditions..."></textarea>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="section-header">
+                    <span><i class="fas fa-list" style="margin-right: 10px; color: var(--accent-blue);"></i>Estimate Items</span>
+                </div>
+                
+                <div style="overflow-x: auto;">
+                    <table class="invoice-items-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 30%;">Product/Description</th>
+                                <th style="width: 15%;">Size (ft)</th>
+                                <th style="width: 12%;">Quantity</th>
+                                <th style="width: 15%;">Unit Price</th>
+                                <th style="width: 18%;">Total</th>
+                                <th style="width: 10%;"></th>
+                            </tr>
+                        </thead>
+                        <tbody id="itemsBody">
+                            <tr class="item-row">
+                                <td><input type="text" name="items[0][description]" placeholder="Product/Work description" required></td>
+                                <td><input type="text" name="items[0][size]" placeholder="e.g. 4x6"></td>
+                                <td><input type="number" name="items[0][qty]" class="item-qty" value="1" min="1" onchange="calculateRow(this)" required></td>
+                                <td><input type="number" name="items[0][price]" class="item-price" placeholder="৳" step="0.01" onchange="calculateRow(this)" required></td>
+                                <td><input type="number" name="items[0][total]" class="item-total" readonly placeholder="৳ 0"></td>
+                                <td><button type="button" class="remove-item-btn" onclick="removeRow(this)"><i class="fas fa-times"></i></button></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <button type="button" class="add-item-btn" onclick="addItemRow()">
+                    <i class="fas fa-plus" style="margin-right: 8px;"></i> Add Another Item
+                </button>
+                
+                <div class="totals-section">
+                    <div class="total-row">
+                        <span style="color: var(--text-secondary);">Subtotal</span>
+                        <span style="font-weight: 700; color: white;" id="subtotal">৳ 0</span>
+                    </div>
+                    <div class="total-row">
+                        <span style="color: var(--text-secondary);">Discount</span>
+                        <input type="number" name="discount" id="discountInput" value="0" min="0" step="0.01" style="width: 120px; text-align: right;" onchange="calculateTotals()">
+                    </div>
+                    <div class="total-row">
+                        <span>Estimated Total</span>
+                        <span id="grandTotal">৳ 0</span>
+                    </div>
+                    <input type="hidden" name="total" id="totalInput">
+                </div>
+            </div>
+            
+            <div style="margin-top: 30px; display: flex; gap: 15px; justify-content: flex-end;">
+                <button type="submit" name="action" value="save" style="width: auto; padding: 15px 40px; background: linear-gradient(135deg, #3B82F6 0%, #60A5FA 100%);">
+                    <i class="fas fa-save" style="margin-right: 10px;"></i> Save Estimate
+                </button>
+                <button type="submit" name="action" value="save_print" style="width: auto; padding: 15px 40px; background: linear-gradient(135deg, #10B981 0%, #34D399 100%);">
+                    <i class="fas fa-print" style="margin-right: 10px;"></i> Save & Print
+                </button>
+            </div>
+        </form>
+    </div>
+    
+    <script>
+        let itemIndex = 1;
+        
+        function addItemRow() {
+            const tbody = document.getElementById('itemsBody');
+            const row = document.createElement('tr');
+            row.className = 'item-row';
+            row.innerHTML = `
+                <td><input type="text" name="items[${itemIndex}][description]" placeholder="Product/Work description" required></td>
+                <td><input type="text" name="items[${itemIndex}][size]" placeholder="e.g. 4x6"></td>
+                <td><input type="number" name="items[${itemIndex}][qty]" class="item-qty" value="1" min="1" onchange="calculateRow(this)" required></td>
+                <td><input type="number" name="items[${itemIndex}][price]" class="item-price" placeholder="৳" step="0.01" onchange="calculateRow(this)" required></td>
+                <td><input type="number" name="items[${itemIndex}][total]" class="item-total" readonly placeholder="৳ 0"></td>
+                <td><button type="button" class="remove-item-btn" onclick="removeRow(this)"><i class="fas fa-times"></i></button></td>
+            `;
+            tbody.appendChild(row);
+            itemIndex++;
+        }
+        
+        function removeRow(btn) {
+            const rows = document.querySelectorAll('.item-row');
+            if (rows.length > 1) {
+                btn.closest('tr').remove();
+                calculateTotals();
+            }
+        }
+        
+        function calculateRow(input) {
+            const row = input.closest('tr');
+            const qty = parseFloat(row.querySelector('.item-qty').value) || 0;
+            const price = parseFloat(row.querySelector('.item-price').value) || 0;
+            const total = qty * price;
+            row.querySelector('.item-total').value = total.toFixed(2);
+            calculateTotals();
+        }
+        
+        function calculateTotals() {
+            let subtotal = 0;
+            document.querySelectorAll('.item-total').forEach(input => {
+                subtotal += parseFloat(input.value) || 0;
+            });
+            
+            const discount = parseFloat(document.getElementById('discountInput').value) || 0;
+            const grandTotal = subtotal - discount;
+            
+            document.getElementById('subtotal').textContent = '৳ ' + subtotal.toFixed(2);
+            document.getElementById('grandTotal').textContent = '৳ ' + grandTotal.toFixed(2);
+            document.getElementById('totalInput').value = grandTotal.toFixed(2);
+        }
+        
+        function validateAndSubmit() {
+            calculateTotals();
+            document.getElementById('loading-overlay').style.display = 'flex';
+            return true;
+        }
+    </script>
+</body>
+</html>
+"""
+
+# ==============================================================================
+# STORE DUE COLLECTION TEMPLATE
+# ==============================================================================
+
+STORE_DUE_COLLECTION_TEMPLATE = """
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Due Collection - MEHEDI THAI ALUMINUM AND GLASS</title>
+    """ + COMMON_STYLES + """
+    <style>
+        .due-card {
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, rgba(239, 68, 68, 0.05) 100%);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            border-radius: 16px;
+            padding: 25px;
+            margin-bottom: 20px;
+        }
+        
+        .due-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .due-invoice-no {
+            font-size: 20px;
+            font-weight: 800;
+            color: var(--accent-orange);
+        }
+        
+        .due-amount {
+            font-size: 24px;
+            font-weight: 800;
+            color: var(--accent-red);
+        }
+        
+        .due-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .due-detail-item {
+            background: rgba(255, 255, 255, 0.03);
+            padding: 12px;
+            border-radius: 10px;
+        }
+        
+        .due-detail-label {
+            font-size: 11px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            margin-bottom: 5px;
+        }
+        
+        .due-detail-value {
+            font-size: 15px;
+            font-weight: 600;
+            color: white;
+        }
+        
+        .payment-form {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            border-radius: 12px;
+            padding: 20px;
+        }
+        
+        .payment-history {
+            margin-top: 20px;
+        }
+        
+        .payment-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 8px;
+            margin-bottom: 8px;
+        }
+        
+        .payment-date {
+            color: var(--text-secondary);
+            font-size: 13px;
+        }
+        
+        .payment-amount {
+            font-weight: 700;
+            color: var(--accent-green);
+        }
+    </style>
+</head>
+<body>
+    <div class="animated-bg"></div>
+    
+    <div id="loading-overlay">
+        <div class="spinner-container">
+            <div class="spinner"></div>
+            <div class="spinner-inner"></div>
+        </div>
+        <div class="loading-text">Processing Payment...</div>
+    </div>
+
+    <div class="mobile-toggle" onclick="document.querySelector('.sidebar').classList.toggle('active')">
+        <i class="fas fa-bars"></i>
+    </div>
+
+    <div class="sidebar">
+        <div class="brand-logo">
+            <i class="fas fa-store"></i> 
+            Store<span>Panel</span>
+        </div>
+        <div class="nav-menu">
+            <a href="/admin/store" class="nav-link">
+                <i class="fas fa-th-large"></i> Dashboard
+            </a>
+            <a href="/store/products" class="nav-link">
+                <i class="fas fa-box"></i> Products
+            </a>
+            <a href="/store/customers" class="nav-link">
+                <i class="fas fa-users"></i> Customers
+            </a>
+            <a href="/store/invoices" class="nav-link">
+                <i class="fas fa-file-invoice-dollar"></i> Invoices
+            </a>
+            <div class="nav-link active">
+                <i class="fas fa-wallet"></i> Due Collection
+            </div>
+            <a href="/logout" class="nav-link" style="color: var(--accent-red); margin-top: 20px;">
+                <i class="fas fa-sign-out-alt"></i> Sign Out
+            </a>
+        </div>
+        <div class="sidebar-footer">© 2025 Mehedi Hasan</div>
+    </div>
+
+    <div class="main-content">
+        <div class="header-section">
+            <div>
+                <div class="page-title">Due Collection</div>
+                <div class="page-subtitle">Manage pending payments</div>
+            </div>
+            <div class="status-badge">
+                <div class="status-dot"></div>
+                <span>Online</span>
+            </div>
+        </div>
+
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                <div class="flash-message flash-success">
+                    <i class="fas fa-check-circle"></i>
+                    <span>{{ messages[0] }}</span>
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <div class="card" style="margin-bottom: 30px;">
+            <div class="section-header">
+                <span><i class="fas fa-search" style="margin-right: 10px; color: var(--accent-orange);"></i>Search Invoice</span>
+            </div>
+            <form action="/store/dues/search" method="get" style="display: flex; gap: 15px; flex-wrap: wrap;">
+                <div style="flex: 1; min-width: 200px;">
+                    <input type="text" name="invoice_no" placeholder="Enter Invoice Number (e.g.  INV-0001)" value="{{ search_invoice }}">
+                </div>
+                <button type="submit" style="width: auto; padding: 14px 30px;">
+                    <i class="fas fa-search" style="margin-right: 8px;"></i> Search
+                </button>
+            </form>
+        </div>
+
+        {% if invoice %}
+        <div class="due-card">
+            <div class="due-header">
+                <div class="due-invoice-no">{{ invoice.invoice_no }}</div>
+                <div class="due-amount">Due: ৳{{ "{:,.0f}".format(invoice.due) }}</div>
+            </div>
+            
+            <div class="due-details">
+                <div class="due-detail-item">
+                    <div class="due-detail-label">Customer</div>
+                    <div class="due-detail-value">{{ invoice.customer_name }}</div>
+                </div>
+                <div class="due-detail-item">
+                    <div class="due-detail-label">Phone</div>
+                    <div class="due-detail-value">{{ invoice.customer_phone }}</div>
+                </div>
+                <div class="due-detail-item">
+                    <div class="due-detail-label">Invoice Date</div>
+                    <div class="due-detail-value">{{ invoice.date }}</div>
+                </div>
+                <div class="due-detail-item">
+                    <div class="due-detail-label">Total Amount</div>
+                    <div class="due-detail-value">৳{{ "{:,.0f}".format(invoice.total) }}</div>
+                </div>
+                <div class="due-detail-item">
+                    <div class="due-detail-label">Already Paid</div>
+                    <div class="due-detail-value" style="color: var(--accent-green);">৳{{ "{:,.0f}".format(invoice.paid) }}</div>
+                </div>
+            </div>
+            
+            {% if invoice.due > 0 %}
+            <div class="payment-form">
+                <h4 style="margin-bottom: 15px; color: var(--accent-green);"><i class="fas fa-money-bill-wave" style="margin-right: 10px;"></i>Record Payment</h4>
+                <form action="/store/dues/collect" method="post" onsubmit="return validatePayment()">
+                    <input type="hidden" name="invoice_no" value="{{ invoice.invoice_no }}">
+                    <div class="grid-2">
+                        <div class="input-group">
+                            <label>PAYMENT AMOUNT</label>
+                            <input type="number" name="amount" id="paymentAmount" required placeholder="৳" step="0.01" max="{{ invoice.due }}">
+                        </div>
+                        <div class="input-group">
+                            <label>PAYMENT DATE</label>
+                            <input type="date" name="payment_date" value="{{ today }}" required>
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <label>NOTES (Optional)</label>
+                        <input type="text" name="notes" placeholder="Payment notes... ">
+                    </div>
+                    <button type="submit" style="background: linear-gradient(135deg, #10B981 0%, #34D399 100%);">
+                        <i class="fas fa-check" style="margin-right: 10px;"></i> Record Payment
+                    </button>
+                </form>
+            </div>
+            {% else %}
+            <div style="text-align: center; padding: 30px; background: rgba(16, 185, 129, 0.1); border-radius: 12px; border: 1px solid rgba(16, 185, 129, 0.2);">
+                <i class="fas fa-check-circle" style="font-size: 50px; color: var(--accent-green); margin-bottom: 15px;"></i>
+                <h3 style="color: var(--accent-green);">Fully Paid! </h3>
+                <p style="color: var(--text-secondary);">This invoice has no pending dues.</p>
+            </div>
+            {% endif %}
+            
+            {% if invoice.payments %}
+            <div class="payment-history">
+                <h4 style="margin-bottom: 15px; color: var(--text-secondary);"><i class="fas fa-history" style="margin-right: 10px;"></i>Payment History</h4>
+                {% for p in invoice.payments %}
+                <div class="payment-item">
+                    <div>
+                        <div class="payment-date">{{ p.date }}</div>
+                        {% if p.notes %}<div style="font-size: 12px; color: var(--text-secondary);">{{ p.notes }}</div>{% endif %}
+                    </div>
+                    <div class="payment-amount">+ ৳{{ "{:,.0f}".format(p.amount) }}</div>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+        {% elif search_invoice %}
+        <div class="empty-state">
+            <i class="fas fa-search"></i>
+            <p>Invoice "{{ search_invoice }}" not found</p>
+        </div>
+        {% endif %}
+
+        <div class="card">
+            <div class="section-header">
+                <span><i class="fas fa-exclamation-triangle" style="margin-right: 10px; color: var(--accent-red);"></i>All Pending Dues</span>
+                <span class="table-badge" style="background: var(--accent-red); color: white;">{{ pending_dues|length }} Invoices</span>
+            </div>
+            
+            <div style="max-height: 400px; overflow-y: auto;">
+                {% if pending_dues %}
+                    {% for due in pending_dues %}
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 15px; background: rgba(255,255,255,0.02); border-radius: 10px; margin-bottom: 10px; border-left: 3px solid var(--accent-red);">
+                        <div>
+                            <div style="font-weight: 700; color: var(--accent-orange);">{{ due.invoice_no }}</div>
+                            <div style="font-size: 13px; color: white;">{{ due.customer_name }}</div>
+                            <div style="font-size: 12px; color: var(--text-secondary);">{{ due.date }}</div>
+                        </div>
+                        <div style="text-align: right;">
+                            <div style="font-size: 18px; font-weight: 800; color: var(--accent-red);">৳{{ "{:,.0f}".format(due.due) }}</div>
+                            <a href="/store/dues/search?invoice_no={{ due.invoice_no }}" class="action-btn btn-edit" style="margin-top: 8px;">
+                                <i class="fas fa-money-bill"></i> Collect
+                            </a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="empty-state">
+                        <i class="fas fa-check-circle" style="color: var(--accent-green);"></i>
+                        <p>No pending dues!  All payments collected.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function validatePayment() {
+            const amount = parseFloat(document.getElementById('paymentAmount').value);
+            if (amount <= 0) {
+                alert('Please enter a valid amount');
+                return false;
+            }
+            document.getElementById('loading-overlay').style.display = 'flex';
+            return true;
+        }
+    </script>
+</body>
+</html>
+"""
+# ==============================================================================
+# STORE INVOICES LIST TEMPLATE
+# ==============================================================================
+
+STORE_INVOICES_LIST_TEMPLATE = """
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Invoices - MEHEDI THAI ALUMINUM AND GLASS</title>
+    """ + COMMON_STYLES + """
+</head>
+<body>
+    <div class="animated-bg"></div>
+
+    <div class="mobile-toggle" onclick="document.querySelector('.sidebar').classList.toggle('active')">
+        <i class="fas fa-bars"></i>
+    </div>
+
+    <div class="sidebar">
+        <div class="brand-logo">
+            <i class="fas fa-store"></i> 
+            Store<span>Panel</span>
+        </div>
+        <div class="nav-menu">
+            <a href="/admin/store" class="nav-link">
+                <i class="fas fa-th-large"></i> Dashboard
+            </a>
+            <a href="/store/products" class="nav-link">
+                <i class="fas fa-box"></i> Products
+            </a>
+            <a href="/store/customers" class="nav-link">
+                <i class="fas fa-users"></i> Customers
+            </a>
+            <div class="nav-link active">
+                <i class="fas fa-file-invoice-dollar"></i> Invoices
+            </div>
+            <a href="/store/estimates" class="nav-link">
+                <i class="fas fa-file-alt"></i> Estimates
+            </a>
+            <a href="/store/dues" class="nav-link">
+                <i class="fas fa-wallet"></i> Due Collection
+            </a>
+            <a href="/logout" class="nav-link" style="color: var(--accent-red); margin-top: 20px;">
+                <i class="fas fa-sign-out-alt"></i> Sign Out
+            </a>
+        </div>
+        <div class="sidebar-footer">© 2025 Mehedi Hasan</div>
+    </div>
+
+    <div class="main-content">
+        <div class="header-section">
+            <div>
+                <div class="page-title">Invoice Management</div>
+                <div class="page-subtitle">View and manage all invoices</div>
+            </div>
+            <a href="/store/invoices/create" style="padding: 14px 30px; background: var(--gradient-orange); border-radius: 12px; text-decoration: none; color: white; font-weight: 600;">
+                <i class="fas fa-plus" style="margin-right: 8px;"></i> New Invoice
+            </a>
+        </div>
+
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                <div class="flash-message flash-success">
+                    <i class="fas fa-check-circle"></i>
+                    <span>{{ messages[0] }}</span>
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <div class="card" style="margin-bottom: 20px;">
+            <div class="section-header">
+                <span><i class="fas fa-search" style="margin-right: 10px; color: var(--accent-orange);"></i>Search Invoice</span>
+            </div>
+            <form action="/store/invoices" method="get" style="display: flex; gap: 15px; flex-wrap: wrap;">
+                <div style="flex: 1; min-width: 200px;">
+                    <input type="text" name="search" placeholder="Search by Invoice No or Customer Name..." value="{{ search_query }}">
+                </div>
+                <button type="submit" style="width: auto; padding: 14px 30px;">
+                    <i class="fas fa-search" style="margin-right: 8px;"></i> Search
+                </button>
+                {% if search_query %}
+                <a href="/store/invoices" style="padding: 14px 20px; background: rgba(255,255,255,0.05); border: 1px solid var(--border-color); border-radius: 12px; text-decoration: none; color: var(--text-secondary);">
+                    <i class="fas fa-times"></i> Clear
+                </a>
+                {% endif %}
+            </form>
+        </div>
+
+        <div class="card">
+            <div class="section-header">
+                <span>All Invoices</span>
+                <span class="table-badge" style="background: var(--accent-green); color: white;">{{ invoices|length }} Total</span>
+            </div>
+            
+            <div style="overflow-x: auto;">
+                <table class="dark-table">
+                    <thead>
+                        <tr>
+                            <th>Invoice No</th>
+                            <th>Customer</th>
+                            <th>Date</th>
+                            <th>Total</th>
+                            <th>Paid</th>
+                            <th>Due</th>
+                            <th style="text-align: right;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if invoices %}
+                            {% for inv in invoices|reverse %}
+                            <tr>
+                                <td style="font-weight: 700; color: var(--accent-orange);">{{ inv.invoice_no }}</td>
+                                <td style="color: white;">{{ inv.customer_name }}</td>
+                                <td style="color: var(--text-secondary);">{{ inv.date }}</td>
+                                <td style="font-weight: 700; color: var(--accent-green);">৳{{ "{:,.0f}".format(inv.total) }}</td>
+                                <td style="color: var(--accent-green);">৳{{ "{:,.0f}".format(inv.paid) }}</td>
+                                <td>
+                                    {% if inv.due > 0 %}
+                                    <span style="color: var(--accent-red); font-weight: 700;">৳{{ "{:,.0f}".format(inv.due) }}</span>
+                                    {% else %}
+                                    <span style="color: var(--accent-green);"><i class="fas fa-check-circle"></i> Paid</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="action-cell">
+                                        <a href="/store/invoices/print/{{ inv.invoice_no }}" class="action-btn btn-print-sm" target="_blank"><i class="fas fa-print"></i></a>
+                                        {% if inv.due > 0 %}
+                                        <a href="/store/dues/search?invoice_no={{ inv.invoice_no }}" class="action-btn btn-edit"><i class="fas fa-money-bill"></i></a>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="7" style="text-align: center; padding: 50px; color: var(--text-secondary);">
+                                    <i class="fas fa-file-invoice" style="font-size: 50px; opacity: 0.2; margin-bottom: 15px; display: block;"></i>
+                                    {% if search_query %}
+                                    No invoices found for "{{ search_query }}"
+                                    {% else %}
+                                    No invoices created yet.  Create your first invoice! 
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+"""
+
+# ==============================================================================
+# STORE ESTIMATES LIST TEMPLATE
+# ==============================================================================
+
+STORE_ESTIMATES_LIST_TEMPLATE = """
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Estimates - MEHEDI THAI ALUMINUM AND GLASS</title>
+    """ + COMMON_STYLES + """
+</head>
+<body>
+    <div class="animated-bg"></div>
+
+    <div class="mobile-toggle" onclick="document.querySelector('.sidebar').classList.toggle('active')">
+        <i class="fas fa-bars"></i>
+    </div>
+
+    <div class="sidebar">
+        <div class="brand-logo">
+            <i class="fas fa-store"></i> 
+            Store<span>Panel</span>
+        </div>
+        <div class="nav-menu">
+            <a href="/admin/store" class="nav-link">
+                <i class="fas fa-th-large"></i> Dashboard
+            </a>
+            <a href="/store/products" class="nav-link">
+                <i class="fas fa-box"></i> Products
+            </a>
+            <a href="/store/customers" class="nav-link">
+                <i class="fas fa-users"></i> Customers
+            </a>
+            <a href="/store/invoices" class="nav-link">
+                <i class="fas fa-file-invoice-dollar"></i> Invoices
+            </a>
+            <div class="nav-link active">
+                <i class="fas fa-file-alt"></i> Estimates
+            </div>
+            <a href="/store/dues" class="nav-link">
+                <i class="fas fa-wallet"></i> Due Collection
+            </a>
+            <a href="/logout" class="nav-link" style="color: var(--accent-red); margin-top: 20px;">
+                <i class="fas fa-sign-out-alt"></i> Sign Out
+            </a>
+        </div>
+        <div class="sidebar-footer">© 2025 Mehedi Hasan</div>
+    </div>
+
+    <div class="main-content">
+        <div class="header-section">
+            <div>
+                <div class="page-title">Estimates / Quotations</div>
+                <div class="page-subtitle">View and manage all estimates</div>
+            </div>
+            <a href="/store/estimates/create" style="padding: 14px 30px; background: linear-gradient(135deg, #3B82F6 0%, #60A5FA 100%); border-radius: 12px; text-decoration: none; color: white; font-weight: 600;">
+                <i class="fas fa-plus" style="margin-right: 8px;"></i> New Estimate
+            </a>
+        </div>
+
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                <div class="flash-message flash-success">
+                    <i class="fas fa-check-circle"></i>
+                    <span>{{ messages[0] }}</span>
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <div class="card">
+            <div class="section-header">
+                <span>All Estimates</span>
+                <span class="table-badge" style="background: var(--accent-blue); color: white;">{{ estimates|length }} Total</span>
+            </div>
+            
+            <div style="overflow-x: auto;">
+                <table class="dark-table">
+                    <thead>
+                        <tr>
+                            <th>Estimate No</th>
+                            <th>Customer</th>
+                            <th>Date</th>
+                            <th>Valid Until</th>
+                            <th>Total</th>
+                            <th style="text-align: right;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if estimates %}
+                            {% for est in estimates|reverse %}
+                            <tr>
+                                <td style="font-weight: 700; color: var(--accent-blue);">{{ est.estimate_no }}</td>
+                                <td style="color: white;">{{ est.customer_name }}</td>
+                                <td style="color: var(--text-secondary);">{{ est.date }}</td>
+                                <td style="color: var(--text-secondary);">{{ est.valid_until if est.valid_until else '-' }}</td>
+                                <td style="font-weight: 700; color: var(--accent-purple);">৳{{ "{:,.0f}".format(est.total) }}</td>
+                                <td>
+                                    <div class="action-cell">
+                                        <a href="/store/estimates/print/{{ est.estimate_no }}" class="action-btn btn-print-sm" target="_blank"><i class="fas fa-print"></i></a>
+                                        <a href="/store/estimates/to-invoice/{{ est.estimate_no }}" class="action-btn btn-view" title="Convert to Invoice"><i class="fas fa-file-invoice"></i></a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="6" style="text-align: center; padding: 50px; color: var(--text-secondary);">
+                                    <i class="fas fa-file-alt" style="font-size: 50px; opacity: 0.2; margin-bottom: 15px; display: block;"></i>
+                                    No estimates created yet. Create your first estimate! 
+                                </td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+"""
+# ==============================================================================
+# STORE USERS MANAGEMENT TEMPLATE (NEW - Fixes Not Found Error)
 # ==============================================================================
 
 STORE_USERS_TEMPLATE = """
@@ -5337,6 +6992,7 @@ STORE_ESTIMATE_PRINT_TEMPLATE = """
         .totals-container { display: flex; justify-content: flex-end; }
         .totals-box { width: 300px; border: 2px solid #2563eb; border-radius: 5px; overflow: hidden; }
         .totals-row { display: flex; justify-content: space-between; padding: 10px 15px; border-bottom: 1px solid #ddd; font-size: 14px; }
+        .totals-row:last-child { border-bottom: none; }
         .totals-row.grand-total { background: #2563eb; color: white; font-size: 18px; font-weight: 800; }
         .footer { margin-top: 50px; padding-top: 20px; border-top: 1px solid #ddd; }
         .signatures { display: flex; justify-content: space-between; margin-top: 60px; padding: 0 30px; }
