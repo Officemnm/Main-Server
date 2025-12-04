@@ -302,8 +302,7 @@ def generate_estimate_number():
         except:
             pass
     return f"EST-{str(last_num + 1).zfill(4)}"
-
-# --- আপডেটেড: রিয়েল-টাইম ড্যাশবোর্ড সামারি এবং এনালিটিক্স ---
+    # --- আপডেটেড: রিয়েল-টাইম ড্যাশবোর্ড সামারি এবং এনালিটিক্স ---
 def get_dashboard_summary_v2():
     stats_data = load_stats()
     acc_db = load_accessories_db()
@@ -5795,472 +5794,6 @@ STORE_INVOICE_CREATE_TEMPLATE = """
 </body>
 </html>
 """
-# ==============================================================================
-# STORE INVOICE PRINT TEMPLATE - PROFESSIONAL PRINT LAYOUT
-# ==============================================================================
-
-STORE_INVOICE_PRINT_TEMPLATE = """
-<!DOCTYPE html>
-<html lang="bn">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Invoice {{ invoice.invoice_no }} - MEHEDI THAI ALUMINUM AND GLASS</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #fff;
-            color: #000;
-            font-size: 14px;
-            line-height: 1.5;
-        }
-        
-        .invoice-container {
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 30px;
-            border: 2px solid #000;
-            min-height: 100vh;
-            position: relative;
-        }
-        
-        /* Header */
-        .invoice-header {
-            text-align: center;
-            border-bottom: 3px double #000;
-            padding-bottom: 20px;
-            margin-bottom: 25px;
-        }
-        
-        .company-name {
-            font-size: 28px;
-            font-weight: 900;
-            color: #1a5f2a;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            margin-bottom: 5px;
-        }
-        
-        .company-tagline {
-            font-size: 14px;
-            color: #555;
-            margin-bottom: 8px;
-        }
-        
-        .company-contact {
-            font-size: 12px;
-            color: #333;
-        }
-        
-        .invoice-title {
-            display: inline-block;
-            background: #1a5f2a;
-            color: white;
-            padding: 8px 40px;
-            font-size: 20px;
-            font-weight: 700;
-            margin-top: 15px;
-            letter-spacing: 3px;
-        }
-        
-        /* Info Section */
-        .info-section {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 25px;
-            gap: 20px;
-        }
-        
-        .customer-info, .invoice-info {
-            flex: 1;
-            padding: 15px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            background: #f9f9f9;
-        }
-        
-        .info-title {
-            font-weight: 800;
-            font-size: 13px;
-            text-transform: uppercase;
-            color: #1a5f2a;
-            border-bottom: 2px solid #1a5f2a;
-            padding-bottom: 5px;
-            margin-bottom: 10px;
-        }
-        
-        .info-row {
-            display: flex;
-            margin-bottom: 5px;
-            font-size: 13px;
-        }
-        
-        .info-label {
-            font-weight: 700;
-            width: 80px;
-            color: #555;
-        }
-        
-        .info-value {
-            flex: 1;
-            color: #000;
-            font-weight: 600;
-        }
-        
-        .invoice-no-box {
-            background: #1a5f2a;
-            color: white;
-            padding: 10px 20px;
-            text-align: center;
-            border-radius: 5px;
-            margin-bottom: 10px;
-        }
-        
-        .invoice-no-box .label {
-            font-size: 11px;
-            opacity: 0.9;
-        }
-        
-        .invoice-no-box .value {
-            font-size: 22px;
-            font-weight: 900;
-        }
-        
-        /* Items Table */
-        .items-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 25px;
-        }
-        
-        .items-table th {
-            background: #1a5f2a;
-            color: white;
-            padding: 12px 10px;
-            text-align: left;
-            font-size: 12px;
-            text-transform: uppercase;
-            font-weight: 700;
-        }
-        
-        .items-table th:last-child,
-        .items-table td:last-child {
-            text-align: right;
-        }
-        
-        .items-table td {
-            padding: 12px 10px;
-            border-bottom: 1px solid #ddd;
-            font-size: 13px;
-        }
-        
-        .items-table tr:nth-child(even) {
-            background: #f5f5f5;
-        }
-        
-        .items-table .item-name {
-            font-weight: 700;
-        }
-        
-        .items-table .item-size {
-            color: #666;
-            font-size: 12px;
-        }
-        
-        /* Totals Section */
-        .totals-container {
-            display: flex;
-            justify-content: flex-end;
-        }
-        
-        .totals-box {
-            width: 300px;
-            border: 2px solid #1a5f2a;
-            border-radius: 5px;
-            overflow: hidden;
-        }
-        
-        .totals-row {
-            display: flex;
-            justify-content: space-between;
-            padding: 10px 15px;
-            border-bottom: 1px solid #ddd;
-            font-size: 14px;
-        }
-        
-        .totals-row:last-child {
-            border-bottom: none;
-        }
-        
-        .totals-row.subtotal {
-            background: #f5f5f5;
-        }
-        
-        .totals-row.grand-total {
-            background: #1a5f2a;
-            color: white;
-            font-size: 18px;
-            font-weight: 800;
-        }
-        
-        .totals-row.paid {
-            background: #d4edda;
-            color: #155724;
-        }
-        
-        .totals-row.due {
-            background: #f8d7da;
-            color: #721c24;
-            font-weight: 800;
-            font-size: 16px;
-        }
-        
-        /* Notes */
-        .notes-section {
-            margin-top: 25px;
-            padding: 15px;
-            background: #f9f9f9;
-            border: 1px dashed #ccc;
-            border-radius: 5px;
-        }
-        
-        .notes-title {
-            font-weight: 700;
-            color: #555;
-            margin-bottom: 5px;
-        }
-        
-        /* Footer */
-        .invoice-footer {
-            margin-top: 50px;
-            padding-top: 20px;
-            border-top: 1px solid #ddd;
-        }
-        
-        .signatures {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 60px;
-            padding: 0 30px;
-        }
-        
-        .signature-box {
-            text-align: center;
-            width: 150px;
-        }
-        
-        .signature-line {
-            border-top: 2px solid #000;
-            padding-top: 8px;
-            font-weight: 700;
-            font-size: 13px;
-        }
-        
-        .thank-you {
-            text-align: center;
-            margin-top: 30px;
-            font-size: 16px;
-            font-weight: 700;
-            color: #1a5f2a;
-        }
-        
-        .powered-by {
-            text-align: center;
-            margin-top: 15px;
-            font-size: 10px;
-            color: #999;
-        }
-        
-        /* Print Styles */
-        @media print {
-            body {
-                -webkit-print-color-adjust: exact !important;
-                print-color-adjust: exact !important;
-            }
-            
-            .invoice-container {
-                border: none;
-                padding: 20px;
-                max-width: 100%;
-            }
-            
-            .no-print {
-                display: none !important;
-            }
-            
-            .items-table th {
-                background: #1a5f2a !important;
-                -webkit-print-color-adjust: exact;
-            }
-            
-            .totals-row.grand-total {
-                background: #1a5f2a !important;
-                -webkit-print-color-adjust: exact;
-            }
-        }
-        
-        /* Action Buttons */
-        .action-buttons {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            display: flex;
-            gap: 10px;
-            z-index: 1000;
-        }
-        
-        .action-btn {
-            padding: 12px 25px;
-            border: none;
-            border-radius: 8px;
-            font-weight: 600;
-            cursor: pointer;
-            text-decoration: none;
-            font-size: 14px;
-        }
-        
-        .btn-print {
-            background: #1a5f2a;
-            color: white;
-        }
-        
-        .btn-back {
-            background: #6c757d;
-            color: white;
-        }
-    </style>
-</head>
-<body>
-    <div class="action-buttons no-print">
-        <a href="/store/invoices" class="action-btn btn-back">← Back</a>
-        <button onclick="window.print()" class="action-btn btn-print">🖨️ Print Invoice</button>
-    </div>
-
-    <div class="invoice-container">
-        <div class="invoice-header">
-            <div class="company-name">MEHEDI THAI ALUMINUM AND GLASS</div>
-            <div class="company-tagline">Quality Aluminum & Glass Solutions</div>
-            <div class="company-contact">
-                📞 01XXXXXXXXX | 📍 Your Address Here
-            </div>
-            <div class="invoice-title">INVOICE / চালান</div>
-        </div>
-        
-        <div class="info-section">
-            <div class="customer-info">
-                <div class="info-title">Customer Details / ক্রেতার তথ্য</div>
-                <div class="info-row">
-                    <span class="info-label">Name:</span>
-                    <span class="info-value">{{ invoice.customer_name }}</span>
-                </div>
-                <div class="info-row">
-                    <span class="info-label">Phone:</span>
-                    <span class="info-value">{{ invoice.customer_phone }}</span>
-                </div>
-                {% if invoice.customer_address %}
-                <div class="info-row">
-                    <span class="info-label">Address:</span>
-                    <span class="info-value">{{ invoice.customer_address }}</span>
-                </div>
-                {% endif %}
-            </div>
-            
-            <div class="invoice-info">
-                <div class="invoice-no-box">
-                    <div class="label">Invoice No / চালান নং</div>
-                    <div class="value">{{ invoice.invoice_no }}</div>
-                </div>
-                <div class="info-row">
-                    <span class="info-label">Date:</span>
-                    <span class="info-value">{{ invoice.date }}</span>
-                </div>
-            </div>
-        </div>
-        
-        <table class="items-table">
-            <thead>
-                <tr>
-                    <th style="width: 5%;">SL</th>
-                    <th style="width: 40%;">Description / বিবরণ</th>
-                    <th style="width: 15%;">Size (ft)</th>
-                    <th style="width: 10%;">Qty</th>
-                    <th style="width: 15%;">Rate</th>
-                    <th style="width: 15%;">Amount</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for item in invoice.items %}
-                <tr>
-                    <td>{{ loop.index }}</td>
-                    <td class="item-name">{{ item.description }}</td>
-                    <td class="item-size">{{ item.size if item.size else '-' }}</td>
-                    <td>{{ item.qty }}</td>
-                    <td>৳{{ "{:,.2f}".format(item.price) }}</td>
-                    <td>৳{{ "{:,.2f}".format(item.total) }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-        
-        <div class="totals-container">
-            <div class="totals-box">
-                <div class="totals-row subtotal">
-                    <span>Subtotal / উপমোট</span>
-                    <span>৳{{ "{:,.2f}".format(invoice.total + invoice.discount) }}</span>
-                </div>
-                {% if invoice.discount > 0 %}
-                <div class="totals-row">
-                    <span>Discount / ছাড়</span>
-                    <span>- ৳{{ "{:,.2f}".format(invoice.discount) }}</span>
-                </div>
-                {% endif %}
-                <div class="totals-row grand-total">
-                    <span>Grand Total / সর্বমোট</span>
-                    <span>৳{{ "{:,.2f}".format(invoice.total) }}</span>
-                </div>
-                <div class="totals-row paid">
-                    <span>Paid / পরিশোধিত</span>
-                    <span>৳{{ "{:,.2f}".format(invoice.paid) }}</span>
-                </div>
-                {% if invoice.due > 0 %}
-                <div class="totals-row due">
-                    <span>Due / বাকি</span>
-                    <span>৳{{ "{:,.2f}".format(invoice.due) }}</span>
-                </div>
-                {% endif %}
-            </div>
-        </div>
-        
-        {% if invoice.notes %}
-        <div class="notes-section">
-            <div class="notes-title">Notes / নোট:</div>
-            <div>{{ invoice.notes }}</div>
-        </div>
-        {% endif %}
-        
-        <div class="invoice-footer">
-            <div class="signatures">
-                <div class="signature-box">
-                    <div class="signature-line">Customer Signature<br>ক্রেতার স্বাক্ষর</div>
-                </div>
-                <div class="signature-box">
-                    <div class="signature-line">Authorized Signature<br>বিক্রেতার স্বাক্ষর</div>
-                </div>
-            </div>
-            
-            <div class="thank-you">Thank You For Your Business!  / ব্যবসায় আপনাকে ধন্যবাদ!</div>
-            <div class="powered-by">Powered by Mehedi Hasan | MNM Software</div>
-        </div>
-    </div>
-</body>
-</html>
-"""
 
 # ==============================================================================
 # STORE ESTIMATE CREATE TEMPLATE
@@ -7178,6 +6711,595 @@ STORE_ESTIMATES_LIST_TEMPLATE = """
 </body>
 </html>
 """
+# ==============================================================================
+# STORE INVOICE PRINT TEMPLATE - PROFESSIONAL PRINT LAYOUT
+# ==============================================================================
+
+STORE_INVOICE_PRINT_TEMPLATE = """
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Invoice {{ invoice.invoice_no }} - MEHEDI THAI ALUMINUM AND GLASS</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #fff;
+            color: #000;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        
+        .invoice-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 30px;
+            border: 2px solid #000;
+            min-height: 100vh;
+            position: relative;
+        }
+        
+        /* Header */
+        .invoice-header {
+            text-align: center;
+            border-bottom: 3px double #000;
+            padding-bottom: 20px;
+            margin-bottom: 25px;
+        }
+        
+        .company-name {
+            font-size: 28px;
+            font-weight: 900;
+            color: #1a5f2a;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 5px;
+        }
+        
+        .company-tagline {
+            font-size: 14px;
+            color: #555;
+            margin-bottom: 8px;
+        }
+        
+        .company-contact {
+            font-size: 12px;
+            color: #333;
+        }
+        
+        .invoice-title {
+            display: inline-block;
+            background: #1a5f2a;
+            color: white;
+            padding: 8px 40px;
+            font-size: 20px;
+            font-weight: 700;
+            margin-top: 15px;
+            letter-spacing: 3px;
+        }
+        
+        /* Info Section */
+        .info-section {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 25px;
+            gap: 20px;
+        }
+        
+        .customer-info, .invoice-info {
+            flex: 1;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background: #f9f9f9;
+        }
+        
+        .info-title {
+            font-weight: 800;
+            font-size: 13px;
+            text-transform: uppercase;
+            color: #1a5f2a;
+            border-bottom: 2px solid #1a5f2a;
+            padding-bottom: 5px;
+            margin-bottom: 10px;
+        }
+        
+        .info-row {
+            display: flex;
+            margin-bottom: 5px;
+            font-size: 13px;
+        }
+        
+        .info-label {
+            font-weight: 700;
+            width: 80px;
+            color: #555;
+        }
+        
+        .info-value {
+            flex: 1;
+            color: #000;
+            font-weight: 600;
+        }
+        
+        .invoice-no-box {
+            background: #1a5f2a;
+            color: white;
+            padding: 10px 20px;
+            text-align: center;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+        
+        .invoice-no-box .label {
+            font-size: 11px;
+            opacity: 0.9;
+        }
+        
+        .invoice-no-box .value {
+            font-size: 22px;
+            font-weight: 900;
+        }
+        
+        /* Items Table */
+        .items-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 25px;
+        }
+        
+        .items-table th {
+            background: #1a5f2a;
+            color: white;
+            padding: 12px 10px;
+            text-align: left;
+            font-size: 12px;
+            text-transform: uppercase;
+            font-weight: 700;
+        }
+        
+        .items-table th:last-child,
+        .items-table td:last-child {
+            text-align: right;
+        }
+        
+        .items-table td {
+            padding: 12px 10px;
+            border-bottom: 1px solid #ddd;
+            font-size: 13px;
+        }
+        
+        .items-table tr:nth-child(even) {
+            background: #f5f5f5;
+        }
+        
+        .items-table .item-name {
+            font-weight: 700;
+        }
+        
+        .items-table .item-size {
+            color: #666;
+            font-size: 12px;
+        }
+        
+        /* Totals Section */
+        .totals-container {
+            display: flex;
+            justify-content: flex-end;
+        }
+        
+        .totals-box {
+            width: 300px;
+            border: 2px solid #1a5f2a;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+        
+        .totals-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 15px;
+            border-bottom: 1px solid #ddd;
+            font-size: 14px;
+        }
+        
+        .totals-row:last-child {
+            border-bottom: none;
+        }
+        
+        .totals-row.subtotal {
+            background: #f5f5f5;
+        }
+        
+        .totals-row.grand-total {
+            background: #1a5f2a;
+            color: white;
+            font-size: 18px;
+            font-weight: 800;
+        }
+        
+        .totals-row.paid {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .totals-row.due {
+            background: #f8d7da;
+            color: #721c24;
+            font-weight: 800;
+            font-size: 16px;
+        }
+        
+        /* Notes */
+        .notes-section {
+            margin-top: 25px;
+            padding: 15px;
+            background: #f9f9f9;
+            border: 1px dashed #ccc;
+            border-radius: 5px;
+        }
+        
+        .notes-title {
+            font-weight: 700;
+            color: #555;
+            margin-bottom: 5px;
+        }
+        
+        /* Footer */
+        .invoice-footer {
+            margin-top: 50px;
+            padding-top: 20px;
+            border-top: 1px solid #ddd;
+        }
+        
+        .signatures {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 60px;
+            padding: 0 30px;
+        }
+        
+        .signature-box {
+            text-align: center;
+            width: 150px;
+        }
+        
+        .signature-line {
+            border-top: 2px solid #000;
+            padding-top: 8px;
+            font-weight: 700;
+            font-size: 13px;
+        }
+        
+        .thank-you {
+            text-align: center;
+            margin-top: 30px;
+            font-size: 16px;
+            font-weight: 700;
+            color: #1a5f2a;
+        }
+        
+        .powered-by {
+            text-align: center;
+            margin-top: 15px;
+            font-size: 10px;
+            color: #999;
+        }
+        
+        /* Print Styles */
+        @media print {
+            body {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+            
+            .invoice-container {
+                border: none;
+                padding: 20px;
+                max-width: 100%;
+            }
+            
+            .no-print {
+                display: none !important;
+            }
+            
+            .items-table th {
+                background: #1a5f2a !important;
+                -webkit-print-color-adjust: exact;
+            }
+            
+            .totals-row.grand-total {
+                background: #1a5f2a !important;
+                -webkit-print-color-adjust: exact;
+            }
+        }
+        
+        /* Action Buttons */
+        .action-buttons {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            gap: 10px;
+            z-index: 1000;
+        }
+        
+        .action-btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 14px;
+        }
+        
+        .btn-print {
+            background: #1a5f2a;
+            color: white;
+        }
+        
+        .btn-back {
+            background: #6c757d;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="action-buttons no-print">
+        <a href="/store/invoices" class="action-btn btn-back">← Back</a>
+        <button onclick="window.print()" class="action-btn btn-print">🖨️ Print Invoice</button>
+    </div>
+
+    <div class="invoice-container">
+        <div class="invoice-header">
+            <div class="company-name">MEHEDI THAI ALUMINUM AND GLASS</div>
+            <div class="company-tagline">Quality Aluminum & Glass Solutions</div>
+            <div class="company-contact">
+                📞 01XXXXXXXXX | 📍 Your Address Here
+            </div>
+            <div class="invoice-title">INVOICE / চালান</div>
+        </div>
+        
+        <div class="info-section">
+            <div class="customer-info">
+                <div class="info-title">Customer Details / ক্রেতার তথ্য</div>
+                <div class="info-row">
+                    <span class="info-label">Name:</span>
+                    <span class="info-value">{{ invoice.customer_name }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Phone:</span>
+                    <span class="info-value">{{ invoice.customer_phone }}</span>
+                </div>
+                {% if invoice.customer_address %}
+                <div class="info-row">
+                    <span class="info-label">Address:</span>
+                    <span class="info-value">{{ invoice.customer_address }}</span>
+                </div>
+                {% endif %}
+            </div>
+            
+            <div class="invoice-info">
+                <div class="invoice-no-box">
+                    <div class="label">Invoice No / চালান নং</div>
+                    <div class="value">{{ invoice.invoice_no }}</div>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Date:</span>
+                    <span class="info-value">{{ invoice.date }}</span>
+                </div>
+            </div>
+        </div>
+        
+        <table class="items-table">
+            <thead>
+                <tr>
+                    <th style="width: 5%;">SL</th>
+                    <th style="width: 40%;">Description / বিবরণ</th>
+                    <th style="width: 15%;">Size (ft)</th>
+                    <th style="width: 10%;">Qty</th>
+                    <th style="width: 15%;">Rate</th>
+                    <th style="width: 15%;">Amount</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in invoice.items %}
+                <tr>
+                    <td>{{ loop.index }}</td>
+                    <td class="item-name">{{ item.description }}</td>
+                    <td class="item-size">{{ item.size if item.size else '-' }}</td>
+                    <td>{{ item.qty }}</td>
+                    <td>৳{{ "{:,.2f}".format(item.price) }}</td>
+                    <td>৳{{ "{:,.2f}".format(item.total) }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        
+        <div class="totals-container">
+            <div class="totals-box">
+                <div class="totals-row subtotal">
+                    <span>Subtotal / উপমোট</span>
+                    <span>৳{{ "{:,.2f}".format(invoice.total + invoice.discount) }}</span>
+                </div>
+                {% if invoice.discount > 0 %}
+                <div class="totals-row">
+                    <span>Discount / ছাড়</span>
+                    <span>- ৳{{ "{:,.2f}".format(invoice.discount) }}</span>
+                </div>
+                {% endif %}
+                <div class="totals-row grand-total">
+                    <span>Grand Total / সর্বমোট</span>
+                    <span>৳{{ "{:,.2f}".format(invoice.total) }}</span>
+                </div>
+                <div class="totals-row paid">
+                    <span>Paid / পরিশোধিত</span>
+                    <span>৳{{ "{:,.2f}".format(invoice.paid) }}</span>
+                </div>
+                {% if invoice.due > 0 %}
+                <div class="totals-row due">
+                    <span>Due / বাকি</span>
+                    <span>৳{{ "{:,.2f}".format(invoice.due) }}</span>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        {% if invoice.notes %}
+        <div class="notes-section">
+            <div class="notes-title">Notes / নোট:</div>
+            <div>{{ invoice.notes }}</div>
+        </div>
+        {% endif %}
+        
+        <div class="invoice-footer">
+            <div class="signatures">
+                <div class="signature-box">
+                    <div class="signature-line">Customer Signature<br>ক্রেতার স্বাক্ষর</div>
+                </div>
+                <div class="signature-box">
+                    <div class="signature-line">Authorized Signature<br>বিক্রেতার স্বাক্ষর</div>
+                </div>
+            </div>
+            
+            <div class="thank-you">Thank You For Your Business!  / ব্যবসায় আপনাকে ধন্যবাদ!</div>
+            <div class="powered-by">Powered by Mehedi Hasan | MNM Software</div>
+        </div>
+    </div>
+</body>
+</html>
+"""
+
+# ==============================================================================
+# STORE ESTIMATES LIST TEMPLATE
+# ==============================================================================
+
+STORE_ESTIMATES_LIST_TEMPLATE = """
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Estimates - MEHEDI THAI ALUMINUM AND GLASS</title>
+    """ + COMMON_STYLES + """
+</head>
+<body>
+    <div class="animated-bg"></div>
+
+    <div class="mobile-toggle" onclick="document.querySelector('.sidebar').classList.toggle('active')">
+        <i class="fas fa-bars"></i>
+    </div>
+
+    <div class="sidebar">
+        <div class="brand-logo">
+            <i class="fas fa-store"></i> 
+            Store<span>Panel</span>
+        </div>
+        <div class="nav-menu">
+            <a href="/admin/store" class="nav-link">
+                <i class="fas fa-th-large"></i> Dashboard
+            </a>
+            <a href="/store/products" class="nav-link">
+                <i class="fas fa-box"></i> Products
+            </a>
+            <a href="/store/customers" class="nav-link">
+                <i class="fas fa-users"></i> Customers
+            </a>
+            <a href="/store/invoices" class="nav-link">
+                <i class="fas fa-file-invoice-dollar"></i> Invoices
+            </a>
+            <div class="nav-link active">
+                <i class="fas fa-file-alt"></i> Estimates
+            </div>
+            <a href="/store/dues" class="nav-link">
+                <i class="fas fa-wallet"></i> Due Collection
+            </a>
+            <a href="/logout" class="nav-link" style="color: var(--accent-red); margin-top: 20px;">
+                <i class="fas fa-sign-out-alt"></i> Sign Out
+            </a>
+        </div>
+        <div class="sidebar-footer">© 2025 Mehedi Hasan</div>
+    </div>
+
+    <div class="main-content">
+        <div class="header-section">
+            <div>
+                <div class="page-title">Estimates / Quotations</div>
+                <div class="page-subtitle">View and manage all estimates</div>
+            </div>
+            <a href="/store/estimates/create" style="padding: 14px 30px; background: linear-gradient(135deg, #3B82F6 0%, #60A5FA 100%); border-radius: 12px; text-decoration: none; color: white; font-weight: 600;">
+                <i class="fas fa-plus" style="margin-right: 8px;"></i> New Estimate
+            </a>
+        </div>
+
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                <div class="flash-message flash-success">
+                    <i class="fas fa-check-circle"></i>
+                    <span>{{ messages[0] }}</span>
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <div class="card">
+            <div class="section-header">
+                <span>All Estimates</span>
+                <span class="table-badge" style="background: var(--accent-blue); color: white;">{{ estimates|length }} Total</span>
+            </div>
+            
+            <div style="overflow-x: auto;">
+                <table class="dark-table">
+                    <thead>
+                        <tr>
+                            <th>Estimate No</th>
+                            <th>Customer</th>
+                            <th>Date</th>
+                            <th>Valid Until</th>
+                            <th>Total</th>
+                            <th style="text-align: right;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if estimates %}
+                            {% for est in estimates|reverse %}
+                            <tr>
+                                <td style="font-weight: 700; color: var(--accent-blue);">{{ est.estimate_no }}</td>
+                                <td style="color: white;">{{ est.customer_name }}</td>
+                                <td style="color: var(--text-secondary);">{{ est.date }}</td>
+                                <td style="color: var(--text-secondary);">{{ est.valid_until if est.valid_until else '-' }}</td>
+                                <td style="font-weight: 700; color: var(--accent-purple);">৳{{ "{:,.0f}".format(est.total) }}</td>
+                                <td>
+                                    <div class="action-cell">
+                                        <a href="/store/estimates/print/{{ est.estimate_no }}" class="action-btn btn-print-sm" target="_blank"><i class="fas fa-print"></i></a>
+                                        <a href="/store/estimates/to-invoice/{{ est.estimate_no }}" class="action-btn btn-view" title="Convert to Invoice"><i class="fas fa-file-invoice"></i></a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="6" style="text-align: center; padding: 50px; color: var(--text-secondary);">
+                                    <i class="fas fa-file-alt" style="font-size: 50px; opacity: 0.2; margin-bottom: 15px; display: block;"></i>
+                                    No estimates created yet. Create your first estimate! 
+                                </td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+"""
 
 # ==============================================================================
 # ESTIMATE PRINT TEMPLATE - PROFESSIONAL QUOTATION
@@ -7362,6 +7484,472 @@ STORE_ESTIMATE_PRINT_TEMPLATE = """
 </body>
 </html>
 """
+
+# ==============================================================================
+# STORE DUE COLLECTION TEMPLATE
+# ==============================================================================
+
+STORE_DUE_COLLECTION_TEMPLATE = """
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Due Collection - MEHEDI THAI ALUMINUM AND GLASS</title>
+    """ + COMMON_STYLES + """
+    <style>
+        .due-card {
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, rgba(239, 68, 68, 0.05) 100%);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            border-radius: 16px;
+            padding: 25px;
+            margin-bottom: 20px;
+        }
+        
+        .due-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .due-invoice-no {
+            font-size: 20px;
+            font-weight: 800;
+            color: var(--accent-orange);
+        }
+        
+        .due-amount {
+            font-size: 24px;
+            font-weight: 800;
+            color: var(--accent-red);
+        }
+        
+        .due-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .due-detail-item {
+            background: rgba(255, 255, 255, 0.03);
+            padding: 12px;
+            border-radius: 10px;
+        }
+        
+        .due-detail-label {
+            font-size: 11px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            margin-bottom: 5px;
+        }
+        
+        .due-detail-value {
+            font-size: 15px;
+            font-weight: 600;
+            color: white;
+        }
+        
+        .payment-form {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            border-radius: 12px;
+            padding: 20px;
+        }
+        
+        .payment-history {
+            margin-top: 20px;
+        }
+        
+        .payment-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 8px;
+            margin-bottom: 8px;
+        }
+        
+        .payment-date {
+            color: var(--text-secondary);
+            font-size: 13px;
+        }
+        
+        .payment-amount {
+            font-weight: 700;
+            color: var(--accent-green);
+        }
+    </style>
+</head>
+<body>
+    <div class="animated-bg"></div>
+    
+    <div id="loading-overlay">
+        <div class="spinner-container">
+            <div class="spinner"></div>
+            <div class="spinner-inner"></div>
+        </div>
+        <div class="loading-text">Processing Payment...</div>
+    </div>
+
+    <div class="mobile-toggle" onclick="document.querySelector('.sidebar').classList.toggle('active')">
+        <i class="fas fa-bars"></i>
+    </div>
+
+    <div class="sidebar">
+        <div class="brand-logo">
+            <i class="fas fa-store"></i> 
+            Store<span>Panel</span>
+        </div>
+        <div class="nav-menu">
+            <a href="/admin/store" class="nav-link">
+                <i class="fas fa-th-large"></i> Dashboard
+            </a>
+            <a href="/store/products" class="nav-link">
+                <i class="fas fa-box"></i> Products
+            </a>
+            <a href="/store/customers" class="nav-link">
+                <i class="fas fa-users"></i> Customers
+            </a>
+            <a href="/store/invoices" class="nav-link">
+                <i class="fas fa-file-invoice-dollar"></i> Invoices
+            </a>
+            <div class="nav-link active">
+                <i class="fas fa-wallet"></i> Due Collection
+            </div>
+            <a href="/logout" class="nav-link" style="color: var(--accent-red); margin-top: 20px;">
+                <i class="fas fa-sign-out-alt"></i> Sign Out
+            </a>
+        </div>
+        <div class="sidebar-footer">© 2025 Mehedi Hasan</div>
+    </div>
+
+    <div class="main-content">
+        <div class="header-section">
+            <div>
+                <div class="page-title">Due Collection</div>
+                <div class="page-subtitle">Manage pending payments</div>
+            </div>
+            <div class="status-badge">
+                <div class="status-dot"></div>
+                <span>Online</span>
+            </div>
+        </div>
+
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                <div class="flash-message flash-success">
+                    <i class="fas fa-check-circle"></i>
+                    <span>{{ messages[0] }}</span>
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <div class="card" style="margin-bottom: 30px;">
+            <div class="section-header">
+                <span><i class="fas fa-search" style="margin-right: 10px; color: var(--accent-orange);"></i>Search Invoice</span>
+            </div>
+            <form action="/store/dues/search" method="get" style="display: flex; gap: 15px; flex-wrap: wrap;">
+                <div style="flex: 1; min-width: 200px;">
+                    <input type="text" name="invoice_no" placeholder="Enter Invoice Number (e.g.  INV-0001)" value="{{ search_invoice }}">
+                </div>
+                <button type="submit" style="width: auto; padding: 14px 30px;">
+                    <i class="fas fa-search" style="margin-right: 8px;"></i> Search
+                </button>
+            </form>
+        </div>
+
+        {% if invoice %}
+        <div class="due-card">
+            <div class="due-header">
+                <div class="due-invoice-no">{{ invoice.invoice_no }}</div>
+                <div class="due-amount">Due: ৳{{ "{:,.0f}".format(invoice.due) }}</div>
+            </div>
+            
+            <div class="due-details">
+                <div class="due-detail-item">
+                    <div class="due-detail-label">Customer</div>
+                    <div class="due-detail-value">{{ invoice.customer_name }}</div>
+                </div>
+                <div class="due-detail-item">
+                    <div class="due-detail-label">Phone</div>
+                    <div class="due-detail-value">{{ invoice.customer_phone }}</div>
+                </div>
+                <div class="due-detail-item">
+                    <div class="due-detail-label">Invoice Date</div>
+                    <div class="due-detail-value">{{ invoice.date }}</div>
+                </div>
+                <div class="due-detail-item">
+                    <div class="due-detail-label">Total Amount</div>
+                    <div class="due-detail-value">৳{{ "{:,.0f}".format(invoice.total) }}</div>
+                </div>
+                <div class="due-detail-item">
+                    <div class="due-detail-label">Already Paid</div>
+                    <div class="due-detail-value" style="color: var(--accent-green);">৳{{ "{:,.0f}".format(invoice.paid) }}</div>
+                </div>
+            </div>
+            
+            {% if invoice.due > 0 %}
+            <div class="payment-form">
+                <h4 style="margin-bottom: 15px; color: var(--accent-green);"><i class="fas fa-money-bill-wave" style="margin-right: 10px;"></i>Record Payment</h4>
+                <form action="/store/dues/collect" method="post" onsubmit="return validatePayment()">
+                    <input type="hidden" name="invoice_no" value="{{ invoice.invoice_no }}">
+                    <div class="grid-2">
+                        <div class="input-group">
+                            <label>PAYMENT AMOUNT</label>
+                            <input type="number" name="amount" id="paymentAmount" required placeholder="৳" step="0.01" max="{{ invoice.due }}">
+                        </div>
+                        <div class="input-group">
+                            <label>PAYMENT DATE</label>
+                            <input type="date" name="payment_date" value="{{ today }}" required>
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <label>NOTES (Optional)</label>
+                        <input type="text" name="notes" placeholder="Payment notes... ">
+                    </div>
+                    <button type="submit" style="background: linear-gradient(135deg, #10B981 0%, #34D399 100%);">
+                        <i class="fas fa-check" style="margin-right: 10px;"></i> Record Payment
+                    </button>
+                </form>
+            </div>
+            {% else %}
+            <div style="text-align: center; padding: 30px; background: rgba(16, 185, 129, 0.1); border-radius: 12px; border: 1px solid rgba(16, 185, 129, 0.2);">
+                <i class="fas fa-check-circle" style="font-size: 50px; color: var(--accent-green); margin-bottom: 15px;"></i>
+                <h3 style="color: var(--accent-green);">Fully Paid! </h3>
+                <p style="color: var(--text-secondary);">This invoice has no pending dues.</p>
+            </div>
+            {% endif %}
+            
+            {% if invoice.payments %}
+            <div class="payment-history">
+                <h4 style="margin-bottom: 15px; color: var(--text-secondary);"><i class="fas fa-history" style="margin-right: 10px;"></i>Payment History</h4>
+                {% for p in invoice.payments %}
+                <div class="payment-item">
+                    <div>
+                        <div class="payment-date">{{ p.date }}</div>
+                        {% if p.notes %}<div style="font-size: 12px; color: var(--text-secondary);">{{ p.notes }}</div>{% endif %}
+                    </div>
+                    <div class="payment-amount">+ ৳{{ "{:,.0f}".format(p.amount) }}</div>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+        {% elif search_invoice %}
+        <div class="empty-state">
+            <i class="fas fa-search"></i>
+            <p>Invoice "{{ search_invoice }}" not found</p>
+        </div>
+        {% endif %}
+
+        <div class="card">
+            <div class="section-header">
+                <span><i class="fas fa-exclamation-triangle" style="margin-right: 10px; color: var(--accent-red);"></i>All Pending Dues</span>
+                <span class="table-badge" style="background: var(--accent-red); color: white;">{{ pending_dues|length }} Invoices</span>
+            </div>
+            
+            <div style="max-height: 400px; overflow-y: auto;">
+                {% if pending_dues %}
+                    {% for due in pending_dues %}
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 15px; background: rgba(255,255,255,0.02); border-radius: 10px; margin-bottom: 10px; border-left: 3px solid var(--accent-red);">
+                        <div>
+                            <div style="font-weight: 700; color: var(--accent-orange);">{{ due.invoice_no }}</div>
+                            <div style="font-size: 13px; color: white;">{{ due.customer_name }}</div>
+                            <div style="font-size: 12px; color: var(--text-secondary);">{{ due.date }}</div>
+                        </div>
+                        <div style="text-align: right;">
+                            <div style="font-size: 18px; font-weight: 800; color: var(--accent-red);">৳{{ "{:,.0f}".format(due.due) }}</div>
+                            <a href="/store/dues/search?invoice_no={{ due.invoice_no }}" class="action-btn btn-edit" style="margin-top: 8px;">
+                                <i class="fas fa-money-bill"></i> Collect
+                            </a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="empty-state">
+                        <i class="fas fa-check-circle" style="color: var(--accent-green);"></i>
+                        <p>No pending dues!  All payments collected.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function validatePayment() {
+            const amount = parseFloat(document.getElementById('paymentAmount').value);
+            if (amount <= 0) {
+                alert('Please enter a valid amount');
+                return false;
+            }
+            document.getElementById('loading-overlay').style.display = 'flex';
+            return true;
+        }
+    </script>
+</body>
+</html>
+"""
+# ==============================================================================
+# STORE INVOICES LIST TEMPLATE
+# ==============================================================================
+
+STORE_INVOICES_LIST_TEMPLATE = """
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Invoices - MEHEDI THAI ALUMINUM AND GLASS</title>
+    """ + COMMON_STYLES + """
+</head>
+<body>
+    <div class="animated-bg"></div>
+
+    <div class="mobile-toggle" onclick="document.querySelector('.sidebar').classList.toggle('active')">
+        <i class="fas fa-bars"></i>
+    </div>
+
+    <div class="sidebar">
+        <div class="brand-logo">
+            <i class="fas fa-store"></i> 
+            Store<span>Panel</span>
+        </div>
+        <div class="nav-menu">
+            <a href="/admin/store" class="nav-link">
+                <i class="fas fa-th-large"></i> Dashboard
+            </a>
+            <a href="/store/products" class="nav-link">
+                <i class="fas fa-box"></i> Products
+            </a>
+            <a href="/store/customers" class="nav-link">
+                <i class="fas fa-users"></i> Customers
+            </a>
+            <div class="nav-link active">
+                <i class="fas fa-file-invoice-dollar"></i> Invoices
+            </div>
+            <a href="/store/estimates" class="nav-link">
+                <i class="fas fa-file-alt"></i> Estimates
+            </a>
+            <a href="/store/dues" class="nav-link">
+                <i class="fas fa-wallet"></i> Due Collection
+            </a>
+            <a href="/logout" class="nav-link" style="color: var(--accent-red); margin-top: 20px;">
+                <i class="fas fa-sign-out-alt"></i> Sign Out
+            </a>
+        </div>
+        <div class="sidebar-footer">© 2025 Mehedi Hasan</div>
+    </div>
+
+    <div class="main-content">
+        <div class="header-section">
+            <div>
+                <div class="page-title">Invoice Management</div>
+                <div class="page-subtitle">View and manage all invoices</div>
+            </div>
+            <a href="/store/invoices/create" style="padding: 14px 30px; background: var(--gradient-orange); border-radius: 12px; text-decoration: none; color: white; font-weight: 600;">
+                <i class="fas fa-plus" style="margin-right: 8px;"></i> New Invoice
+            </a>
+        </div>
+
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                <div class="flash-message flash-success">
+                    <i class="fas fa-check-circle"></i>
+                    <span>{{ messages[0] }}</span>
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <div class="card" style="margin-bottom: 20px;">
+            <div class="section-header">
+                <span><i class="fas fa-search" style="margin-right: 10px; color: var(--accent-orange);"></i>Search Invoice</span>
+            </div>
+            <form action="/store/invoices" method="get" style="display: flex; gap: 15px; flex-wrap: wrap;">
+                <div style="flex: 1; min-width: 200px;">
+                    <input type="text" name="search" placeholder="Search by Invoice No or Customer Name..." value="{{ search_query }}">
+                </div>
+                <button type="submit" style="width: auto; padding: 14px 30px;">
+                    <i class="fas fa-search" style="margin-right: 8px;"></i> Search
+                </button>
+                {% if search_query %}
+                <a href="/store/invoices" style="padding: 14px 20px; background: rgba(255,255,255,0.05); border: 1px solid var(--border-color); border-radius: 12px; text-decoration: none; color: var(--text-secondary);">
+                    <i class="fas fa-times"></i> Clear
+                </a>
+                {% endif %}
+            </form>
+        </div>
+
+        <div class="card">
+            <div class="section-header">
+                <span>All Invoices</span>
+                <span class="table-badge" style="background: var(--accent-green); color: white;">{{ invoices|length }} Total</span>
+            </div>
+            
+            <div style="overflow-x: auto;">
+                <table class="dark-table">
+                    <thead>
+                        <tr>
+                            <th>Invoice No</th>
+                            <th>Customer</th>
+                            <th>Date</th>
+                            <th>Total</th>
+                            <th>Paid</th>
+                            <th>Due</th>
+                            <th style="text-align: right;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if invoices %}
+                            {% for inv in invoices|reverse %}
+                            <tr>
+                                <td style="font-weight: 700; color: var(--accent-orange);">{{ inv.invoice_no }}</td>
+                                <td style="color: white;">{{ inv.customer_name }}</td>
+                                <td style="color: var(--text-secondary);">{{ inv.date }}</td>
+                                <td style="font-weight: 700; color: var(--accent-green);">৳{{ "{:,.0f}".format(inv.total) }}</td>
+                                <td style="color: var(--accent-green);">৳{{ "{:,.0f}".format(inv.paid) }}</td>
+                                <td>
+                                    {% if inv.due > 0 %}
+                                    <span style="color: var(--accent-red); font-weight: 700;">৳{{ "{:,.0f}".format(inv.due) }}</span>
+                                    {% else %}
+                                    <span style="color: var(--accent-green);"><i class="fas fa-check-circle"></i> Paid</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="action-cell">
+                                        <a href="/store/invoices/print/{{ inv.invoice_no }}" class="action-btn btn-print-sm" target="_blank"><i class="fas fa-print"></i></a>
+                                        {% if inv.due > 0 %}
+                                        <a href="/store/dues/search?invoice_no={{ inv.invoice_no }}" class="action-btn btn-edit"><i class="fas fa-money-bill"></i></a>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="7" style="text-align: center; padding: 50px; color: var(--text-secondary);">
+                                    <i class="fas fa-file-invoice" style="font-size: 50px; opacity: 0.2; margin-bottom: 15px; display: block;"></i>
+                                    {% if search_query %}
+                                    No invoices found for "{{ search_query }}"
+                                    {% else %}
+                                    No invoices created yet.  Create your first invoice! 
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+"""
+
 # ==============================================================================
 # REPORT TEMPLATES (ORIGINAL - CLOSING, ACCESSORIES, PO)
 # ==============================================================================
@@ -7787,7 +8375,6 @@ PO_REPORT_TEMPLATE = """
 </body>
 </html>
 """
-
 # ==============================================================================
 # FLASK ROUTES - AUTHENTICATION
 # ==============================================================================
@@ -8248,7 +8835,12 @@ def accessories_print():
     item_type = "Top"
     for c in challans:
         line = c.get('line', 'N/A')
-        qty = c.get('qty', 0)
+        # FIX: Ensure qty is an integer before adding
+        try:
+            qty = int(c.get('qty', 0))
+        except (ValueError, TypeError):
+            qty = 0
+            
         line_summary[line] = line_summary.get(line, 0) + qty
         if c.get('item_type'):
             item_type = c.get('item_type')
