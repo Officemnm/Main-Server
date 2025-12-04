@@ -17,7 +17,6 @@ import shutil
 import numpy as np
 from pymongo import MongoClient 
 from collections import defaultdict
-from functools import wraps
 
 # --- Flask লাইব্রেরি ইম্পোর্ট ---
 from flask import Flask, request, render_template_string, send_file, flash, session, redirect, url_for, make_response, jsonify
@@ -163,7 +162,8 @@ def update_po_stats(username, file_count):
     if len(data['downloads']) > 3000:
         data['downloads'] = data['downloads'][:3000]
     save_stats(data)
-    def load_accessories_db():
+
+def load_accessories_db():
     record = accessories_col.find_one({"_id": "accessories_data"})
     if record:
         return record['data']
@@ -176,8 +176,7 @@ def save_accessories_db(data):
         {"_id": "accessories_data", "data": data},
         upsert=True
     )
-
-# ==============================================================================
+    # ==============================================================================
 # Store Helper Functions
 # ==============================================================================
 
@@ -302,10 +301,8 @@ def generate_estimate_number():
         except:
             pass
     return f"EST-{str(last_num + 1).zfill(4)}"
-    # ==============================================================================
-# ড্যাশবোর্ড লজিক: মেইন এবং স্টোর ড্যাশবোর্ড সামারি
-# ==============================================================================
 
+# --- আপডেটেড: রিয়েল-টাইম ড্যাশবোর্ড সামারি এবং এনালিটিক্স ---
 def get_dashboard_summary_v2():
     stats_data = load_stats()
     acc_db = load_accessories_db()
@@ -325,7 +322,7 @@ def get_dashboard_summary_v2():
             "last_duration": d.get('last_duration', 'N/A')
         })
 
-    # 2. Accessories Today & Analytics - LIFETIME COUNT
+    # 2.  Accessories Today & Analytics - LIFETIME COUNT
     acc_lifetime_count = 0
     acc_today_list = []
     
@@ -353,7 +350,7 @@ def get_dashboard_summary_v2():
                 daily_data[sort_key]['label'] = dt_obj.strftime('%d-%b')
             except: pass
 
-    # 3. Closing & PO - LIFETIME COUNT & Analytics
+    # 3.  Closing & PO - LIFETIME COUNT & Analytics
     closing_lifetime_count = 0
     po_lifetime_count = 0
     closing_list = []
@@ -453,9 +450,8 @@ def get_store_dashboard_summary():
         "monthly_sales": monthly_sales,
         "total_due": total_due
     }
-
-# ==============================================================================
-# CSS STYLES - PREMIUM MODERN UI WITH ANIMATIONS
+        # ==============================================================================
+# ENHANCED CSS STYLES - PREMIUM MODERN UI WITH ANIMATIONS
 # ==============================================================================
 COMMON_STYLES = """
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -569,7 +565,17 @@ COMMON_STYLES = """
             transition: var(--transition-smooth);
             box-shadow: 4px 0 30px rgba(0, 0, 0, 0.3);
         }
-        
+        .sidebar::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 1px;
+            height: 100%;
+            background: linear-gradient(180deg, transparent, var(--accent-orange), transparent);
+            opacity: 0.3;
+        }
+
         .brand-logo { 
             font-size: 26px;
             font-weight: 900; 
@@ -595,6 +601,11 @@ COMMON_STYLES = """
             filter: drop-shadow(0 0 10px var(--accent-orange-glow));
             animation: logoFloat 3s ease-in-out infinite;
         }
+
+        @keyframes logoFloat {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-5px) rotate(5deg); }
+        }
         
         .nav-menu { 
             flex-grow: 1; 
@@ -617,19 +628,57 @@ COMMON_STYLES = """
             position: relative;
             overflow: hidden;
         }
-        
+
+        .nav-link::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 0;
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent-orange-glow), transparent);
+            transition: var(--transition-smooth);
+            z-index: -1;
+        }
+        .nav-link:hover::before, .nav-link.active::before { width: 100%; }
+
         .nav-link:hover, .nav-link.active { 
             color: var(--accent-orange); 
-            background: rgba(255, 122, 0, 0.1);
-            border-left: 3px solid var(--accent-orange);
             transform: translateX(5px);
         }
-        
+
+        .nav-link.active {
+            background: rgba(255, 122, 0, 0.1);
+            border-left: 3px solid var(--accent-orange);
+            box-shadow: 0 0 20px var(--accent-orange-glow);
+        }
+
         .nav-link i { 
             width: 24px;
             margin-right: 12px; 
             font-size: 18px; 
             text-align: center;
+            transition: var(--transition-smooth);
+        }
+
+        .nav-link:hover i {
+            transform: scale(1.2);
+            filter: drop-shadow(0 0 8px var(--accent-orange));
+        }
+
+        .nav-link .nav-badge {
+            margin-left: auto;
+            background: var(--accent-orange);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 11px;
+            font-weight: 700;
+            animation: badgePulse 2s ease-in-out infinite;
+        }
+        @keyframes badgePulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
         }
 
         .sidebar-footer {
@@ -640,6 +689,8 @@ COMMON_STYLES = """
             font-size: 11px; 
             color: var(--text-secondary); 
             font-weight: 500; 
+            opacity: 0.5;
+            letter-spacing: 1px;
         }
 
         /* Main Content */
@@ -670,14 +721,22 @@ COMMON_STYLES = """
             font-weight: 800; 
             color: white; 
             margin-bottom: 8px;
+            letter-spacing: -0.5px;
+            background: linear-gradient(135deg, #fff 0%, #ccc 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
 
         .page-subtitle { 
             color: var(--text-secondary);
             font-size: 14px;
+            font-weight: 400;
         }
 
-        /* Status Badge */
+        /* ============================================= */
+        /* FIXED: Status Badge with Glowing Green Dot   */
+        /* ============================================= */
         .status-badge {
             background: var(--bg-card);
             padding: 12px 24px;
@@ -688,23 +747,88 @@ COMMON_STYLES = """
             display: flex;
             align-items: center;
             gap: 10px;
+            box-shadow: var(--shadow-card);
+            transition: var(--transition-smooth);
         }
         
+        .status-badge:hover {
+            border-color: rgba(16, 185, 129, 0.3);
+            box-shadow: 0 0 20px rgba(16, 185, 129, 0.15);
+        }
+        
+        /* FIXED: Glowing Green Status Dot */
         .status-dot {
             width: 10px;
             height: 10px;
             background: var(--accent-green);
             border-radius: 50%;
+            position: relative;
             animation: statusGlow 2s ease-in-out infinite;
-            box-shadow: 0 0 10px var(--accent-green);
+            box-shadow: 
+                0 0 5px var(--accent-green),
+                0 0 10px var(--accent-green),
+                0 0 20px var(--accent-green),
+                0 0 30px rgba(16, 185, 129, 0.5);
+        }
+        
+        .status-dot::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 100%;
+            height: 100%;
+            background: var(--accent-green);
+            border-radius: 50%;
+            animation: statusPulseRing 2s ease-out infinite;
+        }
+        
+        .status-dot::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 6px;
+            height: 6px;
+            background: #fff;
+            border-radius: 50%;
+            opacity: 0.8;
         }
         
         @keyframes statusGlow {
-            0%, 100% { opacity: 1; box-shadow: 0 0 10px var(--accent-green); }
-            50% { opacity: 0.6; box-shadow: 0 0 20px var(--accent-green); }
+            0%, 100% { 
+                opacity: 1;
+                box-shadow: 
+                    0 0 5px var(--accent-green),
+                    0 0 10px var(--accent-green),
+                    0 0 20px var(--accent-green),
+                    0 0 30px rgba(16, 185, 129, 0.5);
+            }
+            50% { 
+                opacity: 0.8;
+                box-shadow: 
+                    0 0 10px var(--accent-green),
+                    0 0 20px var(--accent-green),
+                    0 0 40px var(--accent-green),
+                    0 0 60px rgba(16, 185, 129, 0.6);
+            }
         }
         
-        /* Cards */
+        @keyframes statusPulseRing {
+            0% {
+                transform: translate(-50%, -50%) scale(1);
+                opacity: 0.8;
+            }
+            100% {
+                transform: translate(-50%, -50%) scale(2.5);
+                opacity: 0;
+            }
+        }
+        /* ============================================= */
+        
+        /* Enhanced Cards & Grid */
         .stats-grid { 
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); 
@@ -726,6 +850,20 @@ COMMON_STYLES = """
             padding: 28px;
             backdrop-filter: blur(10px);
             transition: var(--transition-smooth);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--accent-orange-glow), transparent);
+            opacity: 0;
+            transition: var(--transition-smooth);
         }
 
         .card:hover {
@@ -733,12 +871,42 @@ COMMON_STYLES = """
             box-shadow: var(--shadow-glow);
             transform: translateY(-4px);
         }
+
+        .card:hover::before { opacity: 1; }
         
+        .section-header { 
+            display: flex;
+            justify-content: space-between; 
+            align-items: center; 
+            margin-bottom: 24px; 
+            font-weight: 700;
+            font-size: 16px; 
+            color: white;
+            letter-spacing: -0.3px;
+        }
+
+        .section-header i {
+            font-size: 20px;
+            opacity: 0.7;
+            transition: var(--transition-smooth);
+        }
+
+        .card:hover .section-header i {
+            opacity: 1;
+            transform: rotate(10deg) scale(1.1);
+        }
+        
+        /* Stat Cards with Animations */
         .stat-card { 
             display: flex;
             align-items: center; 
             gap: 24px; 
+            transition: var(--transition-smooth);
             cursor: pointer;
+        }
+
+        .stat-card:hover { 
+            transform: translateY(-6px) scale(1.02);
         }
 
         .stat-icon { 
@@ -751,6 +919,33 @@ COMMON_STYLES = """
             align-items: center;
             font-size: 26px; 
             color: var(--accent-orange);
+            position: relative;
+            overflow: hidden;
+            transition: var(--transition-smooth);
+        }
+
+        .stat-icon::after {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: var(--gradient-orange);
+            opacity: 0;
+            transition: var(--transition-smooth);
+        }
+
+        .stat-card:hover .stat-icon {
+            transform: rotate(-10deg) scale(1.1);
+            box-shadow: 0 0 30px var(--accent-orange-glow);
+        }
+
+        .stat-card:hover .stat-icon i {
+            animation: iconBounce 0.5s ease-out;
+        }
+
+        @keyframes iconBounce {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.3); }
         }
 
         .stat-info h3 { 
@@ -758,7 +953,12 @@ COMMON_STYLES = """
             font-weight: 800; 
             margin: 0; 
             color: white;
+            letter-spacing: -1px;
             line-height: 1;
+            background: linear-gradient(135deg, #fff 0%, var(--accent-orange-light) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
 
         .stat-info p { 
@@ -766,10 +966,73 @@ COMMON_STYLES = """
             color: var(--text-secondary); 
             margin: 6px 0 0 0; 
             text-transform: uppercase;
+            letter-spacing: 1.5px;
             font-weight: 600;
         }
 
-        /* Forms */
+        /* Animated Counter */
+        .count-up {
+            display: inline-block;
+        }
+                /* Progress Bars with Animation */
+        .progress-item { margin-bottom: 24px; }
+
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 14px;
+            color: white;
+            font-weight: 500;
+        }
+
+        .progress-value {
+            color: var(--text-secondary);
+            font-weight: 600;
+        }
+
+        .progress-bar-container {
+            height: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            border-radius: 10px;
+            position: relative;
+            animation: progressFill 1.5s ease-out forwards;
+            transform-origin: left;
+        }
+
+        .progress-bar-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            animation: shimmer 2s infinite;
+        }
+
+        @keyframes progressFill {
+            from { transform: scaleX(0); }
+            to { transform: scaleX(1); }
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        .progress-orange { background: var(--gradient-orange); }
+        .progress-purple { background: linear-gradient(135deg, #8B5CF6 0%, #A78BFA 100%); }
+        .progress-green { background: linear-gradient(135deg, #10B981 0%, #34D399 100%); }
+        
+        /* Enhanced Forms */
         .input-group { margin-bottom: 20px; }
 
         .input-group label { 
@@ -779,6 +1042,7 @@ COMMON_STYLES = """
             margin-bottom: 8px; 
             text-transform: uppercase; 
             font-weight: 700;
+            letter-spacing: 1.5px;
         }
 
         input, select, textarea { 
@@ -789,17 +1053,44 @@ COMMON_STYLES = """
             border-radius: 12px; 
             color: white; 
             font-size: 15px; 
+            font-weight: 500;
             outline: none; 
             transition: var(--transition-smooth);
         }
         
+        textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        input::placeholder, textarea::placeholder {
+            color: var(--text-secondary);
+            opacity: 0.5;
+        }
+
         input:focus, select:focus, textarea:focus { 
             border-color: var(--accent-orange);
             background: rgba(255, 122, 0, 0.05);
-            box-shadow: 0 0 0 4px var(--accent-orange-glow);
+            box-shadow: 0 0 0 4px var(--accent-orange-glow), 0 0 20px var(--accent-orange-glow);
+        }
+
+        select {
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%23FF7A00' viewBox='0 0 24 24'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            background-size: 24px;
+            background-color: rgba(255, 255, 255, 0.03);
         }
         
-        button { 
+        select option {
+            background-color: #1a1a25;
+            color: white;
+            padding: 10px;
+        }
+        
+        button, .btn-primary { 
             width: 100%;
             padding: 14px 24px; 
             background: var(--gradient-orange);
@@ -810,14 +1101,74 @@ COMMON_STYLES = """
             font-size: 15px;
             cursor: pointer; 
             transition: var(--transition-smooth);
+            position: relative;
+            overflow: hidden;
+            letter-spacing: 0.5px;
         }
+        
+        button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: 0.5s;
+        }
+
+        button:hover::before { left: 100%; }
 
         button:hover { 
             transform: translateY(-3px);
             box-shadow: 0 10px 30px var(--accent-orange-glow);
         }
+
+        button:active {
+            transform: translateY(0);
+        }
         
-        /* Tables */
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-color);
+        }
+        
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: var(--accent-orange);
+        }
+        
+        .btn-success {
+            background: linear-gradient(135deg, #10B981 0%, #34D399 100%);
+        }
+        
+        .btn-success:hover {
+            box-shadow: 0 10px 30px rgba(16, 185, 129, 0.3);
+        }
+        
+        .btn-danger {
+            background: linear-gradient(135deg, #EF4444 0%, #F87171 100%);
+        }
+        
+        .btn-danger:hover {
+            box-shadow: 0 10px 30px rgba(239, 68, 68, 0.3);
+        }
+        
+        .btn-purple {
+            background: linear-gradient(135deg, #8B5CF6 0%, #A78BFA 100%);
+        }
+        
+        .btn-purple:hover {
+            box-shadow: 0 10px 30px rgba(139, 92, 246, 0.3);
+        }
+        
+        .btn-sm {
+            padding: 8px 16px;
+            font-size: 13px;
+            width: auto;
+        }
+
+        /* Enhanced Tables */
         .dark-table { 
             width: 100%;
             border-collapse: collapse; 
@@ -830,7 +1181,9 @@ COMMON_STYLES = """
             color: var(--text-secondary); 
             font-size: 11px;
             text-transform: uppercase;
+            letter-spacing: 1.5px;
             border-bottom: 1px solid var(--border-color);
+            font-weight: 700;
         }
 
         .dark-table td { 
@@ -839,6 +1192,24 @@ COMMON_STYLES = """
             font-size: 14px; 
             border-bottom: 1px solid rgba(255,255,255,0.03);
             vertical-align: middle;
+            transition: var(--transition-smooth);
+        }
+
+        .dark-table tr {
+            transition: var(--transition-smooth);
+        }
+
+        .dark-table tr:hover td { 
+            background: rgba(255, 122, 0, 0.03);
+        }
+
+        .table-badge {
+            background: rgba(255,255,255,0.05);
+            padding: 6px 14px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 600;
+            display: inline-block;
         }
         
         /* Action Buttons */
@@ -859,21 +1230,59 @@ COMMON_STYLES = """
             cursor: pointer; 
             border: none; 
             transition: var(--transition-smooth);
+            position: relative;
+            overflow: hidden;
         }
 
-        .btn-edit { background: rgba(139, 92, 246, 0.15); color: #A78BFA; }
-        .btn-edit:hover { background: var(--accent-purple); color: white; }
+        .btn-edit { 
+            background: rgba(139, 92, 246, 0.15);
+            color: #A78BFA; 
+        }
+
+        .btn-edit:hover { 
+            background: var(--accent-purple);
+            color: white;
+            transform: scale(1.1);
+            box-shadow: 0 0 20px rgba(139, 92, 246, 0.4);
+        }
+
+        .btn-del { 
+            background: rgba(239, 68, 68, 0.15);
+            color: #F87171; 
+        }
+
+        .btn-del:hover { 
+            background: var(--accent-red);
+            color: white;
+            transform: scale(1.1);
+            box-shadow: 0 0 20px rgba(239, 68, 68, 0.4);
+        }
         
-        .btn-del { background: rgba(239, 68, 68, 0.15); color: #F87171; }
-        .btn-del:hover { background: var(--accent-red); color: white; }
+        .btn-view {
+            background: rgba(59, 130, 246, 0.15);
+            color: #60A5FA;
+        }
         
-        .btn-view { background: rgba(59, 130, 246, 0.15); color: #60A5FA; }
-        .btn-view:hover { background: var(--accent-blue); color: white; }
+        .btn-view:hover {
+            background: var(--accent-blue);
+            color: white;
+            transform: scale(1.1);
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.4);
+        }
         
-        .btn-print-sm { background: rgba(16, 185, 129, 0.15); color: #34D399; }
-        .btn-print-sm:hover { background: var(--accent-green); color: white; }
+        .btn-print-sm {
+            background: rgba(16, 185, 129, 0.15);
+            color: #34D399;
+        }
         
-        /* Loading Overlay */
+        .btn-print-sm:hover {
+            background: var(--accent-green);
+            color: white;
+            transform: scale(1.1);
+            box-shadow: 0 0 20px rgba(16, 185, 129, 0.4);
+        }
+        
+        /* Enhanced Loading Overlay */
         #loading-overlay { 
             display: none;
             position: fixed; 
@@ -887,19 +1296,143 @@ COMMON_STYLES = """
             justify-content: center; 
             align-items: center; 
             backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
         }
         
+        /* Modern Spinner */
+        .spinner-container {
+            position: relative;
+            width: 80px;
+            height: 80px;
+        }
+
         .spinner { 
-            width: 60px;
-            height: 60px; 
+            width: 80px;
+            height: 80px; 
             border: 4px solid rgba(255, 122, 0, 0.1);
             border-top: 4px solid var(--accent-orange);
+            border-right: 4px solid var(--accent-orange-light);
             border-radius: 50%;
             animation: spin 0.8s linear infinite;
+            box-shadow: 0 0 30px var(--accent-orange-glow);
+        }
+
+        .spinner-inner {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 50px;
+            height: 50px;
+            border: 3px solid rgba(139, 92, 246, 0.1);
+            border-bottom: 3px solid var(--accent-purple);
+            border-left: 3px solid var(--accent-purple);
+            border-radius: 50%;
+            animation: spin 1.2s linear infinite reverse;
+        }
+
+        @keyframes spin { 
+            0% { transform: rotate(0deg); } 
+            100% { transform: rotate(360deg); } 
+        }
+
+        /* Success Checkmark Animation */
+        .checkmark-container { 
+            display: none;
+            text-align: center; 
+        }
+
+        .checkmark-circle {
+            width: 100px;
+            height: 100px; 
+            position: relative; 
+            display: inline-block;
+            border-radius: 50%; 
+            border: 3px solid var(--accent-green);
+            margin-bottom: 24px;
+            animation: success-anim 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+            box-shadow: 0 0 40px rgba(16, 185, 129, 0.3);
+        }
+
+        .checkmark-circle::before {
+            content: '';
+            display: block; 
+            width: 30px; 
+            height: 50px;
+            border: solid var(--accent-green); 
+            border-width: 0 4px 4px 0;
+            position: absolute; 
+            top: 15px; 
+            left: 35px;
+            transform: rotate(45deg); 
+            opacity: 0;
+            animation: checkmark-anim 0.4s 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
         }
         
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        
+        /* Fail Cross Animation */
+        .fail-container { 
+            display: none; 
+            text-align: center;
+        }
+
+        .fail-circle {
+            width: 100px;
+            height: 100px; 
+            position: relative; 
+            display: inline-block;
+            border-radius: 50%; 
+            border: 3px solid var(--accent-red);
+            margin-bottom: 24px;
+            animation: fail-anim 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+            box-shadow: 0 0 40px rgba(239, 68, 68, 0.3);
+        }
+
+        .fail-circle::before, .fail-circle::after {
+            content: '';
+            position: absolute; 
+            width: 4px; 
+            height: 50px; 
+            background: var(--accent-red);
+            top: 23px; 
+            left: 46px; 
+            border-radius: 4px;
+            animation: crossAnim 0.3s 0.4s ease-out forwards;
+            opacity: 0;
+        }
+
+        .fail-circle::before { transform: rotate(45deg); }
+        .fail-circle::after { transform: rotate(-45deg); }
+
+        @keyframes success-anim { 
+            0% { transform: scale(0); opacity: 0; } 
+            50% { transform: scale(1.2); } 
+            100% { transform: scale(1); opacity: 1; } 
+        }
+
+        @keyframes checkmark-anim { 
+            0% { opacity: 0; height: 0; width: 0; } 
+            100% { opacity: 1; height: 50px; width: 30px; } 
+        }
+
+        @keyframes fail-anim { 
+            0% { transform: scale(0); opacity: 0; } 
+            50% { transform: scale(1.2); } 
+            100% { transform: scale(1); opacity: 1; } 
+        }
+
+        @keyframes crossAnim {
+            0% { opacity: 0; transform: rotate(45deg) scale(0); }
+            100% { opacity: 1; transform: rotate(45deg) scale(1); }
+        }
+
+        .anim-text { 
+            font-size: 24px; 
+            font-weight: 800; 
+            color: white;
+            margin-top: 10px; 
+            letter-spacing: 1px;
+        }
+
         .loading-text {
             color: var(--text-secondary);
             font-size: 15px;
@@ -907,9 +1440,306 @@ COMMON_STYLES = """
             font-weight: 500;
             letter-spacing: 2px;
             text-transform: uppercase;
+            animation: textPulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes textPulse {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+                /* Welcome Popup Modal */
+        .welcome-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(10, 10, 15, 0.9);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            z-index: 10000;
+            justify-content: center;
+            align-items: center;
+            animation: modalFadeIn 0.3s ease-out;
+        }
+
+        @keyframes modalFadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
         }
         
-        /* Mobile Responsive */
+        .welcome-content {
+            background: var(--gradient-card);
+            border: 1px solid var(--border-color);
+            border-radius: 24px;
+            padding: 50px 60px;
+            text-align: center;
+            max-width: 500px;
+            width: 90%;
+            animation: welcomeSlideIn 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.5), 0 0 60px var(--accent-orange-glow);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .welcome-content::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, var(--accent-orange-glow) 0%, transparent 60%);
+            animation: welcomeGlow 3s ease-in-out infinite;
+            opacity: 0.3;
+        }
+        
+        @keyframes welcomeSlideIn {
+            from { 
+                opacity: 0;
+                transform: translateY(-50px) scale(0.9);
+            }
+            to { 
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        @keyframes welcomeGlow {
+            0%, 100% { transform: rotate(0deg); }
+            50% { transform: rotate(180deg); }
+        }
+
+        .welcome-icon {
+            font-size: 80px;
+            margin-bottom: 20px;
+            display: inline-block;
+            animation: welcomeIconBounce 1s ease-out;
+        }
+
+        @keyframes welcomeIconBounce {
+            0% { transform: scale(0) rotate(-180deg); }
+            60% { transform: scale(1.2) rotate(10deg); }
+            100% { transform: scale(1) rotate(0deg); }
+        }
+
+        .welcome-greeting {
+            font-size: 16px;
+            color: var(--accent-orange);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            margin-bottom: 10px;
+        }
+
+        .welcome-title {
+            font-size: 36px;
+            font-weight: 900;
+            color: white;
+            margin-bottom: 15px;
+            line-height: 1.2;
+        }
+
+        .welcome-title span {
+            background: var(--gradient-orange);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .welcome-message {
+            color: var(--text-secondary);
+            font-size: 15px;
+            line-height: 1.6;
+            margin-bottom: 30px;
+        }
+
+        .welcome-close {
+            background: var(--gradient-orange);
+            color: white;
+            border: none;
+            padding: 14px 40px;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+            position: relative;
+            z-index: 1;
+        }
+
+        .welcome-close:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px var(--accent-orange-glow);
+        }
+
+        /* Tooltip */
+        .tooltip {
+            position: relative;
+        }
+
+        .tooltip::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: 120%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--bg-card);
+            color: white;
+            padding: 8px 14px;
+            border-radius: 8px;
+            font-size: 12px;
+            white-space: nowrap;
+            opacity: 0;
+            visibility: hidden;
+            transition: var(--transition-smooth);
+            border: 1px solid var(--border-color);
+            z-index: 1000;
+        }
+
+        .tooltip:hover::after {
+            opacity: 1;
+            visibility: visible;
+            bottom: 130%;
+        }
+        
+        /* File Upload Zone */
+        .upload-zone {
+            border: 2px dashed var(--border-color);
+            padding: 50px;
+            text-align: center;
+            border-radius: 16px;
+            transition: var(--transition-smooth);
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .upload-zone::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: var(--gradient-orange);
+            opacity: 0;
+            transition: var(--transition-smooth);
+        }
+
+        .upload-zone:hover {
+            border-color: var(--accent-orange);
+            background: rgba(255, 122, 0, 0.05);
+        }
+
+        .upload-zone:hover::before {
+            opacity: 0.03;
+        }
+
+        .upload-zone.dragover {
+            border-color: var(--accent-orange);
+            background: rgba(255, 122, 0, 0.1);
+            transform: scale(1.02);
+        }
+
+        .upload-icon {
+            font-size: 60px;
+            color: var(--accent-orange);
+            margin-bottom: 20px;
+            display: inline-block;
+            animation: uploadFloat 3s ease-in-out infinite;
+        }
+
+        @keyframes uploadFloat {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .upload-text {
+            color: var(--accent-orange);
+            font-weight: 600;
+            font-size: 16px;
+            margin-bottom: 8px;
+        }
+
+        .upload-hint {
+            color: var(--text-secondary);
+            font-size: 13px;
+        }
+
+        #file-count {
+            margin-top: 20px;
+            font-size: 14px;
+            color: var(--accent-green);
+            font-weight: 600;
+        }
+
+        /* Flash Messages */
+        .flash-message {
+            margin-bottom: 20px;
+            padding: 16px 20px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            animation: flashSlideIn 0.4s ease-out;
+        }
+
+        @keyframes flashSlideIn {
+            from { 
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to { 
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .flash-error {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            color: #F87171;
+        }
+
+        .flash-success {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            color: #34D399;
+        }
+        
+        .flash-warning {
+            background: rgba(245, 158, 11, 0.1);
+            border: 1px solid rgba(245, 158, 11, 0.2);
+            color: #FBBF24;
+        }
+        
+        /* Ripple Effect */
+        .ripple {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .ripple-effect {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(0);
+            animation: rippleAnim 0.6s ease-out;
+            pointer-events: none;
+        }
+
+        @keyframes rippleAnim {
+            to {
+                transform: scale(4);
+                opacity: 0;
+            }
+        }
+        
+        /* Mobile Toggle & Responsive */
         .mobile-toggle { 
             display: none; 
             position: fixed; 
@@ -918,73 +1748,436 @@ COMMON_STYLES = """
             z-index: 2000; 
             color: white; 
             background: var(--bg-card);
-            padding: 12px; 
+            padding: 12px 14px; 
             border-radius: 12px;
+            border: 1px solid var(--border-color);
             cursor: pointer;
+            transition: var(--transition-smooth);
+        }
+
+        .mobile-toggle:hover {
+            background: var(--accent-orange);
         }
 
         @media (max-width: 1024px) {
-            .sidebar { transform: translateX(-100%); width: 280px; } 
-            .sidebar.active { transform: translateX(0); }
-            .main-content { margin-left: 0; width: 100%; padding: 20px; }
-            .mobile-toggle { display: block; }
-            .dashboard-grid-2 { grid-template-columns: 1fr; }
+            .sidebar { 
+                transform: translateX(-100%);
+                width: 280px;
+            } 
+            .sidebar.active { 
+                transform: translateX(0);
+            }
+            .main-content { 
+                margin-left: 0;
+                width: 100%; 
+                padding: 20px; 
+            }
+            .dashboard-grid-2 { 
+                grid-template-columns: 1fr;
+            }
+            .mobile-toggle { 
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+            .header-section {
+                flex-direction: column;
+                gap: 15px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            .page-title {
+                font-size: 24px;
+            }
+            .welcome-content {
+                padding: 40px 30px;
+            }
+            .welcome-title {
+                font-size: 28px;
+            }
+        }
+
+        /* Skeleton Loading */
+        .skeleton {
+            background: linear-gradient(90deg, var(--bg-card) 25%, rgba(255,255,255,0.05) 50%, var(--bg-card) 75%);
+            background-size: 200% 100%;
+            animation: skeletonLoad 1.5s infinite;
+            border-radius: 8px;
+        }
+
+        @keyframes skeletonLoad {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
         }
         
-        /* Grid Layouts */
-        .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+        /* Notification Dot */
+        .notification-dot {
+            position: absolute;
+            top: -2px;
+            right: -2px;
+            width: 10px;
+            height: 10px;
+            background: var(--accent-red);
+            border-radius: 50%;
+            border: 2px solid var(--bg-sidebar);
+            animation: notifyPulse 2s infinite;
+        }
+
+        @keyframes notifyPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+        }
+
+        /* Chart Container */
+        .chart-container {
+            position: relative;
+            height: 280px;
+            padding: 10px;
+        }
+
+        /* Real-time Indicator */
+        .realtime-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            color: var(--text-secondary);
+            padding: 6px 12px;
+            background: rgba(16, 185, 129, 0.1);
+            border-radius: 20px;
+            border: 1px solid rgba(16, 185, 129, 0.2);
+        }
+
+        .realtime-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--accent-green);
+            border-radius: 50%;
+            animation: realtimePulse 1s infinite;
+        }
+
+        @keyframes realtimePulse {
+            0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+            70% { opacity: 1; box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
+        }
+
+        /* Floating Action Button */
+        .fab {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            background: var(--gradient-orange);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: white;
+            cursor: pointer;
+            box-shadow: 0 8px 30px var(--accent-orange-glow);
+            transition: var(--transition-smooth);
+            z-index: 100;
+        }
+
+        .fab:hover {
+            transform: scale(1.1) rotate(90deg);
+            box-shadow: 0 12px 40px var(--accent-orange-glow);
+        }
+        
+        /* Glow Text */
+        .glow-text {
+            text-shadow: 0 0 20px var(--accent-orange-glow);
+        }
+
+        /* Animated Border */
+        .animated-border {
+            position: relative;
+        }
+
+        .animated-border::after {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(45deg, var(--accent-orange), var(--accent-purple), var(--accent-green), var(--accent-orange));
+            background-size: 400% 400%;
+            border-radius: inherit;
+            z-index: -1;
+            animation: gradientBorder 3s ease infinite;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .animated-border:hover::after {
+            opacity: 1;
+        }
+
+        @keyframes gradientBorder {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        
+        /* Permission Checkbox Styles */
+        .perm-checkbox {
+            background: rgba(255, 255, 255, 0.03);
+            padding: 14px 18px;
+            border-radius: 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            border: 1px solid var(--border-color);
+            transition: var(--transition-smooth);
+            flex: 1;
+            min-width: 100px;
+        }
+
+        .perm-checkbox:hover {
+            border-color: var(--accent-orange);
+            background: rgba(255, 122, 0, 0.05);
+        }
+
+        .perm-checkbox input {
+            width: auto;
+            margin-right: 10px;
+            accent-color: var(--accent-orange);
+        }
+
+        .perm-checkbox span {
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+
+        .perm-checkbox:has(input:checked) {
+            border-color: var(--accent-orange);
+            background: rgba(255, 122, 0, 0.1);
+        }
+
+        .perm-checkbox:has(input:checked) span {
+            color: var(--accent-orange);
+        }
+
+        /* Time Badge */
+        .time-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(255, 255, 255, 0.03);
+            padding: 8px 14px;
+            border-radius: 8px;
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .time-badge i {
+            color: var(--accent-orange);
+        }
+        
+        /* Grid Layouts for Store */
+        .grid-2 {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+        
+        .grid-3 {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+        
+        .grid-4 {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+        }
         
         @media (max-width: 768px) {
-            .grid-2 { grid-template-columns: 1fr; }
+            .grid-2, .grid-3, .grid-4 {
+                grid-template-columns: 1fr;
+            }
         }
         
-        /* Welcome Modal */
-        .welcome-modal {
+        /* Modal Overlay */
+        .modal-overlay {
             display: none;
             position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
             background: rgba(10, 10, 15, 0.9);
-            z-index: 10000;
+            backdrop-filter: blur(10px);
+            z-index: 9000;
             justify-content: center;
             align-items: center;
         }
         
-        .welcome-content {
-            background: var(--gradient-card);
-            border: 1px solid var(--border-color);
-            border-radius: 24px;
-            padding: 50px;
-            text-align: center;
-            max-width: 500px;
-            width: 90%;
+        .modal-overlay.active {
+            display: flex;
         }
         
-        /* Upload Zone */
-        .upload-zone {
-            border: 2px dashed var(--border-color);
+        .modal-content {
+            background: var(--gradient-card);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
             padding: 40px;
-            text-align: center;
-            border-radius: 16px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            animation: modalSlideIn 0.3s ease-out;
+        }
+        
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-30px) scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .modal-title {
+            font-size: 22px;
+            font-weight: 700;
+            color: white;
+        }
+        
+        .modal-close {
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            color: var(--text-secondary);
             cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             transition: var(--transition-smooth);
         }
         
-        .upload-zone:hover {
-            border-color: var(--accent-orange);
-            background: rgba(255, 122, 0, 0.05);
+        .modal-close:hover {
+            background: var(--accent-red);
+            color: white;
+            border-color: var(--accent-red);
         }
         
-        .upload-icon { font-size: 40px; color: var(--accent-orange); margin-bottom: 15px; }
+        /* Search Box */
+        .search-box {
+            position: relative;
+            margin-bottom: 20px;
+        }
         
-        /* Flash Messages */
-        .flash-message {
-            padding: 16px 20px;
-            border-radius: 12px;
-            font-size: 14px;
-            font-weight: 500;
+        .search-box input {
+            padding-left: 45px;
+        }
+        
+        .search-box i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-secondary);
+        }
+        
+        /* Tab Navigation */
+        .tab-nav {
             display: flex;
-            align-items: center;
-            gap: 12px# ==============================================================================
+            gap: 10px;
+            margin-bottom: 30px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+        }
+        
+        .tab-btn {
+            padding: 10px 20px;
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            font-weight: 600;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: var(--transition-smooth);
+        }
+        
+        .tab-btn:hover {
+            color: var(--accent-orange);
+            background: rgba(255, 122, 0, 0.1);
+        }
+        
+        .tab-btn.active {
+            color: var(--accent-orange);
+            background: rgba(255, 122, 0, 0.15);
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.3s ease-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        /* Amount Display */
+        .amount-display {
+            font-size: 28px;
+            font-weight: 800;
+            color: var(--accent-green);
+        }
+        
+        .amount-due {
+            color: var(--accent-red);
+        }
+        
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-secondary);
+        }
+        
+        .empty-state i {
+            font-size: 60px;
+            opacity: 0.2;
+            margin-bottom: 20px;
+            display: block;
+        }
+        
+        .empty-state p {
+            font-size: 16px;
+            margin-bottom: 20px;
+        }
+    </style>
+"""
+# ==============================================================================
 # লজিক পার্ট: PURCHASE ORDER SHEET PARSER (PDF)
 # ==============================================================================
 
@@ -2766,6 +3959,7 @@ USER_DASHBOARD_TEMPLATE = """
 </body>
 </html>
 """
+
 # ==============================================================================
 # ACCESSORIES TEMPLATES
 # ==============================================================================
@@ -3087,6 +4281,7 @@ ACCESSORIES_INPUT_TEMPLATE = """
                     <span class="ref-info">{{ buyer }} • {{ style }}</span>
                 </div>
             </div>
+            <!-- FIXED: Print button with proper URL generation and target blank -->
             <a href="/admin/accessories/print?ref={{ ref }}" target="_blank">
                 <button class="print-btn" style="width: auto; padding: 14px 30px;">
                     <i class="fas fa-print" style="margin-right: 10px;"></i> Print Report
@@ -3155,7 +4350,8 @@ ACCESSORIES_INPUT_TEMPLATE = """
                             <div class="line-badge">{{ item.line }}</div>
                             <div style="color: white; font-weight: 500; font-size: 13px;">{{ item.color }}</div>
                             <div class="qty-value">{{ item.qty }}</div>
-                            <div class="status-check">{{ item.status if item.status else '●' }}</div>
+                            <!-- FIXED: Status empty logic handles in python side, just display it here -->
+                            <div class="status-check">{{ item.status if item.status else '' }}</div>
                             <div class="action-cell">
                                 {% if session.role == 'admin' %}
                                 <a href="/admin/accessories/edit?ref={{ ref }}&index={{ (challans|length) - loop.index }}" class="action-btn btn-edit">
@@ -3200,6 +4396,12 @@ ACCESSORIES_INPUT_TEMPLATE = """
             return true;
         }
         
+        // Auto-print check if needed (optional)
+        const urlParams = new URLSearchParams(window.location.search);
+        if(urlParams.has('autoprint')) {
+             window.open('/admin/accessories/print?ref={{ ref }}', '_blank');
+        }
+        
         const style = document.createElement('style');
         style.textContent = `
             @keyframes fadeInUp {
@@ -3212,7 +4414,6 @@ ACCESSORIES_INPUT_TEMPLATE = """
 </body>
 </html>
 """
-
 ACCESSORIES_EDIT_TEMPLATE = """
 <!doctype html>
 <html lang="en">
@@ -6475,14 +7676,6 @@ ACCESSORIES_REPORT_TEMPLATE = """
         <div style="border-top: 2px solid #000; width: 180px; padding-top: 5px;">Store</div>
     </div>
 </div>
-<!-- Auto Print Script -->
-<script>
-    window.onload = function() {
-        setTimeout(function() {
-            window.print();
-        }, 1000);
-    };
-</script>
 </body>
 </html>
 """
@@ -6601,726 +7794,259 @@ PO_REPORT_TEMPLATE = """
 </html>
 """
 # ==============================================================================
-# FLASK ROUTES - AUTHENTICATION
+# STORE USER MANAGEMENT TEMPLATE
 # ==============================================================================
 
-@app.route('/')
-def home():
-    if 'user' not in session:
-        return render_template_string(LOGIN_TEMPLATE)
+STORE_USERS_TEMPLATE = """
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Store Users - MEHEDI THAI ALUMINUM AND GLASS</title>
+    """ + COMMON_STYLES + """
+</head>
+<body>
+    <div class="animated-bg"></div>
     
-    # Check permissions/role to redirect appropriately or show dashboard
-    if session.get('role') == 'admin':
-        stats = get_dashboard_summary_v2()
-        return render_template_string(ADMIN_DASHBOARD_TEMPLATE, stats=stats)
-    elif session.get('role') == 'store_admin' or session.get('role') == 'store_user':
-        return redirect(url_for('store_dashboard'))
-    else:
-        return render_template_string(USER_DASHBOARD_TEMPLATE)
+    <div id="loading-overlay">
+        <div class="spinner-container">
+            <div class="spinner"></div>
+            <div class="spinner-inner"></div>
+        </div>
+        <div class="loading-text">Saving User...</div>
+    </div>
 
-@app.route('/login', methods=['POST'])
-def login():
-    username = request.form.get('username')
-    password = request.form.get('password')
-    
-    # Check Global Users (Admin/Regular)
-    users = load_users()
-    if username in users and users[username]['password'] == password:
-        session.permanent = True
-        session['user'] = username
-        session['role'] = users[username].get('role', 'user')
-        session['permissions'] = users[username].get('permissions', [])
-        session['login_time'] = get_bd_time().isoformat()
-        
-        users[username]['last_login'] = get_bd_time().strftime('%d-%m-%Y %I:%M %p')
-        save_users(users)
-        return redirect(url_for('home'))
-        
-    # Check Store Users
-    store_users = load_store_users()
-    if username in store_users and store_users[username]['password'] == password:
-        session.permanent = True
-        session['user'] = username
-        session['role'] = store_users[username].get('role', 'store_user')
-        session['permissions'] = store_users[username].get('permissions', [])
-        session['login_time'] = get_bd_time().isoformat()
-        
-        store_users[username]['last_login'] = get_bd_time().strftime('%d-%m-%Y %I:%M %p')
-        save_store_users(store_users)
-        return redirect(url_for('store_dashboard'))
+    <div class="mobile-toggle" onclick="document.querySelector('.sidebar').classList.toggle('active')">
+        <i class="fas fa-bars"></i>
+    </div>
 
-    flash('Invalid Username or Password!')
-    return redirect(url_for('home'))
+    <div class="sidebar">
+        <div class="brand-logo">
+            <i class="fas fa-store"></i> 
+            Store<span>Panel</span>
+        </div>
+        <div class="nav-menu">
+            <a href="/admin/store" class="nav-link">
+                <i class="fas fa-th-large"></i> Dashboard
+            </a>
+            <a href="/store/products" class="nav-link">
+                <i class="fas fa-box"></i> Products
+            </a>
+            <a href="/store/customers" class="nav-link">
+                <i class="fas fa-users"></i> Customers
+            </a>
+            <a href="/store/invoices" class="nav-link">
+                <i class="fas fa-file-invoice-dollar"></i> Invoices
+            </a>
+            <a href="/store/estimates" class="nav-link">
+                <i class="fas fa-file-alt"></i> Estimates
+            </a>
+            <a href="/store/dues" class="nav-link">
+                <i class="fas fa-wallet"></i> Due Collection
+            </a>
+            <div class="nav-link active">
+                <i class="fas fa-user-cog"></i> Store Users
+            </div>
+            <a href="/logout" class="nav-link" style="color: var(--accent-red); margin-top: 20px;">
+                <i class="fas fa-sign-out-alt"></i> Sign Out
+            </a>
+        </div>
+        <div class="sidebar-footer">© 2025 Mehedi Hasan</div>
+    </div>
 
-@app.route('/logout')
-def logout():
-    # Calculate session duration
-    username = session.get('user')
-    role = session.get('role')
-    
-    if username:
-        if role in ['store_admin', 'store_user']:
-            users = load_store_users()
-            saver = save_store_users
-        else:
-            users = load_users()
-            saver = save_users
-            
-        if username in users:
-            login_time_str = session.get('login_time')
-            if login_time_str:
-                try:
-                    login_time = datetime.fromisoformat(login_time_str)
-                    now = get_bd_time()
-                    duration = now - login_time
-                    minutes = int(duration.total_seconds() // 60)
-                    seconds = int(duration.total_seconds() % 60)
-                    users[username]['last_duration'] = f"{minutes}m {seconds}s"
-                    saver(users)
-                except: pass
-    
-    session.clear()
-    return redirect(url_for('home'))
+    <div class="main-content">
+        <div class="header-section">
+            <div>
+                <div class="page-title">Store User Management</div>
+                <div class="page-subtitle">Manage access to store panel</div>
+            </div>
+            <div class="status-badge">
+                <div class="status-dot"></div>
+                <span>Online</span>
+            </div>
+        </div>
 
-# ==============================================================================
-# FLASK ROUTES - ADMIN USER MANAGEMENT
-# ==============================================================================
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                <div class="flash-message flash-success">
+                    <i class="fas fa-check-circle"></i>
+                    <span>{{ messages[0] }}</span>
+                </div>
+            {% endif %}
+        {% endwith %}
 
-@app.route('/admin/get-users')
-def get_users():
-    if 'user' not in session or session.get('role') != 'admin':
-        return jsonify({"error": "Unauthorized"}), 403
-    return jsonify(load_users())
+        <div class="dashboard-grid-2">
+            <div class="card">
+                <div class="section-header">
+                    <span><i class="fas fa-user-plus" style="margin-right: 10px; color: var(--accent-orange);"></i>Add / Edit User</span>
+                </div>
+                <form action="/store/users/save" method="post" onsubmit="showLoading()">
+                    <input type="hidden" name="original_username" id="original_username">
+                    <div class="input-group">
+                        <label><i class="fas fa-user" style="margin-right: 5px;"></i> USERNAME</label>
+                        <input type="text" name="username" id="username" required placeholder="Enter username">
+                    </div>
+                    
+                    <div class="input-group">
+                        <label><i class="fas fa-key" style="margin-right: 5px;"></i> PASSWORD</label>
+                        <input type="text" name="password" id="password" required placeholder="Enter password">
+                    </div>
+                    
+                    <div class="input-group">
+                        <label><i class="fas fa-shield-alt" style="margin-right: 5px;"></i> ROLE</label>
+                        <select name="role" id="role">
+                            <option value="store_admin">Store Admin</option>
+                            <option value="sales">Sales Staff</option>
+                        </select>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label>PERMISSIONS</label>
+                        <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 5px;">
+                            <label class="perm-checkbox"><input type="checkbox" name="permissions" value="products" checked> <span>Products</span></label>
+                            <label class="perm-checkbox"><input type="checkbox" name="permissions" value="invoices" checked> <span>Invoices</span></label>
+                            <label class="perm-checkbox"><input type="checkbox" name="permissions" value="customers" checked> <span>Customers</span></label>
+                        </div>
+                    </div>
+                    
+                    <button type="submit" id="saveBtn">
+                        <i class="fas fa-save" style="margin-right: 10px;"></i> Save User
+                    </button>
+                    <button type="button" onclick="resetForm()" class="btn-secondary" style="margin-top: 10px; width: 100%; padding: 12px; border-radius: 12px; cursor: pointer; color: white;">
+                        Reset Form
+                    </button>
+                </form>
+            </div>
 
-@app.route('/admin/save-user', methods=['POST'])
-def save_user():
-    if 'user' not in session or session.get('role') != 'admin':
-        return jsonify({"status": "error", "message": "Unauthorized"}), 403
-    
-    data = request.get_json()
-    users = load_users()
-    username = data.get('username')
-    password = data.get('password')
-    permissions = data.get('permissions', [])
-    action = data.get('action_type', 'create')
-    
-    if action == 'create' and username in users:
-        return jsonify({"status": "error", "message": "User already exists!"})
-    
-    if action == 'create':
-        users[username] = {
-            "password": password,
-            "role": "user",
-            "permissions": permissions,
-            "created_at": get_bd_date_str(),
-            "last_login": "Never",
-            "last_duration": "N/A"
-        }
-    else:
-        users[username]['password'] = password
-        users[username]['permissions'] = permissions
-    
-    save_users(users)
-    return jsonify({"status": "success"})
-
-@app.route('/admin/delete-user', methods=['POST'])
-def delete_user():
-    if 'user' not in session or session.get('role') != 'admin':
-        return jsonify({"status": "error", "message": "Unauthorized"}), 403
-    
-    data = request.get_json()
-    users = load_users()
-    username = data.get('username')
-    
-    if username in users and users[username].get('role') != 'admin':
-        del users[username]
-        save_users(users)
-    
-    return jsonify({"status": "success"})
-
-# ==============================================================================
-# FLASK ROUTES - CLOSING REPORT
-# ==============================================================================
-
-@app.route('/generate-report', methods=['POST'])
-def generate_report():
-    if 'user' not in session: return redirect(url_for('home'))
-    
-    ref_no = request.form.get('ref_no', '').strip()
-    if not ref_no:
-        flash('Please enter a valid Reference Number.')
-        return redirect(url_for('home'))
-    
-    report_data = fetch_closing_report_data(ref_no)
-    
-    if report_data:
-        update_stats(ref_no, session['user'])
-        return render_template_string(CLOSING_REPORT_PREVIEW_TEMPLATE, report_data=report_data, ref_no=ref_no.upper())
-    else:
-        flash(f'No data found for "{ref_no}".  Please check the reference number.')
-        return redirect(url_for('home'))
-
-@app.route('/download-closing-excel')
-def download_closing_excel():
-    if 'user' not in session: return redirect(url_for('home'))
-    
-    ref_no = request.args.get('ref_no', '').strip()
-    report_data = fetch_closing_report_data(ref_no)
-    
-    if report_data:
-        excel_file = create_formatted_excel_report(report_data, ref_no)
-        if excel_file:
-            return send_file(
-                excel_file,
-                as_attachment=True,
-                download_name=f"Closing_Report_{ref_no.upper()}.xlsx",
-                mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-            )
-    
-    flash('Failed to generate Excel file.')
-    return redirect(url_for('home'))
-
-# ==============================================================================
-# FLASK ROUTES - PO SHEET GENERATOR
-# ==============================================================================
-
-@app.route('/generate-po-report', methods=['POST'])
-def generate_po_report():
-    if 'user' not in session: return redirect(url_for('home'))
-    
-    if 'pdf_files' not in request.files:
-        flash('No files uploaded.')
-        return redirect(url_for('home'))
-    
-    files = request.files.getlist('pdf_files')
-    valid_files = [f for f in files if f and f.filename.endswith('.pdf')]
-    
-    if not valid_files:
-        flash('Please upload valid PDF files.')
-        return redirect(url_for('home'))
-    
-    all_data = []
-    metadata = {}
-    
-    for file in valid_files:
-        filepath = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
-        file.save(filepath)
-        try:
-            extracted, meta = extract_data_dynamic(filepath)
-            if extracted: all_data.extend(extracted)
-            if meta and meta.get('buyer') != 'N/A': metadata = meta
-        except Exception as e: print(f"Error: {e}")
-        finally:
-            if os.path.exists(filepath): os.remove(filepath)
-    
-    if not all_data:
-        flash('No valid data extracted.')
-        return redirect(url_for('home'))
-    
-    update_po_stats(session['user'], len(valid_files))
-    
-    # Process Data
-    df = pd.DataFrame(all_data)
-    sorted_sizes = sort_sizes(df['Size'].unique().tolist())
-    tables = []
-    grand_total = 0
-    
-    for color in df['Color'].unique():
-        color_df = df[df['Color'] == color]
-        pivot = color_df.pivot_table(index='P.O NO', columns='Size', values='Quantity', aggfunc='sum', fill_value=0)
-        pivot = pivot.reindex(columns=[s for s in sorted_sizes if s in pivot.columns], fill_value=0)
-        pivot['Total'] = pivot.sum(axis=1)
-        grand_total += pivot['Total'].sum()
-        
-        summary = pivot.sum().to_frame().T
-        summary.index = ['COLOR TOTAL']
-        pivot = pd.concat([pivot, summary])
-        
-        html_table = pivot.to_html(classes='table table-striped', border=0)
-        html_table = html_table.replace('<th></th>', '<th class="order-col">P.O NO</th>')\
-                               .replace('>Total<', ' class="total-col-header">Total<')\
-                               .replace('<tr>\n      <th>COLOR TOTAL</th>', '<tr class="summary-row">\n      <th class="summary-label">COLOR TOTAL</th>')
-        tables.append({'color': color, 'table': html_table})
-    
-    return render_template_string(PO_REPORT_TEMPLATE, tables=tables, meta=metadata, grand_total=f"{grand_total:,}", message=None)
-
-# ==============================================================================
-# FLASK ROUTES - ACCESSORIES (UPDATED LOGIC)
-# ==============================================================================
-
-@app.route('/admin/accessories')
-def accessories_home():
-    if 'user' not in session: return redirect(url_for('home'))
-    return render_template_string(ACCESSORIES_SEARCH_TEMPLATE)
-
-@app.route('/admin/accessories/input', methods=['POST'])
-def accessories_input():
-    if 'user' not in session: return redirect(url_for('home'))
-    
-    ref = request.form.get('ref_no', '').strip().upper()
-    if not ref:
-        flash('Please enter a valid Reference Number.')
-        return redirect(url_for('accessories_home'))
-    
-    return redirect(url_for('accessories_input_direct', ref=ref))
-
-@app.route('/admin/accessories/input_direct')
-def accessories_input_direct():
-    if 'user' not in session: return redirect(url_for('home'))
-    
-    ref = request.args.get('ref', '').strip().upper()
-    if not ref: return redirect(url_for('accessories_home'))
-    
-    acc_db = load_accessories_db()
-    
-    # --- LOGIC: CACHE & 24H REFRESH ---
-    needs_api_call = False
-    now = get_bd_time()
-    
-    if ref not in acc_db:
-        needs_api_call = True
-    else:
-        last_updated_str = acc_db[ref].get('last_updated')
-        if last_updated_str:
-            try:
-                last_updated = datetime.fromisoformat(last_updated_str)
-                if (now - last_updated) > timedelta(hours=24):
-                    needs_api_call = True
-            except: needs_api_call = True
-        else:
-            needs_api_call = True
-            
-    buyer = acc_db.get(ref, {}).get('buyer', 'N/A')
-    style = acc_db.get(ref, {}).get('style', 'N/A')
-    colors = acc_db.get(ref, {}).get('colors', [])
-    
-    if needs_api_call:
-        print(f"Fetching API for {ref} (New/Expired)...")
-        report_data = fetch_closing_report_data(ref)
-        if report_data:
-            colors = []
-            for block in report_data:
-                c_name = block.get('color', '')
-                if c_name and c_name not in colors: colors.append(c_name)
-                if block.get('buyer') != 'N/A': buyer = block.get('buyer')
-                if block.get('style') != 'N/A': style = block.get('style')
-            
-            # Save to DB preserving existing challans
-            if ref not in acc_db:
-                acc_db[ref] = {"challans": []}
+            <div class="card">
+                <div class="section-header">
+                    <span>User List</span>
+                    <span class="table-badge" style="background: var(--accent-purple); color: white;">{{ users|length }} Users</span>
+                </div>
                 
-            acc_db[ref]['buyer'] = buyer
-            acc_db[ref]['style'] = style
-            acc_db[ref]['colors'] = colors
-            acc_db[ref]['last_updated'] = now.isoformat()
-            save_accessories_db(acc_db)
+                <div style="max-height: 500px; overflow-y: auto;">
+                    <table class="dark-table">
+                        <thead>
+                            <tr>
+                                <th>Username</th>
+                                <th>Role</th>
+                                <th style="text-align: right;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for u, d in users.items() %}
+                            <tr>
+                                <td style="font-weight: 700; color: white;">{{ u }}</td>
+                                <td><span class="table-badge">{{ d.role }}</span></td>
+                                <td>
+                                    <div class="action-cell">
+                                        <button onclick="editUser('{{ u }}', '{{ d.password }}', '{{ d.role }}')" class="action-btn btn-edit"><i class="fas fa-edit"></i></button>
+                                        {% if u != session.user %}
+                                        <form action="/store/users/delete" method="post" style="display:inline;" onsubmit="return confirm('Delete user {{ u }}?');">
+                                            <input type="hidden" name="username" value="{{ u }}">
+                                            <button type="submit" class="action-btn btn-del"><i class="fas fa-trash"></i></button>
+                                        </form>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
     
-    challans = acc_db[ref].get('challans', [])
-    
-    return render_template_string(
-        ACCESSORIES_INPUT_TEMPLATE,
-        ref=ref, buyer=buyer, style=style, colors=colors, challans=challans
-    )
-
-@app.route('/admin/accessories/save', methods=['POST'])
-def accessories_save():
-    if 'user' not in session: return redirect(url_for('home'))
-    
-    ref = request.form.get('ref', '').strip().upper()
-    line_no = request.form.get('line_no', '').strip()
-    color = request.form.get('color', '').strip()
-    size = request.form.get('size', 'ALL').strip()
-    qty = request.form.get('qty', '0').strip()
-    item_type = request.form.get('item_type', 'Top')
-    
-    acc_db = load_accessories_db()
-    if ref not in acc_db: acc_db[ref] = {"challans": []}
-    
-    # --- LOGIC: PREVIOUS CHALLANS TICKED, NEW ONE EMPTY ---
-    # Update all existing challans status to Checked
-    for c in acc_db[ref]['challans']:
-        c['status'] = "✔"
-    
-    new_challan = {
-        "date": get_bd_date_str(),
-        "line": line_no,
-        "color": color,
-        "size": size,
-        "qty": int(qty),
-        "status": "", # New one is empty
-        "item_type": item_type
-    }
-    
-    acc_db[ref]['challans'].append(new_challan)
-    save_accessories_db(acc_db)
-    
-    return redirect(url_for('accessories_input_direct', ref=ref))
-
-@app.route('/admin/accessories/edit')
-def accessories_edit():
-    # ... existing logic ...
-    if 'user' not in session: return redirect(url_for('home'))
-    ref = request.args.get('ref', '').strip().upper()
-    index = int(request.args.get('index', 0))
-    acc_db = load_accessories_db()
-    if ref in acc_db and index < len(acc_db[ref]['challans']):
-        item = acc_db[ref]['challans'][index]
-        return render_template_string(ACCESSORIES_EDIT_TEMPLATE, ref=ref, index=index, item=item)
-    return redirect(url_for('accessories_home'))
-
-@app.route('/admin/accessories/update', methods=['POST'])
-def accessories_update():
-    # ... existing logic ...
-    if 'user' not in session: return redirect(url_for('home'))
-    ref = request.form.get('ref', '').strip().upper()
-    index = int(request.form.get('index', 0))
-    acc_db = load_accessories_db()
-    if ref in acc_db and index < len(acc_db[ref]['challans']):
-        c = acc_db[ref]['challans'][index]
-        c['line'] = request.form.get('line_no')
-        c['color'] = request.form.get('color')
-        c['size'] = request.form.get('size')
-        c['qty'] = int(request.form.get('qty'))
-        save_accessories_db(acc_db)
-    return redirect(url_for('accessories_input_direct', ref=ref))
-
-@app.route('/admin/accessories/delete', methods=['POST'])
-def accessories_delete():
-    # ... existing logic ...
-    if 'user' not in session: return redirect(url_for('home'))
-    ref = request.form.get('ref', '').strip().upper()
-    index = int(request.form.get('index', 0))
-    acc_db = load_accessories_db()
-    if ref in acc_db and index < len(acc_db[ref]['challans']):
-        del acc_db[ref]['challans'][index]
-        save_accessories_db(acc_db)
-    return redirect(url_for('accessories_input_direct', ref=ref))
-
-@app.route('/admin/accessories/print')
-def accessories_print():
-    if 'user' not in session: return redirect(url_for('home'))
-    ref = request.args.get('ref', '').strip().upper()
-    acc_db = load_accessories_db()
-    if ref not in acc_db: return redirect(url_for('accessories_home'))
-    
-    data = acc_db[ref]
-    challans = data.get('challans', [])
-    
-    # Calculate Line Summary
-    line_summary = defaultdict(int)
-    item_type = "Top"
-    for c in challans:
-        try: q = int(c.get('qty', 0))
-        except: q = 0
-        line_summary[c.get('line', 'N/A')] += q
-        if c.get('item_type'): item_type = c.get('item_type')
+    <script>
+        function showLoading() {
+            document.getElementById('loading-overlay').style.display = 'flex';
+            return true;
+        }
         
-    return render_template_string(
-        ACCESSORIES_REPORT_TEMPLATE,
-        ref=ref, buyer=data.get('buyer', 'N/A'), style=data.get('style', 'N/A'),
-        challans=challans, count=len(challans), line_summary=dict(line_summary),
-        item_type=item_type, today=get_bd_date_str()
-    )
+        function editUser(user, pass, role) {
+            document.getElementById('original_username').value = user;
+            document.getElementById('username').value = user;
+            document.getElementById('password').value = pass;
+            document.getElementById('role').value = role;
+            document.getElementById('saveBtn').innerHTML = '<i class="fas fa-sync"></i> Update User';
+        }
+        
+        function resetForm() {
+            document.getElementById('original_username').value = '';
+            document.getElementById('username').value = '';
+            document.getElementById('password').value = '';
+            document.getElementById('role').value = 'store_admin';
+            document.getElementById('saveBtn').innerHTML = '<i class="fas fa-save"></i> Save User';
+        }
+    </script>
+</body>
+</html>
+"""
 
 # ==============================================================================
-# FLASK ROUTES - STORE MANAGEMENT
+# FLASK ROUTES - STORE USER MANAGEMENT
 # ==============================================================================
 
-@app.route('/admin/store')
-def store_dashboard():
-    if 'user' not in session: return redirect(url_for('home'))
-    
-    store_stats = get_store_dashboard_summary()
-    invoices = load_store_invoices()
-    estimates = load_store_estimates()
-    pending_dues = [inv for inv in invoices if inv.get('due', 0) > 0]
-    
-    return render_template_string(
-        STORE_DASHBOARD_TEMPLATE,
-        store_stats=store_stats,
-        recent_invoices=invoices[-10:][::-1] if invoices else [],
-        recent_estimates=estimates[-10:][::-1] if estimates else [],
-        pending_dues=pending_dues
-    )
-
-# --- Store Products ---
-@app.route('/store/products')
-def store_products():
-    if 'user' not in session: return redirect(url_for('home'))
-    return render_template_string(STORE_PRODUCTS_TEMPLATE, products=load_store_products())
-
-@app.route('/store/products/save', methods=['POST'])
-def store_products_save():
-    if 'user' not in session: return redirect(url_for('home'))
-    products = load_store_products()
-    products.append({
-        "name": request.form.get('name'),
-        "size_feet": request.form.get('size_feet'),
-        "thickness": request.form.get('thickness'),
-        "category": request.form.get('category'),
-        "price": float(request.form.get('price') or 0),
-        "description": request.form.get('description'),
-        "created_at": get_bd_date_str()
-    })
-    save_store_products(products)
-    flash('Product Added')
-    return redirect(url_for('store_products'))
-
-@app.route('/store/products/edit/<int:index>')
-def store_products_edit(index):
-    # For now, just deleting/re-adding is simple, or a proper edit page is needed.
-    # To keep it simple as per request, we reuse the product page or assume edit is minimal.
-    # Since I didn't create a specific Edit Product Template, redirect back.
-    # Or delete and let user re-add. 
-    # Proper Implementation:
-    flash('Edit feature coming soon. Please delete and re-add.')
-    return redirect(url_for('store_products'))
-
-@app.route('/store/products/delete/<int:index>', methods=['POST'])
-def store_products_delete(index):
-    if 'user' not in session: return redirect(url_for('home'))
-    products = load_store_products()
-    if 0 <= index < len(products):
-        del products[index]
-        save_store_products(products)
-    return redirect(url_for('store_products'))
-
-# --- Store Customers ---
-@app.route('/store/customers')
-def store_customers():
-    if 'user' not in session: return redirect(url_for('home'))
-    return render_template_string(STORE_CUSTOMERS_TEMPLATE, customers=load_store_customers())
-
-@app.route('/store/customers/save', methods=['POST'])
-def store_customers_save():
-    if 'user' not in session: return redirect(url_for('home'))
-    customers = load_store_customers()
-    customers.append({
-        "name": request.form.get('name'),
-        "phone": request.form.get('phone'),
-        "address": request.form.get('address'),
-        "created_at": get_bd_date_str()
-    })
-    save_store_customers(customers)
-    return redirect(url_for('store_customers'))
-
-@app.route('/store/customers/delete/<int:index>', methods=['POST'])
-def store_customers_delete(index):
-    if 'user' not in session: return redirect(url_for('home'))
-    customers = load_store_customers()
-    if 0 <= index < len(customers):
-        del customers[index]
-        save_store_customers(customers)
-    return redirect(url_for('store_customers'))
-
-# --- Store Invoices ---
-@app.route('/store/invoices')
-def store_invoices():
-    if 'user' not in session: return redirect(url_for('home'))
-    invoices = load_store_invoices()
-    search = request.args.get('search', '').lower()
-    if search:
-        invoices = [i for i in invoices if search in i.get('invoice_no', '').lower() or search in i.get('customer_name', '').lower()]
-    return render_template_string(STORE_INVOICES_LIST_TEMPLATE, invoices=invoices, search_query=search)
-
-@app.route('/store/invoices/create')
-def store_invoices_create():
-    if 'user' not in session: return redirect(url_for('home'))
-    return render_template_string(STORE_INVOICE_CREATE_TEMPLATE, invoice_no=generate_invoice_number(), customers=load_store_customers(), today=datetime.now().strftime('%Y-%m-%d'))
-
-@app.route('/store/invoices/save', methods=['POST'])
-def store_invoices_save():
-    if 'user' not in session: return redirect(url_for('home'))
-    invoices = load_store_invoices()
-    
-    # Process items
-    items = []
-    idx = 0
-    while f'items[{idx}][description]' in request.form:
-        items.append({
-            "description": request.form.get(f'items[{idx}][description]'),
-            "size": request.form.get(f'items[{idx}][size]'),
-            "qty": int(request.form.get(f'items[{idx}][qty]') or 0),
-            "price": float(request.form.get(f'items[{idx}][price]') or 0),
-            "total": float(request.form.get(f'items[{idx}][total]') or 0)
-        })
-        idx += 1
-    
-    # Date formatting
-    inv_date = request.form.get('invoice_date')
-    try: inv_date = datetime.strptime(inv_date, '%Y-%m-%d').strftime('%d-%m-%Y')
-    except: pass
-
-    new_inv = {
-        "invoice_no": request.form.get('invoice_no'),
-        "customer_name": request.form.get('customer_name'),
-        "customer_phone": request.form.get('customer_phone'),
-        "customer_address": request.form.get('customer_address'),
-        "date": inv_date,
-        "items": items,
-        "discount": float(request.form.get('discount') or 0),
-        "total": float(request.form.get('total') or 0),
-        "paid": float(request.form.get('paid') or 0),
-        "due": float(request.form.get('due') or 0),
-        "notes": request.form.get('notes'),
-        "payments": [],
-        "created_at": get_bd_date_str()
-    }
-    
-    # Initial Payment Record
-    if new_inv['paid'] > 0:
-        new_inv['payments'].append({
-            "date": inv_date,
-            "amount": new_inv['paid'],
-            "notes": "Initial Payment"
-        })
-
-    invoices.append(new_inv)
-    save_store_invoices(invoices)
-    
-    if request.form.get('action') == 'save_print':
-        return redirect(url_for('store_invoices_print', invoice_no=new_inv['invoice_no']))
-    return redirect(url_for('store_invoices'))
-
-@app.route('/store/invoices/print/<invoice_no>')
-def store_invoices_print(invoice_no):
-    if 'user' not in session: return redirect(url_for('home'))
-    invoices = load_store_invoices()
-    inv = next((i for i in invoices if i['invoice_no'] == invoice_no), None)
-    if inv: return render_template_string(STORE_INVOICE_PRINT_TEMPLATE, invoice=inv)
-    return redirect(url_for('store_invoices'))
-
-# --- Store Estimates ---
-@app.route('/store/estimates')
-def store_estimates():
-    if 'user' not in session: return redirect(url_for('home'))
-    return render_template_string(STORE_ESTIMATES_LIST_TEMPLATE, estimates=load_store_estimates())
-
-@app.route('/store/estimates/create')
-def store_estimates_create():
-    if 'user' not in session: return redirect(url_for('home'))
-    return render_template_string(STORE_ESTIMATE_CREATE_TEMPLATE, estimate_no=generate_estimate_number(), today=datetime.now().strftime('%Y-%m-%d'))
-
-@app.route('/store/estimates/save', methods=['POST'])
-def store_estimates_save():
-    if 'user' not in session: return redirect(url_for('home'))
-    estimates = load_store_estimates()
-    
-    # Items logic same as invoice
-    items = []
-    idx = 0
-    while f'items[{idx}][description]' in request.form:
-        items.append({
-            "description": request.form.get(f'items[{idx}][description]'),
-            "size": request.form.get(f'items[{idx}][size]'),
-            "qty": int(request.form.get(f'items[{idx}][qty]') or 0),
-            "price": float(request.form.get(f'items[{idx}][price]') or 0),
-            "total": float(request.form.get(f'items[{idx}][total]') or 0)
-        })
-        idx += 1
-    
-    # Date formatting
-    est_date = request.form.get('estimate_date')
-    try: est_date = datetime.strptime(est_date, '%Y-%m-%d').strftime('%d-%m-%Y')
-    except: pass
-    
-    valid_until = request.form.get('valid_until')
-    try: valid_until = datetime.strptime(valid_until, '%Y-%m-%d').strftime('%d-%m-%Y')
-    except: pass
-
-    new_est = {
-        "estimate_no": request.form.get('estimate_no'),
-        "customer_name": request.form.get('customer_name'),
-        "customer_phone": request.form.get('customer_phone'),
-        "customer_address": request.form.get('customer_address'),
-        "date": est_date,
-        "valid_until": valid_until,
-        "items": items,
-        "discount": float(request.form.get('discount') or 0),
-        "total": float(request.form.get('total') or 0),
-        "notes": request.form.get('notes'),
-        "created_at": get_bd_date_str()
-    }
-    
-    estimates.append(new_est)
-    save_store_estimates(estimates)
-    
-    if request.form.get('action') == 'save_print':
-        return redirect(url_for('store_estimates_print', estimate_no=new_est['estimate_no']))
-    return redirect(url_for('store_estimates'))
-
-@app.route('/store/estimates/print/<estimate_no>')
-def store_estimates_print(estimate_no):
-    if 'user' not in session: return redirect(url_for('home'))
-    estimates = load_store_estimates()
-    est = next((e for e in estimates if e['estimate_no'] == estimate_no), None)
-    if est: return render_template_string(STORE_ESTIMATE_PRINT_TEMPLATE, estimate=est)
-    return redirect(url_for('store_estimates'))
-
-# --- Store Dues ---
-@app.route('/store/dues')
-def store_dues():
-    if 'user' not in session: return redirect(url_for('home'))
-    invoices = load_store_invoices()
-    pending = [i for i in invoices if i.get('due', 0) > 0]
-    return render_template_string(STORE_DUE_COLLECTION_TEMPLATE, invoice=None, search_invoice='', pending_dues=pending, today=datetime.now().strftime('%Y-%m-%d'))
-
-@app.route('/store/dues/search')
-def store_dues_search():
-    if 'user' not in session: return redirect(url_for('home'))
-    inv_no = request.args.get('invoice_no', '').strip()
-    invoices = load_store_invoices()
-    inv = next((i for i in invoices if i['invoice_no'] == inv_no), None)
-    pending = [i for i in invoices if i.get('due', 0) > 0]
-    return render_template_string(STORE_DUE_COLLECTION_TEMPLATE, invoice=inv, search_invoice=inv_no, pending_dues=pending, today=datetime.now().strftime('%Y-%m-%d'))
-
-@app.route('/store/dues/collect', methods=['POST'])
-def store_dues_collect():
-    if 'user' not in session: return redirect(url_for('home'))
-    inv_no = request.form.get('invoice_no')
-    amount = float(request.form.get('amount') or 0)
-    note = request.form.get('notes')
-    pay_date = request.form.get('payment_date')
-    try: pay_date = datetime.strptime(pay_date, '%Y-%m-%d').strftime('%d-%m-%Y')
-    except: pass
-    
-    invoices = load_store_invoices()
-    for inv in invoices:
-        if inv['invoice_no'] == inv_no:
-            inv['paid'] += amount
-            inv['due'] = inv['total'] - inv['paid']
-            if 'payments' not in inv: inv['payments'] = []
-            inv['payments'].append({"date": pay_date, "amount": amount, "notes": note})
-            break
-            
-    save_store_invoices(invoices)
-    flash('Payment Recorded')
-    return redirect(url_for('store_dues_search', invoice_no=inv_no))
-
-# --- Store Users Management ---
 @app.route('/store/users')
-def store_users_manage():
-    if 'user' not in session: return redirect(url_for('home'))
-    # Reusing admin user template but filtering for Store context could be better. 
-    # For now, simplistic view or just redirect to admin settings if user is main admin.
-    if session.get('role') == 'admin':
-        return redirect(url_for('home')) # Admin manages users in main dashboard
-        
-    # If store admin wants to manage store users:
-    # (Assuming we implement a store-specific user UI here or reuse logic)
-    # For simplicity in this fix, we assume Main Admin manages everything via /admin/settings
-    return redirect(url_for('store_dashboard'))
+def store_users_page():
+    if 'user' not in session:
+        return redirect(url_for('home'))
+    
+    users = load_store_users()
+    return render_template_string(STORE_USERS_TEMPLATE, users=users)
+
+@app.route('/store/users/save', methods=['POST'])
+def store_users_save():
+    if 'user' not in session:
+        return redirect(url_for('home'))
+    
+    username = request.form.get('username', '').strip()
+    original_username = request.form.get('original_username', '').strip()
+    password = request.form.get('password', '').strip()
+    role = request.form.get('role', 'sales')
+    permissions = request.form.getlist('permissions')
+    
+    users = load_store_users()
+    
+    # If editing and username changed, delete old
+    if original_username and original_username != username:
+        if original_username in users:
+            del users[original_username]
+            
+    users[username] = {
+        "password": password,
+        "role": role,
+        "permissions": permissions,
+        "created_at": get_bd_date_str(),
+        "last_login": "Never"
+    }
+    
+    save_store_users(users)
+    flash('User saved successfully!')
+    return redirect(url_for('store_users_page'))
+
+@app.route('/store/users/delete', methods=['POST'])
+def store_users_delete():
+    if 'user' not in session:
+        return redirect(url_for('home'))
+    
+    username = request.form.get('username')
+    users = load_store_users()
+    
+    if username in users:
+        del users[username]
+        save_store_users(users)
+        flash('User deleted successfully!')
+    
+    return redirect(url_for('store_users_page'))
 
 # ==============================================================================
 # MAIN APP RUN
 # ==============================================================================
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=5000)
-            margin-bottom: 20px;
-        }
-
-        .flash-error { background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); color: #F87171; }
-        .flash-success { background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.2); color: #34D399; }
-    </style>
-"""
+    # Use environment variables for port if available, otherwise default to 5000
+    port = int(os.environ.get('PORT', 5000))
+    app.run(debug=True, host='0.0.0.0', port=port)
