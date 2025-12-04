@@ -1,11 +1,11 @@
 import requests
 import openpyxl
-from openpyxl. styles import Font, Alignment, Border, Side, PatternFill
+from openpyxl.styles import Font, Alignment, Border, Side, PatternFill
 from bs4 import BeautifulSoup
 from datetime import datetime, timedelta
 import pytz 
 from io import BytesIO
-from openpyxl. drawing.image import Image
+from openpyxl.drawing.image import Image
 from PIL import Image as PILImage
 import time
 import json
@@ -30,7 +30,7 @@ app.secret_key = 'super-secret-secure-key-bd'
 
 # PO ফাইলের জন্য আপলোড ফোল্ডার
 UPLOAD_FOLDER = 'uploads'
-if not os.path. exists(UPLOAD_FOLDER):
+if not os.path.exists(UPLOAD_FOLDER):
     os.makedirs(UPLOAD_FOLDER)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
@@ -38,7 +38,7 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=2) 
 
 # টাইমজোন কনফিগারেশন (বাংলাদেশ)
-bd_tz = pytz. timezone('Asia/Dhaka')
+bd_tz = pytz.timezone('Asia/Dhaka')
 
 def get_bd_time():
     return datetime.now(bd_tz)
@@ -52,7 +52,7 @@ def get_bd_date_str():
 @app.after_request
 def add_header(response):
     response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, post-check=0, pre-check=0, max-age=0'
-    response. headers['Pragma'] = 'no-cache'
+    response.headers['Pragma'] = 'no-cache'
     response.headers['Expires'] = '-1'
     return response
 
@@ -87,7 +87,7 @@ except Exception as e:
 # ==============================================================================
 
 def load_users():
-    record = users_col. find_one({"_id": "global_users"})
+    record = users_col.find_one({"_id": "global_users"})
     default_users = {
         "Admin": {
             "password": "@Nijhum@12", 
@@ -112,7 +112,7 @@ def save_users(users_data):
     )
 
 def load_stats():
-    record = stats_col. find_one({"_id": "dashboard_stats"})
+    record = stats_col.find_one({"_id": "dashboard_stats"})
     if record:
         return record['data']
     else:
@@ -136,7 +136,7 @@ def update_stats(ref_no, username):
         "date": now.strftime('%d-%m-%Y'),
         "time": now.strftime('%I:%M %p'),
         "type": "Closing Report",
-        "iso_time": now. isoformat()
+        "iso_time": now.isoformat()
     }
     data['downloads'].insert(0, new_record)
     # Analytics এর জন্য ডাটা লিমিট বাড়ানো হয়েছে
@@ -153,9 +153,9 @@ def update_po_stats(username, file_count):
         "user": username,
         "file_count": file_count,
         "date": now.strftime('%d-%m-%Y'),
-        "time": now. strftime('%I:%M %p'),
+        "time": now.strftime('%I:%M %p'),
         "type": "PO Sheet",
-        "iso_time": now. isoformat()
+        "iso_time": now.isoformat()
     }
     if 'downloads' not in data: data['downloads'] = []
     data['downloads'].insert(0, new_record)
@@ -195,7 +195,7 @@ def load_store_users():
     if record:
         return record['data']
     else:
-        store_users_col. insert_one({"_id": "store_users_data", "data": default_users})
+        store_users_col.insert_one({"_id": "store_users_data", "data": default_users})
         return default_users
 
 def save_store_users(users_data):
@@ -248,7 +248,7 @@ def save_store_invoices(invoices):
     )
 
 def load_store_estimates():
-    record = store_estimates_col. find_one({"_id": "estimates_data"})
+    record = store_estimates_col.find_one({"_id": "estimates_data"})
     if record:
         return record['data']
     else:
@@ -282,7 +282,7 @@ def generate_invoice_number():
     last_num = 0
     for inv in invoices:
         try:
-            num = int(inv['invoice_no']. split('-')[1])
+            num = int(inv['invoice_no'].split('-')[1])
             if num > last_num:
                 last_num = num
         except:
@@ -312,25 +312,25 @@ def get_dashboard_summary_v2():
     now = get_bd_time()
     today_str = now.strftime('%d-%m-%Y')
     
-    # 1. User Stats
+    # 1.User Stats
     user_details = []
-    for u, d in users_data. items():
+    for u, d in users_data.items():
         user_details.append({
             "username": u,
-            "role": d. get('role', 'user'),
-            "created_at": d. get('created_at', 'N/A'),
+            "role": d.get('role', 'user'),
+            "created_at": d.get('created_at', 'N/A'),
             "last_login": d.get('last_login', 'Never'),
-            "last_duration": d. get('last_duration', 'N/A')
+            "last_duration": d.get('last_duration', 'N/A')
         })
 
-    # 2.  Accessories Today & Analytics - LIFETIME COUNT
+    # 2. Accessories Today & Analytics - LIFETIME COUNT
     acc_lifetime_count = 0
     acc_today_list = []
     
     # Analytics Container: {'YYYY-MM-DD': {'label': '01-Dec', 'closing': 0, 'po': 0, 'acc': 0}}
     daily_data = defaultdict(lambda: {'closing': 0, 'po': 0, 'acc': 0})
 
-    for ref, data in acc_db. items():
+    for ref, data in acc_db.items():
         for challan in data.get('challans', []):
             acc_lifetime_count += 1  # LIFETIME COUNT
             c_date = challan.get('date')
@@ -346,12 +346,12 @@ def get_dashboard_summary_v2():
             # Analytics Calculation - Daily basis
             try:
                 dt_obj = datetime.strptime(c_date, '%d-%m-%Y')
-                sort_key = dt_obj. strftime('%Y-%m-%d')
+                sort_key = dt_obj.strftime('%Y-%m-%d')
                 daily_data[sort_key]['acc'] += 1
                 daily_data[sort_key]['label'] = dt_obj.strftime('%d-%b')
             except: pass
 
-    # 3.  Closing & PO - LIFETIME COUNT & Analytics
+    # 3. Closing & PO - LIFETIME COUNT & Analytics
     closing_lifetime_count = 0
     po_lifetime_count = 0
     closing_list = []
@@ -359,8 +359,8 @@ def get_dashboard_summary_v2():
     
     history = stats_data.get('downloads', [])
     for item in history:
-        item_date = item. get('date', '')
-        if item. get('type') == 'PO Sheet':
+        item_date = item.get('date', '')
+        if item.get('type') == 'PO Sheet':
             po_lifetime_count += 1  # LIFETIME COUNT
             if item_date == today_str:
                 po_list.append(item)
@@ -382,7 +382,7 @@ def get_dashboard_summary_v2():
         except: pass
 
     # Get last month's 1st date to today
-    first_of_last_month = (now. replace(day=1) - timedelta(days=1)).replace(day=1)
+    first_of_last_month = (now.replace(day=1) - timedelta(days=1)).replace(day=1)
     start_date = first_of_last_month.strftime('%Y-%m-%d')
     end_date = now.strftime('%Y-%m-%d')
     
@@ -403,10 +403,10 @@ def get_dashboard_summary_v2():
     else:
         for k in sorted_keys:
             d = daily_data[k]
-            chart_labels.append(d. get('label', k))
+            chart_labels.append(d.get('label', k))
             chart_closing.append(d['closing'])
             chart_po.append(d['po'])
-            chart_acc. append(d['acc'])
+            chart_acc.append(d['acc'])
 
     return {
         "users": { "count": len(users_data), "details": user_details },
@@ -430,15 +430,15 @@ def get_store_dashboard_summary():
     
     # Calculate total sales this month
     now = get_bd_time()
-    current_month = now. strftime('%m-%Y')
+    current_month = now.strftime('%m-%Y')
     monthly_sales = 0
     total_due = 0
     
     for inv in invoices:
         inv_date = inv.get('date', '')
         try:
-            if inv_date. split('-')[1] + '-' + inv_date.split('-')[2] == current_month:
-                monthly_sales += inv. get('total', 0)
+            if inv_date.split('-')[1] + '-' + inv_date.split('-')[2] == current_month:
+                monthly_sales += inv.get('total', 0)
         except:
             pass
         total_due += inv.get('due', 0)
@@ -455,12 +455,12 @@ def get_store_dashboard_summary():
 # ENHANCED CSS STYLES - PREMIUM MODERN UI WITH ANIMATIONS
 # ==============================================================================
 COMMON_STYLES = """
-    <link href="https://fonts. googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all. min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4. 1.1/animate.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr. net/npm/particles.js@2.0.0/particles.min. js"></script>
-    <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player. js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
+    <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
     <style>
         :root {
             --bg-body: #0a0a0f;
@@ -478,7 +478,7 @@ COMMON_STYLES = """
             --accent-red: #EF4444;
             --accent-blue: #3B82F6;
             --accent-cyan: #06B6D4;
-            --border-color: rgba(255, 255, 255, 0. 08);
+            --border-color: rgba(255, 255, 255, 0.08);
             --border-glow: rgba(255, 122, 0, 0.2);
             --card-radius: 16px;
             --transition-smooth: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
@@ -544,7 +544,7 @@ COMMON_STYLES = """
 
         /* Glassmorphism Effect */
         .glass {
-            background: rgba(22, 22, 31, 0. 7);
+            background: rgba(22, 22, 31, 0.7);
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
             border: 1px solid var(--border-color);
@@ -566,7 +566,7 @@ COMMON_STYLES = """
             transition: var(--transition-smooth);
             box-shadow: 4px 0 30px rgba(0, 0, 0, 0.3);
         }
-        . sidebar::before {
+        .sidebar::before {
             content: '';
             position: absolute;
             top: 0;
@@ -608,7 +608,7 @@ COMMON_STYLES = """
             50% { transform: translateY(-5px) rotate(5deg); }
         }
         
-        . nav-menu { 
+        .nav-menu { 
             flex-grow: 1; 
             display: flex; 
             flex-direction: column;
@@ -641,9 +641,9 @@ COMMON_STYLES = """
             transition: var(--transition-smooth);
             z-index: -1;
         }
-        . nav-link:hover::before, .nav-link. active::before { width: 100%; }
+        .nav-link:hover::before, .nav-link.active::before { width: 100%; }
 
-        .nav-link:hover, .nav-link. active { 
+        .nav-link:hover, .nav-link.active { 
             color: var(--accent-orange); 
             transform: translateX(5px);
         }
@@ -667,7 +667,7 @@ COMMON_STYLES = """
             filter: drop-shadow(0 0 8px var(--accent-orange));
         }
 
-        . nav-link . nav-badge {
+        .nav-link .nav-badge {
             margin-left: auto;
             background: var(--accent-orange);
             color: white;
@@ -704,7 +704,7 @@ COMMON_STYLES = """
             min-height: 100vh;
         }
 
-        . header-section { 
+        .header-section { 
             display: flex;
             justify-content: space-between; 
             align-items: flex-start; 
@@ -753,7 +753,7 @@ COMMON_STYLES = """
         }
         
         .status-badge:hover {
-            border-color: rgba(16, 185, 129, 0. 3);
+            border-color: rgba(16, 185, 129, 0.3);
             box-shadow: 0 0 20px rgba(16, 185, 129, 0.15);
         }
         
@@ -769,10 +769,10 @@ COMMON_STYLES = """
                 0 0 5px var(--accent-green),
                 0 0 10px var(--accent-green),
                 0 0 20px var(--accent-green),
-                0 0 30px rgba(16, 185, 129, 0. 5);
+                0 0 30px rgba(16, 185, 129, 0.5);
         }
         
-        . status-dot::before {
+        .status-dot::before {
             content: '';
             position: absolute;
             top: 50%;
@@ -785,7 +785,7 @@ COMMON_STYLES = """
             animation: statusPulseRing 2s ease-out infinite;
         }
         
-        . status-dot::after {
+        .status-dot::after {
             content: '';
             position: absolute;
             top: 50%;
@@ -823,7 +823,7 @@ COMMON_STYLES = """
                 opacity: 0.8;
             }
             100% {
-                transform: translate(-50%, -50%) scale(2. 5);
+                transform: translate(-50%, -50%) scale(2.5);
                 opacity: 0;
             }
         }
@@ -935,12 +935,12 @@ COMMON_STYLES = """
             transition: var(--transition-smooth);
         }
 
-        .stat-card:hover . stat-icon {
+        .stat-card:hover .stat-icon {
             transform: rotate(-10deg) scale(1.1);
             box-shadow: 0 0 30px var(--accent-orange-glow);
         }
 
-        .stat-card:hover . stat-icon i {
+        .stat-card:hover .stat-icon i {
             animation: iconBounce 0.5s ease-out;
         }
 
@@ -949,7 +949,7 @@ COMMON_STYLES = """
             50% { transform: scale(1.3); }
         }
 
-        . stat-info h3 { 
+        .stat-info h3 { 
             font-size: 36px;
             font-weight: 800; 
             margin: 0; 
@@ -967,7 +967,7 @@ COMMON_STYLES = """
             color: var(--text-secondary); 
             margin: 6px 0 0 0; 
             text-transform: uppercase;
-            letter-spacing: 1. 5px;
+            letter-spacing: 1.5px;
             font-weight: 600;
         }
 
@@ -1008,7 +1008,7 @@ COMMON_STYLES = """
             transform-origin: left;
         }
 
-        . progress-bar-fill::after {
+        .progress-bar-fill::after {
             content: '';
             position: absolute;
             top: 0;
@@ -1029,9 +1029,9 @@ COMMON_STYLES = """
             100% { transform: translateX(100%); }
         }
 
-        . progress-orange { background: var(--gradient-orange); }
+        .progress-orange { background: var(--gradient-orange); }
         .progress-purple { background: linear-gradient(135deg, #8B5CF6 0%, #A78BFA 100%); }
-        . progress-green { background: linear-gradient(135deg, #10B981 0%, #34D399 100%); }
+        .progress-green { background: linear-gradient(135deg, #10B981 0%, #34D399 100%); }
         
         /* Enhanced Forms */
         .input-group { margin-bottom: 20px; }
@@ -1043,7 +1043,7 @@ COMMON_STYLES = """
             margin-bottom: 8px; 
             text-transform: uppercase; 
             font-weight: 700;
-            letter-spacing: 1. 5px;
+            letter-spacing: 1.5px;
         }
 
         input, select, textarea { 
@@ -1078,7 +1078,7 @@ COMMON_STYLES = """
         select {
             cursor: pointer;
             appearance: none;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3. org/2000/svg' fill='%23FF7A00' viewBox='0 0 24 24'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%23FF7A00' viewBox='0 0 24 24'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
             background-repeat: no-repeat;
             background-position: right 12px center;
             background-size: 24px;
@@ -1091,7 +1091,7 @@ COMMON_STYLES = """
             padding: 10px;
         }
         
-        button, . btn-primary { 
+        button, .btn-primary { 
             width: 100%;
             padding: 14px 24px; 
             background: var(--gradient-orange);
@@ -1129,7 +1129,7 @@ COMMON_STYLES = """
             transform: translateY(0);
         }
         
-        . btn-secondary {
+        .btn-secondary {
             background: rgba(255, 255, 255, 0.05);
             border: 1px solid var(--border-color);
         }
@@ -1152,10 +1152,10 @@ COMMON_STYLES = """
         }
         
         .btn-danger:hover {
-            box-shadow: 0 10px 30px rgba(239, 68, 68, 0. 3);
+            box-shadow: 0 10px 30px rgba(239, 68, 68, 0.3);
         }
         
-        . btn-purple {
+        .btn-purple {
             background: linear-gradient(135deg, #8B5CF6 0%, #A78BFA 100%);
         }
         
@@ -1170,7 +1170,7 @@ COMMON_STYLES = """
         }
 
         /* Enhanced Tables */
-        . dark-table { 
+        .dark-table { 
             width: 100%;
             border-collapse: collapse; 
             margin-top: 10px; 
@@ -1235,7 +1235,7 @@ COMMON_STYLES = """
             overflow: hidden;
         }
 
-        . btn-edit { 
+        .btn-edit { 
             background: rgba(139, 92, 246, 0.15);
             color: #A78BFA; 
         }
@@ -1248,38 +1248,38 @@ COMMON_STYLES = """
         }
 
         .btn-del { 
-            background: rgba(239, 68, 68, 0. 15);
+            background: rgba(239, 68, 68, 0.15);
             color: #F87171; 
         }
 
-        . btn-del:hover { 
+        .btn-del:hover { 
             background: var(--accent-red);
             color: white;
             transform: scale(1.1);
-            box-shadow: 0 0 20px rgba(239, 68, 68, 0. 4);
+            box-shadow: 0 0 20px rgba(239, 68, 68, 0.4);
         }
         
-        . btn-view {
-            background: rgba(59, 130, 246, 0. 15);
+        .btn-view {
+            background: rgba(59, 130, 246, 0.15);
             color: #60A5FA;
         }
         
         .btn-view:hover {
             background: var(--accent-blue);
             color: white;
-            transform: scale(1. 1);
+            transform: scale(1.1);
             box-shadow: 0 0 20px rgba(59, 130, 246, 0.4);
         }
         
         .btn-print-sm {
-            background: rgba(16, 185, 129, 0. 15);
+            background: rgba(16, 185, 129, 0.15);
             color: #34D399;
         }
         
         .btn-print-sm:hover {
             background: var(--accent-green);
             color: white;
-            transform: scale(1. 1);
+            transform: scale(1.1);
             box-shadow: 0 0 20px rgba(16, 185, 129, 0.4);
         }
         
@@ -1318,14 +1318,14 @@ COMMON_STYLES = """
             box-shadow: 0 0 30px var(--accent-orange-glow);
         }
 
-        . spinner-inner {
+        .spinner-inner {
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
             width: 50px;
             height: 50px;
-            border: 3px solid rgba(139, 92, 246, 0. 1);
+            border: 3px solid rgba(139, 92, 246, 0.1);
             border-bottom: 3px solid var(--accent-purple);
             border-left: 3px solid var(--accent-purple);
             border-radius: 50%;
@@ -1352,7 +1352,7 @@ COMMON_STYLES = """
             border: 3px solid var(--accent-green);
             margin-bottom: 24px;
             animation: success-anim 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-            box-shadow: 0 0 40px rgba(16, 185, 129, 0. 3);
+            box-shadow: 0 0 40px rgba(16, 185, 129, 0.3);
         }
 
         .checkmark-circle::before {
@@ -1367,11 +1367,11 @@ COMMON_STYLES = """
             left: 35px;
             transform: rotate(45deg); 
             opacity: 0;
-            animation: checkmark-anim 0.4s 0. 4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+            animation: checkmark-anim 0.4s 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
         }
         
         /* Fail Cross Animation */
-        . fail-container { 
+        .fail-container { 
             display: none; 
             text-align: center;
         }
@@ -1384,7 +1384,7 @@ COMMON_STYLES = """
             border-radius: 50%; 
             border: 3px solid var(--accent-red);
             margin-bottom: 24px;
-            animation: fail-anim 0.6s cubic-bezier(0.4, 0, 0. 2, 1) forwards;
+            animation: fail-anim 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
             box-shadow: 0 0 40px rgba(239, 68, 68, 0.3);
         }
 
@@ -1401,7 +1401,7 @@ COMMON_STYLES = """
             opacity: 0;
         }
 
-        . fail-circle::before { transform: rotate(45deg); }
+        .fail-circle::before { transform: rotate(45deg); }
         .fail-circle::after { transform: rotate(-45deg); }
 
         @keyframes success-anim { 
@@ -1426,7 +1426,7 @@ COMMON_STYLES = """
             100% { opacity: 1; transform: rotate(45deg) scale(1); }
         }
 
-        . anim-text { 
+        .anim-text { 
             font-size: 24px; 
             font-weight: 800; 
             color: white;
@@ -1434,22 +1434,22 @@ COMMON_STYLES = """
             letter-spacing: 1px;
         }
 
-        . loading-text {
+        .loading-text {
             color: var(--text-secondary);
             font-size: 15px;
             margin-top: 20px;
             font-weight: 500;
             letter-spacing: 2px;
             text-transform: uppercase;
-            animation: textPulse 1. 5s ease-in-out infinite;
+            animation: textPulse 1.5s ease-in-out infinite;
         }
 
         @keyframes textPulse {
-            0%, 100% { opacity: 0. 5; }
+            0%, 100% { opacity: 0.5; }
             50% { opacity: 1; }
         }
                 /* Welcome Popup Modal */
-        . welcome-modal {
+        .welcome-modal {
             display: none;
             position: fixed;
             top: 0;
@@ -1462,7 +1462,7 @@ COMMON_STYLES = """
             z-index: 10000;
             justify-content: center;
             align-items: center;
-            animation: modalFadeIn 0. 3s ease-out;
+            animation: modalFadeIn 0.3s ease-out;
         }
 
         @keyframes modalFadeIn {
@@ -1478,13 +1478,13 @@ COMMON_STYLES = """
             text-align: center;
             max-width: 500px;
             width: 90%;
-            animation: welcomeSlideIn 0. 5s cubic-bezier(0.4, 0, 0.2, 1);
+            animation: welcomeSlideIn 0.5s cubic-bezier(0.4, 0, 0.2, 1);
             box-shadow: 0 25px 80px rgba(0, 0, 0, 0.5), 0 0 60px var(--accent-orange-glow);
             position: relative;
             overflow: hidden;
         }
 
-        . welcome-content::before {
+        .welcome-content::before {
             content: '';
             position: absolute;
             top: -50%;
@@ -1493,7 +1493,7 @@ COMMON_STYLES = """
             height: 200%;
             background: radial-gradient(circle, var(--accent-orange-glow) 0%, transparent 60%);
             animation: welcomeGlow 3s ease-in-out infinite;
-            opacity: 0. 3;
+            opacity: 0.3;
         }
         
         @keyframes welcomeSlideIn {
@@ -1525,7 +1525,7 @@ COMMON_STYLES = """
             100% { transform: scale(1) rotate(0deg); }
         }
 
-        . welcome-greeting {
+        .welcome-greeting {
             font-size: 16px;
             color: var(--accent-orange);
             font-weight: 600;
@@ -1629,7 +1629,7 @@ COMMON_STYLES = """
             transition: var(--transition-smooth);
         }
 
-        . upload-zone:hover {
+        .upload-zone:hover {
             border-color: var(--accent-orange);
             background: rgba(255, 122, 0, 0.05);
         }
@@ -1638,10 +1638,10 @@ COMMON_STYLES = """
             opacity: 0.03;
         }
 
-        .upload-zone. dragover {
+        .upload-zone.dragover {
             border-color: var(--accent-orange);
             background: rgba(255, 122, 0, 0.1);
-            transform: scale(1. 02);
+            transform: scale(1.02);
         }
 
         .upload-icon {
@@ -1677,7 +1677,7 @@ COMMON_STYLES = """
         }
 
         /* Flash Messages */
-        . flash-message {
+        .flash-message {
             margin-bottom: 20px;
             padding: 16px 20px;
             border-radius: 12px;
@@ -1686,7 +1686,7 @@ COMMON_STYLES = """
             display: flex;
             align-items: center;
             gap: 12px;
-            animation: flashSlideIn 0. 4s ease-out;
+            animation: flashSlideIn 0.4s ease-out;
         }
 
         @keyframes flashSlideIn {
@@ -1700,8 +1700,8 @@ COMMON_STYLES = """
             }
         }
 
-        . flash-error {
-            background: rgba(239, 68, 68, 0. 1);
+        .flash-error {
+            background: rgba(239, 68, 68, 0.1);
             border: 1px solid rgba(239, 68, 68, 0.2);
             color: #F87171;
         }
@@ -1712,9 +1712,9 @@ COMMON_STYLES = """
             color: #34D399;
         }
         
-        . flash-warning {
+        .flash-warning {
             background: rgba(245, 158, 11, 0.1);
-            border: 1px solid rgba(245, 158, 11, 0. 2);
+            border: 1px solid rgba(245, 158, 11, 0.2);
             color: #FBBF24;
         }
         
@@ -1741,7 +1741,7 @@ COMMON_STYLES = """
         }
         
         /* Mobile Toggle & Responsive */
-        . mobile-toggle { 
+        .mobile-toggle { 
             display: none; 
             position: fixed; 
             top: 20px;
@@ -1765,10 +1765,10 @@ COMMON_STYLES = """
                 transform: translateX(-100%);
                 width: 280px;
             } 
-            . sidebar. active { 
+            .sidebar.active { 
                 transform: translateX(0);
             }
-            . main-content { 
+            .main-content { 
                 margin-left: 0;
                 width: 100%; 
                 padding: 20px; 
@@ -1788,7 +1788,7 @@ COMMON_STYLES = """
         }
 
         @media (max-width: 768px) {
-            . stats-grid {
+            .stats-grid {
                 grid-template-columns: 1fr;
             }
             .page-title {
@@ -1848,12 +1848,12 @@ COMMON_STYLES = """
             font-size: 12px;
             color: var(--text-secondary);
             padding: 6px 12px;
-            background: rgba(16, 185, 129, 0. 1);
+            background: rgba(16, 185, 129, 0.1);
             border-radius: 20px;
             border: 1px solid rgba(16, 185, 129, 0.2);
         }
 
-        . realtime-dot {
+        .realtime-dot {
             width: 8px;
             height: 8px;
             background: var(--accent-green);
@@ -1867,7 +1867,7 @@ COMMON_STYLES = """
         }
 
         /* Floating Action Button */
-        . fab {
+        .fab {
             position: fixed;
             bottom: 30px;
             right: 30px;
@@ -1917,7 +1917,7 @@ COMMON_STYLES = """
             transition: opacity 0.3s;
         }
 
-        . animated-border:hover::after {
+        .animated-border:hover::after {
             opacity: 1;
         }
 
@@ -1929,7 +1929,7 @@ COMMON_STYLES = """
         
         /* Permission Checkbox Styles */
         .perm-checkbox {
-            background: rgba(255, 255, 255, 0. 03);
+            background: rgba(255, 255, 255, 0.03);
             padding: 14px 18px;
             border-radius: 12px;
             cursor: pointer;
@@ -1946,7 +1946,7 @@ COMMON_STYLES = """
             background: rgba(255, 122, 0, 0.05);
         }
 
-        . perm-checkbox input {
+        .perm-checkbox input {
             width: auto;
             margin-right: 10px;
             accent-color: var(--accent-orange);
@@ -1958,12 +1958,12 @@ COMMON_STYLES = """
             color: var(--text-secondary);
         }
 
-        . perm-checkbox:has(input:checked) {
+        .perm-checkbox:has(input:checked) {
             border-color: var(--accent-orange);
             background: rgba(255, 122, 0, 0.1);
         }
 
-        . perm-checkbox:has(input:checked) span {
+        .perm-checkbox:has(input:checked) span {
             color: var(--accent-orange);
         }
 
@@ -1979,7 +1979,7 @@ COMMON_STYLES = """
             color: var(--text-secondary);
         }
 
-        . time-badge i {
+        .time-badge i {
             color: var(--accent-orange);
         }
         
@@ -2016,7 +2016,7 @@ COMMON_STYLES = """
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(10, 10, 15, 0. 9);
+            background: rgba(10, 10, 15, 0.9);
             backdrop-filter: blur(10px);
             z-index: 9000;
             justify-content: center;
@@ -2036,7 +2036,7 @@ COMMON_STYLES = """
             width: 90%;
             max-height: 90vh;
             overflow-y: auto;
-            animation: modalSlideIn 0. 3s ease-out;
+            animation: modalSlideIn 0.3s ease-out;
         }
         
         @keyframes modalSlideIn {
@@ -2050,7 +2050,7 @@ COMMON_STYLES = """
             }
         }
         
-        . modal-header {
+        .modal-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -2091,7 +2091,7 @@ COMMON_STYLES = """
             margin-bottom: 20px;
         }
         
-        . search-box input {
+        .search-box input {
             padding-left: 45px;
         }
         
@@ -2104,7 +2104,7 @@ COMMON_STYLES = """
         }
         
         /* Tab Navigation */
-        . tab-nav {
+        .tab-nav {
             display: flex;
             gap: 10px;
             margin-bottom: 30px;
@@ -2112,7 +2112,7 @@ COMMON_STYLES = """
             padding-bottom: 10px;
         }
         
-        . tab-btn {
+        .tab-btn {
             padding: 10px 20px;
             background: transparent;
             border: none;
@@ -2133,7 +2133,7 @@ COMMON_STYLES = """
             background: rgba(255, 122, 0, 0.15);
         }
         
-        . tab-content {
+        .tab-content {
             display: none;
         }
         
@@ -2154,12 +2154,12 @@ COMMON_STYLES = """
             color: var(--accent-green);
         }
         
-        . amount-due {
+        .amount-due {
             color: var(--accent-red);
         }
         
         /* Empty State */
-        . empty-state {
+        .empty-state {
             text-align: center;
             padding: 60px 20px;
             color: var(--text-secondary);
@@ -2172,7 +2172,7 @@ COMMON_STYLES = """
             display: block;
         }
         
-        . empty-state p {
+        .empty-state p {
             font-size: 16px;
             margin-bottom: 20px;
         }
@@ -2183,8 +2183,8 @@ COMMON_STYLES = """
 # ==============================================================================
 
 def is_potential_size(header):
-    h = header.strip(). upper()
-    if h in ["COLO", "SIZE", "TOTAL", "QUANTITY", "PRICE", "AMOUNT", "CURRENCY", "ORDER NO", "P. O NO"]:
+    h = header.strip().upper()
+    if h in ["COLO", "SIZE", "TOTAL", "QUANTITY", "PRICE", "AMOUNT", "CURRENCY", "ORDER NO", "P.O NO"]:
         return False
     if re.match(r'^\d+$', h): return True
     if re.match(r'^\d+[AMYT]$', h): return True
@@ -2202,7 +2202,7 @@ def sort_sizes(size_list):
     def sort_key(s):
         s = s.strip()
         if s in STANDARD_ORDER: return (0, STANDARD_ORDER.index(s))
-        if s. isdigit(): return (1, int(s))
+        if s.isdigit(): return (1, int(s))
         match = re.match(r'^(\d+)([A-Z]+)$', s)
         if match: return (2, int(match.group(1)), match.group(2))
         return (3, s)
@@ -2216,31 +2216,31 @@ def extract_metadata(first_page_text):
     if "KIABI" in first_page_text.upper():
         meta['buyer'] = "KIABI"
     else:
-        buyer_match = re. search(r"Buyer.*?Name[\s\S]*?([\w\s&]+)(? :\n|$)", first_page_text)
+        buyer_match = re.search(r"Buyer.*?Name[\s\S]*?([\w\s&]+)(? :\n|$)", first_page_text)
         if buyer_match: meta['buyer'] = buyer_match.group(1).strip()
 
-    booking_block_match = re.search(r"(? :Internal )?Booking NO\.  ? [:\s]*([\s\S]*?)(?:System NO|Control No|Buyer)", first_page_text, re.IGNORECASE)
+    booking_block_match = re.search(r"(? :Internal )?Booking NO\. ? [:\s]*([\s\S]*?)(?:System NO|Control No|Buyer)", first_page_text, re.IGNORECASE)
     if booking_block_match: 
         raw_booking = booking_block_match.group(1).strip()
         clean_booking = raw_booking.replace('\n', '').replace('\r', '').replace(' ', '')
         if "System" in clean_booking: clean_booking = clean_booking.split("System")[0]
         meta['booking'] = clean_booking
 
-    style_match = re.search(r"Style Ref\. ?[:\s]*([\w-]+)", first_page_text, re.IGNORECASE)
+    style_match = re.search(r"Style Ref\.?[:\s]*([\w-]+)", first_page_text, re.IGNORECASE)
     if style_match: meta['style'] = style_match.group(1).strip()
     else:
-        style_match = re.search(r"Style Des\. ?[\s\S]*?([\w-]+)", first_page_text, re.IGNORECASE)
+        style_match = re.search(r"Style Des\.?[\s\S]*?([\w-]+)", first_page_text, re.IGNORECASE)
         if style_match: meta['style'] = style_match.group(1).strip()
 
-    season_match = re.search(r"Season\s*[:\n\"]*([\w\d-]+)", first_page_text, re. IGNORECASE)
-    if season_match: meta['season'] = season_match.group(1). strip()
-    dept_match = re. search(r"Dept\.  ?[\s\n:]*([A-Za-z]+)", first_page_text, re. IGNORECASE)
-    if dept_match: meta['dept'] = dept_match. group(1).strip()
+    season_match = re.search(r"Season\s*[:\n\"]*([\w\d-]+)", first_page_text, re.IGNORECASE)
+    if season_match: meta['season'] = season_match.group(1).strip()
+    dept_match = re.search(r"Dept\. ?[\s\n:]*([A-Za-z]+)", first_page_text, re.IGNORECASE)
+    if dept_match: meta['dept'] = dept_match.group(1).strip()
 
     item_match = re.search(r"Garments?    Item[\s\n:]*([^\n\r]+)", first_page_text, re.IGNORECASE)
     if item_match: 
-        item_text = item_match.group(1). strip()
-        if "Style" in item_text: item_text = item_text.split("Style")[0]. strip()
+        item_text = item_match.group(1).strip()
+        if "Style" in item_text: item_text = item_text.split("Style")[0].strip()
         meta['item'] = item_text
 
     return meta
@@ -2264,11 +2264,11 @@ def extract_data_dynamic(file_path):
         order_match = re.search(r"Order no\D*(\d+)", first_page_text, re.IGNORECASE)
         if order_match: order_no = order_match.group(1)
         else:
-            alt_match = re. search(r"Order\s*[:\.]?\s*(\d+)", first_page_text, re. IGNORECASE)
+            alt_match = re.search(r"Order\s*[:\.]?\s*(\d+)", first_page_text, re.IGNORECASE)
             if alt_match: order_no = alt_match.group(1)
         
         order_no = str(order_no).strip()
-        if order_no. endswith("00"): order_no = order_no[:-2]
+        if order_no.endswith("00"): order_no = order_no[:-2]
 
         for page in reader.pages:
             text = page.extract_text()
@@ -2301,15 +2301,15 @@ def extract_data_dynamic(file_path):
                     if line.startswith("Total Quantity") or line.startswith("Total Amount"):
                         capturing_data = False
                         continue
-                    lower_line = line. lower()
+                    lower_line = line.lower()
                     if "quantity" in lower_line or "currency" in lower_line or "price" in lower_line or "amount" in lower_line:
                         continue
                         
-                    clean_line = line. replace("Spec. price", ""). replace("Spec", "").strip()
+                    clean_line = line.replace("Spec.price", "").replace("Spec", "").strip()
                     if not re.search(r'[a-zA-Z]', clean_line): continue
                     if re.match(r'^[A-Z]\d+$', clean_line) or "Assortment" in clean_line: continue
 
-                    numbers_in_line = re. findall(r'\b\d+\b', line)
+                    numbers_in_line = re.findall(r'\b\d+\b', line)
                     quantities = [int(n) for n in numbers_in_line]
                     color_name = clean_line
                     final_qtys = []
@@ -2317,12 +2317,12 @@ def extract_data_dynamic(file_path):
                     if len(quantities) >= len(sizes):
                         if len(quantities) == len(sizes) + 1: final_qtys = quantities[:-1] 
                         else: final_qtys = quantities[:len(sizes)]
-                        color_name = re.sub(r'\s\d+$', '', color_name). strip()
+                        color_name = re.sub(r'\s\d+$', '', color_name).strip()
                     elif len(quantities) < len(sizes): 
                         vertical_qtys = []
                         for next_line in lines[i+1:]:
                             next_line = next_line.strip()
-                            if "Total" in next_line or re.search(r'[a-zA-Z]', next_line. replace("Spec", "").replace("price", "")): break
+                            if "Total" in next_line or re.search(r'[a-zA-Z]', next_line.replace("Spec", "").replace("price", "")): break
                             if re.match(r'^\d+$', next_line): vertical_qtys.append(int(next_line))
                         
                         if len(vertical_qtys) >= len(sizes): final_qtys = vertical_qtys[:len(sizes)]
@@ -2343,7 +2343,7 @@ def extract_data_dynamic(file_path):
 # ==============================================================================
 
 def get_authenticated_session(username, password):
-    login_url = 'http://180.92.235.190:8022/erp/login. php'
+    login_url = 'http://180.92.235.190:8022/erp/login.php'
     login_payload = {'txt_userid': username, 'txt_password': password, 'submit': 'Login'}
     session_req = requests.Session()
     session_req.headers.update({
@@ -2351,30 +2351,30 @@ def get_authenticated_session(username, password):
     })
     try:
         response = session_req.post(login_url, data=login_payload, timeout=300)
-        if "dashboard. php" in response. url or "Invalid" not in response.text:
+        if "dashboard.php" in response.url or "Invalid" not in response.text:
             return session_req
         else:
             return None
-    except requests. exceptions.RequestException as e:
+    except requests.exceptions.RequestException as e:
         print(f"Connection Error: {e}")
         return None
 
 def fetch_closing_report_data(internal_ref_no):
-    active_session = get_authenticated_session("input2. clothing-cutting", "123456")
+    active_session = get_authenticated_session("input2.clothing-cutting", "123456")
     if not active_session: return None
 
-    report_url = 'http://180. 92.235.190:8022/erp/prod_planning/reports/requires/cutting_lay_production_report_controller.php'
+    report_url = 'http://180.92.235.190:8022/erp/prod_planning/reports/requires/cutting_lay_production_report_controller.php'
     payload_template = {'action': 'report_generate', 'cbo_wo_company_name': '2', 'cbo_location_name': '2', 'cbo_floor_id': '0', 'cbo_buyer_name': '0', 'txt_internal_ref_no': internal_ref_no, 'reportType': '3'}
     found_data = None
    
     for year in ['2025', '2024']:
         for company_id in range(1, 6):
-            payload = payload_template. copy()
+            payload = payload_template.copy()
             payload['cbo_year_selection'] = year
             payload['cbo_company_name'] = str(company_id)
             try:
                 response = active_session.post(report_url, data=payload, timeout=300)
-                if response.status_code == 200 and "Data not Found" not in response. text:
+                if response.status_code == 200 and "Data not Found" not in response.text:
                     found_data = response.text
                     break
             except: continue
@@ -2390,9 +2390,9 @@ def parse_report_data(html_content):
         soup = BeautifulSoup(html_content, 'lxml')
         header_row = soup.select_one('thead tr:nth-of-type(2)')
         if not header_row: return None
-        all_th = header_row. find_all('th')
-        headers = [th.get_text(strip=True) for th in all_th if 'total' not in th.get_text(strip=True). lower()]
-        data_rows = soup. select('div#scroll_body table tbody tr')
+        all_th = header_row.find_all('th')
+        headers = [th.get_text(strip=True) for th in all_th if 'total' not in th.get_text(strip=True).lower()]
+        data_rows = soup.select('div#scroll_body table tbody tr')
         item_blocks = []
         current_block = []
         for row in data_rows:
@@ -2408,15 +2408,15 @@ def parse_report_data(html_content):
             for row in block:
                 cells = row.find_all('td')
                 if len(cells) > 2:
-                    criteria_main = cells[0]. get_text(strip=True)
+                    criteria_main = cells[0].get_text(strip=True)
                     criteria_sub = cells[2].get_text(strip=True)
                     main_lower, sub_lower = criteria_main.lower(), criteria_sub.lower()
                     
                     if main_lower == "style": style = cells[1].get_text(strip=True)
-                    elif main_lower == "color & gmts.  item": color = cells[1].get_text(strip=True)
+                    elif main_lower == "color & gmts. item": color = cells[1].get_text(strip=True)
                     elif "buyer" in main_lower: buyer_name = cells[1].get_text(strip=True)
                     
-                    if sub_lower == "gmts. color /country qty": gmts_qty_data = [cell.get_text(strip=True) for cell in cells[3:len(headers)+3]]
+                    if sub_lower == "gmts.color /country qty": gmts_qty_data = [cell.get_text(strip=True) for cell in cells[3:len(headers)+3]]
                     
                     if "sewing input" in main_lower: sewing_input_data = [cell.get_text(strip=True) for cell in cells[1:len(headers)+1]]
                     elif "sewing input" in sub_lower: sewing_input_data = [cell.get_text(strip=True) for cell in cells[3:len(headers)+3]]
@@ -2429,11 +2429,11 @@ def parse_report_data(html_content):
                 plus_3_percent_data = []
                 for value in gmts_qty_data:
                     try:
-                        new_qty = round(int(value. replace(',', '')) * 1. 03)
+                        new_qty = round(int(value.replace(',', '')) * 1.03)
                         plus_3_percent_data.append(str(new_qty))
                     except (ValueError, TypeError):
                         plus_3_percent_data.append(value)
-                all_report_data. append({
+                all_report_data.append({
                     'style': style, 'buyer': buyer_name, 'color': color, 
                     'headers': headers, 'gmts_qty': gmts_qty_data, 
                     'plus_3_percent': plus_3_percent_data, 
@@ -2446,13 +2446,13 @@ def parse_report_data(html_content):
 
 def create_formatted_excel_report(report_data, internal_ref_no=""):
     if not report_data: return None
-    wb = openpyxl. Workbook()
-    ws = wb. active
-    ws. title = "Closing Report"
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.title = "Closing Report"
     # Styles
     bold_font = Font(bold=True)
     title_font = Font(size=32, bold=True, color="7B261A") 
-    white_bold_font = Font(size=16. 5, bold=True, color="FFFFFF")
+    white_bold_font = Font(size=16.5, bold=True, color="FFFFFF")
     center_align = Alignment(horizontal='center', vertical='center')
     left_align = Alignment(horizontal='left', vertical='center')
     color_align = Alignment(horizontal='center', vertical='center', wrap_text=True)
@@ -2473,17 +2473,17 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
     ws['A1'].font = title_font 
     ws['A1'].alignment = center_align
 
-    ws. merge_cells(start_row=2, start_column=1, end_row=2, end_column=NUM_COLUMNS)
+    ws.merge_cells(start_row=2, start_column=1, end_row=2, end_column=NUM_COLUMNS)
     ws['A2'].value = "CLOSING REPORT [ INPUT SECTION ]"
     ws['A2'].font = Font(size=15, bold=True) 
     ws['A2'].alignment = center_align
-    ws. row_dimensions[3].height = 6
+    ws.row_dimensions[3].height = 6
 
-    formatted_ref_no = internal_ref_no. upper()
-    current_date = get_bd_time(). strftime("%d/%m/%Y")
+    formatted_ref_no = internal_ref_no.upper()
+    current_date = get_bd_time().strftime("%d/%m/%Y")
     
     left_sub_headers = {
-        'A4': 'BUYER', 'B4': report_data[0]. get('buyer', ''), 
+        'A4': 'BUYER', 'B4': report_data[0].get('buyer', ''), 
         'A5': 'IR/IB NO', 'B5': formatted_ref_no, 
         'A6': 'STYLE NO', 'B6': report_data[0].get('style', '')
     }
@@ -2491,29 +2491,29 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
     for cell_ref, value in left_sub_headers.items():
         cell = ws[cell_ref]
         cell.value = value
-        cell. font = bold_font
+        cell.font = bold_font
         cell.alignment = left_align
         cell.border = thin_border
         if cell_ref == 'B5':
             cell.fill = ir_ib_fill 
             cell.font = white_bold_font 
         else:
-            cell. fill = dark_green_fill 
+            cell.fill = dark_green_fill 
 
-    ws.merge_cells('B4:G4'); ws. merge_cells('B5:G5'); ws.merge_cells('B6:G6')
+    ws.merge_cells('B4:G4'); ws.merge_cells('B5:G5'); ws.merge_cells('B6:G6')
     
     right_sub_headers = {'H4': 'CLOSING DATE', 'I4': current_date, 'H5': 'SHIPMENT', 'I5': 'ALL', 'H6': 'PO NO', 'I6': 'ALL'}
     for cell_ref, value in right_sub_headers.items():
         cell = ws[cell_ref]
         cell.value = value
-        cell. font = bold_font
+        cell.font = bold_font
         cell.alignment = left_align
         cell.border = thin_border
         cell.fill = dark_green_fill 
 
     for row in range(4, 7):
         for col in range(3, 8): 
-            cell = ws. cell(row=row, column=col)
+            cell = ws.cell(row=row, column=col)
             cell.border = thin_border
        
     current_row = TABLE_START_ROW
@@ -2521,31 +2521,31 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
         table_headers = ["COLOUR NAME", "SIZE", "ORDER QTY 3%", "ACTUAL QTY", "CUTTING QC", "INPUT QTY", "BALANCE", "SHORT/PLUS QTY", "Percentage %"]
         for col_idx, header in enumerate(table_headers, 1):
             cell = ws.cell(row=current_row, column=col_idx, value=header)
-            cell. font = bold_font
+            cell.font = bold_font
             cell.alignment = center_align
-            cell. border = medium_border
+            cell.border = medium_border
             cell.fill = header_row_fill 
 
         current_row += 1
         start_merge_row = current_row
-        full_color_name = block. get('color', 'N/A')
+        full_color_name = block.get('color', 'N/A')
 
         for i, size in enumerate(block['headers']):
             color_to_write = full_color_name if i == 0 else ""
-            actual_qty = int(block['gmts_qty'][i]. replace(',', '') or 0)
+            actual_qty = int(block['gmts_qty'][i].replace(',', '') or 0)
             input_qty = int(block['sewing_input'][i].replace(',', '') or 0) if i < len(block['sewing_input']) else 0
-            cutting_qc_val = int(block. get('cutting_qc', [])[i].replace(',', '') or 0) if i < len(block.get('cutting_qc', [])) else 0
+            cutting_qc_val = int(block.get('cutting_qc', [])[i].replace(',', '') or 0) if i < len(block.get('cutting_qc', [])) else 0
             
             ws.cell(row=current_row, column=1, value=color_to_write)
             ws.cell(row=current_row, column=2, value=size)
             ws.cell(row=current_row, column=4, value=actual_qty)
             ws.cell(row=current_row, column=5, value=cutting_qc_val)
-            ws. cell(row=current_row, column=6, value=input_qty)
+            ws.cell(row=current_row, column=6, value=input_qty)
             
             ws.cell(row=current_row, column=3, value=f"=ROUND(D{current_row}*1.03, 0)")      
             ws.cell(row=current_row, column=7, value=f"=E{current_row}-F{current_row}")      
             ws.cell(row=current_row, column=8, value=f"=F{current_row}-C{current_row}")      
-            ws. cell(row=current_row, column=9, value=f'=IF(C{current_row}<>0, H{current_row}/C{current_row}, 0)') 
+            ws.cell(row=current_row, column=9, value=f'=IF(C{current_row}<>0, H{current_row}/C{current_row}, 0)') 
             
             for col_idx in range(1, NUM_COLUMNS + 1):
                 cell = ws.cell(row=current_row, column=col_idx)
@@ -2559,15 +2559,15 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
                 else: cell.fill = dark_green_fill 
 
                 if col_idx == 9:
-                    cell. number_format = '0. 00%' 
+                    cell.number_format = '0.00%' 
             current_row += 1
             
         end_merge_row = current_row - 1
         if start_merge_row <= end_merge_row:
-            ws. merge_cells(start_row=start_merge_row, start_column=1, end_row=end_merge_row, end_column=1)
-            merged_cell = ws. cell(row=start_merge_row, column=1)
-            merged_cell. alignment = color_align
-            if not merged_cell.font. bold: merged_cell.font = bold_font
+            ws.merge_cells(start_row=start_merge_row, start_column=1, end_row=end_merge_row, end_column=1)
+            merged_cell = ws.cell(row=start_merge_row, column=1)
+            merged_cell.alignment = color_align
+            if not merged_cell.font.bold: merged_cell.font = bold_font
         
         total_row_str = str(current_row)
         ws.merge_cells(start_row=current_row, start_column=1, end_row=current_row, end_column=2)
@@ -2586,7 +2586,7 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
         for col_letter, value_or_formula in totals_formulas.items():
             cell = ws[f"{col_letter}{current_row}"]
             cell.value = value_or_formula
-            cell. font = bold_font
+            cell.font = bold_font
             cell.border = medium_border
             cell.alignment = center_align
             cell.fill = light_brown_fill 
@@ -2594,7 +2594,7 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
                 cell.number_format = '0.00%'
         
         for col_idx in range(2, NUM_COLUMNS + 1):
-            cell = ws. cell(row=current_row, column=col_idx)
+            cell = ws.cell(row=current_row, column=col_idx)
             if not cell.value: 
                 cell.fill = dark_green_fill 
                 cell.border = medium_border
@@ -2606,7 +2606,7 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
         image_response = requests.get(direct_image_url)
         image_response.raise_for_status()
         original_img = PILImage.open(BytesIO(image_response.content))
-        padded_img = PILImage.new('RGBA', (original_img.width + 400, original_img. height), (0, 0, 0, 0))
+        padded_img = PILImage.new('RGBA', (original_img.width + 400, original_img.height), (0, 0, 0, 0))
         padded_img.paste(original_img, (400, 0))
         padded_image_io = BytesIO()
         padded_img.save(padded_image_io, format='PNG')
@@ -2614,7 +2614,7 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
         aspect_ratio = padded_img.height / padded_img.width
         img.width = 95
         img.height = int(img.width * aspect_ratio)
-        ws. row_dimensions[image_row].height = img.height * 0.90
+        ws.row_dimensions[image_row].height = img.height * 0.90
         ws.add_image(img, f'A{image_row}')
     except Exception:
         pass
@@ -2622,37 +2622,37 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
     signature_row = image_row + 1
     ws.merge_cells(start_row=signature_row, start_column=1, end_row=signature_row, end_column=NUM_COLUMNS)
     titles = ["Prepared By", "Input Incharge", "Cutting Incharge", "IE & Planning", "Sewing Manager", "Cutting Manager"]
-    signature_cell = ws. cell(row=signature_row, column=1)
-    signature_cell.value = "                 ". join(titles)
-    signature_cell. font = Font(bold=True, size=15)
+    signature_cell = ws.cell(row=signature_row, column=1)
+    signature_cell.value = "                 ".join(titles)
+    signature_cell.font = Font(bold=True, size=15)
     signature_cell.alignment = Alignment(horizontal='center', vertical='center')
 
     last_data_row = current_row - 2
     for row in ws.iter_rows(min_row=4, max_row=last_data_row):
         for cell in row:
             if cell.coordinate == 'B5': continue
-            if cell. font:
+            if cell.font:
                 existing_font = cell.font
                 if cell.row != 1: 
-                    new_font = Font(name=existing_font. name, size=16. 5, bold=existing_font.bold, italic=existing_font. italic, vertAlign=existing_font. vertAlign, underline=existing_font.underline, strike=existing_font. strike, color=existing_font.color)
+                    new_font = Font(name=existing_font.name, size=16.5, bold=existing_font.bold, italic=existing_font.italic, vertAlign=existing_font.vertAlign, underline=existing_font.underline, strike=existing_font.strike, color=existing_font.color)
                     cell.font = new_font
     ws.column_dimensions['A'].width = 23
-    ws.column_dimensions['B']. width = 8. 5
-    ws. column_dimensions['C'].width = 20
-    ws.column_dimensions['D']. width = 17
-    ws.column_dimensions['E']. width = 17
+    ws.column_dimensions['B'].width = 8.5
+    ws.column_dimensions['C'].width = 20
+    ws.column_dimensions['D'].width = 17
+    ws.column_dimensions['E'].width = 17
     ws.column_dimensions['F'].width = 15
-    ws.column_dimensions['G']. width = 13. 5
-    ws. column_dimensions['H'].width = 23
-    ws.column_dimensions['I']. width = 18
+    ws.column_dimensions['G'].width = 13.5
+    ws.column_dimensions['H'].width = 23
+    ws.column_dimensions['I'].width = 18
    
     ws.page_setup.orientation = ws.ORIENTATION_PORTRAIT
     ws.page_setup.fitToPage = True
-    ws.page_setup. fitToWidth = 1
+    ws.page_setup.fitToWidth = 1
     ws.page_setup.fitToHeight = 1 
     ws.page_setup.horizontalCentered = True
     ws.page_setup.verticalCentered = False 
-    ws.page_setup.left = 0. 25
+    ws.page_setup.left = 0.25
     ws.page_setup.right = 0.25
     ws.page_setup.top = 0.45
     ws.page_setup.bottom = 0.45
@@ -2672,7 +2672,7 @@ LOGIN_TEMPLATE = f"""
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1. 0, maximum-scale=1. 0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Login - MNM Software</title>
     {COMMON_STYLES}
     <style>
@@ -2703,7 +2703,7 @@ LOGIN_TEMPLATE = f"""
             pointer-events: none;
         }}
         
-        . orb-1 {{
+        .orb-1 {{
             width: 300px;
             height: 300px;
             background: var(--accent-orange);
@@ -2721,7 +2721,7 @@ LOGIN_TEMPLATE = f"""
             animation-delay: -5s;
         }}
         
-        . orb-3 {{
+        .orb-3 {{
             width: 150px;
             height: 150px;
             background: var(--accent-green);
@@ -2738,7 +2738,7 @@ LOGIN_TEMPLATE = f"""
             75% {{ transform: translate(15px, 30px) scale(1.02); }}
         }}
         
-        . login-container {{
+        .login-container {{
             position: relative;
             z-index: 10;
             width: 100%;
@@ -2751,7 +2751,7 @@ LOGIN_TEMPLATE = f"""
             min-height: 100vh;
         }}
         
-        . login-card {{
+        .login-card {{
             background: var(--gradient-card);
             border: 1px solid var(--border-color);
             border-radius: 24px;
@@ -2777,7 +2777,7 @@ LOGIN_TEMPLATE = f"""
             margin-bottom: 35px;
         }}
         
-        . brand-icon {{
+        .brand-icon {{
             width: 70px;
             height: 70px;
             background: var(--gradient-orange);
@@ -2820,23 +2820,23 @@ LOGIN_TEMPLATE = f"""
             text-transform: uppercase;
         }}
         
-        .login-form . input-group {{
+        .login-form .input-group {{
             margin-bottom: 20px;
         }}
         
-        .login-form . input-group label {{
+        .login-form .input-group label {{
             display: flex;
             align-items: center;
             gap: 8px;
             margin-bottom: 8px;
         }}
         
-        .login-form . input-group label i {{
+        .login-form .input-group label i {{
             color: var(--accent-orange);
             font-size: 13px;
         }}
         
-        . login-form input {{
+        .login-form input {{
             padding: 14px 18px;
             font-size: 14px;
             border-radius: 12px;
@@ -2861,7 +2861,7 @@ LOGIN_TEMPLATE = f"""
             transform: translateX(5px);
         }}
         
-        . error-box {{
+        .error-box {{
             margin-top: 20px;
             padding: 14px 18px;
             background: rgba(239, 68, 68, 0.1);
@@ -2912,20 +2912,20 @@ LOGIN_TEMPLATE = f"""
                 font-size: 28px;
             }}
             
-            . brand-name {{
+            .brand-name {{
                 font-size: 24px;
             }}
             
-            . brand-tagline {{
+            .brand-tagline {{
                 font-size: 10px;
             }}
             
-            . login-form input {{
+            .login-form input {{
                 padding: 12px 16px;
                 font-size: 14px;
             }}
             
-            . login-btn {{
+            .login-btn {{
                 padding: 12px 20px;
                 font-size: 14px;
             }}
@@ -2938,7 +2938,7 @@ LOGIN_TEMPLATE = f"""
                 padding-bottom: 30px;
             }}
             
-            . brand-section {{
+            .brand-section {{
                 margin-bottom: 25px;
             }}
             
@@ -2997,12 +2997,12 @@ LOGIN_TEMPLATE = f"""
     
     <script>
         // Add ripple effect to button
-        document.querySelector('.login-btn'). addEventListener('click', function(e) {{
+        document.querySelector('.login-btn').addEventListener('click', function(e) {{
             const ripple = document.createElement('span');
-            ripple.classList. add('ripple-effect');
+            ripple.classList.add('ripple-effect');
             const rect = this.getBoundingClientRect();
             ripple.style.left = (e.clientX - rect.left) + 'px';
-            ripple.style. top = (e. clientY - rect. top) + 'px';
+            ripple.style.top = (e.clientY - rect.top) + 'px';
             this.appendChild(ripple);
             setTimeout(() => ripple.remove(), 600);
         }});
@@ -3033,7 +3033,7 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
             <div class="welcome-greeting" id="greetingText">Good Morning</div>
             <div class="welcome-title">Welcome Back, <span>{{{{ session.user }}}}</span>!</div>
             <div class="welcome-message">
-                You're now logged into the MNM Software Dashboard. 
+                You're now logged into the MNM Software Dashboard.
                 All systems are operational and ready for your commands.
             </div>
             <button class="welcome-close" onclick="closeWelcome()">
@@ -3062,7 +3062,7 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
         <div class="loading-text" id="loading-text">Processing Request...</div>
     </div>
 
-    <div class="mobile-toggle" onclick="document.querySelector('. sidebar'). classList.toggle('active')">
+    <div class="mobile-toggle" onclick="document.querySelector('.sidebar').classList.toggle('active')">
         <i class="fas fa-bars"></i>
     </div>
 
@@ -3127,7 +3127,7 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
                 <div class="card stat-card" style="animation-delay: 0.1s;">
                     <div class="stat-icon"><i class="fas fa-file-export"></i></div>
                     <div class="stat-info">
-                        <h3 class="count-up" data-target="{{{{ stats.closing. count }}}}">0</h3>
+                        <h3 class="count-up" data-target="{{{{ stats.closing.count }}}}">0</h3>
                         <p>Lifetime Closing</p>
                     </div>
                 </div>
@@ -3145,12 +3145,12 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
                         <i class="fas fa-file-pdf" style="color: var(--accent-green);"></i>
                     </div>
                     <div class="stat-info">
-                        <h3 class="count-up" data-target="{{{{ stats.po. count }}}}">0</h3>
+                        <h3 class="count-up" data-target="{{{{ stats.po.count }}}}">0</h3>
                         <p>Lifetime PO Sheets</p>
                     </div>
                 </div>
                 <div class="card stat-card" style="animation-delay: 0.4s;">
-                    <div class="stat-icon" style="background: linear-gradient(145deg, rgba(59, 130, 246, 0. 15), rgba(59, 130, 246, 0. 05));">
+                    <div class="stat-icon" style="background: linear-gradient(145deg, rgba(59, 130, 246, 0.15), rgba(59, 130, 246, 0.05));">
                         <i class="fas fa-users" style="color: var(--accent-blue);"></i>
                     </div>
                     <div class="stat-info">
@@ -3182,7 +3182,7 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
                     <div class="progress-item">
                         <div class="progress-header">
                             <span>Closing Report</span>
-                            <span class="progress-value">{{{{ stats. closing.count }}}} Lifetime</span>
+                            <span class="progress-value">{{{{ stats.closing.count }}}} Lifetime</span>
                         </div>
                         <div class="progress-bar-container">
                             <div class="progress-bar-fill progress-orange" style="width: 85%;"></div>
@@ -3202,7 +3202,7 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
                     <div class="progress-item">
                         <div class="progress-header">
                             <span>PO Generator</span>
-                            <span class="progress-value">{{{{ stats.po. count }}}} Files</span>
+                            <span class="progress-value">{{{{ stats.po.count }}}} Files</span>
                         </div>
                         <div class="progress-bar-container">
                             <div class="progress-bar-fill progress-green" style="width: 45%;"></div>
@@ -3241,9 +3241,9 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
                                         {{% if log.type == 'Closing Report' %}}
                                         background: rgba(255, 122, 0, 0.1); color: var(--accent-orange);
                                         {{% elif log.type == 'PO Sheet' %}}
-                                        background: rgba(16, 185, 129, 0. 1); color: var(--accent-green);
+                                        background: rgba(16, 185, 129, 0.1); color: var(--accent-green);
                                         {{% else %}}
-                                        background: rgba(139, 92, 246, 0. 1); color: var(--accent-purple);
+                                        background: rgba(139, 92, 246, 0.1); color: var(--accent-purple);
                                         {{% endif %}}
                                     ">{{{{ log.type }}}}</span>
                                 </td>
@@ -3253,7 +3253,7 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
                             <tr>
                                 <td colspan="4" style="text-align: center; padding: 40px; color: var(--text-secondary);">
                                     <i class="fas fa-inbox" style="font-size: 40px; opacity: 0.3; margin-bottom: 15px; display: block;"></i>
-                                    No activity recorded yet.  
+                                    No activity recorded yet. 
                                 </td>
                             </tr>
                             {{% endfor %}}
@@ -3277,7 +3277,7 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
                 <form action="/generate-report" method="post" onsubmit="return showLoading()">
                     <div class="input-group">
                         <label><i class="fas fa-bookmark" style="margin-right: 5px;"></i> INTERNAL REF NO</label>
-                        <input type="text" name="ref_no" placeholder="e.g.  IB-12345 or Booking-123" required>
+                        <input type="text" name="ref_no" placeholder="e.g. IB-12345 or Booking-123" required>
                     </div>
                     <button type="submit">
                         <i class="fas fa-bolt" style="margin-right: 10px;"></i> Generate Report
@@ -3324,7 +3324,7 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
                 <div class="card">
                     <div class="section-header">
                         <span>User Directory</span>
-                        <span class="table-badge" style="background: var(--accent-orange); color: white;">{{{{ stats.users. count }}}} Users</span>
+                        <span class="table-badge" style="background: var(--accent-orange); color: white;">{{{{ stats.users.count }}}} Users</span>
                     </div>
                     <div id="userTableContainer" style="max-height: 450px; overflow-y: auto;">
                         <div class="skeleton" style="height: 50px; margin-bottom: 10px;"></div>
@@ -3397,7 +3397,7 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
             }}
             
             document.getElementById('greetingText').textContent = greeting;
-            document. getElementById('welcomeIcon').innerHTML = icon;
+            document.getElementById('welcomeIcon').innerHTML = icon;
             document.getElementById('welcomeModal').style.display = 'flex';
         }}
         
@@ -3416,13 +3416,13 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
         
         // ===== SECTION NAVIGATION =====
         function showSection(id, element) {{
-            ['dashboard', 'analytics', 'help', 'settings']. forEach(sid => {{
+            ['dashboard', 'analytics', 'help', 'settings'].forEach(sid => {{
                 document.getElementById('section-' + sid).style.display = 'none';
             }});
-            document.getElementById('section-' + id). style.display = 'block';
+            document.getElementById('section-' + id).style.display = 'block';
             
             if (element) {{
-                document.querySelectorAll('. nav-link').forEach(el => el.classList.remove('active'));
+                document.querySelectorAll('.nav-link').forEach(el => el.classList.remove('active'));
                 element.classList.add('active');
             }}
             
@@ -3432,11 +3432,11 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
         
         // ===== FILE UPLOAD HANDLER =====
         const fileUpload = document.getElementById('file-upload');
-        const uploadZone = document. getElementById('uploadZone');
+        const uploadZone = document.getElementById('uploadZone');
         
         if (fileUpload) {{
             fileUpload.addEventListener('change', function() {{
-                const count = this.files. length;
+                const count = this.files.length;
                 document.getElementById('file-count').innerHTML = count > 0 
                     ? `<i class="fas fa-check-circle" style="margin-right: 5px;"></i>${{count}} file(s) selected`
                     : 'No files selected';
@@ -3451,7 +3451,7 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
             uploadZone.addEventListener('drop', (e) => {{
                 e.preventDefault();
                 uploadZone.classList.remove('dragover');
-                fileUpload.files = e.dataTransfer. files;
+                fileUpload.files = e.dataTransfer.files;
                 fileUpload.dispatchEvent(new Event('change'));
             }});
         }}
@@ -3460,13 +3460,13 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
         const ctx = document.getElementById('mainChart').getContext('2d');
         const gradientOrange = ctx.createLinearGradient(0, 0, 0, 300);
         gradientOrange.addColorStop(0, 'rgba(255, 122, 0, 0.5)');
-        gradientOrange.addColorStop(1, 'rgba(255, 122, 0, 0. 0)');
-        const gradientPurple = ctx. createLinearGradient(0, 0, 0, 300);
+        gradientOrange.addColorStop(1, 'rgba(255, 122, 0, 0.0)');
+        const gradientPurple = ctx.createLinearGradient(0, 0, 0, 300);
         gradientPurple.addColorStop(0, 'rgba(139, 92, 246, 0.5)');
         gradientPurple.addColorStop(1, 'rgba(139, 92, 246, 0.0)');
         const gradientGreen = ctx.createLinearGradient(0, 0, 0, 300);
         gradientGreen.addColorStop(0, 'rgba(16, 185, 129, 0.5)');
-        gradientGreen.addColorStop(1, 'rgba(16, 185, 129, 0. 0)');
+        gradientGreen.addColorStop(1, 'rgba(16, 185, 129, 0.0)');
         new Chart(ctx, {{
             type: 'line',
             data: {{
@@ -3488,7 +3488,7 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
                     }},
                     {{
                         label: 'Accessories',
-                        data: {{{{ stats. chart.acc | tojson }}}},
+                        data: {{{{ stats.chart.acc | tojson }}}},
                         borderColor: '#8B5CF6',
                         backgroundColor: gradientPurple,
                         tension: 0.4,
@@ -3582,7 +3582,7 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
 
         // ===== COUNT UP ANIMATION =====
         function animateCountUp() {{
-            document.querySelectorAll('.count-up'). forEach(counter => {{
+            document.querySelectorAll('.count-up').forEach(counter => {{
                 const target = parseInt(counter.getAttribute('data-target'));
                 const duration = 2000;
                 const step = target / (duration / 16);
@@ -3607,16 +3607,16 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
         // ===== LOADING ANIMATION =====
         function showLoading() {{
             const overlay = document.getElementById('loading-overlay');
-            const spinner = document.getElementById('spinner-anim'). parentElement;
+            const spinner = document.getElementById('spinner-anim').parentElement;
             const success = document.getElementById('success-anim');
             const fail = document.getElementById('fail-anim');
             const text = document.getElementById('loading-text');
             
-            overlay. style.display = 'flex';
-            spinner. style.display = 'block';
+            overlay.style.display = 'flex';
+            spinner.style.display = 'block';
             success.style.display = 'none';
-            fail.style. display = 'none';
-            text. style.display = 'block';
+            fail.style.display = 'none';
+            text.style.display = 'block';
             text.textContent = 'Processing Request...';
             
             return true;
@@ -3624,13 +3624,13 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
 
         function showSuccess() {{
             const overlay = document.getElementById('loading-overlay');
-            const spinner = document.getElementById('spinner-anim'). parentElement;
-            const success = document. getElementById('success-anim');
+            const spinner = document.getElementById('spinner-anim').parentElement;
+            const success = document.getElementById('success-anim');
             const text = document.getElementById('loading-text');
             
             spinner.style.display = 'none';
-            success.style. display = 'block';
-            text. style.display = 'none';
+            success.style.display = 'block';
+            text.style.display = 'none';
             
             setTimeout(() => {{ overlay.style.display = 'none'; }}, 1500);
         }}
@@ -3643,7 +3643,7 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
                     let html = '<table class="dark-table"><thead><tr><th>User</th><th>Role</th><th style="text-align:right;">Actions</th></tr></thead><tbody>';
                     
                     for (const [u, d] of Object.entries(data)) {{
-                        const roleClass = d. role === 'admin' ? 'background: rgba(255, 122, 0, 0.1); color: var(--accent-orange);' : 'background: rgba(139, 92, 246, 0. 1); color: var(--accent-purple);';
+                        const roleClass = d.role === 'admin' ? 'background: rgba(255, 122, 0, 0.1); color: var(--accent-orange);' : 'background: rgba(139, 92, 246, 0.1); color: var(--accent-purple);';
                         
                         html += `<tr>
                             <td style="font-weight: 600;">${{u}}</td>
@@ -3651,7 +3651,7 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
                             <td style="text-align:right;">
                                 ${{d.role !== 'admin' ?  `
                                     <div class="action-cell">
-                                        <button class="action-btn btn-edit" onclick="editUser('${{u}}', '${{d.password}}', '${{d. permissions. join(',')}}')">
+                                        <button class="action-btn btn-edit" onclick="editUser('${{u}}', '${{d.password}}', '${{d.permissions.join(',')}}')">
                                             <i class="fas fa-edit"></i>
                                         </button> 
                                         <button class="action-btn btn-del" onclick="deleteUser('${{u}}')">
@@ -3674,8 +3674,8 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
             
             let perms = [];
             if (document.getElementById('perm_closing').checked) perms.push('closing');
-            if (document.getElementById('perm_po'). checked) perms. push('po_sheet');
-            if (document.getElementById('perm_acc'). checked) perms. push('accessories');
+            if (document.getElementById('perm_po').checked) perms.push('po_sheet');
+            if (document.getElementById('perm_acc').checked) perms.push('accessories');
             
             showLoading();
             
@@ -3691,19 +3691,19 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
                     loadUsers();
                     resetForm();
                 }} else {{
-                    alert(d. message);
-                    document.getElementById('loading-overlay').style. display = 'none';
+                    alert(d.message);
+                    document.getElementById('loading-overlay').style.display = 'none';
                 }}
             }});
         }}
         
         function editUser(u, p, permsStr) {{
             document.getElementById('new_username').value = u;
-            document. getElementById('new_username').readOnly = true;
+            document.getElementById('new_username').readOnly = true;
             document.getElementById('new_password').value = p;
             document.getElementById('action_type').value = 'update';
             document.getElementById('saveUserBtn').innerHTML = '<i class="fas fa-sync" style="margin-right: 10px;"></i> Update User';
-            const pArr = permsStr. split(',');
+            const pArr = permsStr.split(',');
             document.getElementById('perm_closing').checked = pArr.includes('closing');
             document.getElementById('perm_po').checked = pArr.includes('po_sheet');
             document.getElementById('perm_acc').checked = pArr.includes('accessories');
@@ -3713,7 +3713,7 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
             document.getElementById('userForm').reset();
             document.getElementById('action_type').value = 'create';
             document.getElementById('saveUserBtn').innerHTML = '<i class="fas fa-save" style="margin-right: 10px;"></i> Save User';
-            document. getElementById('new_username').readOnly = false;
+            document.getElementById('new_username').readOnly = false;
             document.getElementById('perm_closing').checked = true;
         }}
         
@@ -3723,11 +3723,11 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
                     method: 'POST',
                     headers: {{'Content-Type': 'application/json'}},
                     body: JSON.stringify({{ username: u }})
-                }}). then(() => loadUsers());
+                }}).then(() => loadUsers());
             }}
         }}
         
-        // ===== PARTICLES. JS INITIALIZATION =====
+        // ===== PARTICLES.JS INITIALIZATION =====
         if (typeof particlesJS !== 'undefined') {{
             particlesJS('particles-js', {{
                 particles: {{
@@ -3784,7 +3784,7 @@ USER_DASHBOARD_TEMPLATE = f"""
             <div class="welcome-greeting" id="greetingText">Good Morning</div>
             <div class="welcome-title">Welcome, <span>{{{{ session.user }}}}</span>!</div>
             <div class="welcome-message">
-                Your workspace is ready. 
+                Your workspace is ready.
                 Access your assigned modules below.
             </div>
             <button class="welcome-close" onclick="closeWelcome()">
@@ -3798,10 +3798,10 @@ USER_DASHBOARD_TEMPLATE = f"""
             <div class="spinner"></div>
             <div class="spinner-inner"></div>
         </div>
-        <div class="loading-text">Processing... </div>
+        <div class="loading-text">Processing...</div>
     </div>
     
-    <div class="mobile-toggle" onclick="document.querySelector('. sidebar'). classList.toggle('active')">
+    <div class="mobile-toggle" onclick="document.querySelector('.sidebar').classList.toggle('active')">
         <i class="fas fa-bars"></i>
     </div>
     
@@ -3845,13 +3845,13 @@ USER_DASHBOARD_TEMPLATE = f"""
         {{% endwith %}}
 
         <div class="stats-grid">
-            {{% if 'closing' in session. permissions %}}
+            {{% if 'closing' in session.permissions %}}
             <div class="card" style="animation: fadeInUp 0.5s ease-out 0.1s backwards;">
                 <div class="section-header">
                     <span><i class="fas fa-file-export" style="margin-right: 10px; color: var(--accent-orange);"></i>Closing Report</span>
                 </div>
                 <p style="color: var(--text-secondary); margin-bottom: 20px; font-size: 14px; line-height: 1.6;">
-                    Generate production closing reports with real-time data.   
+                    Generate production closing reports with real-time data.  
                 </p>
                 <form action="/generate-report" method="post" onsubmit="showLoading()">
                     <div class="input-group">
@@ -3865,7 +3865,7 @@ USER_DASHBOARD_TEMPLATE = f"""
             </div>
             {{% endif %}}
             
-            {{% if 'po_sheet' in session. permissions %}}
+            {{% if 'po_sheet' in session.permissions %}}
             <div class="card" style="animation: fadeInUp 0.5s ease-out 0.2s backwards;">
                 <div class="section-header">
                     <span><i class="fas fa-file-pdf" style="margin-right: 10px; color: var(--accent-green);"></i>PO Sheet</span>
@@ -3886,7 +3886,7 @@ USER_DASHBOARD_TEMPLATE = f"""
             {{% endif %}}
             
             {{% if 'accessories' in session.permissions %}}
-            <div class="card" style="animation: fadeInUp 0. 5s ease-out 0.3s backwards;">
+            <div class="card" style="animation: fadeInUp 0.5s ease-out 0.3s backwards;">
                 <div class="section-header">
                     <span><i class="fas fa-boxes" style="margin-right: 10px; color: var(--accent-purple);"></i>Accessories</span>
                 </div>
@@ -3923,9 +3923,9 @@ USER_DASHBOARD_TEMPLATE = f"""
                 icon = '<i class="fas fa-moon"></i>';
             }}
             
-            document. getElementById('greetingText').textContent = greeting;
+            document.getElementById('greetingText').textContent = greeting;
             document.getElementById('welcomeIcon').innerHTML = icon;
-            document.getElementById('welcomeModal').style. display = 'flex';
+            document.getElementById('welcomeModal').style.display = 'flex';
         }}
         
         function closeWelcome() {{
@@ -3942,12 +3942,12 @@ USER_DASHBOARD_TEMPLATE = f"""
         }}
         
         function showLoading() {{
-            document.getElementById('loading-overlay'). style.display = 'flex';
+            document.getElementById('loading-overlay').style.display = 'flex';
             return true;
         }}
         
         // Add fadeInUp animation
-        const style = document. createElement('style');
+        const style = document.createElement('style');
         style.textContent = `
             @keyframes fadeInUp {{
                 from {{ opacity: 0; transform: translateY(20px); }}
@@ -4033,7 +4033,7 @@ ACCESSORIES_SEARCH_TEMPLATE = f"""
             margin-bottom: 8px;
         }}
         
-        . search-subtitle {{
+        .search-subtitle {{
             color: var(--text-secondary);
             font-size: 14px;
         }}
@@ -4047,7 +4047,7 @@ ACCESSORIES_SEARCH_TEMPLATE = f"""
             border-top: 1px solid var(--border-color);
         }}
         
-        . nav-links a {{
+        .nav-links a {{
             color: var(--text-secondary);
             text-decoration: none;
             font-size: 13px;
@@ -4062,7 +4062,7 @@ ACCESSORIES_SEARCH_TEMPLATE = f"""
             color: var(--accent-orange);
         }}
         
-        . nav-links a. logout {{
+        .nav-links a.logout {{
             color: var(--accent-red);
         }}
         
@@ -4087,7 +4087,7 @@ ACCESSORIES_SEARCH_TEMPLATE = f"""
             <form action="/admin/accessories/input" method="post">
                 <div class="input-group">
                     <label><i class="fas fa-search" style="margin-right: 5px;"></i> BOOKING REFERENCE</label>
-                    <input type="text" name="ref_no" required placeholder="e.g.  IB-12345" autocomplete="off">
+                    <input type="text" name="ref_no" required placeholder="e.g. IB-12345" autocomplete="off">
                 </div>
                 <button type="submit" style="background: linear-gradient(135deg, #8B5CF6 0%, #A78BFA 100%);">
                     Proceed to Entry <i class="fas fa-arrow-right" style="margin-left: 10px;"></i>
@@ -4136,25 +4136,25 @@ ACCESSORIES_INPUT_TEMPLATE = f"""
             margin-top: 10px;
         }}
         
-        .ref-badge . ref-no {{
+        .ref-badge .ref-no {{
             font-size: 18px;
             font-weight: 800;
             color: var(--accent-orange);
         }}
         
-        . ref-badge .ref-info {{
+        .ref-badge .ref-info {{
             color: var(--text-secondary);
             font-size: 13px;
             font-weight: 500;
         }}
         
-        . history-scroll {{
+        .history-scroll {{
             max-height: 500px;
             overflow-y: auto;
             padding-right: 5px;
         }}
         
-        . challan-row {{
+        .challan-row {{
             display: grid;
             grid-template-columns: 60px 1fr 80px 60px 80px;
             gap: 10px;
@@ -4172,7 +4172,7 @@ ACCESSORIES_INPUT_TEMPLATE = f"""
             border-color: var(--border-glow);
         }}
         
-        . line-badge {{
+        .line-badge {{
             background: var(--gradient-orange);
             color: white;
             padding: 6px 12px;
@@ -4209,7 +4209,7 @@ ACCESSORIES_INPUT_TEMPLATE = f"""
             margin-bottom: 15px;
         }}
         
-        . grid-2-cols {{
+        .grid-2-cols {{
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 20px;
@@ -4253,7 +4253,7 @@ ACCESSORIES_INPUT_TEMPLATE = f"""
         <div class="loading-text" id="loading-text">Saving Entry...</div>
     </div>
 
-    <div class="mobile-toggle" onclick="document.querySelector('. sidebar').classList.toggle('active')">
+    <div class="mobile-toggle" onclick="document.querySelector('.sidebar').classList.toggle('active')">
         <i class="fas fa-bars"></i>
     </div>
 
@@ -4318,7 +4318,7 @@ ACCESSORIES_INPUT_TEMPLATE = f"""
                     <div class="grid-2-cols">
                         <div class="input-group">
                             <label><i class="fas fa-industry" style="margin-right: 5px;"></i> LINE NO</label>
-                            <input type="text" name="line_no" required placeholder="e.g.  L-01">
+                            <input type="text" name="line_no" required placeholder="e.g. L-01">
                         </div>
                         <div class="input-group">
                             <label><i class="fas fa-ruler" style="margin-right: 5px;"></i> SIZE</label>
@@ -4348,7 +4348,7 @@ ACCESSORIES_INPUT_TEMPLATE = f"""
                         <div class="challan-row" style="animation: fadeInUp 0.3s ease-out {{{{ loop.index * 0.05 }}}}s backwards;">
                             <div class="line-badge">{{{{ item.line }}}}</div>
                             <div style="color: white; font-weight: 500; font-size: 13px;">{{{{ item.color }}}}</div>
-                            <div class="qty-value">{{{{ item. qty }}}}</div>
+                            <div class="qty-value">{{{{ item.qty }}}}</div>
                             <div class="status-check">{{{{ item.status if item.status else '●' }}}}</div>
                             <div class="action-cell">
                                 {{% if session.role == 'admin' %}}
@@ -4381,12 +4381,12 @@ ACCESSORIES_INPUT_TEMPLATE = f"""
     <script>
         function showLoading() {{
             const overlay = document.getElementById('loading-overlay');
-            const spinner = document.getElementById('spinner-anim'). parentElement;
+            const spinner = document.getElementById('spinner-anim').parentElement;
             const success = document.getElementById('success-anim');
             const text = document.getElementById('loading-text');
             
-            overlay. style.display = 'flex';
-            spinner. style.display = 'block';
+            overlay.style.display = 'flex';
+            spinner.style.display = 'block';
             success.style.display = 'none';
             text.style.display = 'block';
             text.textContent = 'Saving Entry...';
@@ -4449,7 +4449,7 @@ ACCESSORIES_EDIT_TEMPLATE = f"""
             margin-bottom: 35px;
         }}
         
-        . edit-icon {{
+        .edit-icon {{
             width: 70px;
             height: 70px;
             background: linear-gradient(145deg, rgba(139, 92, 246, 0.2), rgba(139, 92, 246, 0.05));
@@ -4516,7 +4516,7 @@ ACCESSORIES_EDIT_TEMPLATE = f"""
                 
                 <div class="input-group">
                     <label><i class="fas fa-sort-numeric-up" style="margin-right: 5px;"></i> QUANTITY</label>
-                    <input type="number" name="qty" value="{{{{ item. qty }}}}" required>
+                    <input type="number" name="qty" value="{{{{ item.qty }}}}" required>
                 </div>
                 
                 <button type="submit" style="background: linear-gradient(135deg, #8B5CF6 0%, #A78BFA 100%);">
@@ -4545,7 +4545,7 @@ STORE_DASHBOARD_TEMPLATE = f"""
     <title>Store Dashboard - MEHEDI THAI ALUMINUM AND GLASS</title>
     {COMMON_STYLES}
     <style>
-        . store-header {{
+        .store-header {{
             background: var(--gradient-card);
             border: 1px solid var(--border-color);
             border-radius: 20px;
@@ -4564,7 +4564,7 @@ STORE_DASHBOARD_TEMPLATE = f"""
             gap: 15px;
         }}
         
-        . store-brand-icon {{
+        .store-brand-icon {{
             width: 60px;
             height: 60px;
             background: var(--gradient-orange);
@@ -4577,7 +4577,7 @@ STORE_DASHBOARD_TEMPLATE = f"""
             box-shadow: 0 10px 30px var(--accent-orange-glow);
         }}
         
-        . store-brand-text h1 {{
+        .store-brand-text h1 {{
             font-size: 22px;
             font-weight: 800;
             color: white;
@@ -4593,7 +4593,7 @@ STORE_DASHBOARD_TEMPLATE = f"""
             letter-spacing: 1px;
         }}
         
-        . store-stats {{
+        .store-stats {{
             display: flex;
             gap: 30px;
             flex-wrap: wrap;
@@ -4654,17 +4654,17 @@ STORE_DASHBOARD_TEMPLATE = f"""
         }}
         
         .qa-orange i {{ color: var(--accent-orange); }}
-        . qa-green i {{ color: var(--accent-green); }}
+        .qa-green i {{ color: var(--accent-green); }}
         .qa-purple i {{ color: var(--accent-purple); }}
-        . qa-blue i {{ color: var(--accent-blue); }}
+        .qa-blue i {{ color: var(--accent-blue); }}
         .qa-cyan i {{ color: var(--accent-cyan); }}
-        . qa-red i {{ color: var(--accent-red); }}
+        .qa-red i {{ color: var(--accent-red); }}
         
         .data-section {{
             margin-top: 30px;
         }}
         
-        . section-tabs {{
+        .section-tabs {{
             display: flex;
             gap: 10px;
             margin-bottom: 20px;
@@ -4688,7 +4688,7 @@ STORE_DASHBOARD_TEMPLATE = f"""
             color: var(--accent-orange);
         }}
         
-        .section-tab. active {{
+        .section-tab.active {{
             background: var(--accent-orange);
             border-color: var(--accent-orange);
             color: white;
@@ -4698,7 +4698,7 @@ STORE_DASHBOARD_TEMPLATE = f"""
             display: none;
         }}
         
-        .tab-panel. active {{
+        .tab-panel.active {{
             display: block;
             animation: fadeIn 0.3s ease-out;
         }}
@@ -4734,7 +4734,7 @@ STORE_DASHBOARD_TEMPLATE = f"""
             margin-bottom: 8px;
         }}
         
-        . product-details {{
+        .product-details {{
             font-size: 13px;
             color: var(--text-secondary);
             margin-bottom: 15px;
@@ -4752,8 +4752,8 @@ STORE_DASHBOARD_TEMPLATE = f"""
             margin-top: 15px;
         }}
         
-        . due-card {{
-            background: linear-gradient(135deg, rgba(239, 68, 68, 0. 1) 0%, rgba(239, 68, 68, 0.05) 100%);
+        .due-card {{
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, rgba(239, 68, 68, 0.05) 100%);
             border: 1px solid rgba(239, 68, 68, 0.2);
             border-radius: 16px;
             padding: 20px;
@@ -4813,7 +4813,7 @@ STORE_DASHBOARD_TEMPLATE = f"""
         <div class="loading-text" id="loading-text">Processing...</div>
     </div>
 
-    <div class="mobile-toggle" onclick="document.querySelector('. sidebar').classList.toggle('active')">
+    <div class="mobile-toggle" onclick="document.querySelector('.sidebar').classList.toggle('active')">
         <i class="fas fa-bars"></i>
     </div>
 
@@ -4900,7 +4900,7 @@ STORE_DASHBOARD_TEMPLATE = f"""
                 </div>
             </div>
             <div class="card stat-card">
-                <div class="stat-icon" style="background: linear-gradient(145deg, rgba(239, 68, 68, 0. 15), rgba(239, 68, 68, 0. 05));">
+                <div class="stat-icon" style="background: linear-gradient(145deg, rgba(239, 68, 68, 0.15), rgba(239, 68, 68, 0.05));">
                     <i class="fas fa-hand-holding-usd" style="color: var(--accent-red);"></i>
                 </div>
                 <div class="stat-info">
@@ -4955,17 +4955,17 @@ STORE_DASHBOARD_TEMPLATE = f"""
                         <div style="font-weight: 700; color: var(--accent-orange);">{{{{ inv.invoice_no }}}}</div>
                         <div style="color: white;">{{{{ inv.customer_name }}}}</div>
                         <div style="color: var(--text-secondary);">{{{{ inv.date }}}}</div>
-                        <div style="font-weight: 700; color: var(--accent-green);">৳{{{{ "{:,.0f}". format(inv.total) }}}}</div>
+                        <div style="font-weight: 700; color: var(--accent-green);">৳{{{{ "{:,.0f}".format(inv.total) }}}}</div>
                         <div>
                             <a href="/store/invoices/view/{{{{ inv.invoice_no }}}}" class="action-btn btn-view"><i class="fas fa-eye"></i></a>
-                            <a href="/store/invoices/print/{{{{ inv. invoice_no }}}}" class="action-btn btn-print-sm" target="_blank"><i class="fas fa-print"></i></a>
+                            <a href="/store/invoices/print/{{{{ inv.invoice_no }}}}" class="action-btn btn-print-sm" target="_blank"><i class="fas fa-print"></i></a>
                         </div>
                     </div>
                     {{% endfor %}}
                 {{% else %}}
                     <div class="empty-state">
                         <i class="fas fa-file-invoice"></i>
-                        <p>No invoices yet. Create your first invoice!</p>
+                        <p>No invoices yet.Create your first invoice!</p>
                     </div>
                 {{% endif %}}
             </div>
@@ -4980,14 +4980,14 @@ STORE_DASHBOARD_TEMPLATE = f"""
                         <div style="font-weight: 700; color: var(--accent-purple);">৳{{{{ "{:,.0f}".format(est.total) }}}}</div>
                         <div>
                             <a href="/store/estimates/view/{{{{ est.estimate_no }}}}" class="action-btn btn-view"><i class="fas fa-eye"></i></a>
-                            <a href="/store/estimates/print/{{{{ est. estimate_no }}}}" class="action-btn btn-print-sm" target="_blank"><i class="fas fa-print"></i></a>
+                            <a href="/store/estimates/print/{{{{ est.estimate_no }}}}" class="action-btn btn-print-sm" target="_blank"><i class="fas fa-print"></i></a>
                         </div>
                     </div>
                     {{% endfor %}}
                 {{% else %}}
                     <div class="empty-state">
                         <i class="fas fa-file-alt"></i>
-                        <p>No estimates yet. Create quotations for your customers!</p>
+                        <p>No estimates yet.Create quotations for your customers!</p>
                     </div>
                 {{% endif %}}
             </div>
@@ -5001,7 +5001,7 @@ STORE_DASHBOARD_TEMPLATE = f"""
                         <div style="color: var(--text-secondary);">{{{{ due.date }}}}</div>
                         <div style="font-weight: 700; color: var(--accent-red);">৳{{{{ "{:,.0f}".format(due.due) }}}} Due</div>
                         <div>
-                            <a href="/store/dues/collect/{{{{ due. invoice_no }}}}" class="action-btn btn-edit"><i class="fas fa-money-bill"></i></a>
+                            <a href="/store/dues/collect/{{{{ due.invoice_no }}}}" class="action-btn btn-edit"><i class="fas fa-money-bill"></i></a>
                         </div>
                     </div>
                     {{% endfor %}}
@@ -5017,15 +5017,15 @@ STORE_DASHBOARD_TEMPLATE = f"""
     
     <script>
         function showTab(tabId, element) {{
-            document.querySelectorAll('.tab-panel'). forEach(p => p.classList.remove('active'));
-            document.querySelectorAll('.section-tab'). forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.section-tab').forEach(t => t.classList.remove('active'));
             document.getElementById('tab-' + tabId).classList.add('active');
             element.classList.add('active');
         }}
         
         // Count up animation
         function animateCountUp() {{
-            document.querySelectorAll('.count-up'). forEach(counter => {{
+            document.querySelectorAll('.count-up').forEach(counter => {{
                 const target = parseInt(counter.getAttribute('data-target')) || 0;
                 const duration = 1500;
                 const step = target / (duration / 16);
@@ -5080,7 +5080,7 @@ STORE_PRODUCTS_TEMPLATE = f"""
             <div class="checkmark-circle"></div>
             <div class="anim-text">Saved! </div>
         </div>
-        <div class="loading-text">Processing... </div>
+        <div class="loading-text">Processing...</div>
     </div>
 
     <div class="mobile-toggle" onclick="document.querySelector('.sidebar').classList.toggle('active')">
@@ -5144,17 +5144,17 @@ STORE_PRODUCTS_TEMPLATE = f"""
                 <form action="/store/products/save" method="post" onsubmit="showLoading()">
                     <div class="input-group">
                         <label><i class="fas fa-cube" style="margin-right: 5px;"></i> PRODUCT NAME</label>
-                        <input type="text" name="name" required placeholder="e.g.  Thai Glass 5mm">
+                        <input type="text" name="name" required placeholder="e.g. Thai Glass 5mm">
                     </div>
                     
                     <div class="grid-2">
                         <div class="input-group">
                             <label><i class="fas fa-ruler" style="margin-right: 5px;"></i> SIZE (FEET)</label>
-                            <input type="text" name="size_feet" placeholder="e.g.  4x6 or 3x4">
+                            <input type="text" name="size_feet" placeholder="e.g. 4x6 or 3x4">
                         </div>
                         <div class="input-group">
                             <label><i class="fas fa-layer-group" style="margin-right: 5px;"></i> THICKNESS</label>
-                            <input type="text" name="thickness" placeholder="e.g. 5mm, 8mm">
+                            <input type="text" name="thickness" placeholder="e.g.5mm, 8mm">
                         </div>
                     </div>
                     
@@ -5178,7 +5178,7 @@ STORE_PRODUCTS_TEMPLATE = f"""
                     
                     <div class="input-group">
                         <label><i class="fas fa-info-circle" style="margin-right: 5px;"></i> DESCRIPTION (Optional)</label>
-                        <textarea name="description" placeholder="Additional details about the product... "></textarea>
+                        <textarea name="description" placeholder="Additional details about the product..."></textarea>
                     </div>
                     
                     <button type="submit">
@@ -5212,7 +5212,7 @@ STORE_PRODUCTS_TEMPLATE = f"""
                             </div>
                             <div style="text-align: right;">
                                 {{% if p.price %}}
-                                <div style="font-weight: 800; color: var(--accent-green); font-size: 18px;">৳{{{{ p. price }}}}</div>
+                                <div style="font-weight: 800; color: var(--accent-green); font-size: 18px;">৳{{{{ p.price }}}}</div>
                                 {{% else %}}
                                 <div style="color: var(--text-secondary); font-size: 12px;">No price set</div>
                                 {{% endif %}}
@@ -5238,15 +5238,15 @@ STORE_PRODUCTS_TEMPLATE = f"""
     
     <script>
         function showLoading() {{
-            document.getElementById('loading-overlay'). style.display = 'flex';
+            document.getElementById('loading-overlay').style.display = 'flex';
             return true;
         }}
         
         function filterProducts() {{
-            const search = document.getElementById('productSearch').value. toLowerCase();
+            const search = document.getElementById('productSearch').value.toLowerCase();
             document.querySelectorAll('.product-item').forEach(item => {{
                 const text = item.textContent.toLowerCase();
-                item.style.display = text. includes(search) ?  'flex' : 'none';
+                item.style.display = text.includes(search) ?  'flex' : 'none';
             }});
         }}
     </script>
@@ -5275,10 +5275,10 @@ STORE_CUSTOMERS_TEMPLATE = f"""
             <div class="spinner"></div>
             <div class="spinner-inner"></div>
         </div>
-        <div class="loading-text">Processing... </div>
+        <div class="loading-text">Processing...</div>
     </div>
 
-    <div class="mobile-toggle" onclick="document.querySelector('.sidebar'). classList.toggle('active')">
+    <div class="mobile-toggle" onclick="document.querySelector('.sidebar').classList.toggle('active')">
         <i class="fas fa-bars"></i>
     </div>
 
@@ -5372,7 +5372,7 @@ STORE_CUSTOMERS_TEMPLATE = f"""
                 <div style="max-height: 500px; overflow-y: auto;" id="customerList">
                     {{% if customers %}}
                         {{% for c in customers|reverse %}}
-                        <div class="customer-item" style="display: flex; justify-content: space-between; align-items: center; padding: 15px; background: rgba(255,255,255,0. 02); border-radius: 10px; margin-bottom: 10px; border: 1px solid var(--border-color);">
+                        <div class="customer-item" style="display: flex; justify-content: space-between; align-items: center; padding: 15px; background: rgba(255,255,255,0.02); border-radius: 10px; margin-bottom: 10px; border: 1px solid var(--border-color);">
                             <div>
                                 <div style="font-weight: 700; color: white; margin-bottom: 5px;">{{{{ c.name }}}}</div>
                                 <div style="font-size: 13px; color: var(--accent-orange);">
@@ -5380,7 +5380,7 @@ STORE_CUSTOMERS_TEMPLATE = f"""
                                 </div>
                                 {{% if c.address %}}
                                 <div style="font-size: 12px; color: var(--text-secondary); margin-top: 3px;">
-                                    <i class="fas fa-map-marker-alt" style="margin-right: 5px;"></i>{{{{ c.address[:50] }}}}... 
+                                    <i class="fas fa-map-marker-alt" style="margin-right: 5px;"></i>{{{{ c.address[:50] }}}}...
                                 </div>
                                 {{% endif %}}
                             </div>
@@ -5411,9 +5411,9 @@ STORE_CUSTOMERS_TEMPLATE = f"""
         
         function filterCustomers() {{
             const search = document.getElementById('customerSearch').value.toLowerCase();
-            document. querySelectorAll('. customer-item').forEach(item => {{
+            document.querySelectorAll('.customer-item').forEach(item => {{
                 const text = item.textContent.toLowerCase();
-                item. style.display = text.includes(search) ? 'flex' : 'none';
+                item.style.display = text.includes(search) ? 'flex' : 'none';
             }});
         }}
     </script>
@@ -5449,7 +5449,7 @@ STORE_INVOICE_CREATE_TEMPLATE = f"""
             border-bottom: 1px solid var(--border-color);
         }}
         
-        . invoice-items-table td {{
+        .invoice-items-table td {{
             padding: 10px;
             border-bottom: 1px solid var(--border-color);
         }}
@@ -5480,13 +5480,13 @@ STORE_INVOICE_CREATE_TEMPLATE = f"""
             margin-top: 15px;
         }}
         
-        . add-item-btn:hover {{
+        .add-item-btn:hover {{
             background: var(--accent-green);
             color: white;
         }}
         
-        . remove-item-btn {{
-            background: rgba(239, 68, 68, 0. 1);
+        .remove-item-btn {{
+            background: rgba(239, 68, 68, 0.1);
             border: none;
             color: var(--accent-red);
             width: 35px;
@@ -5543,7 +5543,7 @@ STORE_INVOICE_CREATE_TEMPLATE = f"""
         <div class="loading-text">Creating Invoice...</div>
     </div>
 
-    <div class="mobile-toggle" onclick="document.querySelector('. sidebar').classList.toggle('active')">
+    <div class="mobile-toggle" onclick="document.querySelector('.sidebar').classList.toggle('active')">
         <i class="fas fa-bars"></i>
     </div>
 
@@ -5600,7 +5600,7 @@ STORE_INVOICE_CREATE_TEMPLATE = f"""
                         <select name="customer_id" id="customerSelect" onchange="fillCustomerInfo()">
                             <option value="">-- Select Existing Customer --</option>
                             {{% for c in customers %}}
-                            <option value="{{{{ loop.index0 }}}}" data-name="{{{{ c. name }}}}" data-phone="{{{{ c.phone }}}}" data-address="{{{{ c.address }}}}">{{{{ c.name }}}} - {{{{ c. phone }}}}</option>
+                            <option value="{{{{ loop.index0 }}}}" data-name="{{{{ c.name }}}}" data-phone="{{{{ c.phone }}}}" data-address="{{{{ c.address }}}}">{{{{ c.name }}}} - {{{{ c.phone }}}}</option>
                             {{% endfor %}}
                         </select>
                     </div>
@@ -5661,7 +5661,7 @@ STORE_INVOICE_CREATE_TEMPLATE = f"""
                                     <input type="text" name="items[0][description]" placeholder="Product name" required>
                                 </td>
                                 <td>
-                                    <input type="text" name="items[0][size]" placeholder="e.g.  4x6">
+                                    <input type="text" name="items[0][size]" placeholder="e.g. 4x6">
                                 </td>
                                 <td>
                                     <input type="number" name="items[0][qty]" class="item-qty" value="1" min="1" onchange="calculateRow(this)" required>
@@ -5697,7 +5697,7 @@ STORE_INVOICE_CREATE_TEMPLATE = f"""
                         <span class="total-label">Paid Amount</span>
                         <input type="number" name="paid" id="paidInput" value="0" min="0" step="0.01" style="width: 120px; text-align: right;" onchange="calculateTotals()">
                     </div>
-                    <div class="total-row" style="background: rgba(239, 68, 68, 0. 1); margin: 10px -20px -20px -20px; padding: 15px 20px; border-radius: 0 0 12px 12px;">
+                    <div class="total-row" style="background: rgba(239, 68, 68, 0.1); margin: 10px -20px -20px -20px; padding: 15px 20px; border-radius: 0 0 12px 12px;">
                         <span style="color: var(--accent-red);">Due Amount</span>
                         <span style="color: var(--accent-red);" id="dueAmount">৳ 0</span>
                     </div>
@@ -5723,9 +5723,9 @@ STORE_INVOICE_CREATE_TEMPLATE = f"""
         function fillCustomerInfo() {{
             const select = document.getElementById('customerSelect');
             const option = select.options[select.selectedIndex];
-            if (option. value) {{
-                document.getElementById('customerName').value = option. dataset.name || '';
-                document. getElementById('customerPhone'). value = option.dataset.phone || '';
+            if (option.value) {{
+                document.getElementById('customerName').value = option.dataset.name || '';
+                document.getElementById('customerPhone').value = option.dataset.phone || '';
                 document.getElementById('customerAddress').value = option.dataset.address || '';
             }}
         }}
@@ -5736,7 +5736,7 @@ STORE_INVOICE_CREATE_TEMPLATE = f"""
             row.className = 'item-row';
             row.innerHTML = `
                 <td><input type="text" name="items[${{itemIndex}}][description]" placeholder="Product name" required></td>
-                <td><input type="text" name="items[${{itemIndex}}][size]" placeholder="e.g. 4x6"></td>
+                <td><input type="text" name="items[${{itemIndex}}][size]" placeholder="e.g.4x6"></td>
                 <td><input type="number" name="items[${{itemIndex}}][qty]" class="item-qty" value="1" min="1" onchange="calculateRow(this)" required></td>
                 <td><input type="number" name="items[${{itemIndex}}][price]" class="item-price" placeholder="৳" step="0.01" onchange="calculateRow(this)" required></td>
                 <td><input type="number" name="items[${{itemIndex}}][total]" class="item-total" readonly placeholder="৳ 0"></td>
@@ -5749,14 +5749,14 @@ STORE_INVOICE_CREATE_TEMPLATE = f"""
         function removeRow(btn) {{
             const rows = document.querySelectorAll('.item-row');
             if (rows.length > 1) {{
-                btn.closest('tr'). remove();
+                btn.closest('tr').remove();
                 calculateTotals();
             }}
         }}
         
         function calculateRow(input) {{
             const row = input.closest('tr');
-            const qty = parseFloat(row.querySelector('.item-qty'). value) || 0;
+            const qty = parseFloat(row.querySelector('.item-qty').value) || 0;
             const price = parseFloat(row.querySelector('.item-price').value) || 0;
             const total = qty * price;
             row.querySelector('.item-total').value = total.toFixed(2);
@@ -5769,7 +5769,7 @@ STORE_INVOICE_CREATE_TEMPLATE = f"""
                 subtotal += parseFloat(input.value) || 0;
             }});
             
-            const discount = parseFloat(document.getElementById('discountInput'). value) || 0;
+            const discount = parseFloat(document.getElementById('discountInput').value) || 0;
             const paid = parseFloat(document.getElementById('paidInput').value) || 0;
             const grandTotal = subtotal - discount;
             const due = grandTotal - paid;
@@ -5787,7 +5787,7 @@ STORE_INVOICE_CREATE_TEMPLATE = f"""
         }}
         
         function showLoading() {{
-            document.getElementById('loading-overlay').style. display = 'flex';
+            document.getElementById('loading-overlay').style.display = 'flex';
             return true;
         }}
     </script>
@@ -5804,7 +5804,7 @@ STORE_INVOICE_PRINT_TEMPLATE = """
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Invoice {{ invoice. invoice_no }} - MEHEDI THAI ALUMINUM AND GLASS</title>
+    <title>Invoice {{ invoice.invoice_no }} - MEHEDI THAI ALUMINUM AND GLASS</title>
     <style>
         * {
             margin: 0;
@@ -5837,7 +5837,7 @@ STORE_INVOICE_PRINT_TEMPLATE = """
             margin-bottom: 25px;
         }
         
-        . company-name {
+        .company-name {
             font-size: 28px;
             font-weight: 900;
             color: #1a5f2a;
@@ -5846,13 +5846,13 @@ STORE_INVOICE_PRINT_TEMPLATE = """
             margin-bottom: 5px;
         }
         
-        . company-tagline {
+        .company-tagline {
             font-size: 14px;
             color: #555;
             margin-bottom: 8px;
         }
         
-        . company-contact {
+        .company-contact {
             font-size: 12px;
             color: #333;
         }
@@ -5869,14 +5869,14 @@ STORE_INVOICE_PRINT_TEMPLATE = """
         }
         
         /* Info Section */
-        . info-section {
+        .info-section {
             display: flex;
             justify-content: space-between;
             margin-bottom: 25px;
             gap: 20px;
         }
         
-        . customer-info, .invoice-info {
+        .customer-info, .invoice-info {
             flex: 1;
             padding: 15px;
             border: 1px solid #ddd;
@@ -5912,7 +5912,7 @@ STORE_INVOICE_PRINT_TEMPLATE = """
             font-weight: 600;
         }
         
-        . invoice-no-box {
+        .invoice-no-box {
             background: #1a5f2a;
             color: white;
             padding: 10px 20px;
@@ -5921,12 +5921,12 @@ STORE_INVOICE_PRINT_TEMPLATE = """
             margin-bottom: 10px;
         }
         
-        .invoice-no-box . label {
+        .invoice-no-box .label {
             font-size: 11px;
             opacity: 0.9;
         }
         
-        .invoice-no-box . value {
+        .invoice-no-box .value {
             font-size: 22px;
             font-weight: 900;
         }
@@ -5963,11 +5963,11 @@ STORE_INVOICE_PRINT_TEMPLATE = """
             background: #f5f5f5;
         }
         
-        .items-table . item-name {
+        .items-table .item-name {
             font-weight: 700;
         }
         
-        .items-table . item-size {
+        .items-table .item-size {
             color: #666;
             font-size: 12px;
         }
@@ -5993,11 +5993,11 @@ STORE_INVOICE_PRINT_TEMPLATE = """
             font-size: 14px;
         }
         
-        . totals-row:last-child {
+        .totals-row:last-child {
             border-bottom: none;
         }
         
-        . totals-row. subtotal {
+        .totals-row.subtotal {
             background: #f5f5f5;
         }
         
@@ -6013,7 +6013,7 @@ STORE_INVOICE_PRINT_TEMPLATE = """
             color: #155724;
         }
         
-        . totals-row. due {
+        .totals-row.due {
             background: #f8d7da;
             color: #721c24;
             font-weight: 800;
@@ -6029,14 +6029,14 @@ STORE_INVOICE_PRINT_TEMPLATE = """
             border-radius: 5px;
         }
         
-        . notes-title {
+        .notes-title {
             font-weight: 700;
             color: #555;
             margin-bottom: 5px;
         }
         
         /* Footer */
-        . invoice-footer {
+        .invoice-footer {
             margin-top: 50px;
             padding-top: 20px;
             border-top: 1px solid #ddd;
@@ -6061,7 +6061,7 @@ STORE_INVOICE_PRINT_TEMPLATE = """
             font-size: 13px;
         }
         
-        . thank-you {
+        .thank-you {
             text-align: center;
             margin-top: 30px;
             font-size: 16px;
@@ -6069,7 +6069,7 @@ STORE_INVOICE_PRINT_TEMPLATE = """
             color: #1a5f2a;
         }
         
-        . powered-by {
+        .powered-by {
             text-align: center;
             margin-top: 15px;
             font-size: 10px;
@@ -6165,7 +6165,7 @@ STORE_INVOICE_PRINT_TEMPLATE = """
                 {% if invoice.customer_address %}
                 <div class="info-row">
                     <span class="info-label">Address:</span>
-                    <span class="info-value">{{ invoice. customer_address }}</span>
+                    <span class="info-value">{{ invoice.customer_address }}</span>
                 </div>
                 {% endif %}
             </div>
@@ -6200,8 +6200,8 @@ STORE_INVOICE_PRINT_TEMPLATE = """
                     <td class="item-name">{{ item.description }}</td>
                     <td class="item-size">{{ item.size if item.size else '-' }}</td>
                     <td>{{ item.qty }}</td>
-                    <td>৳{{ "{:,.2f}". format(item.price) }}</td>
-                    <td>৳{{ "{:,.2f}". format(item.total) }}</td>
+                    <td>৳{{ "{:,.2f}".format(item.price) }}</td>
+                    <td>৳{{ "{:,.2f}".format(item.total) }}</td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -6216,21 +6216,21 @@ STORE_INVOICE_PRINT_TEMPLATE = """
                 {% if invoice.discount > 0 %}
                 <div class="totals-row">
                     <span>Discount / ছাড়</span>
-                    <span>- ৳{{ "{:,.2f}".format(invoice. discount) }}</span>
+                    <span>- ৳{{ "{:,.2f}".format(invoice.discount) }}</span>
                 </div>
                 {% endif %}
                 <div class="totals-row grand-total">
                     <span>Grand Total / সর্বমোট</span>
-                    <span>৳{{ "{:,.2f}".format(invoice. total) }}</span>
+                    <span>৳{{ "{:,.2f}".format(invoice.total) }}</span>
                 </div>
                 <div class="totals-row paid">
                     <span>Paid / পরিশোধিত</span>
-                    <span>৳{{ "{:,. 2f}".format(invoice.paid) }}</span>
+                    <span>৳{{ "{:,.2f}".format(invoice.paid) }}</span>
                 </div>
                 {% if invoice.due > 0 %}
                 <div class="totals-row due">
                     <span>Due / বাকি</span>
-                    <span>৳{{ "{:,.2f}". format(invoice.due) }}</span>
+                    <span>৳{{ "{:,.2f}".format(invoice.due) }}</span>
                 </div>
                 {% endif %}
             </div>
@@ -6274,13 +6274,13 @@ STORE_ESTIMATE_CREATE_TEMPLATE = f"""
     <title>Create Estimate - MEHEDI THAI ALUMINUM AND GLASS</title>
     {COMMON_STYLES}
     <style>
-        . invoice-items-table {{
+        .invoice-items-table {{
             width: 100%;
             border-collapse: collapse;
         }}
         
         .invoice-items-table th {{
-            background: rgba(59, 130, 246, 0. 1);
+            background: rgba(59, 130, 246, 0.1);
             padding: 12px;
             text-align: left;
             font-size: 12px;
@@ -6320,13 +6320,13 @@ STORE_ESTIMATE_CREATE_TEMPLATE = f"""
             margin-top: 15px;
         }}
         
-        . add-item-btn:hover {{
+        .add-item-btn:hover {{
             background: var(--accent-blue);
             color: white;
         }}
         
-        . remove-item-btn {{
-            background: rgba(239, 68, 68, 0. 1);
+        .remove-item-btn {{
+            background: rgba(239, 68, 68, 0.1);
             border: none;
             color: var(--accent-red);
             width: 35px;
@@ -6342,13 +6342,13 @@ STORE_ESTIMATE_CREATE_TEMPLATE = f"""
         }}
         
         .totals-section {{
-            background: rgba(255, 255, 255, 0. 03);
+            background: rgba(255, 255, 255, 0.03);
             border-radius: 12px;
             padding: 20px;
             margin-top: 20px;
         }}
         
-        . total-row {{
+        .total-row {{
             display: flex;
             justify-content: space-between;
             padding: 10px 0;
@@ -6378,7 +6378,7 @@ STORE_ESTIMATE_CREATE_TEMPLATE = f"""
         <div class="loading-text">Creating Estimate...</div>
     </div>
 
-    <div class="mobile-toggle" onclick="document.querySelector('. sidebar'). classList.toggle('active')">
+    <div class="mobile-toggle" onclick="document.querySelector('.sidebar').classList.toggle('active')">
         <i class="fas fa-bars"></i>
     </div>
 
@@ -6488,7 +6488,7 @@ STORE_ESTIMATE_CREATE_TEMPLATE = f"""
                         <tbody id="itemsBody">
                             <tr class="item-row">
                                 <td><input type="text" name="items[0][description]" placeholder="Product/Work description" required></td>
-                                <td><input type="text" name="items[0][size]" placeholder="e.g.  4x6"></td>
+                                <td><input type="text" name="items[0][size]" placeholder="e.g. 4x6"></td>
                                 <td><input type="number" name="items[0][qty]" class="item-qty" value="1" min="1" onchange="calculateRow(this)" required></td>
                                 <td><input type="number" name="items[0][price]" class="item-price" placeholder="৳" step="0.01" onchange="calculateRow(this)" required></td>
                                 <td><input type="number" name="items[0][total]" class="item-total" readonly placeholder="৳ 0"></td>
@@ -6539,7 +6539,7 @@ STORE_ESTIMATE_CREATE_TEMPLATE = f"""
             row.className = 'item-row';
             row.innerHTML = `
                 <td><input type="text" name="items[${{itemIndex}}][description]" placeholder="Product/Work description" required></td>
-                <td><input type="text" name="items[${{itemIndex}}][size]" placeholder="e.g. 4x6"></td>
+                <td><input type="text" name="items[${{itemIndex}}][size]" placeholder="e.g.4x6"></td>
                 <td><input type="number" name="items[${{itemIndex}}][qty]" class="item-qty" value="1" min="1" onchange="calculateRow(this)" required></td>
                 <td><input type="number" name="items[${{itemIndex}}][price]" class="item-price" placeholder="৳" step="0.01" onchange="calculateRow(this)" required></td>
                 <td><input type="number" name="items[${{itemIndex}}][total]" class="item-total" readonly placeholder="৳ 0"></td>
@@ -6550,7 +6550,7 @@ STORE_ESTIMATE_CREATE_TEMPLATE = f"""
         }}
         
         function removeRow(btn) {{
-            const rows = document.querySelectorAll('. item-row');
+            const rows = document.querySelectorAll('.item-row');
             if (rows.length > 1) {{
                 btn.closest('tr').remove();
                 calculateTotals();
@@ -6559,7 +6559,7 @@ STORE_ESTIMATE_CREATE_TEMPLATE = f"""
         
         function calculateRow(input) {{
             const row = input.closest('tr');
-            const qty = parseFloat(row.querySelector('.item-qty'). value) || 0;
+            const qty = parseFloat(row.querySelector('.item-qty').value) || 0;
             const price = parseFloat(row.querySelector('.item-price').value) || 0;
             const total = qty * price;
             row.querySelector('.item-total').value = total.toFixed(2);
@@ -6568,11 +6568,11 @@ STORE_ESTIMATE_CREATE_TEMPLATE = f"""
         
         function calculateTotals() {{
             let subtotal = 0;
-            document.querySelectorAll('.item-total'). forEach(input => {{
+            document.querySelectorAll('.item-total').forEach(input => {{
                 subtotal += parseFloat(input.value) || 0;
             }});
             
-            const discount = parseFloat(document.getElementById('discountInput'). value) || 0;
+            const discount = parseFloat(document.getElementById('discountInput').value) || 0;
             const grandTotal = subtotal - discount;
             
             document.getElementById('subtotal').textContent = '৳ ' + subtotal.toFixed(2);
@@ -6604,7 +6604,7 @@ STORE_DUE_COLLECTION_TEMPLATE = f"""
     {COMMON_STYLES}
     <style>
         .due-card {{
-            background: linear-gradient(135deg, rgba(239, 68, 68, 0. 1) 0%, rgba(239, 68, 68, 0.05) 100%);
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, rgba(239, 68, 68, 0.05) 100%);
             border: 1px solid rgba(239, 68, 68, 0.2);
             border-radius: 16px;
             padding: 25px;
@@ -6620,7 +6620,7 @@ STORE_DUE_COLLECTION_TEMPLATE = f"""
             gap: 10px;
         }}
         
-        . due-invoice-no {{
+        .due-invoice-no {{
             font-size: 20px;
             font-weight: 800;
             color: var(--accent-orange);
@@ -6640,7 +6640,7 @@ STORE_DUE_COLLECTION_TEMPLATE = f"""
         }}
         
         .due-detail-item {{
-            background: rgba(255, 255, 255, 0. 03);
+            background: rgba(255, 255, 255, 0.03);
             padding: 12px;
             border-radius: 10px;
         }}
@@ -6652,7 +6652,7 @@ STORE_DUE_COLLECTION_TEMPLATE = f"""
             margin-bottom: 5px;
         }}
         
-        . due-detail-value {{
+        .due-detail-value {{
             font-size: 15px;
             font-weight: 600;
             color: white;
@@ -6679,12 +6679,12 @@ STORE_DUE_COLLECTION_TEMPLATE = f"""
             margin-bottom: 8px;
         }}
         
-        . payment-date {{
+        .payment-date {{
             color: var(--text-secondary);
             font-size: 13px;
         }}
         
-        . payment-amount {{
+        .payment-amount {{
             font-weight: 700;
             color: var(--accent-green);
         }}
@@ -6760,7 +6760,7 @@ STORE_DUE_COLLECTION_TEMPLATE = f"""
             </div>
             <form action="/store/dues/search" method="get" style="display: flex; gap: 15px; flex-wrap: wrap;">
                 <div style="flex: 1; min-width: 200px;">
-                    <input type="text" name="invoice_no" placeholder="Enter Invoice Number (e.g.  INV-0001)" value="{{{{ search_invoice }}}}">
+                    <input type="text" name="invoice_no" placeholder="Enter Invoice Number (e.g. INV-0001)" value="{{{{ search_invoice }}}}">
                 </div>
                 <button type="submit" style="width: auto; padding: 14px 30px;">
                     <i class="fas fa-search" style="margin-right: 8px;"></i> Search
@@ -6772,7 +6772,7 @@ STORE_DUE_COLLECTION_TEMPLATE = f"""
         <div class="due-card">
             <div class="due-header">
                 <div class="due-invoice-no">{{{{ invoice.invoice_no }}}}</div>
-                <div class="due-amount">Due: ৳{{{{ "{:,.0f}".format(invoice. due) }}}}</div>
+                <div class="due-amount">Due: ৳{{{{ "{:,.0f}".format(invoice.due) }}}}</div>
             </div>
             
             <div class="due-details">
@@ -6782,7 +6782,7 @@ STORE_DUE_COLLECTION_TEMPLATE = f"""
                 </div>
                 <div class="due-detail-item">
                     <div class="due-detail-label">Phone</div>
-                    <div class="due-detail-value">{{{{ invoice. customer_phone }}}}</div>
+                    <div class="due-detail-value">{{{{ invoice.customer_phone }}}}</div>
                 </div>
                 <div class="due-detail-item">
                     <div class="due-detail-label">Invoice Date</div>
@@ -6790,11 +6790,11 @@ STORE_DUE_COLLECTION_TEMPLATE = f"""
                 </div>
                 <div class="due-detail-item">
                     <div class="due-detail-label">Total Amount</div>
-                    <div class="due-detail-value">৳{{{{ "{:,.0f}". format(invoice.total) }}}}</div>
+                    <div class="due-detail-value">৳{{{{ "{:,.0f}".format(invoice.total) }}}}</div>
                 </div>
                 <div class="due-detail-item">
                     <div class="due-detail-label">Already Paid</div>
-                    <div class="due-detail-value" style="color: var(--accent-green);">৳{{{{ "{:,.0f}". format(invoice.paid) }}}}</div>
+                    <div class="due-detail-value" style="color: var(--accent-green);">৳{{{{ "{:,.0f}".format(invoice.paid) }}}}</div>
                 </div>
             </div>
             
@@ -6815,7 +6815,7 @@ STORE_DUE_COLLECTION_TEMPLATE = f"""
                     </div>
                     <div class="input-group">
                         <label>NOTES (Optional)</label>
-                        <input type="text" name="notes" placeholder="Payment notes... ">
+                        <input type="text" name="notes" placeholder="Payment notes...">
                     </div>
                     <button type="submit" style="background: linear-gradient(135deg, #10B981 0%, #34D399 100%);">
                         <i class="fas fa-check" style="margin-right: 10px;"></i> Record Payment
@@ -6823,7 +6823,7 @@ STORE_DUE_COLLECTION_TEMPLATE = f"""
                 </form>
             </div>
             {{% else %}}
-            <div style="text-align: center; padding: 30px; background: rgba(16, 185, 129, 0. 1); border-radius: 12px; border: 1px solid rgba(16, 185, 129, 0.2);">
+            <div style="text-align: center; padding: 30px; background: rgba(16, 185, 129, 0.1); border-radius: 12px; border: 1px solid rgba(16, 185, 129, 0.2);">
                 <i class="fas fa-check-circle" style="font-size: 50px; color: var(--accent-green); margin-bottom: 15px;"></i>
                 <h3 style="color: var(--accent-green);">Fully Paid! </h3>
                 <p style="color: var(--text-secondary);">This invoice has no pending dues.</p>
@@ -6836,8 +6836,8 @@ STORE_DUE_COLLECTION_TEMPLATE = f"""
                 {{% for p in invoice.payments %}}
                 <div class="payment-item">
                     <div>
-                        <div class="payment-date">{{{{ p. date }}}}</div>
-                        {{% if p.notes %}}<div style="font-size: 12px; color: var(--text-secondary);">{{{{ p. notes }}}}</div>{{% endif %}}
+                        <div class="payment-date">{{{{ p.date }}}}</div>
+                        {{% if p.notes %}}<div style="font-size: 12px; color: var(--text-secondary);">{{{{ p.notes }}}}</div>{{% endif %}}
                     </div>
                     <div class="payment-amount">+ ৳{{{{ "{:,.0f}".format(p.amount) }}}}</div>
                 </div>
@@ -6864,11 +6864,11 @@ STORE_DUE_COLLECTION_TEMPLATE = f"""
                     <div style="display: flex; justify-content: space-between; align-items: center; padding: 15px; background: rgba(255,255,255,0.02); border-radius: 10px; margin-bottom: 10px; border-left: 3px solid var(--accent-red);">
                         <div>
                             <div style="font-weight: 700; color: var(--accent-orange);">{{{{ due.invoice_no }}}}</div>
-                            <div style="font-size: 13px; color: white;">{{{{ due. customer_name }}}}</div>
+                            <div style="font-size: 13px; color: white;">{{{{ due.customer_name }}}}</div>
                             <div style="font-size: 12px; color: var(--text-secondary);">{{{{ due.date }}}}</div>
                         </div>
                         <div style="text-align: right;">
-                            <div style="font-size: 18px; font-weight: 800; color: var(--accent-red);">৳{{{{ "{:,.0f}". format(due.due) }}}}</div>
+                            <div style="font-size: 18px; font-weight: 800; color: var(--accent-red);">৳{{{{ "{:,.0f}".format(due.due) }}}}</div>
                             <a href="/store/dues/search? invoice_no={{{{ due.invoice_no }}}}" class="action-btn btn-edit" style="margin-top: 8px;">
                                 <i class="fas fa-money-bill"></i> Collect
                             </a>
@@ -6887,12 +6887,12 @@ STORE_DUE_COLLECTION_TEMPLATE = f"""
     
     <script>
         function validatePayment() {{
-            const amount = parseFloat(document.getElementById('paymentAmount'). value);
+            const amount = parseFloat(document.getElementById('paymentAmount').value);
             if (amount <= 0) {{
                 alert('Please enter a valid amount');
                 return false;
             }}
-            document.getElementById('loading-overlay').style. display = 'flex';
+            document.getElementById('loading-overlay').style.display = 'flex';
             return true;
         }}
     </script>
@@ -7013,13 +7013,13 @@ STORE_INVOICES_LIST_TEMPLATE = f"""
                             {{% for inv in invoices|reverse %}}
                             <tr>
                                 <td style="font-weight: 700; color: var(--accent-orange);">{{{{ inv.invoice_no }}}}</td>
-                                <td style="color: white;">{{{{ inv. customer_name }}}}</td>
+                                <td style="color: white;">{{{{ inv.customer_name }}}}</td>
                                 <td style="color: var(--text-secondary);">{{{{ inv.date }}}}</td>
-                                <td style="font-weight: 700; color: var(--accent-green);">৳{{{{ "{:,.0f}". format(inv.total) }}}}</td>
-                                <td style="color: var(--accent-green);">৳{{{{ "{:,.0f}". format(inv.paid) }}}}</td>
+                                <td style="font-weight: 700; color: var(--accent-green);">৳{{{{ "{:,.0f}".format(inv.total) }}}}</td>
+                                <td style="color: var(--accent-green);">৳{{{{ "{:,.0f}".format(inv.paid) }}}}</td>
                                 <td>
                                     {{% if inv.due > 0 %}}
-                                    <span style="color: var(--accent-red); font-weight: 700;">৳{{{{ "{:,.0f}". format(inv.due) }}}}</span>
+                                    <span style="color: var(--accent-red); font-weight: 700;">৳{{{{ "{:,.0f}".format(inv.due) }}}}</span>
                                     {{% else %}}
                                     <span style="color: var(--accent-green);"><i class="fas fa-check-circle"></i> Paid</span>
                                     {{% endif %}}
@@ -7041,7 +7041,7 @@ STORE_INVOICES_LIST_TEMPLATE = f"""
                                     {{% if search_query %}}
                                     No invoices found for "{{{{ search_query }}}}"
                                     {{% else %}}
-                                    No invoices created yet.  Create your first invoice! 
+                                    No invoices created yet. Create your first invoice! 
                                     {{% endif %}}
                                 </td>
                             </tr>
@@ -7071,7 +7071,7 @@ STORE_ESTIMATES_LIST_TEMPLATE = f"""
 <body>
     <div class="animated-bg"></div>
 
-    <div class="mobile-toggle" onclick="document.querySelector('.sidebar').classList. toggle('active')">
+    <div class="mobile-toggle" onclick="document.querySelector('.sidebar').classList.toggle('active')">
         <i class="fas fa-bars"></i>
     </div>
 
@@ -7155,8 +7155,8 @@ STORE_ESTIMATES_LIST_TEMPLATE = f"""
                                 <td style="font-weight: 700; color: var(--accent-purple);">৳{{{{ "{:,.0f}".format(est.total) }}}}</td>
                                 <td>
                                     <div class="action-cell">
-                                        <a href="/store/estimates/print/{{{{ est. estimate_no }}}}" class="action-btn btn-print-sm" target="_blank"><i class="fas fa-print"></i></a>
-                                        <a href="/store/estimates/to-invoice/{{{{ est. estimate_no }}}}" class="action-btn btn-view" title="Convert to Invoice"><i class="fas fa-file-invoice"></i></a>
+                                        <a href="/store/estimates/print/{{{{ est.estimate_no }}}}" class="action-btn btn-print-sm" target="_blank"><i class="fas fa-print"></i></a>
+                                        <a href="/store/estimates/to-invoice/{{{{ est.estimate_no }}}}" class="action-btn btn-view" title="Convert to Invoice"><i class="fas fa-file-invoice"></i></a>
                                     </div>
                                 </td>
                             </tr>
@@ -7165,7 +7165,7 @@ STORE_ESTIMATES_LIST_TEMPLATE = f"""
                             <tr>
                                 <td colspan="6" style="text-align: center; padding: 50px; color: var(--text-secondary);">
                                     <i class="fas fa-file-alt" style="font-size: 50px; opacity: 0.2; margin-bottom: 15px; display: block;"></i>
-                                    No estimates created yet. Create your first estimate! 
+                                    No estimates created yet.Create your first estimate! 
                                 </td>
                             </tr>
                         {{% endif %}}
@@ -7187,7 +7187,7 @@ STORE_ESTIMATE_PRINT_TEMPLATE = """
 <html lang="bn">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1. 0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Estimate {{ estimate.estimate_no }} - MEHEDI THAI ALUMINUM AND GLASS</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -7202,11 +7202,11 @@ STORE_ESTIMATE_PRINT_TEMPLATE = """
         .info-title { font-weight: 800; color: #2563eb; border-bottom: 2px solid #2563eb; padding-bottom: 5px; margin-bottom: 10px; text-transform: uppercase; font-size: 13px; }
         .info-row { display: flex; margin-bottom: 5px; font-size: 13px; }
         .info-label { font-weight: 700; width: 80px; color: #555; }
-        . info-value { flex: 1; color: #000; font-weight: 600; }
+        .info-value { flex: 1; color: #000; font-weight: 600; }
         .estimate-no-box { background: #2563eb; color: white; padding: 10px 20px; text-align: center; margin-bottom: 10px; }
-        .estimate-no-box . label { font-size: 11px; opacity: 0.9; }
-        . estimate-no-box .value { font-size: 22px; font-weight: 900; }
-        . items-table { width: 100%; border-collapse: collapse; margin-bottom: 25px; }
+        .estimate-no-box .label { font-size: 11px; opacity: 0.9; }
+        .estimate-no-box .value { font-size: 22px; font-weight: 900; }
+        .items-table { width: 100%; border-collapse: collapse; margin-bottom: 25px; }
         .items-table th { background: #2563eb; color: white; padding: 12px 10px; text-align: left; font-size: 12px; text-transform: uppercase; }
         .items-table th:last-child, .items-table td:last-child { text-align: right; }
         .items-table td { padding: 12px 10px; border-bottom: 1px solid #ddd; font-size: 13px; }
@@ -7215,25 +7215,25 @@ STORE_ESTIMATE_PRINT_TEMPLATE = """
         .totals-box { width: 300px; border: 2px solid #2563eb; overflow: hidden; }
         .totals-row { display: flex; justify-content: space-between; padding: 10px 15px; border-bottom: 1px solid #ddd; font-size: 14px; }
         .totals-row:last-child { border-bottom: none; }
-        . totals-row. grand-total { background: #2563eb; color: white; font-size: 18px; font-weight: 800; }
+        .totals-row.grand-total { background: #2563eb; color: white; font-size: 18px; font-weight: 800; }
         .terms-section { margin-top: 30px; padding: 15px; background: #f0f7ff; border: 1px solid #2563eb; border-radius: 5px; }
         .terms-title { font-weight: 700; color: #2563eb; margin-bottom: 10px; }
         .terms-list { margin-left: 20px; font-size: 12px; color: #555; }
         .terms-list li { margin-bottom: 5px; }
-        . footer { margin-top: 50px; padding-top: 20px; border-top: 1px solid #ddd; }
+        .footer { margin-top: 50px; padding-top: 20px; border-top: 1px solid #ddd; }
         .signatures { display: flex; justify-content: space-between; margin-top: 60px; padding: 0 30px; }
         .signature-box { text-align: center; width: 150px; }
         .signature-line { border-top: 2px solid #000; padding-top: 8px; font-weight: 700; font-size: 13px; }
         .validity-notice { text-align: center; margin-top: 20px; padding: 10px; background: #fff3cd; border: 1px solid #ffc107; font-weight: 600; color: #856404; }
         .powered-by { text-align: center; margin-top: 15px; font-size: 10px; color: #999; }
-        . action-buttons { position: fixed; top: 20px; right: 20px; display: flex; gap: 10px; z-index: 1000; }
+        .action-buttons { position: fixed; top: 20px; right: 20px; display: flex; gap: 10px; z-index: 1000; }
         .action-btn { padding: 12px 25px; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; text-decoration: none; font-size: 14px; }
         .btn-print { background: #2563eb; color: white; }
         .btn-back { background: #6c757d; color: white; }
         @media print {
             .action-buttons { display: none ! important; }
             .container { border: none; padding: 20px; }
-            .items-table th, .totals-row. grand-total { background: #2563eb ! important; -webkit-print-color-adjust: exact; }
+            .items-table th, .totals-row.grand-total { background: #2563eb ! important; -webkit-print-color-adjust: exact; }
         }
     </style>
 </head>
@@ -7260,13 +7260,13 @@ STORE_ESTIMATE_PRINT_TEMPLATE = """
                 {% if estimate.customer_phone %}
                 <div class="info-row">
                     <span class="info-label">Phone:</span>
-                    <span class="info-value">{{ estimate. customer_phone }}</span>
+                    <span class="info-value">{{ estimate.customer_phone }}</span>
                 </div>
                 {% endif %}
                 {% if estimate.customer_address %}
                 <div class="info-row">
                     <span class="info-label">Address:</span>
-                    <span class="info-value">{{ estimate. customer_address }}</span>
+                    <span class="info-value">{{ estimate.customer_address }}</span>
                 </div>
                 {% endif %}
             </div>
@@ -7301,14 +7301,14 @@ STORE_ESTIMATE_PRINT_TEMPLATE = """
                 </tr>
             </thead>
             <tbody>
-                {% for item in estimate. items %}
+                {% for item in estimate.items %}
                 <tr>
                     <td>{{ loop.index }}</td>
                     <td>{{ item.description }}</td>
                     <td>{{ item.size if item.size else '-' }}</td>
                     <td>{{ item.qty }}</td>
                     <td>৳{{ "{:,.2f}".format(item.price) }}</td>
-                    <td>৳{{ "{:,.2f}". format(item.total) }}</td>
+                    <td>৳{{ "{:,.2f}".format(item.total) }}</td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -7318,24 +7318,24 @@ STORE_ESTIMATE_PRINT_TEMPLATE = """
             <div class="totals-box">
                 <div class="totals-row" style="background: #f5f5f5;">
                     <span>Subtotal / উপমোট</span>
-                    <span>৳{{ "{:,. 2f}".format(estimate.total + estimate.discount) }}</span>
+                    <span>৳{{ "{:,.2f}".format(estimate.total + estimate.discount) }}</span>
                 </div>
                 {% if estimate.discount > 0 %}
                 <div class="totals-row">
                     <span>Discount / ছাড়</span>
-                    <span>- ৳{{ "{:,.2f}".format(estimate. discount) }}</span>
+                    <span>- ৳{{ "{:,.2f}".format(estimate.discount) }}</span>
                 </div>
                 {% endif %}
                 <div class="totals-row grand-total">
                     <span>Estimated Total / সর্বমোট</span>
-                    <span>৳{{ "{:,.2f}".format(estimate. total) }}</span>
+                    <span>৳{{ "{:,.2f}".format(estimate.total) }}</span>
                 </div>
             </div>
         </div>
 
         {% if estimate.valid_until %}
         <div class="validity-notice">
-            ⚠️ This quotation is valid until {{ estimate.valid_until }}.  Prices may change after this date.
+            ⚠️ This quotation is valid until {{ estimate.valid_until }}. Prices may change after this date.
         </div>
         {% endif %}
         
@@ -7374,7 +7374,7 @@ CLOSING_REPORT_PREVIEW_TEMPLATE = """
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Closing Report Preview</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare. com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         body { background-color: #f8f9fa; padding: 30px 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; font-size: 1.1rem; }
         .container { max-width: 1400px; }
@@ -7385,25 +7385,25 @@ CLOSING_REPORT_PREVIEW_TEMPLATE = """
         .info-container { margin-bottom: 15px; background: white; padding: 15px; display: flex; justify-content: space-between; align-items: flex-end;}
         .info-row { display: flex; flex-direction: column; gap: 5px; }
         .info-item { font-size: 1.2rem; font-weight: 600; color: #444; }
-        . info-label { font-weight: 800; color: #444; width: 90px; display: inline-block; }
+        .info-label { font-weight: 800; color: #444; width: 90px; display: inline-block; }
         .info-value { font-weight: 800; color: #000; }
-        .booking-box { background: #2c3e50; color: white; padding: 10px 20px; border-radius: 5px; text-align: right; box-shadow: 0 4px 10px rgba(44, 62, 80, 0. 3); display: flex; flex-direction: column; justify-content: center; min-width: 200px; }
-        .booking-label { font-size: 1. 1rem; opacity: 0.9; text-transform: uppercase; letter-spacing: 1px; font-weight: 700; }
-        . booking-value { font-size: 1.8rem; font-weight: 800; line-height: 1.1; }
+        .booking-box { background: #2c3e50; color: white; padding: 10px 20px; border-radius: 5px; text-align: right; box-shadow: 0 4px 10px rgba(44, 62, 80, 0.3); display: flex; flex-direction: column; justify-content: center; min-width: 200px; }
+        .booking-label { font-size: 1.1rem; opacity: 0.9; text-transform: uppercase; letter-spacing: 1px; font-weight: 700; }
+        .booking-value { font-size: 1.8rem; font-weight: 800; line-height: 1.1; }
         .table-card { background: white; border-radius: 0; margin-bottom: 30px; border: none; }
         .color-header { background-color: #2c3e50 !important; color: white; padding: 10px 15px; font-size: 1.4rem; font-weight: 800; text-transform: uppercase; border: 1px solid #000;}
         .table { margin-bottom: 0; width: 100%; border-collapse: collapse; font-size: 1rem; }
-        . table th { background-color: #fff ! important; color: #000 !important; text-align: center; border: 1px solid #000; padding: 8px; vertical-align: middle; font-weight: 900; font-size: 1.2rem; }
-        .table td { text-align: center; vertical-align: middle; border: 1px solid #000; padding: 6px; color: #000; font-weight: 600; font-size: 1. 1rem; }
+        .table th { background-color: #fff ! important; color: #000 !important; text-align: center; border: 1px solid #000; padding: 8px; vertical-align: middle; font-weight: 900; font-size: 1.2rem; }
+        .table td { text-align: center; vertical-align: middle; border: 1px solid #000; padding: 6px; color: #000; font-weight: 600; font-size: 1.1rem; }
         .col-3pct { background-color: #B9C2DF !important; font-weight: 700; }
-        . col-input { background-color: #C4D09D !important; font-weight: 700; }
-        . col-balance { font-weight: 700; color: #c0392b; }
+        .col-input { background-color: #C4D09D !important; font-weight: 700; }
+        .col-balance { font-weight: 700; color: #c0392b; }
         .total-row td { background-color: #fff !important; color: #000 ! important; font-weight: 900; font-size: 1.2rem; border-top: 2px solid #000; }
         .action-bar { margin-bottom: 20px; display: flex; justify-content: flex-end; gap: 15px; position: sticky; top: 0; z-index: 1000; background: #f8f9fa; padding: 10px 0; }
         .btn-print { background-color: #2c3e50; color: white; border-radius: 50px; padding: 10px 30px; font-weight: 600; border: none; }
         .btn-excel { background-color: #27ae60; color: white; border-radius: 50px; padding: 10px 30px; font-weight: 600; text-decoration: none; display: inline-block; }
         .btn-excel:hover { color: white; background-color: #219150; }
-        . footer-credit { text-align: center; margin-top: 40px; margin-bottom: 20px; font-size: 1rem; color: #2c3e50; padding-top: 10px; border-top: 1px solid #000; font-weight: 600;}
+        .footer-credit { text-align: center; margin-top: 40px; margin-bottom: 20px; font-size: 1rem; color: #2c3e50; padding-top: 10px; border-top: 1px solid #000; font-weight: 600;}
         @media print {
             @page { margin: 5mm; size: portrait; } 
             body { background-color: white; padding: 0; }
@@ -7460,7 +7460,7 @@ CLOSING_REPORT_PREVIEW_TEMPLATE = """
                 </thead>
                 <tbody>
                     {% set ns = namespace(tot_3=0, tot_act=0, tot_cut=0, tot_inp=0, tot_bal=0, tot_sp=0) %}
-                    {% for i in range(block. headers|length) %}
+                    {% for i in range(block.headers|length) %}
                         {% set actual = block.gmts_qty[i]|replace(',', '')|int %}
                         {% set qty_3 = (actual * 1.03)|round|int %}
                         {% set cut_qc = 0 %}
@@ -7477,12 +7477,12 @@ CLOSING_REPORT_PREVIEW_TEMPLATE = """
                         {% if qty_3 > 0 %}
                             {% set percentage = (short_plus / qty_3) * 100 %}
                         {% endif %}
-                        {% set ns. tot_3 = ns.tot_3 + qty_3 %}
-                        {% set ns.tot_act = ns. tot_act + actual %}
+                        {% set ns.tot_3 = ns.tot_3 + qty_3 %}
+                        {% set ns.tot_act = ns.tot_act + actual %}
                         {% set ns.tot_cut = ns.tot_cut + cut_qc %}
-                        {% set ns. tot_inp = ns.tot_inp + inp_qty %}
+                        {% set ns.tot_inp = ns.tot_inp + inp_qty %}
                         {% set ns.tot_bal = ns.tot_bal + balance %}
-                        {% set ns. tot_sp = ns.tot_sp + short_plus %}
+                        {% set ns.tot_sp = ns.tot_sp + short_plus %}
                         <tr>
                             <td>{{ block.headers[i] }}</td>
                             <td class="col-3pct">{{ qty_3 }}</td>
@@ -7506,7 +7506,7 @@ CLOSING_REPORT_PREVIEW_TEMPLATE = """
                             {% if ns.tot_3 > 0 %}
                                 {{ "%.2f"|format((ns.tot_sp / ns.tot_3) * 100) }}%
                             {% else %}
-                                0. 00%
+                                0.00%
                             {% endif %}
                         </td>
                     </tr>
@@ -7519,7 +7519,7 @@ CLOSING_REPORT_PREVIEW_TEMPLATE = """
     </div>
     <script>
         const dateObj = new Date();
-        document.getElementById('date'). innerText = dateObj. toLocaleDateString('en-GB');
+        document.getElementById('date').innerText = dateObj.toLocaleDateString('en-GB');
     </script>
 </body>
 </html>
@@ -7532,13 +7532,13 @@ ACCESSORIES_REPORT_TEMPLATE = """
     <meta charset="UTF-8">
     <title>Accessories Delivery Report</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6. 0.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         body { font-family: 'Poppins', sans-serif; background: #fff; padding: 20px; color: #000; }
-        . container { max-width: 1000px; margin: 0 auto; border: 2px solid #000; padding: 20px; min-height: 90vh; position: relative; }
+        .container { max-width: 1000px; margin: 0 auto; border: 2px solid #000; padding: 20px; min-height: 90vh; position: relative; }
         .header { text-align: center; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 20px; position: relative; }
         .company-name { font-size: 28px; font-weight: 800; text-transform: uppercase; color: #2c3e50; line-height: 1; }
-        . company-address { font-size: 12px; font-weight: 600; color: #444; margin-top: 5px; margin-bottom: 10px; }
+        .company-address { font-size: 12px; font-weight: 600; color: #444; margin-top: 5px; margin-bottom: 10px; }
         .report-title { background: #2c3e50; color: white; padding: 5px 25px; display: inline-block; font-weight: bold; font-size: 18px; border-radius: 4px; }
         .info-grid { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; }
         .info-left { flex: 2; border: 1px dashed #555; padding: 15px; margin-right: 15px; }
@@ -7546,7 +7546,7 @@ ACCESSORIES_REPORT_TEMPLATE = """
         .info-label { font-weight: 800; width: 80px; color: #444; }
         .info-val { font-weight: 700; font-size: 15px; color: #000; }
         .booking-border { border: 2px solid #000; padding: 2px 8px; display: inline-block; font-weight: 900; }
-        . info-right { flex: 1; display: flex; flex-direction: column; justify-content: space-between; height: 100%; border-left: 1px solid #ddd; padding-left: 15px; }
+        .info-right { flex: 1; display: flex; flex-direction: column; justify-content: space-between; height: 100%; border-left: 1px solid #ddd; padding-left: 15px; }
         .right-item { font-size: 14px; margin-bottom: 8px; font-weight: 700; }
         .right-label { color: #555; }
         .summary-container { margin-bottom: 20px; border: 2px solid #000; padding: 10px; background: #f9f9f9; }
@@ -7558,15 +7558,15 @@ ACCESSORIES_REPORT_TEMPLATE = """
         .main-table td { border: 1px solid #000; padding: 6px; text-align: center; vertical-align: middle; color: #000; font-weight: 600; }
         .line-card { display: inline-block; padding: 4px 10px; border: 2px solid #000; font-size: 16px; font-weight: 900; border-radius: 4px; box-shadow: 2px 2px 0 #000; background: #fff; }
         .line-text-bold { font-size: 14px; font-weight: 800; opacity: 0.7; }
-        . status-cell { font-size: 20px; color: green; font-weight: 900; }
-        . qty-cell { font-size: 16px; font-weight: 800; }
+        .status-cell { font-size: 20px; color: green; font-weight: 900; }
+        .qty-cell { font-size: 16px; font-weight: 800; }
         .action-btn { color: white; padding: 4px 8px; border-radius: 4px; text-decoration: none; font-size: 12px; margin: 0 2px; display: inline-block; }
         .btn-edit-row { background-color: #f39c12; }
         .btn-del-row { background-color: #e74c3c; }
         .footer-total { margin-top: 20px; display: flex; justify-content: flex-end; }
         .total-box { border: 3px solid #000; padding: 8px 30px; font-size: 20px; font-weight: 900; background: #ddd; -webkit-print-color-adjust: exact; }
         .no-print { margin-bottom: 20px; text-align: right; }
-        . btn { padding: 8px 20px; background: #2c3e50; color: white; border: none; cursor: pointer; text-decoration: none; display: inline-block; border-radius: 4px; font-size: 14px; }
+        .btn { padding: 8px 20px; background: #2c3e50; color: white; border: none; cursor: pointer; text-decoration: none; display: inline-block; border-radius: 4px; font-size: 14px; }
         .btn-add { background: #27ae60; }
         .generator-sig { text-align: right; font-size: 10px; margin-top: 5px; color: #555; }
         @media print {
@@ -7585,7 +7585,7 @@ ACCESSORIES_REPORT_TEMPLATE = """
 <div class="container">
     <div class="header">
         <div class="company-name">COTTON CLOTHING BD LTD</div>
-        <div class="company-address">Kazi Tower, 27 Road, Gazipura, Tongi, Gazipur. </div>
+        <div class="company-address">Kazi Tower, 27 Road, Gazipura, Tongi, Gazipur.</div>
         <div class="report-title">ACCESSORIES DELIVERY CHALLAN</div>
     </div>
     <div class="info-grid">
@@ -7693,11 +7693,11 @@ PO_REPORT_TEMPLATE = """
         .info-container { display: flex; justify-content: space-between; margin-bottom: 15px; gap: 15px; }
         .info-box { background: white; border: 1px solid #ddd; border-left: 5px solid #2c3e50; padding: 10px 15px; border-radius: 5px; flex: 2; box-shadow: 0 2px 5px rgba(0,0,0,0.05); display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
         .total-box { background: #2c3e50; color: white; padding: 10px 15px; border-radius: 5px; width: 240px; text-align: right; display: flex; flex-direction: column; justify-content: center; box-shadow: 0 4px 10px rgba(44, 62, 80, 0.3); }
-        . info-item { margin-bottom: 6px; font-size: 1.3rem; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        . info-label { font-weight: 800; color: #444; width: 90px; display: inline-block; }
+        .info-item { margin-bottom: 6px; font-size: 1.3rem; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .info-label { font-weight: 800; color: #444; width: 90px; display: inline-block; }
         .info-value { font-weight: 800; color: #000; }
         .total-label { font-size: 1.1rem; opacity: 0.9; text-transform: uppercase; letter-spacing: 1px; font-weight: 700; }
-        . total-value { font-size: 2.5rem; font-weight: 800; line-height: 1.1; }
+        .total-value { font-size: 2.5rem; font-weight: 800; line-height: 1.1; }
         .table-card { background: white; border-radius: 0; margin-bottom: 20px; overflow: hidden; border: 1px solid #dee2e6; }
         .color-header { background-color: #e9ecef; color: #2c3e50; padding: 10px 12px; font-size: 1.5rem; font-weight: 900; border-bottom: 1px solid #dee2e6; text-transform: uppercase; }
         .table { margin-bottom: 0; width: 100%; border-collapse: collapse; }
@@ -7708,7 +7708,7 @@ PO_REPORT_TEMPLATE = """
         .order-col { font-weight: 900 !important; text-align: center ! important; background-color: #fdfdfd; white-space: nowrap; width: 1%; }
         .total-col { font-weight: 900; background-color: #e8f6f3 !important; color: #16a085; border-left: 2px solid #1abc9c ! important; }
         .total-col-header { background-color: #e8f6f3 !important; color: #000 !important; font-weight: 900 !important; border: 1px solid #34495e !important; }
-        .table-striped tbody tr. summary-row, .table-striped tbody tr.summary-row td { background-color: #d1ecff ! important; --bs-table-accent-bg: #d1ecff !important; color: #000 ! important; font-weight: 900 !important; border-top: 2px solid #aaa !important; font-size: 1.2rem !important; }
+        .table-striped tbody tr.summary-row, .table-striped tbody tr.summary-row td { background-color: #d1ecff ! important; --bs-table-accent-bg: #d1ecff !important; color: #000 ! important; font-weight: 900 !important; border-top: 2px solid #aaa !important; font-size: 1.2rem !important; }
         .summary-label { text-align: right ! important; padding-right: 15px ! important; color: #000 !important; }
         .action-bar { margin-bottom: 20px; display: flex; justify-content: flex-end; gap: 10px; }
         .btn-print { background-color: #e74c3c; color: white; border-radius: 50px; padding: 8px 30px; font-weight: 600; border: none; }
@@ -7726,7 +7726,7 @@ PO_REPORT_TEMPLATE = """
             .info-item { font-size: 13pt ! important; font-weight: 800 ! important; }
             .table th, .table td { border: 1px solid #000 !important; padding: 2px ! important; font-size: 13pt !important; font-weight: 800 !important; }
             .table th:empty { background-color: white !important; border: none !important; }
-            .table-striped tbody tr. summary-row td { background-color: #d1ecff !important; box-shadow: inset 0 0 0 9999px #d1ecff ! important; color: #000 ! important; font-weight: 900 ! important; }
+            .table-striped tbody tr.summary-row td { background-color: #d1ecff !important; box-shadow: inset 0 0 0 9999px #d1ecff ! important; color: #000 ! important; font-weight: 900 ! important; }
             .color-header { background-color: #f1f1f1 !important; border: 1px solid #000 !important; font-size: 1.4rem !important; font-weight: 900; padding: 5px; margin-top: 10px; box-shadow: inset 0 0 0 9999px #f1f1f1 !important; }
             .total-col-header { background-color: #e8f6f3 !important; box-shadow: inset 0 0 0 9999px #e8f6f3 !important; color: #000 !important; }
             .table-card { border: none; margin-bottom: 10px; break-inside: avoid; }
@@ -7780,9 +7780,9 @@ PO_REPORT_TEMPLATE = """
     <script>
         const dateObj = new Date();
         const day = String(dateObj.getDate()).padStart(2, '0');
-        const month = String(dateObj. getMonth() + 1).padStart(2, '0');
+        const month = String(dateObj.getMonth() + 1).padStart(2, '0');
         const year = dateObj.getFullYear();
-        document.getElementById('date'). innerText = `${day}-${month}-${year}`;
+        document.getElementById('date').innerText = `${day}-${month}-${year}`;
             </script>
 </body>
 </html>
@@ -7797,7 +7797,7 @@ def home():
     if 'user' not in session:
         return render_template_string(LOGIN_TEMPLATE)
     
-    if session. get('role') == 'admin':
+    if session.get('role') == 'admin':
         stats = get_dashboard_summary_v2()
         return render_template_string(ADMIN_DASHBOARD_TEMPLATE, stats=stats)
     else:
@@ -7806,16 +7806,16 @@ def home():
 @app.route('/login', methods=['POST'])
 def login():
     username = request.form.get('username')
-    password = request.form. get('password')
+    password = request.form.get('password')
     
     users = load_users()
     
     if username in users and users[username]['password'] == password:
-        session. permanent = True
+        session.permanent = True
         session['user'] = username
-        session['role'] = users[username]. get('role', 'user')
+        session['role'] = users[username].get('role', 'user')
         session['permissions'] = users[username].get('permissions', [])
-        session['login_time'] = get_bd_time(). isoformat()
+        session['login_time'] = get_bd_time().isoformat()
         
         # Update last login time
         users[username]['last_login'] = get_bd_time().strftime('%d-%m-%Y %I:%M %p')
@@ -7826,7 +7826,7 @@ def login():
         flash('Invalid Username or Password!')
         return redirect(url_for('home'))
 
-@app. route('/logout')
+@app.route('/logout')
 def logout():
     # Calculate session duration before clearing
     users = load_users()
@@ -7840,7 +7840,7 @@ def logout():
                 now = get_bd_time()
                 duration = now - login_time
                 minutes = int(duration.total_seconds() // 60)
-                seconds = int(duration. total_seconds() % 60)
+                seconds = int(duration.total_seconds() % 60)
                 users[username]['last_duration'] = f"{minutes}m {seconds}s"
                 save_users(users)
             except:
@@ -7855,13 +7855,13 @@ def logout():
 
 @app.route('/admin/get-users')
 def get_users():
-    if 'user' not in session or session. get('role') != 'admin':
+    if 'user' not in session or session.get('role') != 'admin':
         return jsonify({"error": "Unauthorized"}), 403
     return jsonify(load_users())
 
 @app.route('/admin/save-user', methods=['POST'])
 def save_user():
-    if 'user' not in session or session. get('role') != 'admin':
+    if 'user' not in session or session.get('role') != 'admin':
         return jsonify({"status": "error", "message": "Unauthorized"}), 403
     
     data = request.get_json()
@@ -7890,16 +7890,16 @@ def save_user():
     save_users(users)
     return jsonify({"status": "success"})
 
-@app. route('/admin/delete-user', methods=['POST'])
+@app.route('/admin/delete-user', methods=['POST'])
 def delete_user():
     if 'user' not in session or session.get('role') != 'admin':
         return jsonify({"status": "error", "message": "Unauthorized"}), 403
     
-    data = request. get_json()
+    data = request.get_json()
     users = load_users()
     username = data.get('username')
     
-    if username in users and users[username]. get('role') != 'admin':
+    if username in users and users[username].get('role') != 'admin':
         del users[username]
         save_users(users)
     
@@ -7914,7 +7914,7 @@ def generate_report():
     if 'user' not in session:
         return redirect(url_for('home'))
     
-    ref_no = request.form. get('ref_no', '').strip()
+    ref_no = request.form.get('ref_no', '').strip()
     if not ref_no:
         flash('Please enter a valid Reference Number.')
         return redirect(url_for('home'))
@@ -7923,9 +7923,9 @@ def generate_report():
     
     if report_data:
         update_stats(ref_no, session['user'])
-        return render_template_string(CLOSING_REPORT_PREVIEW_TEMPLATE, report_data=report_data, ref_no=ref_no. upper())
+        return render_template_string(CLOSING_REPORT_PREVIEW_TEMPLATE, report_data=report_data, ref_no=ref_no.upper())
     else:
-        flash(f'No data found for "{ref_no}".  Please check the reference number.')
+        flash(f'No data found for "{ref_no}". Please check the reference number.')
         return redirect(url_for('home'))
 
 @app.route('/download-closing-excel')
@@ -7933,7 +7933,7 @@ def download_closing_excel():
     if 'user' not in session:
         return redirect(url_for('home'))
     
-    ref_no = request. args.get('ref_no', '').strip()
+    ref_no = request.args.get('ref_no', '').strip()
     if not ref_no:
         flash('Reference number is required.')
         return redirect(url_for('home'))
@@ -7949,7 +7949,7 @@ def download_closing_excel():
             excel_file,
             as_attachment=True,
             download_name=f"Closing_Report_{ref_no.upper()}.xlsx",
-            mimetype='application/vnd. openxmlformats-officedocument.spreadsheetml.sheet'
+            mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
         )
     
     flash('Failed to generate Excel file.')
@@ -7964,11 +7964,11 @@ def generate_po_report():
     if 'user' not in session:
         return redirect(url_for('home'))
     
-    if 'pdf_files' not in request. files:
+    if 'pdf_files' not in request.files:
         flash('No files uploaded.')
         return redirect(url_for('home'))
     
-    files = request.files. getlist('pdf_files')
+    files = request.files.getlist('pdf_files')
     valid_files = [f for f in files if f and f.filename.endswith('.pdf')]
     
     if not valid_files:
@@ -8005,7 +8005,7 @@ def generate_po_report():
     df = pd.DataFrame(all_data)
     
     # Sort sizes
-    unique_sizes = df['Size'].unique(). tolist()
+    unique_sizes = df['Size'].unique().tolist()
     sorted_sizes = sort_sizes(unique_sizes)
     
     # Group by color
@@ -8028,11 +8028,11 @@ def generate_po_report():
         
         # Add Total column
         pivot['Total'] = pivot.sum(axis=1)
-        grand_total += pivot['Total']. sum()
+        grand_total += pivot['Total'].sum()
         
         # Add summary row
-        summary = pivot.sum(). to_frame().T
-        summary. index = ['COLOR TOTAL']
+        summary = pivot.sum().to_frame().T
+        summary.index = ['COLOR TOTAL']
         pivot = pd.concat([pivot, summary])
         
         # Convert to HTML
@@ -8069,7 +8069,7 @@ def accessories_input():
     if 'user' not in session:
         return redirect(url_for('home'))
     
-    ref = request.form.get('ref_no', '').strip(). upper()
+    ref = request.form.get('ref_no', '').strip().upper()
     if not ref:
         flash('Please enter a valid Reference Number.')
         return redirect(url_for('accessories_home'))
@@ -8086,9 +8086,9 @@ def accessories_input():
             if color_name and color_name not in colors:
                 colors.append(color_name)
             if block.get('buyer') != 'N/A':
-                buyer = block. get('buyer')
+                buyer = block.get('buyer')
             if block.get('style') != 'N/A':
-                style = block. get('style')
+                style = block.get('style')
     
     # Load existing data
     acc_db = load_accessories_db()
@@ -8100,13 +8100,13 @@ def accessories_input():
         }
         save_accessories_db(acc_db)
     
-    challans = acc_db[ref]. get('challans', [])
+    challans = acc_db[ref].get('challans', [])
     
     return render_template_string(
         ACCESSORIES_INPUT_TEMPLATE,
         ref=ref,
-        buyer=acc_db[ref]. get('buyer', buyer),
-        style=acc_db[ref]. get('style', style),
+        buyer=acc_db[ref].get('buyer', buyer),
+        style=acc_db[ref].get('style', style),
         colors=colors,
         challans=challans
     )
@@ -8122,7 +8122,7 @@ def accessories_input_direct():
     
     acc_db = load_accessories_db()
     if ref not in acc_db:
-        flash('Reference not found.  Please search first.')
+        flash('Reference not found. Please search first.')
         return redirect(url_for('accessories_home'))
     
     # Get colors from API
@@ -8138,22 +8138,22 @@ def accessories_input_direct():
         ACCESSORIES_INPUT_TEMPLATE,
         ref=ref,
         buyer=acc_db[ref].get('buyer', 'N/A'),
-        style=acc_db[ref]. get('style', 'N/A'),
+        style=acc_db[ref].get('style', 'N/A'),
         colors=colors,
         challans=acc_db[ref].get('challans', [])
     )
 
-@app. route('/admin/accessories/save', methods=['POST'])
+@app.route('/admin/accessories/save', methods=['POST'])
 def accessories_save():
     if 'user' not in session:
         return redirect(url_for('home'))
     
-    ref = request.form. get('ref', '').strip().upper()
-    line_no = request.form. get('line_no', '').strip()
-    color = request.form. get('color', '').strip()
-    size = request.form. get('size', 'ALL').strip()
-    qty = request.form. get('qty', '0').strip()
-    item_type = request.form. get('item_type', 'Top')
+    ref = request.form.get('ref', '').strip().upper()
+    line_no = request.form.get('line_no', '').strip()
+    color = request.form.get('color', '').strip()
+    size = request.form.get('size', 'ALL').strip()
+    qty = request.form.get('qty', '0').strip()
+    item_type = request.form.get('item_type', 'Top')
     
     acc_db = load_accessories_db()
     
@@ -8180,12 +8180,12 @@ def accessories_edit():
     if 'user' not in session or session.get('role') != 'admin':
         return redirect(url_for('home'))
     
-    ref = request. args.get('ref', '').strip(). upper()
-    index = int(request.args. get('index', 0))
+    ref = request.args.get('ref', '').strip().upper()
+    index = int(request.args.get('index', 0))
     
     acc_db = load_accessories_db()
     
-    if ref not in acc_db or index >= len(acc_db[ref]. get('challans', [])):
+    if ref not in acc_db or index >= len(acc_db[ref].get('challans', [])):
         flash('Entry not found.')
         return redirect(url_for('accessories_home'))
     
@@ -8198,16 +8198,16 @@ def accessories_update():
     if 'user' not in session or session.get('role') != 'admin':
         return redirect(url_for('home'))
     
-    ref = request.form.get('ref', ''). strip().upper()
+    ref = request.form.get('ref', '').strip().upper()
     index = int(request.form.get('index', 0))
     
     acc_db = load_accessories_db()
     
     if ref in acc_db and index < len(acc_db[ref].get('challans', [])):
-        acc_db[ref]['challans'][index]['line'] = request. form.get('line_no', ''). strip()
-        acc_db[ref]['challans'][index]['color'] = request. form.get('color', '').strip()
-        acc_db[ref]['challans'][index]['size'] = request.form. get('size', 'ALL').strip()
-        acc_db[ref]['challans'][index]['qty'] = int(request.form. get('qty', 0))
+        acc_db[ref]['challans'][index]['line'] = request.form.get('line_no', '').strip()
+        acc_db[ref]['challans'][index]['color'] = request.form.get('color', '').strip()
+        acc_db[ref]['challans'][index]['size'] = request.form.get('size', 'ALL').strip()
+        acc_db[ref]['challans'][index]['qty'] = int(request.form.get('qty', 0))
         save_accessories_db(acc_db)
     
     return redirect(url_for('accessories_input_direct', ref=ref))
@@ -8217,8 +8217,8 @@ def accessories_delete():
     if 'user' not in session or session.get('role') != 'admin':
         return redirect(url_for('home'))
     
-    ref = request. form.get('ref', '').strip(). upper()
-    index = int(request. form.get('index', 0))
+    ref = request.form.get('ref', '').strip().upper()
+    index = int(request.form.get('index', 0))
     
     acc_db = load_accessories_db()
     
@@ -8249,9 +8249,9 @@ def accessories_print():
     for c in challans:
         line = c.get('line', 'N/A')
         qty = c.get('qty', 0)
-        line_summary[line] = line_summary. get(line, 0) + qty
+        line_summary[line] = line_summary.get(line, 0) + qty
         if c.get('item_type'):
-            item_type = c. get('item_type')
+            item_type = c.get('item_type')
     
     return render_template_string(
         ACCESSORIES_REPORT_TEMPLATE,
@@ -8307,15 +8307,15 @@ def store_products_save():
     
     new_product = {
         "name": request.form.get('name', '').strip(),
-        "size_feet": request.form. get('size_feet', '').strip(),
-        "thickness": request.form.get('thickness', ''). strip(),
-        "category": request.form. get('category', 'Other'),
-        "price": float(request. form.get('price', 0) or 0),
+        "size_feet": request.form.get('size_feet', '').strip(),
+        "thickness": request.form.get('thickness', '').strip(),
+        "category": request.form.get('category', 'Other'),
+        "price": float(request.form.get('price', 0) or 0),
         "description": request.form.get('description', '').strip(),
         "created_at": get_bd_date_str()
     }
     
-    products. append(new_product)
+    products.append(new_product)
     save_store_products(products)
     
     flash('Product saved successfully!')
@@ -8335,7 +8335,7 @@ def store_products_delete(index):
     return redirect(url_for('store_products'))
 
 # --- Customers ---
-@app. route('/store/customers')
+@app.route('/store/customers')
 def store_customers():
     if 'user' not in session:
         return redirect(url_for('home'))
@@ -8351,13 +8351,13 @@ def store_customers_save():
     customers = load_store_customers()
     
     new_customer = {
-        "name": request.form.get('name', ''). strip(),
-        "phone": request.form. get('phone', '').strip(),
-        "address": request.form. get('address', '').strip(),
+        "name": request.form.get('name', '').strip(),
+        "phone": request.form.get('phone', '').strip(),
+        "address": request.form.get('address', '').strip(),
         "created_at": get_bd_date_str()
     }
     
-    customers. append(new_customer)
+    customers.append(new_customer)
     save_store_customers(customers)
     
     flash('Customer saved successfully!')
@@ -8383,21 +8383,21 @@ def store_invoices():
         return redirect(url_for('home'))
     
     invoices = load_store_invoices()
-    search_query = request. args.get('search', '').strip()
+    search_query = request.args.get('search', '').strip()
     
     if search_query:
-        invoices = [inv for inv in invoices if search_query.lower() in inv. get('invoice_no', '').lower() or search_query. lower() in inv. get('customer_name', '').lower()]
+        invoices = [inv for inv in invoices if search_query.lower() in inv.get('invoice_no', '').lower() or search_query.lower() in inv.get('customer_name', '').lower()]
     
     return render_template_string(STORE_INVOICES_LIST_TEMPLATE, invoices=invoices, search_query=search_query)
 
-@app. route('/store/invoices/create')
+@app.route('/store/invoices/create')
 def store_invoices_create():
     if 'user' not in session:
         return redirect(url_for('home'))
     
     invoice_no = generate_invoice_number()
     customers = load_store_customers()
-    today = get_bd_time(). strftime('%Y-%m-%d')
+    today = get_bd_time().strftime('%Y-%m-%d')
     
     return render_template_string(STORE_INVOICE_CREATE_TEMPLATE, invoice_no=invoice_no, customers=customers, today=today)
 
@@ -8414,15 +8414,15 @@ def store_invoices_save():
     while f'items[{i}][description]' in request.form:
         item = {
             "description": request.form.get(f'items[{i}][description]', ''),
-            "size": request.form. get(f'items[{i}][size]', ''),
-            "qty": int(request. form.get(f'items[{i}][qty]', 1) or 1),
-            "price": float(request.form. get(f'items[{i}][price]', 0) or 0),
-            "total": float(request. form.get(f'items[{i}][total]', 0) or 0)
+            "size": request.form.get(f'items[{i}][size]', ''),
+            "qty": int(request.form.get(f'items[{i}][qty]', 1) or 1),
+            "price": float(request.form.get(f'items[{i}][price]', 0) or 0),
+            "total": float(request.form.get(f'items[{i}][total]', 0) or 0)
         }
         items.append(item)
         i += 1
     
-    invoice_date = request.form. get('invoice_date', '')
+    invoice_date = request.form.get('invoice_date', '')
     formatted_date = invoice_date
     try:
         dt = datetime.strptime(invoice_date, '%Y-%m-%d')
@@ -8431,17 +8431,17 @@ def store_invoices_save():
         pass
     
     new_invoice = {
-        "invoice_no": request.form. get('invoice_no', ''),
+        "invoice_no": request.form.get('invoice_no', ''),
         "customer_name": request.form.get('customer_name', ''),
-        "customer_phone": request.form. get('customer_phone', ''),
+        "customer_phone": request.form.get('customer_phone', ''),
         "customer_address": request.form.get('customer_address', ''),
         "date": formatted_date,
         "items": items,
-        "discount": float(request. form.get('discount', 0) or 0),
-        "total": float(request. form.get('total', 0) or 0),
-        "paid": float(request.form. get('paid', 0) or 0),
-        "due": float(request. form.get('due', 0) or 0),
-        "notes": request.form. get('notes', ''),
+        "discount": float(request.form.get('discount', 0) or 0),
+        "total": float(request.form.get('total', 0) or 0),
+        "paid": float(request.form.get('paid', 0) or 0),
+        "due": float(request.form.get('due', 0) or 0),
+        "notes": request.form.get('notes', ''),
         "payments": [],
         "created_at": get_bd_date_str()
     }
@@ -8451,7 +8451,7 @@ def store_invoices_save():
     
     flash('Invoice created successfully!')
     
-    action = request.form. get('action', 'save')
+    action = request.form.get('action', 'save')
     if action == 'save_print':
         return redirect(url_for('store_invoices_print', invoice_no=new_invoice['invoice_no']))
     
@@ -8505,13 +8505,13 @@ def store_estimates_save():
             "description": request.form.get(f'items[{i}][description]', ''),
             "size": request.form.get(f'items[{i}][size]', ''),
             "qty": int(request.form.get(f'items[{i}][qty]', 1) or 1),
-            "price": float(request.form. get(f'items[{i}][price]', 0) or 0),
+            "price": float(request.form.get(f'items[{i}][price]', 0) or 0),
             "total": float(request.form.get(f'items[{i}][total]', 0) or 0)
         }
         items.append(item)
         i += 1
     
-    estimate_date = request.form. get('estimate_date', '')
+    estimate_date = request.form.get('estimate_date', '')
     formatted_date = estimate_date
     try:
         dt = datetime.strptime(estimate_date, '%Y-%m-%d')
@@ -8519,7 +8519,7 @@ def store_estimates_save():
     except:
         pass
     
-    valid_until = request.form. get('valid_until', '')
+    valid_until = request.form.get('valid_until', '')
     formatted_valid = ''
     if valid_until:
         try:
@@ -8530,24 +8530,24 @@ def store_estimates_save():
     
     new_estimate = {
         "estimate_no": request.form.get('estimate_no', ''),
-        "customer_name": request. form.get('customer_name', ''),
+        "customer_name": request.form.get('customer_name', ''),
         "customer_phone": request.form.get('customer_phone', ''),
-        "customer_address": request.form. get('customer_address', ''),
+        "customer_address": request.form.get('customer_address', ''),
         "date": formatted_date,
         "valid_until": formatted_valid,
         "items": items,
-        "discount": float(request.form. get('discount', 0) or 0),
-        "total": float(request. form.get('total', 0) or 0),
-        "notes": request.form. get('notes', ''),
+        "discount": float(request.form.get('discount', 0) or 0),
+        "total": float(request.form.get('total', 0) or 0),
+        "notes": request.form.get('notes', ''),
         "created_at": get_bd_date_str()
     }
     
-    estimates. append(new_estimate)
+    estimates.append(new_estimate)
     save_store_estimates(estimates)
     
     flash('Estimate created successfully!')
     
-    action = request. form.get('action', 'save')
+    action = request.form.get('action', 'save')
     if action == 'save_print':
         return redirect(url_for('store_estimates_print', estimate_no=new_estimate['estimate_no']))
     
@@ -8568,7 +8568,7 @@ def store_estimates_print(estimate_no):
     return render_template_string(STORE_ESTIMATE_PRINT_TEMPLATE, estimate=estimate)
 
 # --- Due Collection ---
-@app. route('/store/dues')
+@app.route('/store/dues')
 def store_dues():
     if 'user' not in session:
         return redirect(url_for('home'))
@@ -8611,14 +8611,14 @@ def store_dues_collect():
         return redirect(url_for('home'))
     
     invoice_no = request.form.get('invoice_no', '').strip()
-    amount = float(request. form.get('amount', 0) or 0)
-    payment_date = request. form.get('payment_date', '')
-    notes = request.form. get('notes', '')
+    amount = float(request.form.get('amount', 0) or 0)
+    payment_date = request.form.get('payment_date', '')
+    notes = request.form.get('notes', '')
     
     invoices = load_store_invoices()
     
     for inv in invoices:
-        if inv. get('invoice_no') == invoice_no:
+        if inv.get('invoice_no') == invoice_no:
             # Format date
             formatted_date = payment_date
             try:
@@ -8631,7 +8631,7 @@ def store_dues_collect():
             if 'payments' not in inv:
                 inv['payments'] = []
             
-            inv['payments']. append({
+            inv['payments'].append({
                 "date": formatted_date,
                 "amount": amount,
                 "notes": notes
@@ -8655,4 +8655,5 @@ def store_dues_collect():
 # ==============================================================================
 
 if __name__ == '__main__':
-    app. run(debug=True, host='0. 0.0.0', port=5000)
+    app.run(debug=True, host='0.0.0.0', port=5000)
+
