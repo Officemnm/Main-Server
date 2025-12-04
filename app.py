@@ -17,7 +17,6 @@ import shutil
 import numpy as np
 from pymongo import MongoClient 
 from collections import defaultdict
-import uuid
 
 # --- Flask লাইব্রেরি ইম্পোর্ট ---
 from flask import Flask, request, render_template_string, send_file, flash, session, redirect, url_for, make_response, jsonify
@@ -36,7 +35,7 @@ if not os.path.exists(UPLOAD_FOLDER):
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 # সেশন টাইমআউট কনফিগারেশন (2 মিনিট)
-app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=30) # কাজের সুবিধার্থে বাড়িয়ে ৩০ মিনিট করা হলো
+app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=2) 
 
 # টাইমজোন কনফিগারেশন (বাংলাদেশ)
 bd_tz = pytz.timezone('Asia/Dhaka')
@@ -58,7 +57,7 @@ def add_header(response):
     return response
 
 # ==============================================================================
-# MongoDB কানেকশন সেটআপ (Store এর জন্য নতুন কালেকশন যুক্ত করা হয়েছে)
+# MongoDB কানেকশন সেটআপ
 # ==============================================================================
 MONGO_URI = "mongodb+srv://Mehedi:Mehedi123@office.jxdnuaj.mongodb.net/?appName=Office"
 
@@ -69,136 +68,654 @@ try:
     users_col = db['users']
     stats_col = db['stats']
     accessories_col = db['accessories']
-    
-    # --- NEW STORE COLLECTIONS ---
-    store_products_col = db['store_products']
-    store_customers_col = db['store_customers']
-    store_invoices_col = db['store_invoices']
-    
     print("MongoDB Connected Successfully!")
 except Exception as e:
     print(f"MongoDB Connection Error: {e}")
 
 
 # ==============================================================================
-# CSS STYLES (UPDATED: Online Indicator Pulse & Store Styles)
+# ENHANCED CSS STYLES - PREMIUM MODERN UI WITH ANIMATIONS
 # ==============================================================================
 COMMON_STYLES = """
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
+    <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
     <style>
         :root {
-            --bg-body: #121212;
-            --bg-sidebar: #1E1E1E;
-            --bg-card: #1F1F1F;
+            --bg-body: #0a0a0f;
+            --bg-sidebar: #12121a;
+            --bg-card: #16161f;
+            --bg-card-hover: #1a1a25;
             --text-primary: #FFFFFF;
-            --text-secondary: #A0A0A0;
-            --accent-orange: #FF8C42;
-            --accent-purple: #6C5CE7;
-            --accent-green: #00b894;
-            --accent-red: #ff7675;
-            --accent-blue: #0984e3;
-            --border-color: #333333;
-            --card-radius: 12px;
+            --text-secondary: #8b8b9e;
+            --accent-orange: #FF7A00;
+            --accent-orange-light: #FF9A40;
+            --accent-orange-dark: #E56D00;
+            --accent-orange-glow: rgba(255, 122, 0, 0.3);
+            --accent-purple: #8B5CF6;
+            --accent-green: #10B981;
+            --accent-red: #EF4444;
+            --accent-blue: #3B82F6;
+            --accent-cyan: #06B6D4;
+            --border-color: rgba(255, 255, 255, 0.08);
+            --border-glow: rgba(255, 122, 0, 0.2);
+            --card-radius: 16px;
+            --transition-smooth: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            --shadow-card: 0 4px 24px rgba(0, 0, 0, 0.4);
+            --shadow-glow: 0 0 40px rgba(255, 122, 0, 0.15);
+            --gradient-orange: linear-gradient(135deg, #FF7A00 0%, #FF9A40 100%);
+            --gradient-dark: linear-gradient(180deg, #12121a 0%, #0a0a0f 100%);
+            --gradient-card: linear-gradient(145deg, rgba(22, 22, 31, 0.9) 0%, rgba(16, 16, 22, 0.95) 100%);
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        * { 
+            margin: 0;
+            padding: 0; 
+            box-sizing: border-box; 
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; 
+        }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: var(--bg-body); }
+        ::-webkit-scrollbar-thumb { background: var(--accent-orange); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--accent-orange-light); }
         
         body {
-            background-color: var(--bg-body);
+            background: var(--bg-body);
             color: var(--text-primary);
             min-height: 100vh;
             display: flex;
             overflow-x: hidden;
+            position: relative;
         }
 
-        /* Glowing Online Indicator Animation */
-        @keyframes pulse-green {
-            0% { box-shadow: 0 0 0 0 rgba(0, 184, 148, 0.7); }
-            70% { box-shadow: 0 0 0 6px rgba(0, 184, 148, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(0, 184, 148, 0); }
-        }
-        
-        .status-online-glow {
-            width: 10px; height: 10px; 
-            background-color: var(--accent-green); 
-            border-radius: 50%; 
-            display: inline-block; 
-            animation: pulse-green 2s infinite;
+        /* Particle Background */
+        #particles-js {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
         }
 
-        /* Sidebar Styling */
+        /* Animated Gradient Background */
+        .animated-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(ellipse at 20% 20%, rgba(255, 122, 0, 0.08) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 80%, rgba(139, 92, 246, 0.06) 0%, transparent 50%),
+                radial-gradient(ellipse at 50% 50%, rgba(16, 185, 129, 0.04) 0%, transparent 70%);
+            z-index: 0;
+            animation: bgPulse 15s ease-in-out infinite;
+        }
+
+        @keyframes bgPulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.8; transform: scale(1.05); }
+        }
+
+        /* Glassmorphism Effect */
+        .glass {
+            background: rgba(22, 22, 31, 0.7);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--border-color);
+        }
+
+        /* Enhanced Sidebar Styling */
         .sidebar {
-            width: 260px; height: 100vh; background-color: var(--bg-sidebar);
-            position: fixed; top: 0; left: 0; display: flex; flex-direction: column;
-            padding: 30px 20px; border-right: 1px solid var(--border-color); z-index: 1000;
-            transition: 0.3s;
+            width: 280px;
+            height: 100vh; 
+            background: var(--gradient-dark);
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            display: flex; 
+            flex-direction: column;
+            padding: 30px 20px;
+            border-right: 1px solid var(--border-color); 
+            z-index: 1000;
+            transition: var(--transition-smooth);
+            box-shadow: 4px 0 30px rgba(0, 0, 0, 0.3);
         }
-        .brand-logo { font-size: 22px; font-weight: 800; color: white; margin-bottom: 40px; display: flex; align-items: center; gap: 10px; }
-        .brand-logo span { color: var(--accent-orange); }
+        .sidebar::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 1px;
+            height: 100%;
+            background: linear-gradient(180deg, transparent, var(--accent-orange), transparent);
+            opacity: 0.3;
+        }
+
+        .brand-logo { 
+            font-size: 26px;
+            font-weight: 900; 
+            color: white; 
+            margin-bottom: 50px; 
+            display: flex; 
+            align-items: center; 
+            gap: 12px; 
+            padding: 0 10px;
+            position: relative;
+        }
+
+        .brand-logo span { 
+            background: var(--gradient-orange);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .brand-logo i {
+            font-size: 28px;
+            color: var(--accent-orange);
+            filter: drop-shadow(0 0 10px var(--accent-orange-glow));
+            animation: logoFloat 3s ease-in-out infinite;
+        }
+
+        @keyframes logoFloat {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-5px) rotate(5deg); }
+        }
         
-        .nav-menu { flex-grow: 1; display: flex; flex-direction: column; gap: 5px; overflow-y: auto; }
+        .nav-menu { 
+            flex-grow: 1; 
+            display: flex; 
+            flex-direction: column;
+            gap: 8px; 
+        }
 
         .nav-link {
-            display: flex; align-items: center; padding: 12px 15px; color: var(--text-secondary);
-            text-decoration: none; border-radius: 8px; margin-bottom: 5px; transition: 0.3s;
-            cursor: pointer; font-weight: 500; font-size: 14px;
+            display: flex;
+            align-items: center; 
+            padding: 14px 18px; 
+            color: var(--text-secondary);
+            text-decoration: none; 
+            border-radius: 12px; 
+            transition: var(--transition-smooth);
+            cursor: pointer; 
+            font-weight: 500; 
+            font-size: 14px;
+            position: relative;
+            overflow: hidden;
         }
-        .nav-link:hover, .nav-link.active { background-color: rgba(255, 140, 66, 0.1); color: var(--accent-orange); }
-        .nav-link i { width: 25px; margin-right: 10px; font-size: 16px; text-align: center; }
-        
-        /* Sub-menu indentation */
-        .nav-sub-link { padding-left: 45px; font-size: 13px; }
+
+        .nav-link::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 0;
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent-orange-glow), transparent);
+            transition: var(--transition-smooth);
+            z-index: -1;
+        }
+        .nav-link:hover::before, .nav-link.active::before { width: 100%; }
+
+        .nav-link:hover, .nav-link.active { 
+            color: var(--accent-orange); 
+            transform: translateX(5px);
+        }
+
+        .nav-link.active {
+            background: rgba(255, 122, 0, 0.1);
+            border-left: 3px solid var(--accent-orange);
+            box-shadow: 0 0 20px var(--accent-orange-glow);
+        }
+
+        .nav-link i { 
+            width: 24px;
+            margin-right: 12px; 
+            font-size: 18px; 
+            text-align: center;
+            transition: var(--transition-smooth);
+        }
+
+        .nav-link:hover i {
+            transform: scale(1.2);
+            filter: drop-shadow(0 0 8px var(--accent-orange));
+        }
+
+        .nav-link .nav-badge {
+            margin-left: auto;
+            background: var(--accent-orange);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 11px;
+            font-weight: 700;
+            animation: badgePulse 2s ease-in-out infinite;
+        }
+        @keyframes badgePulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
 
         .sidebar-footer {
-            margin-top: auto; padding-top: 20px; border-top: 1px solid var(--border-color);
-            text-align: center; font-size: 12px; color: var(--text-secondary); font-weight: 500; opacity: 0.6;
+            margin-top: auto;
+            padding-top: 20px; 
+            border-top: 1px solid var(--border-color);
+            text-align: center; 
+            font-size: 11px; 
+            color: var(--text-secondary); 
+            font-weight: 500; 
+            opacity: 0.5;
+            letter-spacing: 1px;
         }
 
         /* Main Content */
-        .main-content { margin-left: 260px; width: calc(100% - 260px); padding: 30px; }
-        .header-section { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 30px; }
-        .page-title { font-size: 24px; font-weight: 700; color: white; margin-bottom: 5px; }
-        .page-subtitle { color: var(--text-secondary); font-size: 13px; }
+        .main-content { 
+            margin-left: 280px;
+            width: calc(100% - 280px); 
+            padding: 30px 40px; 
+            position: relative;
+            z-index: 1;
+            min-height: 100vh;
+        }
 
-        /* Cards & Grid */
-        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; margin-bottom: 30px; }
-        .dashboard-grid-2 { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; margin-bottom: 20px; }
-        .dashboard-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; margin-bottom: 20px; }
-        .card { background-color: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--card-radius); padding: 25px; }
-        
-        .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; font-weight: 600; color: white; }
+        .header-section { 
+            display: flex;
+            justify-content: space-between; 
+            align-items: flex-start; 
+            margin-bottom: 35px;
+            animation: fadeInDown 0.6s ease-out;
+        }
 
-        .stat-card { display: flex; align-items: center; gap: 20px; transition: transform 0.3s; }
-        .stat-card:hover { transform: translateY(-3px); }
-        .stat-icon { width: 50px; height: 50px; background: rgba(255,255,255,0.05); border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 20px; color: var(--text-secondary); }
-        .stat-info h3 { font-size: 24px; font-weight: 700; margin: 0; color: white; }
-        .stat-info p { font-size: 12px; color: var(--text-secondary); margin: 0; text-transform: uppercase; }
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
 
-        /* Forms */
-        .input-group { margin-bottom: 15px; }
-        .input-group label { display: block; font-size: 11px; color: var(--text-secondary); margin-bottom: 5px; text-transform: uppercase; font-weight: 600; }
-        input, select, textarea { width: 100%; padding: 12px; background: #2D2D2D; border: 1px solid #333; border-radius: 8px; color: white; font-size: 14px; outline: none; transition: 0.3s; }
-        input:focus, select:focus, textarea:focus { border-color: var(--accent-orange); box-shadow: 0 0 0 2px rgba(255, 140, 66, 0.1); }
-        
-        button { width: 100%; padding: 12px; background: var(--accent-orange); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: 0.3s; }
-        button:hover { background: #e67e22; transform: translateY(-2px); }
-        
-        .btn-secondary { background: #2d3436; border: 1px solid #333; }
-        .btn-secondary:hover { background: #333; }
+        .page-title { 
+            font-size: 32px;
+            font-weight: 800; 
+            color: white; 
+            margin-bottom: 8px;
+            letter-spacing: -0.5px;
+            background: linear-gradient(135deg, #fff 0%, #ccc 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
 
-        /* Tables (Dashboard Style) */
-        .dark-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        .dark-table th { text-align: left; padding: 12px; color: var(--text-secondary); font-size: 12px; border-bottom: 1px solid #333; }
-        .dark-table td { padding: 12px; color: white; font-size: 13px; border-bottom: 1px solid #2D2D2D; vertical-align: middle; }
-        .dark-table tr:hover td { background: rgba(255,255,255,0.02); }
+        .page-subtitle { 
+            color: var(--text-secondary);
+            font-size: 14px;
+            font-weight: 400;
+        }
+
+        .status-badge {
+            background: var(--bg-card);
+            padding: 12px 24px;
+            border-radius: 50px;
+            border: 1px solid var(--border-color);
+            font-size: 13px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: var(--shadow-card);
+            transition: var(--transition-smooth);
+        }
+        /* Enhanced Cards & Grid */
+        .stats-grid { 
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); 
+            gap: 24px; 
+            margin-bottom: 35px;
+        }
+
+        .dashboard-grid-2 { 
+            display: grid;
+            grid-template-columns: 2fr 1fr; 
+            gap: 24px; 
+            margin-bottom: 24px; 
+        }
+
+        .card { 
+            background: var(--gradient-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--card-radius);
+            padding: 28px;
+            backdrop-filter: blur(10px);
+            transition: var(--transition-smooth);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--accent-orange-glow), transparent);
+            opacity: 0;
+            transition: var(--transition-smooth);
+        }
+
+        .card:hover {
+            border-color: var(--border-glow);
+            box-shadow: var(--shadow-glow);
+            transform: translateY(-4px);
+        }
+
+        .card:hover::before { opacity: 1; }
         
-        /* Action Buttons (Perfected) */
-        .action-cell { display: flex; gap: 8px; justify-content: flex-end; }
+        .section-header { 
+            display: flex;
+            justify-content: space-between; 
+            align-items: center; 
+            margin-bottom: 24px; 
+            font-weight: 700;
+            font-size: 16px; 
+            color: white;
+            letter-spacing: -0.3px;
+        }
+
+        .section-header i {
+            font-size: 20px;
+            opacity: 0.7;
+            transition: var(--transition-smooth);
+        }
+
+        .card:hover .section-header i {
+            opacity: 1;
+            transform: rotate(10deg) scale(1.1);
+        }
+        /* Stat Cards with Animations */
+        .stat-card { 
+            display: flex;
+            align-items: center; 
+            gap: 24px; 
+            transition: var(--transition-smooth);
+            cursor: pointer;
+        }
+
+        .stat-card:hover { 
+            transform: translateY(-6px) scale(1.02);
+        }
+
+        .stat-icon { 
+            width: 64px;
+            height: 64px; 
+            background: linear-gradient(145deg, rgba(255, 122, 0, 0.15), rgba(255, 122, 0, 0.05));
+            border-radius: 16px; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center;
+            font-size: 26px; 
+            color: var(--accent-orange);
+            position: relative;
+            overflow: hidden;
+            transition: var(--transition-smooth);
+        }
+
+        .stat-icon::after {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: var(--gradient-orange);
+            opacity: 0;
+            transition: var(--transition-smooth);
+        }
+
+        .stat-card:hover .stat-icon {
+            transform: rotate(-10deg) scale(1.1);
+            box-shadow: 0 0 30px var(--accent-orange-glow);
+        }
+
+        .stat-card:hover .stat-icon i {
+            animation: iconBounce 0.5s ease-out;
+        }
+
+        @keyframes iconBounce {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.3); }
+        }
+
+        .stat-info h3 { 
+            font-size: 36px;
+            font-weight: 800; 
+            margin: 0; 
+            color: white;
+            letter-spacing: -1px;
+            line-height: 1;
+            background: linear-gradient(135deg, #fff 0%, var(--accent-orange-light) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .stat-info p { 
+            font-size: 13px;
+            color: var(--text-secondary); 
+            margin: 6px 0 0 0; 
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            font-weight: 600;
+        }
+
+        /* Animated Counter */
+        .count-up {
+            display: inline-block;
+        }
+        /* Progress Bars with Animation */
+        .progress-item { margin-bottom: 24px; }
+
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 14px;
+            color: white;
+            font-weight: 500;
+        }
+
+        .progress-value {
+            color: var(--text-secondary);
+            font-weight: 600;
+        }
+
+        .progress-bar-container {
+            height: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            border-radius: 10px;
+            position: relative;
+            animation: progressFill 1.5s ease-out forwards;
+            transform-origin: left;
+        }
+
+        .progress-bar-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            animation: shimmer 2s infinite;
+        }
+
+        @keyframes progressFill {
+            from { transform: scaleX(0); }
+            to { transform: scaleX(1); }
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        .progress-orange { background: var(--gradient-orange); }
+        .progress-purple { background: linear-gradient(135deg, #8B5CF6 0%, #A78BFA 100%); }
+        .progress-green { background: linear-gradient(135deg, #10B981 0%, #34D399 100%); }
+        /* Enhanced Forms */
+        .input-group { margin-bottom: 20px; }
+
+        .input-group label { 
+            display: block;
+            font-size: 11px; 
+            color: var(--text-secondary); 
+            margin-bottom: 8px; 
+            text-transform: uppercase; 
+            font-weight: 700;
+            letter-spacing: 1.5px;
+        }
+
+        input, select { 
+            width: 100%;
+            padding: 14px 18px; 
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border-color);
+            border-radius: 12px; 
+            color: white; 
+            font-size: 15px; 
+            font-weight: 500;
+            outline: none; 
+            transition: var(--transition-smooth);
+        }
+
+        input::placeholder {
+            color: var(--text-secondary);
+            opacity: 0.5;
+        }
+
+        input:focus, select:focus { 
+            border-color: var(--accent-orange);
+            background: rgba(255, 122, 0, 0.05);
+            box-shadow: 0 0 0 4px var(--accent-orange-glow), 0 0 20px var(--accent-orange-glow);
+        }
+
+        select {
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%23FF7A00' viewBox='0 0 24 24'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            background-size: 24px;
+            background-color: rgba(255, 255, 255, 0.03);
+        }
+        
+        select option {
+            background-color: #1a1a25;
+            color: white;
+            padding: 10px;
+        }
+        
+        button { 
+            width: 100%;
+            padding: 14px 24px; 
+            background: var(--gradient-orange);
+            color: white; 
+            border: none; 
+            border-radius: 12px; 
+            font-weight: 700;
+            font-size: 15px;
+            cursor: pointer; 
+            transition: var(--transition-smooth);
+            position: relative;
+            overflow: hidden;
+            letter-spacing: 0.5px;
+        }
+        button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: 0.5s;
+        }
+
+        button:hover::before { left: 100%; }
+
+        button:hover { 
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px var(--accent-orange-glow);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        /* Enhanced Tables */
+        .dark-table { 
+            width: 100%;
+            border-collapse: collapse; 
+            margin-top: 10px; 
+        }
+
+        .dark-table th { 
+            text-align: left;
+            padding: 14px 16px; 
+            color: var(--text-secondary); 
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            border-bottom: 1px solid var(--border-color);
+            font-weight: 700;
+        }
+
+        .dark-table td { 
+            padding: 16px;
+            color: white; 
+            font-size: 14px; 
+            border-bottom: 1px solid rgba(255,255,255,0.03);
+            vertical-align: middle;
+            transition: var(--transition-smooth);
+        }
+
+        .dark-table tr {
+            transition: var(--transition-smooth);
+        }
+
+        .dark-table tr:hover td { 
+            background: rgba(255, 122, 0, 0.03);
+        }
+
+        .table-badge {
+            background: rgba(255,255,255,0.05);
+            padding: 6px 14px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 600;
+            display: inline-block;
+        }
+        
+        /* Action Buttons */
+        .action-cell { 
+            display: flex;
+            gap: 8px; 
+            justify-content: flex-end; 
+        }
+
         .action-btn { 
-            padding: 6px 10px; 
-            border-radius: 6px; 
+            padding: 8px 12px;
+            border-radius: 8px; 
             text-decoration: none; 
             font-size: 12px; 
             display: inline-flex; 
@@ -206,63 +723,719 @@ COMMON_STYLES = """
             justify-content: center; 
             cursor: pointer; 
             border: none; 
-            transition: 0.2s; 
+            transition: var(--transition-smooth);
+            position: relative;
+            overflow: hidden;
         }
-        .btn-edit { background: rgba(108, 92, 231, 0.2); color: #a29bfe; }
-        .btn-edit:hover { background: var(--accent-purple); color: white; }
-        .btn-del { background: rgba(255, 118, 117, 0.2); color: #ff7675; }
-        .btn-del:hover { background: var(--accent-red); color: white; }
-        .btn-view { background: rgba(9, 132, 227, 0.2); color: #74b9ff; }
-        .btn-view:hover { background: var(--accent-blue); color: white; }
 
-        /* Loading & Animations */
-        #loading-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 9999; flex-direction: column; justify-content: center; align-items: center; backdrop-filter: blur(8px); transition: 0.3s; }
+        .btn-edit { 
+            background: rgba(139, 92, 246, 0.15);
+            color: #A78BFA; 
+        }
+
+        .btn-edit:hover { 
+            background: var(--accent-purple);
+            color: white;
+            transform: scale(1.1);
+            box-shadow: 0 0 20px rgba(139, 92, 246, 0.4);
+        }
+
+        .btn-del { 
+            background: rgba(239, 68, 68, 0.15);
+            color: #F87171; 
+        }
+
+        .btn-del:hover { 
+            background: var(--accent-red);
+            color: white;
+            transform: scale(1.1);
+            box-shadow: 0 0 20px rgba(239, 68, 68, 0.4);
+        }
+        /* Enhanced Loading Overlay */
+        #loading-overlay { 
+            display: none;
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%; 
+            background: rgba(10, 10, 15, 0.95);
+            z-index: 9999; 
+            flex-direction: column;
+            justify-content: center; 
+            align-items: center; 
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
         
-        .spinner { width: 60px; height: 60px; border: 4px solid rgba(255,255,255,0.1); border-top: 4px solid var(--accent-orange); border-radius: 50%; animation: spin 0.8s linear infinite; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        /* Modern Spinner */
+        .spinner-container {
+            position: relative;
+            width: 80px;
+            height: 80px;
+        }
+
+        .spinner { 
+            width: 80px;
+            height: 80px; 
+            border: 4px solid rgba(255, 122, 0, 0.1);
+            border-top: 4px solid var(--accent-orange);
+            border-right: 4px solid var(--accent-orange-light);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            box-shadow: 0 0 30px var(--accent-orange-glow);
+        }
+
+        .spinner-inner {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 50px;
+            height: 50px;
+            border: 3px solid rgba(139, 92, 246, 0.1);
+            border-bottom: 3px solid var(--accent-purple);
+            border-left: 3px solid var(--accent-purple);
+            border-radius: 50%;
+            animation: spin 1.2s linear infinite reverse;
+        }
+
+        @keyframes spin { 
+            0% { transform: rotate(0deg); } 
+            100% { transform: rotate(360deg); } 
+        }
 
         /* Success Checkmark Animation */
-        .checkmark-container { display: none; text-align: center; }
+        .checkmark-container { 
+            display: none;
+            text-align: center; 
+        }
+
         .checkmark-circle {
-            width: 80px; height: 80px; position: relative; display: inline-block; vertical-align: top;
-            border-radius: 50%; border: 2px solid var(--accent-green); margin-bottom: 20px;
-            animation: success-anim 0.5s forwards;
+            width: 100px;
+            height: 100px; 
+            position: relative; 
+            display: inline-block;
+            border-radius: 50%; 
+            border: 3px solid var(--accent-green);
+            margin-bottom: 24px;
+            animation: success-anim 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+            box-shadow: 0 0 40px rgba(16, 185, 129, 0.3);
         }
+
         .checkmark-circle::before {
-            content: ''; display: block; width: 25px; height: 45px;
-            border: solid var(--accent-green); border-width: 0 4px 4px 0;
-            position: absolute; top: 10px; left: 26px;
-            transform: rotate(45deg); opacity: 0;
-            animation: checkmark-anim 0.3s 0.4s forwards;
+            content: '';
+            display: block; 
+            width: 30px; 
+            height: 50px;
+            border: solid var(--accent-green); 
+            border-width: 0 4px 4px 0;
+            position: absolute; 
+            top: 15px; 
+            left: 35px;
+            transform: rotate(45deg); 
+            opacity: 0;
+            animation: checkmark-anim 0.4s 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
         }
-        
         /* Fail Cross Animation */
-        .fail-container { display: none; text-align: center; }
+        .fail-container { 
+            display: none; 
+            text-align: center;
+        }
+
         .fail-circle {
-            width: 80px; height: 80px; position: relative; display: inline-block; vertical-align: top;
-            border-radius: 50%; border: 2px solid var(--accent-red); margin-bottom: 20px;
-            animation: fail-anim 0.5s forwards;
+            width: 100px;
+            height: 100px; 
+            position: relative; 
+            display: inline-block;
+            border-radius: 50%; 
+            border: 3px solid var(--accent-red);
+            margin-bottom: 24px;
+            animation: fail-anim 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+            box-shadow: 0 0 40px rgba(239, 68, 68, 0.3);
         }
+
         .fail-circle::before, .fail-circle::after {
-            content: ''; position: absolute; width: 4px; height: 50px; background: var(--accent-red);
-            top: 13px; left: 36px; border-radius: 2px;
+            content: '';
+            position: absolute; 
+            width: 4px; 
+            height: 50px; 
+            background: var(--accent-red);
+            top: 23px; 
+            left: 46px; 
+            border-radius: 4px;
+            animation: crossAnim 0.3s 0.4s ease-out forwards;
+            opacity: 0;
         }
+
         .fail-circle::before { transform: rotate(45deg); }
         .fail-circle::after { transform: rotate(-45deg); }
 
-        @keyframes success-anim { 0% { transform: scale(0); } 80% { transform: scale(1.1); } 100% { transform: scale(1); } }
-        @keyframes checkmark-anim { 0% { opacity: 0; height: 0; width: 0; } 100% { opacity: 1; height: 45px; width: 25px; } }
-        @keyframes fail-anim { 0% { transform: scale(0); } 80% { transform: scale(1.1); } 100% { transform: scale(1); } }
+        @keyframes success-anim { 
+            0% { transform: scale(0); opacity: 0; } 
+            50% { transform: scale(1.2); } 
+            100% { transform: scale(1); opacity: 1; } 
+        }
 
-        .anim-text { font-size: 20px; font-weight: 700; color: white; margin-top: 10px; letter-spacing: 1px; }
+        @keyframes checkmark-anim { 
+            0% { opacity: 0; height: 0; width: 0; } 
+            100% { opacity: 1; height: 50px; width: 30px; } 
+        }
 
+        @keyframes fail-anim { 
+            0% { transform: scale(0); opacity: 0; } 
+            50% { transform: scale(1.2); } 
+            100% { transform: scale(1); opacity: 1; } 
+        }
+
+        @keyframes crossAnim {
+            0% { opacity: 0; transform: rotate(45deg) scale(0); }
+            100% { opacity: 1; transform: rotate(45deg) scale(1); }
+        }
+
+        .anim-text { 
+            font-size: 24px; 
+            font-weight: 800; 
+            color: white;
+            margin-top: 10px; 
+            letter-spacing: 1px;
+        }
+
+        .loading-text {
+            color: var(--text-secondary);
+            font-size: 15px;
+            margin-top: 20px;
+            font-weight: 500;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            animation: textPulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes textPulse {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+
+        /* Welcome Popup Modal */
+        .welcome-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(10, 10, 15, 0.9);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            z-index: 10000;
+            justify-content: center;
+            align-items: center;
+            animation: modalFadeIn 0.3s ease-out;
+        }
+
+        @keyframes modalFadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .welcome-content {
+            background: var(--gradient-card);
+            border: 1px solid var(--border-color);
+            border-radius: 24px;
+            padding: 50px 60px;
+            text-align: center;
+            max-width: 500px;
+            width: 90%;
+            animation: welcomeSlideIn 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.5), 0 0 60px var(--accent-orange-glow);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .welcome-content::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, var(--accent-orange-glow) 0%, transparent 60%);
+            animation: welcomeGlow 3s ease-in-out infinite;
+            opacity: 0.3;
+        }
+        @keyframes welcomeSlideIn {
+            from { 
+                opacity: 0;
+                transform: translateY(-50px) scale(0.9);
+            }
+            to { 
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        @keyframes welcomeGlow {
+            0%, 100% { transform: rotate(0deg); }
+            50% { transform: rotate(180deg); }
+        }
+
+        .welcome-icon {
+            font-size: 80px;
+            margin-bottom: 20px;
+            display: inline-block;
+            animation: welcomeIconBounce 1s ease-out;
+        }
+
+        @keyframes welcomeIconBounce {
+            0% { transform: scale(0) rotate(-180deg); }
+            60% { transform: scale(1.2) rotate(10deg); }
+            100% { transform: scale(1) rotate(0deg); }
+        }
+
+        .welcome-greeting {
+            font-size: 16px;
+            color: var(--accent-orange);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            margin-bottom: 10px;
+        }
+
+        .welcome-title {
+            font-size: 36px;
+            font-weight: 900;
+            color: white;
+            margin-bottom: 15px;
+            line-height: 1.2;
+        }
+
+        .welcome-title span {
+            background: var(--gradient-orange);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .welcome-message {
+            color: var(--text-secondary);
+            font-size: 15px;
+            line-height: 1.6;
+            margin-bottom: 30px;
+        }
+
+        .welcome-close {
+            background: var(--gradient-orange);
+            color: white;
+            border: none;
+            padding: 14px 40px;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+            position: relative;
+            z-index: 1;
+        }
+
+        .welcome-close:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px var(--accent-orange-glow);
+        }
+
+        /* Tooltip */
+        .tooltip {
+            position: relative;
+        }
+
+        .tooltip::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: 120%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--bg-card);
+            color: white;
+            padding: 8px 14px;
+            border-radius: 8px;
+            font-size: 12px;
+            white-space: nowrap;
+            opacity: 0;
+            visibility: hidden;
+            transition: var(--transition-smooth);
+            border: 1px solid var(--border-color);
+            z-index: 1000;
+        }
+
+        .tooltip:hover::after {
+            opacity: 1;
+            visibility: visible;
+            bottom: 130%;
+        }
+        /* File Upload Zone */
+        .upload-zone {
+            border: 2px dashed var(--border-color);
+            padding: 50px;
+            text-align: center;
+            border-radius: 16px;
+            transition: var(--transition-smooth);
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .upload-zone::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: var(--gradient-orange);
+            opacity: 0;
+            transition: var(--transition-smooth);
+        }
+
+        .upload-zone:hover {
+            border-color: var(--accent-orange);
+            background: rgba(255, 122, 0, 0.05);
+        }
+
+        .upload-zone:hover::before {
+            opacity: 0.03;
+        }
+
+        .upload-zone.dragover {
+            border-color: var(--accent-orange);
+            background: rgba(255, 122, 0, 0.1);
+            transform: scale(1.02);
+        }
+
+        .upload-icon {
+            font-size: 60px;
+            color: var(--accent-orange);
+            margin-bottom: 20px;
+            display: inline-block;
+            animation: uploadFloat 3s ease-in-out infinite;
+        }
+
+        @keyframes uploadFloat {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .upload-text {
+            color: var(--accent-orange);
+            font-weight: 600;
+            font-size: 16px;
+            margin-bottom: 8px;
+        }
+
+        .upload-hint {
+            color: var(--text-secondary);
+            font-size: 13px;
+        }
+
+        #file-count {
+            margin-top: 20px;
+            font-size: 14px;
+            color: var(--accent-green);
+            font-weight: 600;
+        }
+
+        /* Flash Messages */
+        .flash-message {
+            margin-bottom: 20px;
+            padding: 16px 20px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            animation: flashSlideIn 0.4s ease-out;
+        }
+
+        @keyframes flashSlideIn {
+            from { 
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to { 
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .flash-error {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            color: #F87171;
+        }
+
+        .flash-success {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            color: #34D399;
+        }
+        
+        /* Ripple Effect */
+        .ripple {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .ripple-effect {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(0);
+            animation: rippleAnim 0.6s ease-out;
+            pointer-events: none;
+        }
+
+        @keyframes rippleAnim {
+            to {
+                transform: scale(4);
+                opacity: 0;
+            }
+        }
         /* Mobile */
-        .mobile-toggle { display: none; position: fixed; top: 20px; right: 20px; z-index: 2000; color: white; background: #333; padding: 8px; border-radius: 5px; }
-        @media (max-width: 900px) {
-            .sidebar { transform: translateX(-100%); } .sidebar.active { transform: translateX(0); }
-            .main-content { margin-left: 0; width: 100%; padding: 20px; }
-            .dashboard-grid-2, .dashboard-grid-3 { grid-template-columns: 1fr; }
-            .mobile-toggle { display: block; }
+        .mobile-toggle { 
+            display: none; 
+            position: fixed; 
+            top: 20px;
+            right: 20px; 
+            z-index: 2000; 
+            color: white; 
+            background: var(--bg-card);
+            padding: 12px 14px; 
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            cursor: pointer;
+            transition: var(--transition-smooth);
+        }
+
+        .mobile-toggle:hover {
+            background: var(--accent-orange);
+        }
+
+        @media (max-width: 1024px) {
+            .sidebar { 
+                transform: translateX(-100%);
+                width: 280px;
+            } 
+            .sidebar.active { 
+                transform: translateX(0);
+            }
+            .main-content { 
+                margin-left: 0;
+                width: 100%; 
+                padding: 20px; 
+            }
+            .dashboard-grid-2 { 
+                grid-template-columns: 1fr;
+            }
+            .mobile-toggle { 
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+            .header-section {
+                flex-direction: column;
+                gap: 15px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            .page-title {
+                font-size: 24px;
+            }
+            .welcome-content {
+                padding: 40px 30px;
+            }
+            .welcome-title {
+                font-size: 28px;
+            }
+        }
+
+        /* Skeleton Loading */
+        .skeleton {
+            background: linear-gradient(90deg, var(--bg-card) 25%, rgba(255,255,255,0.05) 50%, var(--bg-card) 75%);
+            background-size: 200% 100%;
+            animation: skeletonLoad 1.5s infinite;
+            border-radius: 8px;
+        }
+
+        @keyframes skeletonLoad {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+        /* Notification Dot */
+        .notification-dot {
+            position: absolute;
+            top: -2px;
+            right: -2px;
+            width: 10px;
+            height: 10px;
+            background: var(--accent-red);
+            border-radius: 50%;
+            border: 2px solid var(--bg-sidebar);
+            animation: notifyPulse 2s infinite;
+        }
+
+        @keyframes notifyPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+        }
+
+        /* Chart Container */
+        .chart-container {
+            position: relative;
+            height: 280px;
+            padding: 10px;
+        }
+
+        /* Real-time Indicator */
+        .realtime-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            color: var(--text-secondary);
+            padding: 6px 12px;
+            background: rgba(16, 185, 129, 0.1);
+            border-radius: 20px;
+            border: 1px solid rgba(16, 185, 129, 0.2);
+        }
+
+        .realtime-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--accent-green);
+            border-radius: 50%;
+            animation: realtimePulse 1s infinite;
+        }
+
+        @keyframes realtimePulse {
+            0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+            70% { opacity: 1; box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
+        }
+
+        /* Floating Action Button */
+        .fab {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            background: var(--gradient-orange);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: white;
+            cursor: pointer;
+            box-shadow: 0 8px 30px var(--accent-orange-glow);
+            transition: var(--transition-smooth);
+            z-index: 100;
+        }
+
+        .fab:hover {
+            transform: scale(1.1) rotate(90deg);
+            box-shadow: 0 12px 40px var(--accent-orange-glow);
+        }
+        /* Glow Text */
+        .glow-text {
+            text-shadow: 0 0 20px var(--accent-orange-glow);
+        }
+
+        /* Animated Border */
+        .animated-border {
+            position: relative;
+        }
+
+        .animated-border::after {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(45deg, var(--accent-orange), var(--accent-purple), var(--accent-green), var(--accent-orange));
+            background-size: 400% 400%;
+            border-radius: inherit;
+            z-index: -1;
+            animation: gradientBorder 3s ease infinite;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .animated-border:hover::after {
+            opacity: 1;
+        }
+
+        @keyframes gradientBorder {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        /* Permission Checkbox Styles */
+        .perm-checkbox {
+            background: rgba(255, 255, 255, 0.03);
+            padding: 14px 18px;
+            border-radius: 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            border: 1px solid var(--border-color);
+            transition: var(--transition-smooth);
+            flex: 1;
+            min-width: 100px;
+        }
+
+        .perm-checkbox:hover {
+            border-color: var(--accent-orange);
+            background: rgba(255, 122, 0, 0.05);
+        }
+
+        .perm-checkbox input {
+            width: auto;
+            margin-right: 10px;
+            accent-color: var(--accent-orange);
+        }
+
+        .perm-checkbox span {
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+
+        .perm-checkbox:has(input:checked) {
+            border-color: var(--accent-orange);
+            background: rgba(255, 122, 0, 0.1);
+        }
+
+        .perm-checkbox:has(input:checked) span {
+            color: var(--accent-orange);
+        }
+
+        /* Time Badge */
+        .time-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(255, 255, 255, 0.03);
+            padding: 8px 14px;
+            border-radius: 8px;
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .time-badge i {
+            color: var(--accent-orange);
         }
     </style>
 """
@@ -276,17 +1449,13 @@ def load_users():
         "Admin": {
             "password": "@Nijhum@12", 
             "role": "admin", 
-            # Updated permissions to include 'store_manage'
-            "permissions": ["closing", "po_sheet", "user_manage", "view_history", "accessories", "store_manage"],
+            "permissions": ["closing", "po_sheet", "user_manage", "view_history", "accessories"],
             "created_at": "N/A",
             "last_login": "Never",
             "last_duration": "N/A"
         }
     }
     if record:
-        # Ensure Admin always has all permissions (legacy fix)
-        if "Admin" in record['data']:
-             record['data']["Admin"]["permissions"] = ["closing", "po_sheet", "user_manage", "view_history", "accessories", "store_manage"]
         return record['data']
     else:
         users_col.insert_one({"_id": "global_users", "data": default_users})
@@ -314,7 +1483,6 @@ def save_stats(data):
         {"_id": "dashboard_stats", "data": data},
         upsert=True
     )
-
 def update_stats(ref_no, username):
     data = load_stats()
     now = get_bd_time() # BD Time
@@ -327,7 +1495,7 @@ def update_stats(ref_no, username):
         "iso_time": now.isoformat()
     }
     data['downloads'].insert(0, new_record)
-    # Analytics এর জন্য ডাটা লিমিট বাড়ানো হয়েছে
+    # Analytics এর জন্য ডাটা লিমিট বাড়ানো হয়েছে
     if len(data['downloads']) > 3000:
         data['downloads'] = data['downloads'][:3000]
         
@@ -365,75 +1533,11 @@ def save_accessories_db(data):
         upsert=True
     )
 
-# ==============================================================================
-# হেল্পার ফাংশন: STORE MANAGEMENT (NEW)
-# ==============================================================================
-
-def get_all_products():
-    return list(store_products_col.find({}))
-
-def get_product(product_id):
-    return store_products_col.find_one({"_id": product_id})
-
-def save_product_db(product_data):
-    # product_data must have '_id'
-    store_products_col.replace_one(
-        {"_id": product_data['_id']},
-        product_data,
-        upsert=True
-    )
-
-def delete_product_db(product_id):
-    store_products_col.delete_one({"_id": product_id})
-
-def get_all_customers():
-    return list(store_customers_col.find({}))
-
-def get_customer(customer_id):
-    return store_customers_col.find_one({"_id": customer_id})
-
-def save_customer_db(customer_data):
-    store_customers_col.replace_one(
-        {"_id": customer_data['_id']},
-        customer_data,
-        upsert=True
-    )
-
-def get_next_invoice_number():
-    # Simple auto-increment logic based on count
-    # In production, a dedicated counter collection is safer for concurrency
-    count = store_invoices_col.count_documents({})
-    return f"INV-{1001 + count}"
-
-def save_invoice_db(invoice_data):
-    store_invoices_col.insert_one(invoice_data)
-
-def get_all_invoices():
-    return list(store_invoices_col.find({}).sort("date_iso", -1))
-
-def get_invoice(invoice_id):
-    return store_invoices_col.find_one({"invoice_no": invoice_id})
-
-def update_customer_due_db(customer_id, amount_change):
-    # amount_change positive adds to due, negative subtracts
-    customer = get_customer(customer_id)
-    if customer:
-        current_due = float(customer.get('due', 0))
-        new_due = current_due + float(amount_change)
-        store_customers_col.update_one(
-            {"_id": customer_id},
-            {"$set": {"due": new_due}}
-        )
-
-# --- আপডেটেড: রিয়েল-টাইম ড্যাশবোর্ড সামারি এবং এনালিটিক্স ---
+# --- আপডেটেড: রিয়েল-টাইম ড্যাশবোর্ড সামারি এবং এনালিটিক্স ---
 def get_dashboard_summary_v2():
     stats_data = load_stats()
     acc_db = load_accessories_db()
     users_data = load_users()
-    
-    # Store Stats
-    store_products_count = store_products_col.count_documents({})
-    store_invoices_count = store_invoices_col.count_documents({})
     
     now = get_bd_time()
     today_str = now.strftime('%d-%m-%Y')
@@ -449,18 +1553,18 @@ def get_dashboard_summary_v2():
             "last_duration": d.get('last_duration', 'N/A')
         })
 
-    # 2. Accessories Today & Analytics
-    acc_today_count = 0
+    # 2. Accessories Today & Analytics - LIFETIME COUNT
+    acc_lifetime_count = 0
     acc_today_list = []
     
-    # Analytics Container
-    monthly_data = defaultdict(lambda: {'closing': 0, 'po': 0, 'acc': 0, 'inv': 0})
+    # Analytics Container: {'YYYY-MM-DD': {'label': '01-Dec', 'closing': 0, 'po': 0, 'acc': 0}}
+    daily_data = defaultdict(lambda: {'closing': 0, 'po': 0, 'acc': 0})
 
     for ref, data in acc_db.items():
         for challan in data.get('challans', []):
+            acc_lifetime_count += 1  # LIFETIME COUNT
             c_date = challan.get('date')
             if c_date == today_str:
-                acc_today_count += 1
                 acc_today_list.append({
                     "ref": ref,
                     "buyer": data.get('buyer'),
@@ -469,92 +1573,85 @@ def get_dashboard_summary_v2():
                     "qty": challan.get('qty')
                 })
             
+            # Analytics Calculation - Daily basis
             try:
                 dt_obj = datetime.strptime(c_date, '%d-%m-%Y')
-                m_key = dt_obj.strftime('%b-%y')
-                sort_key = dt_obj.strftime('%Y-%m')
-                monthly_data[sort_key]['acc'] += 1
-                monthly_data[sort_key]['label'] = m_key
+                sort_key = dt_obj.strftime('%Y-%m-%d')
+                daily_data[sort_key]['acc'] += 1
+                daily_data[sort_key]['label'] = dt_obj.strftime('%d-%b')
             except: pass
 
-    # 3. Closing, PO & Store Invoices
-    closing_today_count = 0
-    po_today_count = 0
+    # 3. Closing & PO - LIFETIME COUNT & Analytics
+    closing_lifetime_count = 0
+    po_lifetime_count = 0
     closing_list = []
     po_list = []
     
     history = stats_data.get('downloads', [])
     for item in history:
         item_date = item.get('date', '')
-        if item_date == today_str:
-            if item.get('type') == 'PO Sheet':
-                po_today_count += 1
+        if item.get('type') == 'PO Sheet':
+            po_lifetime_count += 1  # LIFETIME COUNT
+            if item_date == today_str:
                 po_list.append(item)
-            else: 
-                closing_today_count += 1
+        else: 
+            closing_lifetime_count += 1  # LIFETIME COUNT
+            if item_date == today_str:
                 closing_list.append(item)
         
+        # Analytics Calculation - Daily basis
         try:
             dt_obj = datetime.strptime(item_date, '%d-%m-%Y')
-            m_key = dt_obj.strftime('%b-%y')
-            sort_key = dt_obj.strftime('%Y-%m')
+            sort_key = dt_obj.strftime('%Y-%m-%d')
             
             if item.get('type') == 'PO Sheet':
-                monthly_data[sort_key]['po'] += 1
+                daily_data[sort_key]['po'] += 1
             else:
-                monthly_data[sort_key]['closing'] += 1
-            monthly_data[sort_key]['label'] = m_key
+                daily_data[sort_key]['closing'] += 1
+            daily_data[sort_key]['label'] = dt_obj.strftime('%d-%b')
         except: pass
-        
-    # Invoice Analytics
-    invoices = list(store_invoices_col.find({}, {"date": 1}))
-    for inv in invoices:
-        try:
-            dt_obj = datetime.strptime(inv['date'], '%Y-%m-%d')
-            m_key = dt_obj.strftime('%b-%y')
-            sort_key = dt_obj.strftime('%Y-%m')
-            monthly_data[sort_key]['inv'] += 1
-            monthly_data[sort_key]['label'] = m_key
-        except: pass
-
-    # Sort and filter last 6 months
-    sorted_keys = sorted(monthly_data.keys())[-6:]
+    # Get last month's 1st date to today
+    first_of_last_month = (now.replace(day=1) - timedelta(days=1)).replace(day=1)
+    start_date = first_of_last_month.strftime('%Y-%m-%d')
+    end_date = now.strftime('%Y-%m-%d')
+    
+    # Filter and sort data from start_date to end_date
+    sorted_keys = sorted([k for k in daily_data.keys() if start_date <= k <= end_date])
     
     chart_labels = []
     chart_closing = []
     chart_po = []
     chart_acc = []
-    chart_inv = []
 
     if not sorted_keys:
-        curr_m = now.strftime('%b-%y')
-        chart_labels = [curr_m]
-        chart_closing = [0]; chart_po = [0]; chart_acc = [0]; chart_inv = [0]
+        curr_d = now.strftime('%d-%b')
+        chart_labels = [curr_d]
+        chart_closing = [0]
+        chart_po = [0]
+        chart_acc = [0]
     else:
         for k in sorted_keys:
-            d = monthly_data[k]
+            d = daily_data[k]
             chart_labels.append(d.get('label', k))
             chart_closing.append(d['closing'])
             chart_po.append(d['po'])
             chart_acc.append(d['acc'])
-            chart_inv.append(d['inv'])
 
     return {
         "users": { "count": len(users_data), "details": user_details },
-        "accessories": { "count": acc_today_count, "details": acc_today_list },
-        "closing": { "count": closing_today_count, "details": closing_list },
-        "po": { "count": po_today_count, "details": po_list },
-        "store": { "products": store_products_count, "invoices": store_invoices_count },
+        "accessories": { "count": acc_lifetime_count, "details": acc_today_list },
+        "closing": { "count": closing_lifetime_count, "details": closing_list },
+        "po": { "count": po_lifetime_count, "details": po_list },
         "chart": {
             "labels": chart_labels,
             "closing": chart_closing,
             "po": chart_po,
-            "acc": chart_acc,
-            "inv": chart_inv
+            "acc": chart_acc
         },
         "history": history
     }
-    # ==============================================================================
+
+# ==============================================================================
 # লজিক পার্ট: PURCHASE ORDER SHEET PARSER (PDF)
 # ==============================================================================
 
@@ -595,26 +1692,25 @@ def extract_metadata(first_page_text):
         buyer_match = re.search(r"Buyer.*?Name[\s\S]*?([\w\s&]+)(?:\n|$)", first_page_text)
         if buyer_match: meta['buyer'] = buyer_match.group(1).strip()
 
-    booking_block_match = re.search(r"(?:Internal )?Booking NO\.?[:\s]*([\s\S]*?)(?:System NO|Control No|Buyer)", first_page_text, re.IGNORECASE)
+    booking_block_match = re.search(r"(?:Internal )?Booking NO\. ?[:\s]*([\s\S]*?)(?:System NO|Control No|Buyer)", first_page_text, re.IGNORECASE)
     if booking_block_match: 
         raw_booking = booking_block_match.group(1).strip()
         clean_booking = raw_booking.replace('\n', '').replace('\r', '').replace(' ', '')
         if "System" in clean_booking: clean_booking = clean_booking.split("System")[0]
         meta['booking'] = clean_booking
 
-    style_match = re.search(r"Style Ref\.?[:\s]*([\w-]+)", first_page_text, re.IGNORECASE)
+    style_match = re.search(r"Style Ref\. ?[:\s]*([\w-]+)", first_page_text, re.IGNORECASE)
     if style_match: meta['style'] = style_match.group(1).strip()
     else:
-        style_match = re.search(r"Style Des\.?[\s\S]*?([\w-]+)", first_page_text, re.IGNORECASE)
+        style_match = re.search(r"Style Des\. ?[\s\S]*?([\w-]+)", first_page_text, re.IGNORECASE)
         if style_match: meta['style'] = style_match.group(1).strip()
 
     season_match = re.search(r"Season\s*[:\n\"]*([\w\d-]+)", first_page_text, re.IGNORECASE)
     if season_match: meta['season'] = season_match.group(1).strip()
-
-    dept_match = re.search(r"Dept\.?[\s\n:]*([A-Za-z]+)", first_page_text, re.IGNORECASE)
+    dept_match = re.search(r"Dept\. ?[\s\n:]*([A-Za-z]+)", first_page_text, re.IGNORECASE)
     if dept_match: meta['dept'] = dept_match.group(1).strip()
 
-    item_match = re.search(r"Garments? Item[\s\n:]*([^\n\r]+)", first_page_text, re.IGNORECASE)
+    item_match = re.search(r"Garments?   Item[\s\n:]*([^\n\r]+)", first_page_text, re.IGNORECASE)
     if item_match: 
         item_text = item_match.group(1).strip()
         if "Style" in item_text: item_text = item_text.split("Style")[0].strip()
@@ -678,7 +1774,6 @@ def extract_data_dynamic(file_path):
                     if line.startswith("Total Quantity") or line.startswith("Total Amount"):
                         capturing_data = False
                         continue
-                    
                     lower_line = line.lower()
                     if "quantity" in lower_line or "currency" in lower_line or "price" in lower_line or "amount" in lower_line:
                         continue
@@ -702,6 +1797,7 @@ def extract_data_dynamic(file_path):
                             next_line = next_line.strip()
                             if "Total" in next_line or re.search(r'[a-zA-Z]', next_line.replace("Spec", "").replace("price", "")): break
                             if re.match(r'^\d+$', next_line): vertical_qtys.append(int(next_line))
+                        
                         if len(vertical_qtys) >= len(sizes): final_qtys = vertical_qtys[:len(sizes)]
                     
                     if final_qtys and color_name:
@@ -714,7 +1810,6 @@ def extract_data_dynamic(file_path):
                             })
     except Exception as e: print(f"Error processing file: {e}")
     return extracted_data, metadata
-
 # ==============================================================================
 # লজিক পার্ট: CLOSING REPORT API & EXCEL GENERATION
 # ==============================================================================
@@ -778,6 +1873,7 @@ def parse_report_data(html_content):
             else:
                 current_block.append(row)
         if current_block: item_blocks.append(current_block)
+        
         for block in item_blocks:
             style, color, buyer_name, gmts_qty_data, sewing_input_data, cutting_qc_data = "N/A", "N/A", "N/A", None, None, None
             for row in block:
@@ -786,12 +1882,16 @@ def parse_report_data(html_content):
                     criteria_main = cells[0].get_text(strip=True)
                     criteria_sub = cells[2].get_text(strip=True)
                     main_lower, sub_lower = criteria_main.lower(), criteria_sub.lower()
+                    
                     if main_lower == "style": style = cells[1].get_text(strip=True)
                     elif main_lower == "color & gmts. item": color = cells[1].get_text(strip=True)
                     elif "buyer" in main_lower: buyer_name = cells[1].get_text(strip=True)
+                    
                     if sub_lower == "gmts. color /country qty": gmts_qty_data = [cell.get_text(strip=True) for cell in cells[3:len(headers)+3]]
+                    
                     if "sewing input" in main_lower: sewing_input_data = [cell.get_text(strip=True) for cell in cells[1:len(headers)+1]]
                     elif "sewing input" in sub_lower: sewing_input_data = [cell.get_text(strip=True) for cell in cells[3:len(headers)+3]]
+    
                     if "cutting qc" in main_lower and "balance" not in main_lower:
                         cutting_qc_data = [cell.get_text(strip=True) for cell in cells[1:len(headers)+1]]
                     elif "cutting qc" in sub_lower and "balance" not in sub_lower:
@@ -804,7 +1904,13 @@ def parse_report_data(html_content):
                         plus_3_percent_data.append(str(new_qty))
                     except (ValueError, TypeError):
                         plus_3_percent_data.append(value)
-                all_report_data.append({'style': style, 'buyer': buyer_name, 'color': color, 'headers': headers, 'gmts_qty': gmts_qty_data, 'plus_3_percent': plus_3_percent_data, 'sewing_input': sewing_input_data if sewing_input_data else [], 'cutting_qc': cutting_qc_data if cutting_qc_data else []})
+                all_report_data.append({
+                    'style': style, 'buyer': buyer_name, 'color': color, 
+                    'headers': headers, 'gmts_qty': gmts_qty_data, 
+                    'plus_3_percent': plus_3_percent_data, 
+                    'sewing_input': sewing_input_data if sewing_input_data else [], 
+                    'cutting_qc': cutting_qc_data if cutting_qc_data else []
+                })
         return all_report_data
     except Exception as e:
         return None
@@ -847,7 +1953,11 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
     formatted_ref_no = internal_ref_no.upper()
     current_date = get_bd_time().strftime("%d/%m/%Y")
     
-    left_sub_headers = {'A4': 'BUYER', 'B4': report_data[0].get('buyer', ''), 'A5': 'IR/IB NO', 'B5': formatted_ref_no, 'A6': 'STYLE NO', 'B6': report_data[0].get('style', '')}
+    left_sub_headers = {
+        'A4': 'BUYER', 'B4': report_data[0].get('buyer', ''), 
+        'A5': 'IR/IB NO', 'B5': formatted_ref_no, 
+        'A6': 'STYLE NO', 'B6': report_data[0].get('style', '')
+    }
     
     for cell_ref, value in left_sub_headers.items():
         cell = ws[cell_ref]
@@ -856,7 +1966,7 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
         cell.alignment = left_align
         cell.border = thin_border
         if cell_ref == 'B5':
-            cell.fill = ir_ib_fill      
+            cell.fill = ir_ib_fill 
             cell.font = white_bold_font 
         else:
             cell.fill = dark_green_fill 
@@ -912,6 +2022,7 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
                 cell = ws.cell(row=current_row, column=col_idx)
                 cell.border = medium_border if col_idx == 2 else thin_border
                 cell.alignment = center_align
+    
                 if col_idx in [1, 2, 3, 6, 9]: cell.font = bold_font
                 
                 if col_idx == 3: cell.fill = light_blue_fill      
@@ -928,7 +2039,7 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
             merged_cell = ws.cell(row=start_merge_row, column=1)
             merged_cell.alignment = color_align
             if not merged_cell.font.bold: merged_cell.font = bold_font
-
+        
         total_row_str = str(current_row)
         ws.merge_cells(start_row=current_row, start_column=1, end_row=current_row, end_column=2)
         
@@ -959,7 +2070,6 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
                 cell.fill = dark_green_fill 
                 cell.border = medium_border
         current_row += 2
-       
     image_row = current_row + 1
    
     try:
@@ -997,7 +2107,6 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
                 if cell.row != 1: 
                     new_font = Font(name=existing_font.name, size=16.5, bold=existing_font.bold, italic=existing_font.italic, vertAlign=existing_font.vertAlign, underline=existing_font.underline, strike=existing_font.strike, color=existing_font.color)
                     cell.font = new_font
-   
     ws.column_dimensions['A'].width = 23
     ws.column_dimensions['B'].width = 8.5
     ws.column_dimensions['C'].width = 20
@@ -1025,8 +2134,9 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
     wb.save(file_stream)
     file_stream.seek(0)
     return file_stream
-    # ==============================================================================
-# HTML TEMPLATES: LOGIN, DASHBOARD & UI (REFINED DARK THEME)
+
+# ==============================================================================
+# HTML TEMPLATES: LOGIN PAGE - FIXED RESPONSIVE & CENTERED
 # ==============================================================================
 
 LOGIN_TEMPLATE = f"""
@@ -1034,39 +2144,347 @@ LOGIN_TEMPLATE = f"""
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Login - MNM Software</title>
     {COMMON_STYLES}
+    <style>
+        html, body {{
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+        }}
+        
+        body {{
+            background: var(--bg-body);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            overflow-y: auto;
+        }}
+        
+        /* Animated Background Orbs */
+        .bg-orb {{
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.4;
+            animation: orbFloat 20s ease-in-out infinite;
+            pointer-events: none;
+        }}
+        
+        .orb-1 {{
+            width: 300px;
+            height: 300px;
+            background: var(--accent-orange);
+            top: -100px;
+            left: -100px;
+            animation-delay: 0s;
+        }}
+        
+        .orb-2 {{
+            width: 250px;
+            height: 250px;
+            background: var(--accent-purple);
+            bottom: -50px;
+            right: -50px;
+            animation-delay: -5s;
+        }}
+        
+        .orb-3 {{
+            width: 150px;
+            height: 150px;
+            background: var(--accent-green);
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            animation-delay: -10s;
+        }}
+        
+        @keyframes orbFloat {{
+            0%, 100% {{ transform: translate(0, 0) scale(1); }}
+            25% {{ transform: translate(30px, -30px) scale(1.05); }}
+            50% {{ transform: translate(-20px, 20px) scale(0.95); }}
+            75% {{ transform: translate(15px, 30px) scale(1.02); }}
+        }}
+        
+        .login-container {{
+            position: relative;
+            z-index: 10;
+            width: 100%;
+            max-width: 420px;
+            padding: 20px;
+            margin: auto;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            min-height: 100vh;
+        }}
+        
+        .login-card {{
+            background: var(--gradient-card);
+            border: 1px solid var(--border-color);
+            border-radius: 24px;
+            padding: 40px 35px;
+            backdrop-filter: blur(20px);
+            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.5), 0 0 60px var(--accent-orange-glow);
+            animation: loginCardAppear 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }}
+        @keyframes loginCardAppear {{
+            from {{
+                opacity: 0;
+                transform: translateY(30px) scale(0.95);
+            }}
+            to {{
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }}
+        }}
+        
+        .brand-section {{
+            text-align: center;
+            margin-bottom: 35px;
+        }}
+        
+        .brand-icon {{
+            width: 70px;
+            height: 70px;
+            background: var(--gradient-orange);
+            border-radius: 18px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            color: white;
+            margin-bottom: 18px;
+            box-shadow: 0 15px 40px var(--accent-orange-glow);
+            animation: brandIconPulse 3s ease-in-out infinite;
+        }}
+        
+        @keyframes brandIconPulse {{
+            0%, 100% {{ transform: scale(1) rotate(0deg); box-shadow: 0 15px 40px var(--accent-orange-glow); }}
+            50% {{ transform: scale(1.05) rotate(5deg); box-shadow: 0 20px 50px var(--accent-orange-glow); }}
+        }}
+        
+        .brand-name {{
+            font-size: 28px;
+            font-weight: 900;
+            color: white;
+            letter-spacing: -1px;
+        }}
+        
+        .brand-name span {{
+            background: var(--gradient-orange);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }}
+        
+        .brand-tagline {{
+            color: var(--text-secondary);
+            font-size: 11px;
+            letter-spacing: 2px;
+            margin-top: 6px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }}
+        
+        .login-form .input-group {{
+            margin-bottom: 20px;
+        }}
+        
+        .login-form .input-group label {{
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+        }}
+        
+        .login-form .input-group label i {{
+            color: var(--accent-orange);
+            font-size: 13px;
+        }}
+        
+        .login-form input {{
+            padding: 14px 18px;
+            font-size: 14px;
+            border-radius: 12px;
+        }}
+        
+        .login-btn {{
+            margin-top: 8px;
+            padding: 14px 24px;
+            font-size: 15px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }}
+        
+        .login-btn i {{
+            transition: transform 0.3s;
+        }}
+        
+        .login-btn:hover i {{
+            transform: translateX(5px);
+        }}
+        
+        .error-box {{
+            margin-top: 20px;
+            padding: 14px 18px;
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            border-radius: 10px;
+            color: #F87171;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            animation: errorShake 0.5s ease-out;
+        }}
+        
+        @keyframes errorShake {{
+            0%, 100% {{ transform: translateX(0); }}
+            20%, 60% {{ transform: translateX(-5px); }}
+            40%, 80% {{ transform: translateX(5px); }}
+        }}
+        
+        .footer-credit {{
+            text-align: center;
+            margin-top: 25px;
+            color: var(--text-secondary);
+            font-size: 11px;
+            opacity: 0.5;
+            font-weight: 500;
+        }}
+        
+        .footer-credit a {{
+            color: var(--accent-orange);
+            text-decoration: none;
+        }}
+        
+        /* Responsive Fixes */
+        @media (max-width: 480px) {{
+            .login-container {{
+                padding: 15px;
+            }}
+            
+            .login-card {{
+                padding: 30px 25px;
+                border-radius: 20px;
+            }}
+            
+            .brand-icon {{
+                width: 60px;
+                height: 60px;
+                font-size: 28px;
+            }}
+            
+            .brand-name {{
+                font-size: 24px;
+            }}
+            
+            .brand-tagline {{
+                font-size: 10px;
+            }}
+            
+            .login-form input {{
+                padding: 12px 16px;
+                font-size: 14px;
+            }}
+            
+            .login-btn {{
+                padding: 12px 20px;
+                font-size: 14px;
+            }}
+        }}
+        
+        @media (max-height: 700px) {{
+            .login-container {{
+                min-height: auto;
+                padding-top: 30px;
+                padding-bottom: 30px;
+            }}
+            
+            .brand-section {{
+                margin-bottom: 25px;
+            }}
+            
+            .brand-icon {{
+                width: 60px;
+                height: 60px;
+                font-size: 26px;
+                margin-bottom: 12px;
+            }}
+        }}
+    </style>
 </head>
-<body style="justify-content:center; align-items:center;">
-    <div class="card" style="width: 100%; max-width: 400px; padding: 40px;">
-        <div style="text-align: center; margin-bottom: 40px;">
-            <div style="font-size: 26px; font-weight: 800; color: white; letter-spacing: -0.5px;">MNM<span style="color:var(--accent-orange)">Software</span></div>
-            <div style="color: var(--text-secondary); font-size: 12px; letter-spacing: 2px; margin-top: 5px; font-weight: 600;">SECURE ACCESS</div>
-        </div>
-        <form action="/login" method="post">
-            <div class="input-group">
-                <label><i class="fas fa-user" style="margin-right:5px;"></i> USERNAME</label>
-                <input type="text" name="username" required placeholder="Enter your ID">
+<body>
+    <div class="bg-orb orb-1"></div>
+    <div class="bg-orb orb-2"></div>
+    <div class="bg-orb orb-3"></div>
+    
+    <div class="login-container">
+        <div class="login-card">
+            <div class="brand-section">
+                <div class="brand-icon">
+                    <i class="fas fa-layer-group"></i>
+                </div>
+                <div class="brand-name">MNM<span>Software</span></div>
+                <div class="brand-tagline">Secure Access Portal</div>
             </div>
-            <div class="input-group">
-                <label><i class="fas fa-lock" style="margin-right:5px;"></i> PASSWORD</label>
-                <input type="password" name="password" required placeholder="Enter your Password">
+            
+            <form action="/login" method="post" class="login-form">
+                <div class="input-group">
+                    <label><i class="fas fa-user"></i> USERNAME</label>
+                    <input type="text" name="username" required placeholder="Enter your ID" autocomplete="off">
+                </div>
+                <div class="input-group">
+                    <label><i class="fas fa-lock"></i> PASSWORD</label>
+                    <input type="password" name="password" required placeholder="Enter your Password">
+                </div>
+                <button type="submit" class="login-btn">
+                    Sign In <i class="fas fa-arrow-right"></i>
+                </button>
+            </form>
+            
+            {{% with messages = get_flashed_messages() %}}
+                {{% if messages %}}
+                    <div class="error-box">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <span>{{{{ messages[0] }}}}</span>
+                    </div>
+                {{% endif %}}
+            {{% endwith %}}
+            
+            <div class="footer-credit">
+                © 2025 <a href="#">Mehedi Hasan</a> • All Rights Reserved
             </div>
-            <button type="submit" style="margin-top: 10px;">Sign In <i class="fas fa-arrow-right" style="margin-left:5px;"></i></button>
-        </form>
-        {{% with messages = get_flashed_messages() %}}
-            {{% if messages %}}
-                <div style="margin-top: 25px; color: #ff7675; font-size: 13px; text-align: center; background: rgba(255, 118, 117, 0.1); padding: 10px; border-radius: 8px; border: 1px solid rgba(255, 118, 117, 0.2);"><i class="fas fa-exclamation-circle"></i> {{{{ messages[0] }}}}</div>
-            {{% endif %}}
-        {{% endwith %}}
-        <div style="text-align: center; margin-top: 30px; color: var(--text-secondary); font-size: 12px; opacity: 0.6;">
-            © Mehedi Hasan
         </div>
     </div>
+    
+    <script>
+        // Add ripple effect to button
+        document.querySelector('.login-btn').addEventListener('click', function(e) {{
+            const ripple = document.createElement('span');
+            ripple.classList.add('ripple-effect');
+            const rect = this.getBoundingClientRect();
+            ripple.style.left = (e.clientX - rect.left) + 'px';
+            ripple.style.top = (e.clientY - rect.top) + 'px';
+            this.appendChild(ripple);
+            setTimeout(() => ripple.remove(), 600);
+        }});
+    </script>
 </body>
 </html>
 """
+
+# ==============================================================================
+# ADMIN DASHBOARD TEMPLATE - MODERN UI WITH DEW STYLE CHART
+# ==============================================================================
 
 ADMIN_DASHBOARD_TEMPLATE = f"""
 <!doctype html>
@@ -1074,12 +2492,33 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Admin Dashboard</title>
+    <title>Admin Dashboard - MNM Software</title>
     {COMMON_STYLES}
 </head>
 <body>
+    <div class="animated-bg"></div>
+    <div id="particles-js"></div>
+
+    <div class="welcome-modal" id="welcomeModal">
+        <div class="welcome-content">
+            <div class="welcome-icon" id="welcomeIcon"><i class="fas fa-hand-sparkles"></i></div>
+            <div class="welcome-greeting" id="greetingText">Good Morning</div>
+            <div class="welcome-title">Welcome Back, <span>{{{{ session.user }}}}</span>!</div>
+            <div class="welcome-message">
+                You're now logged into the MNM Software Dashboard.
+                All systems are operational and ready for your commands.
+            </div>
+            <button class="welcome-close" onclick="closeWelcome()">
+                <i class="fas fa-rocket" style="margin-right: 8px;"></i> Let's Go!
+            </button>
+        </div>
+    </div>
+
     <div id="loading-overlay">
-        <div class="spinner" id="spinner-anim"></div>
+        <div class="spinner-container">
+            <div class="spinner" id="spinner-anim"></div>
+            <div class="spinner-inner"></div>
+        </div>
         
         <div class="checkmark-container" id="success-anim">
             <div class="checkmark-circle"></div>
@@ -1089,297 +2528,558 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
         <div class="fail-container" id="fail-anim">
             <div class="fail-circle"></div>
             <div class="anim-text">Action Failed!</div>
-            <div style="font-size:12px; color:#ff7675; margin-top:5px;">Please check server or inputs</div>
+            <div style="font-size:13px; color:#F87171; margin-top:8px;">Please check server or inputs</div>
         </div>
         
-        <div style="color:white; margin-top:15px; font-weight:600;" id="loading-text">Processing...</div>
+        <div class="loading-text" id="loading-text">Processing Request...</div>
     </div>
 
-    <div class="mobile-toggle" onclick="document.querySelector('.sidebar').classList.toggle('active')"><i class="fas fa-bars"></i></div>
+    <div class="mobile-toggle" onclick="document.querySelector('.sidebar').classList.toggle('active')">
+        <i class="fas fa-bars"></i>
+    </div>
 
     <div class="sidebar">
-        <div class="brand-logo"><i class="fas fa-layer-group"></i> MNM<span>Software</span></div>
-        <div class="nav-menu">
-            <div class="nav-link active" onclick="showSection('dashboard', this)"><i class="fas fa-home"></i> Dashboard</div>
-            <div class="nav-link" onclick="showSection('analytics', this)"><i class="fas fa-chart-pie"></i> Closing Report</div>
-            <a href="/admin/accessories" class="nav-link"><i class="fas fa-database"></i> Accessories Challan</a>
-            <div class="nav-link" onclick="showSection('help', this)"><i class="fas fa-file-invoice"></i> PO Generator</div>
-            
-            <!-- STORE MENU -->
-            <div style="margin-top:10px; margin-bottom:5px; font-size:11px; color:var(--text-secondary); padding-left:15px; text-transform:uppercase; font-weight:700;">Store Management</div>
-            <div class="nav-link" onclick="showSection('store-dashboard', this)"><i class="fas fa-store"></i> Store Overview</div>
-            <div class="nav-link" onclick="showSection('store-products', this)"><i class="fas fa-box-open"></i> Products</div>
-            <div class="nav-link" onclick="showSection('store-invoice', this)"><i class="fas fa-file-invoice-dollar"></i> Invoice & Quotation</div>
-            <div class="nav-link" onclick="showSection('store-customers', this)"><i class="fas fa-users"></i> Customers & Due</div>
-            
-            <div style="margin-top:10px; margin-bottom:5px; font-size:11px; color:var(--text-secondary); padding-left:15px; text-transform:uppercase; font-weight:700;">System</div>
-            <div class="nav-link" onclick="showSection('settings', this)"><i class="fas fa-users-cog"></i> User Manage</div>
-            <a href="/logout" class="nav-link" style="color: var(--accent-red); margin-top: 10px;"><i class="fas fa-sign-out-alt"></i> Log Out</a>
+        <div class="brand-logo">
+            <i class="fas fa-layer-group"></i> 
+            MNM<span>Software</span>
         </div>
-        <div class="sidebar-footer">© Mehedi Hasan</div>
+        <div class="nav-menu">
+            <div class="nav-link active" onclick="showSection('dashboard', this)">
+                <i class="fas fa-home"></i> Dashboard
+                <span class="nav-badge">Live</span>
+            </div>
+            <div class="nav-link" onclick="showSection('analytics', this)">
+                <i class="fas fa-chart-pie"></i> Closing Report
+            </div>
+            <a href="/admin/accessories" class="nav-link">
+                <i class="fas fa-database"></i> Accessories Challan
+            </a>
+            <div class="nav-link" onclick="showSection('help', this)">
+                <i class="fas fa-file-invoice"></i> PO Generator
+            </div>
+            <div class="nav-link" onclick="showSection('settings', this)">
+                <i class="fas fa-users-cog"></i> User Manage
+            </div>
+            <a href="/admin/store" class="nav-link">
+                <i class="fas fa-store"></i> Store
+            </a>
+            <a href="/logout" class="nav-link" style="color: var(--accent-red); margin-top: 20px;">
+                <i class="fas fa-sign-out-alt"></i> Sign Out
+            </a>
+        </div>
+        <div class="sidebar-footer">
+            <i class="fas fa-code" style="margin-right: 5px;"></i> Powered by Mehedi Hasan
+        </div>
     </div>
 
     <div class="main-content">
         
-        <!-- Main Dashboard Section -->
         <div id="section-dashboard">
             <div class="header-section">
-                <div><div class="page-title">Main Dashboard</div><div class="page-subtitle">Overview & Real-time Statistics</div></div>
-                <div style="background:var(--bg-card); padding:10px 20px; border-radius:30px; border:1px solid var(--border-color); font-size:13px; font-weight:600; display:flex; align-items:center; gap:8px;">
-                    <span class="status-online-glow"></span> Online
+                <div>
+                    <div class="page-title">Main Dashboard</div>
+                    <div class="page-subtitle">Lifetime Overview & Analytics</div>
+                </div>
+                <div class="status-badge">
+                    <div class="status-dot"></div>
+                    <span>System Online</span>
                 </div>
             </div>
             
             {{% with messages = get_flashed_messages() %}}
                 {{% if messages %}}
-                    <div style="margin-bottom: 20px; color: #ff7675; font-size: 13px; text-align: center; background: rgba(255, 118, 117, 0.1); padding: 10px; border-radius: 8px; border: 1px solid rgba(255, 118, 117, 0.2);"><i class="fas fa-exclamation-circle"></i> {{{{ messages[0] }}}}</div>
+                    <div class="flash-message flash-error">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <span>{{{{ messages[0] }}}}</span>
+                    </div>
                 {{% endif %}}
             {{% endwith %}}
 
             <div class="stats-grid">
-                <div class="card stat-card"><div class="stat-icon"><i class="fas fa-file-export"></i></div><div class="stat-info"><h3>{{{{ stats.closing.count }}}}</h3><p>Closing</p></div></div>
-                <div class="card stat-card"><div class="stat-icon"><i class="fas fa-boxes"></i></div><div class="stat-info"><h3>{{{{ stats.accessories.count }}}}</h3><p>Accessories</p></div></div>
-                <div class="card stat-card"><div class="stat-icon"><i class="fas fa-file-pdf"></i></div><div class="stat-info"><h3>{{{{ stats.po.count }}}}</h3><p>PO Sheets</p></div></div>
-                <div class="card stat-card"><div class="stat-icon"><i class="fas fa-users"></i></div><div class="stat-info"><h3>{{{{ stats.users.count }}}}</h3><p>Users</p></div></div>
+                <div class="card stat-card" style="animation-delay: 0.1s;">
+                    <div class="stat-icon"><i class="fas fa-file-export"></i></div>
+                    <div class="stat-info">
+                        <h3 class="count-up" data-target="{{{{ stats.closing.count }}}}">0</h3>
+                        <p>Lifetime Closing</p>
+                    </div>
+                </div>
+                <div class="card stat-card" style="animation-delay: 0.2s;">
+                    <div class="stat-icon" style="background: linear-gradient(145deg, rgba(139, 92, 246, 0.15), rgba(139, 92, 246, 0.05));">
+                        <i class="fas fa-boxes" style="color: var(--accent-purple);"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 class="count-up" data-target="{{{{ stats.accessories.count }}}}">0</h3>
+                        <p>Lifetime Accessories</p>
+                    </div>
+                </div>
+                <div class="card stat-card" style="animation-delay: 0.3s;">
+                    <div class="stat-icon" style="background: linear-gradient(145deg, rgba(16, 185, 129, 0.15), rgba(16, 185, 129, 0.05));">
+                        <i class="fas fa-file-pdf" style="color: var(--accent-green);"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 class="count-up" data-target="{{{{ stats.po.count }}}}">0</h3>
+                        <p>Lifetime PO Sheets</p>
+                    </div>
+                </div>
+                <div class="card stat-card" style="animation-delay: 0.4s;">
+                    <div class="stat-icon" style="background: linear-gradient(145deg, rgba(59, 130, 246, 0.15), rgba(59, 130, 246, 0.05));">
+                        <i class="fas fa-users" style="color: var(--accent-blue);"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 class="count-up" data-target="{{{{ stats.users.count }}}}">0</h3>
+                        <p>Total Users</p>
+                    </div>
+                </div>
             </div>
 
             <div class="dashboard-grid-2">
                 <div class="card">
-                    <div class="section-header"><span>Analytics (Last 6 Months)</span><i class="fas fa-chart-line" style="color:var(--accent-orange)"></i></div>
-                    <div style="height: 250px;"><canvas id="mainChart"></canvas></div>
+                    <div class="section-header">
+                        <span>Daily Activity Chart</span>
+                        <div class="realtime-indicator">
+                            <div class="realtime-dot"></div>
+                            <span>Real-time</span>
+                        </div>
+                    </div>
+                    <div class="chart-container" style="height: 320px;">
+                        <canvas id="mainChart"></canvas>
+                    </div>
                 </div>
                 <div class="card">
-                    <div class="section-header"><span>Module Usage Today</span></div>
-                    <div class="progress-item" style="margin-bottom: 20px;"><div style="display:flex; justify-content:space-between; margin-bottom:8px; font-size:13px; color:white;"><span>Closing Report</span><span style="color:var(--text-secondary);">{{{{ stats.closing.count }}}} Generated</span></div><div style="height:6px; background:#333; border-radius:3px;"><div style="width: 85%; height:100%; background:var(--accent-orange); border-radius:3px;"></div></div></div>
-                    <div class="progress-item" style="margin-bottom: 20px;"><div style="display:flex; justify-content:space-between; margin-bottom:8px; font-size:13px; color:white;"><span>Accessories</span><span style="color:var(--text-secondary);">{{{{ stats.accessories.count }}}} Challans</span></div><div style="height:6px; background:#333; border-radius:3px;"><div style="width: 60%; height:100%; background:var(--accent-purple); border-radius:3px;"></div></div></div>
-                    <div class="progress-item"><div style="display:flex; justify-content:space-between; margin-bottom:8px; font-size:13px; color:white;"><span>PO Generator</span><span style="color:var(--text-secondary);">{{{{ stats.po.count }}}} Files</span></div><div style="height:6px; background:#333; border-radius:3px;"><div style="width: 45%; height:100%; background:var(--accent-green); border-radius:3px;"></div></div></div>
+                    <div class="section-header">
+                        <span>Module Usage</span>
+                        <i class="fas fa-chart-bar" style="color: var(--accent-orange);"></i>
+                    </div>
+                    
+                    <div class="progress-item">
+                        <div class="progress-header">
+                            <span>Closing Report</span>
+                            <span class="progress-value">{{{{ stats.closing.count }}}} Lifetime</span>
+                        </div>
+                        <div class="progress-bar-container">
+                            <div class="progress-bar-fill progress-orange" style="width: 85%;"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="progress-item">
+                        <div class="progress-header">
+                            <span>Accessories</span>
+                            <span class="progress-value">{{{{ stats.accessories.count }}}} Challans</span>
+                        </div>
+                        <div class="progress-bar-container">
+                            <div class="progress-bar-fill progress-purple" style="width: 65%;"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="progress-item">
+                        <div class="progress-header">
+                            <span>PO Generator</span>
+                            <span class="progress-value">{{{{ stats.po.count }}}} Files</span>
+                        </div>
+                        <div class="progress-bar-container">
+                            <div class="progress-bar-fill progress-green" style="width: 45%;"></div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
             <div class="card">
-                <div class="section-header"><span>Recent Activity Log</span><i class="fas fa-history" style="color:var(--text-secondary)"></i></div>
+                <div class="section-header">
+                    <span>Recent Activity Log</span>
+                    <i class="fas fa-history" style="color: var(--text-secondary);"></i>
+                </div>
                 <div style="overflow-x: auto;">
                     <table class="dark-table">
-                        <thead><tr><th>Time</th><th>User</th><th>Action</th><th>Reference / Type</th></tr></thead>
+                        <thead>
+                            <tr>
+                                <th>Time</th>
+                                <th>User</th>
+                                <th>Action</th>
+                                <th>Reference</th>
+                            </tr>
+                        </thead>
                         <tbody>
                             {{% for log in stats.history[:10] %}}
-                            <tr>
-                                <td><i class="far fa-clock" style="margin-right:5px; color:var(--text-secondary);"></i> {{{{ log.time }}}}</td>
-                                <td style="font-weight:600; color:white;">{{{{ log.user }}}}</td>
-                                <td><span style="background:rgba(255,255,255,0.05); padding:4px 10px; border-radius:4px; font-size:11px;">{{{{ log.type }}}}</span></td>
-                                <td>{{{{ log.ref if log.ref else '-' }}}}</td>
+                            <tr style="animation: fadeInUp 0.5s ease-out {{{{ loop.index * 0.05 }}}}s backwards;">
+                                <td>
+                                    <div class="time-badge">
+                                        <i class="far fa-clock"></i>
+                                        {{{{ log.time }}}}
+                                    </div>
+                                </td>
+                                <td style="font-weight: 600; color: white;">{{{{ log.user }}}}</td>
+                                <td>
+                                    <span class="table-badge" style="
+                                        {{% if log.type == 'Closing Report' %}}
+                                        background: rgba(255, 122, 0, 0.1); color: var(--accent-orange);
+                                        {{% elif log.type == 'PO Sheet' %}}
+                                        background: rgba(16, 185, 129, 0.1); color: var(--accent-green);
+                                        {{% else %}}
+                                        background: rgba(139, 92, 246, 0.1); color: var(--accent-purple);
+                                        {{% endif %}}
+                                    ">{{{{ log.type }}}}</span>
+                                </td>
+                                <td style="color: var(--text-secondary);">{{{{ log.ref if log.ref else '-' }}}}</td>
                             </tr>
                             {{% else %}}
-                            <tr><td colspan="4" style="text-align:center; padding:30px; color:var(--text-secondary);">No activity recorded today.</td></tr>
+                            <tr>
+                                <td colspan="4" style="text-align: center; padding: 40px; color: var(--text-secondary);">
+                                    <i class="fas fa-inbox" style="font-size: 40px; opacity: 0.3; margin-bottom: 15px; display: block;"></i>
+                                    No activity recorded yet. 
+                                </td>
+                            </tr>
                             {{% endfor %}}
                         </tbody>
                     </table>
                 </div>
             </div>
         </div>
-                <div id="section-analytics" style="display:none;">
-            <div class="card" style="max-width:500px; margin:0 auto; margin-top:50px;">
-                <div class="section-header">Generate Closing Report</div>
+
+        <div id="section-analytics" style="display:none;">
+            <div class="header-section">
+                <div>
+                    <div class="page-title">Closing Report</div>
+                    <div class="page-subtitle">Generate production closing reports</div>
+                </div>
+            </div>
+            <div class="card" style="max-width: 550px; margin: 0 auto; margin-top: 30px;">
+                <div class="section-header">
+                    <span><i class="fas fa-magic" style="margin-right: 10px; color: var(--accent-orange);"></i>Generate Report</span>
+                </div>
                 <form action="/generate-report" method="post" onsubmit="return showLoading()">
-                    <div class="input-group"><label>INTERNAL REF NO</label><input type="text" name="ref_no" placeholder="e.g. Booking-123" required></div>
-                    <button type="submit"><i class="fas fa-magic" style="margin-right:8px;"></i> Generate Report</button>
+                    <div class="input-group">
+                        <label><i class="fas fa-bookmark" style="margin-right: 5px;"></i> INTERNAL REF NO</label>
+                        <input type="text" name="ref_no" placeholder="e.g. IB-12345 or Booking-123" required>
+                    </div>
+                    <button type="submit">
+                        <i class="fas fa-bolt" style="margin-right: 10px;"></i> Generate Report
+                    </button>
                 </form>
             </div>
         </div>
 
         <div id="section-help" style="display:none;">
-            <div class="card" style="max-width:600px; margin:0 auto; margin-top:50px;">
-                <div class="section-header">PO Sheet Generator</div>
+            <div class="header-section">
+                <div>
+                    <div class="page-title">PO Sheet Generator</div>
+                    <div class="page-subtitle">Process and generate PO summary sheets</div>
+                </div>
+            </div>
+            <div class="card" style="max-width: 650px; margin: 0 auto; margin-top: 30px;">
+                <div class="section-header">
+                    <span><i class="fas fa-file-pdf" style="margin-right: 10px; color: var(--accent-green);"></i>Upload PDF Files</span>
+                </div>
                 <form action="/generate-po-report" method="post" enctype="multipart/form-data" onsubmit="return showLoading()">
-                    <div class="input-group" style="border: 2px dashed var(--border-color); padding: 40px; text-align: center; border-radius: 12px; transition:0.3s;" onmouseover="this.style.borderColor='var(--accent-orange)'" onmouseout="this.style.borderColor='var(--border-color)'">
-                        <input type="file" name="pdf_files" multiple accept=".pdf" required style="display:none;" id="file-upload">
-                        <label for="file-upload" style="cursor:pointer; color:var(--accent-orange); margin-bottom:0;"><i class="fas fa-cloud-upload-alt" style="font-size:40px; margin-bottom:15px;"></i><br>Click to Upload PDF Files</label>
-                        <div id="file-count" style="margin-top:15px; font-size:13px; color:var(--text-secondary);">No files selected</div>
+                    <div class="upload-zone" id="uploadZone" onclick="document.getElementById('file-upload').click()">
+                        <input type="file" name="pdf_files" multiple accept=".pdf" required style="display: none;" id="file-upload">
+                        <div class="upload-icon">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                        </div>
+                        <div class="upload-text">Click or Drag to Upload PDF Files</div>
+                        <div class="upload-hint">Supports multiple PDF files</div>
+                        <div id="file-count">No files selected</div>
                     </div>
-                    <button type="submit" style="margin-top:25px; background:var(--accent-green);"><i class="fas fa-cogs" style="margin-right:8px;"></i> Process Files</button>
+                    <button type="submit" style="margin-top: 25px; background: linear-gradient(135deg, #10B981 0%, #34D399 100%);">
+                        <i class="fas fa-cogs" style="margin-right: 10px;"></i> Process Files
+                    </button>
                 </form>
             </div>
         </div>
 
         <div id="section-settings" style="display:none;">
+            <div class="header-section">
+                <div>
+                    <div class="page-title">User Management</div>
+                    <div class="page-subtitle">Manage user accounts and permissions</div>
+                </div>
+            </div>
             <div class="dashboard-grid-2">
-                <div class="card"><div class="section-header">User Directory</div><div id="userTableContainer">Loading...</div></div>
-                <div class="card"><div class="section-header">Manage User</div>
+                <div class="card">
+                    <div class="section-header">
+                        <span>User Directory</span>
+                        <span class="table-badge" style="background: var(--accent-orange); color: white;">{{{{ stats.users.count }}}} Users</span>
+                    </div>
+                    <div id="userTableContainer" style="max-height: 450px; overflow-y: auto;">
+                        <div class="skeleton" style="height: 50px; margin-bottom: 10px;"></div>
+                        <div class="skeleton" style="height: 50px; margin-bottom: 10px;"></div>
+                        <div class="skeleton" style="height: 50px;"></div>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="section-header">
+                        <span>Create / Edit User</span>
+                        <i class="fas fa-user-plus" style="color: var(--accent-orange);"></i>
+                    </div>
                     <form id="userForm">
                         <input type="hidden" id="action_type" value="create">
-                        <div class="input-group"><label>USERNAME</label><input type="text" id="new_username" required></div>
-                        <div class="input-group"><label>PASSWORD</label><input type="text" id="new_password" required></div>
-                        <div class="input-group"><label>PERMISSIONS</label>
-                            <div style="display:flex; gap:10px; flex-wrap:wrap;">
-                                <label style="background:#2D2D2D; padding:10px; border-radius:8px; cursor:pointer; display:flex; align-items:center; border:1px solid #333;"><input type="checkbox" id="perm_closing" checked style="width:auto; margin-right:8px;"> Closing</label>
-                                <label style="background:#2D2D2D; padding:10px; border-radius:8px; cursor:pointer; display:flex; align-items:center; border:1px solid #333;"><input type="checkbox" id="perm_po" style="width:auto; margin-right:8px;"> PO</label>
-                                <label style="background:#2D2D2D; padding:10px; border-radius:8px; cursor:pointer; display:flex; align-items:center; border:1px solid #333;"><input type="checkbox" id="perm_acc" style="width:auto; margin-right:8px;"> Acc</label>
-                                <!-- New Permission for Store -->
-                                <label style="background:#2D2D2D; padding:10px; border-radius:8px; cursor:pointer; display:flex; align-items:center; border:1px solid #333;"><input type="checkbox" id="perm_store" style="width:auto; margin-right:8px;"> Store</label>
+                        <div class="input-group">
+                            <label><i class="fas fa-user" style="margin-right: 5px;"></i> USERNAME</label>
+                            <input type="text" id="new_username" required placeholder="Enter username">
+                        </div>
+                        <div class="input-group">
+                            <label><i class="fas fa-key" style="margin-right: 5px;"></i> PASSWORD</label>
+                            <input type="text" id="new_password" required placeholder="Enter password">
+                        </div>
+                        <div class="input-group">
+                            <label><i class="fas fa-shield-alt" style="margin-right: 5px;"></i> PERMISSIONS</label>
+                            <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 5px;">
+                                <label class="perm-checkbox">
+                                    <input type="checkbox" id="perm_closing" checked>
+                                    <span>Closing</span>
+                                </label>
+                                <label class="perm-checkbox">
+                                    <input type="checkbox" id="perm_po">
+                                    <span>PO Sheet</span>
+                                </label>
+                                <label class="perm-checkbox">
+                                    <input type="checkbox" id="perm_acc">
+                                    <span>Accessories</span>
+                                </label>
                             </div>
                         </div>
-                        <button type="button" onclick="handleUserSubmit()" id="saveUserBtn"><i class="fas fa-save" style="margin-right:8px;"></i> Save User</button>
-                        <button type="button" onclick="resetForm()" style="margin-top:10px; background:#2D2D2D; color:white; border:1px solid #333;">Reset Form</button>
+                        <button type="button" onclick="handleUserSubmit()" id="saveUserBtn">
+                            <i class="fas fa-save" style="margin-right: 10px;"></i> Save User
+                        </button>
+                        <button type="button" onclick="resetForm()" style="margin-top: 12px; background: rgba(255,255,255,0.05); border: 1px solid var(--border-color);">
+                            <i class="fas fa-undo" style="margin-right: 10px;"></i> Reset Form
+                        </button>
                     </form>
                 </div>
             </div>
         </div>
-        
-        <!-- NEW: STORE DASHBOARD SECTION -->
-        <div id="section-store-dashboard" style="display:none;">
-            <div class="header-section">
-                <div><div class="page-title">Store Overview</div><div class="page-subtitle">MEHEDI THAI ALUMINUM AND GLASS</div></div>
-            </div>
-            <div class="stats-grid">
-                <div class="card stat-card"><div class="stat-icon"><i class="fas fa-box-open"></i></div><div class="stat-info"><h3>{{{{ stats.store.products }}}}</h3><p>Total Products</p></div></div>
-                <div class="card stat-card"><div class="stat-icon"><i class="fas fa-file-invoice-dollar"></i></div><div class="stat-info"><h3>{{{{ stats.store.invoices }}}}</h3><p>Total Invoices</p></div></div>
-                <div class="card stat-card"><div class="stat-icon"><i class="fas fa-exclamation-circle" style="color:var(--accent-red)"></i></div><div class="stat-info"><h3>Due</h3><p>Collection Pending</p></div></div>
-            </div>
-             <div class="card" style="text-align:center; padding:50px;">
-                <i class="fas fa-store" style="font-size:50px; color:var(--accent-orange); margin-bottom:20px;"></i>
-                <h3>Store Management System</h3>
-                <p style="color:var(--text-secondary); max-width:500px; margin:0 auto;">Manage your products, generate professional quotations/invoices, and track customer dues efficiently from the sidebar menu.</p>
-            </div>
-        </div>
-        
-        <!-- NEW: STORE PRODUCTS SECTION -->
-        <div id="section-store-products" style="display:none;">
-            <div class="header-section">
-                 <div><div class="page-title">Product Inventory</div><div class="page-subtitle">Add or Manage Items</div></div>
-                 <button onclick="openProductModal()" style="width:auto;"><i class="fas fa-plus"></i> Add New Product</button>
-            </div>
-            <div class="card">
-                 <div id="productTableContainer">Loading Products...</div>
-            </div>
-        </div>
-
-        <!-- Product Modal -->
-        <div id="productModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:2000; align-items:center; justify-content:center;">
-            <div class="card" style="width:400px;">
-                <div class="section-header">Product Details <i class="fas fa-times" onclick="closeProductModal()" style="cursor:pointer;"></i></div>
-                <form id="productForm">
-                    <input type="hidden" id="prod_id">
-                    <div class="input-group"><label>Product Name</label><input type="text" id="prod_name" required></div>
-                    <div class="input-group"><label>Size / Dimensions (e.g. 5ft)</label><input type="text" id="prod_size" placeholder="Optional"></div>
-                    <div class="input-group"><label>Price (Optional)</label><input type="number" id="prod_price" placeholder="0.00"></div>
-                    <button type="button" onclick="saveProduct()">Save Product</button>
-                </form>
-            </div>
-        </div>
-                <!-- NEW: STORE INVOICE SECTION -->
-        <div id="section-store-invoice" style="display:none;">
-             <div class="header-section">
-                 <div><div class="page-title">Invoices & Quotations</div><div class="page-subtitle">Generate Bills or Estimates</div></div>
-                 <button onclick="window.location.href='/store/create-invoice'" style="width:auto; background:var(--accent-green);"><i class="fas fa-plus"></i> New Invoice / Quotation</button>
-            </div>
-            <div class="card">
-                 <div class="section-header">Recent Invoices</div>
-                 <div id="invoiceListContainer">Loading...</div>
-            </div>
-        </div>
-        
-        <!-- NEW: STORE CUSTOMER SECTION -->
-        <div id="section-store-customers" style="display:none;">
-            <div class="header-section">
-                 <div><div class="page-title">Customer Management</div><div class="page-subtitle">Track Dues & Payments</div></div>
-                 <button onclick="openCustomerModal()" style="width:auto;"><i class="fas fa-user-plus"></i> Add Customer</button>
-            </div>
-            <div class="dashboard-grid-2">
-                <div class="card">
-                    <div class="section-header">Customer List</div>
-                    <div id="customerListContainer">Loading...</div>
-                </div>
-                <div class="card">
-                     <div class="section-header">Due Payment Collection</div>
-                     <div class="input-group"><label>Search by Challan No</label><input type="text" id="due_search_challan" placeholder="INV-XXXX"></div>
-                     <button onclick="searchDueInvoice()">Search</button>
-                     <div id="dueResult" style="margin-top:20px;"></div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Customer Modal -->
-        <div id="customerModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:2000; align-items:center; justify-content:center;">
-            <div class="card" style="width:400px;">
-                <div class="section-header">Add Customer <i class="fas fa-times" onclick="closeCustomerModal()" style="cursor:pointer;"></i></div>
-                <form id="customerForm">
-                    <input type="hidden" id="cust_id">
-                    <div class="input-group"><label>Customer Name</label><input type="text" id="cust_name" required></div>
-                    <div class="input-group"><label>Phone / Contact</label><input type="text" id="cust_phone"></div>
-                    <div class="input-group"><label>Address</label><textarea id="cust_address" rows="2" style="background:#2D2D2D; border:1px solid #333; width:100%; color:white; padding:10px;"></textarea></div>
-                    <button type="button" onclick="saveCustomer()">Save Customer</button>
-                </form>
-            </div>
-        </div>
-
     </div>
-
     <script>
-        function showSection(id, element) {{
-            ['dashboard', 'analytics', 'help', 'settings', 'store-dashboard', 'store-products', 'store-invoice', 'store-customers'].forEach(sid => document.getElementById('section-' + sid).style.display = 'none');
-            document.getElementById('section-' + id).style.display = 'block';
-            if(element) {{ document.querySelectorAll('.nav-link').forEach(el => el.classList.remove('active')); element.classList.add('active'); }}
+        // ===== WELCOME POPUP WITH TIME-BASED GREETING =====
+        function showWelcomePopup() {{
+            const hour = new Date().getHours();
+            let greeting, icon;
             
-            if(id === 'settings') loadUsers();
-            if(id === 'store-products') loadProducts();
-            if(id === 'store-customers') loadCustomers();
-            if(id === 'store-invoice') loadInvoices();
+            if (hour >= 5 && hour < 12) {{
+                greeting = "Good Morning";
+                icon = '<i class="fas fa-sun"></i>';
+            }} else if (hour >= 12 && hour < 17) {{
+                greeting = "Good Afternoon";
+                icon = '<i class="fas fa-sun"></i>';
+            }} else if (hour >= 17 && hour < 21) {{
+                greeting = "Good Evening";
+                icon = '<i class="fas fa-city"></i>';
+            }} else {{
+                greeting = "Good Night";
+                icon = '<i class="fas fa-moon"></i>';
+            }}
             
-            if(window.innerWidth < 992) document.querySelector('.sidebar').classList.remove('active');
+            document.getElementById('greetingText').textContent = greeting;
+            document.getElementById('welcomeIcon').innerHTML = icon;
+            document.getElementById('welcomeModal').style.display = 'flex';
         }}
-        document.getElementById('file-upload')?.addEventListener('change', function() {{ document.getElementById('file-count').innerText = this.files.length + " files selected"; }});
         
-        // --- REAL-TIME WAVY CHART INITIALIZATION ---
+        function closeWelcome() {{
+            const modal = document.getElementById('welcomeModal');
+            modal.style.animation = 'modalFadeOut 0.3s ease-out forwards';
+            setTimeout(() => {{
+                modal.style.display = 'none';
+                sessionStorage.setItem('welcomeShown', 'true');
+            }}, 300);
+        }}
+        
+        if (!sessionStorage.getItem('welcomeShown')) {{
+            setTimeout(showWelcomePopup, 500);
+        }}
+        
+        // ===== SECTION NAVIGATION =====
+        function showSection(id, element) {{
+            ['dashboard', 'analytics', 'help', 'settings'].forEach(sid => {{
+                document.getElementById('section-' + sid).style.display = 'none';
+            }});
+            document.getElementById('section-' + id).style.display = 'block';
+            
+            if (element) {{
+                document.querySelectorAll('.nav-link').forEach(el => el.classList.remove('active'));
+                element.classList.add('active');
+            }}
+            
+            if (id === 'settings') loadUsers();
+            if (window.innerWidth < 1024) document.querySelector('.sidebar').classList.remove('active');
+        }}
+        
+        // ===== FILE UPLOAD HANDLER =====
+        const fileUpload = document.getElementById('file-upload');
+        const uploadZone = document.getElementById('uploadZone');
+        
+        if (fileUpload) {{
+            fileUpload.addEventListener('change', function() {{
+                const count = this.files.length;
+                document.getElementById('file-count').innerHTML = count > 0 
+                    ? `<i class="fas fa-check-circle" style="margin-right: 5px;"></i>${{count}} file(s) selected`
+                    : 'No files selected';
+            }});
+            uploadZone.addEventListener('dragover', (e) => {{
+                e.preventDefault();
+                uploadZone.classList.add('dragover');
+            }});
+            uploadZone.addEventListener('dragleave', () => {{
+                uploadZone.classList.remove('dragover');
+            }});
+            uploadZone.addEventListener('drop', (e) => {{
+                e.preventDefault();
+                uploadZone.classList.remove('dragover');
+                fileUpload.files = e.dataTransfer.files;
+                fileUpload.dispatchEvent(new Event('change'));
+            }});
+        }}
+        
+        // ===== DEW STYLE DAILY CHART =====
         const ctx = document.getElementById('mainChart').getContext('2d');
-        const gradientOrange = ctx.createLinearGradient(0, 0, 0, 300); gradientOrange.addColorStop(0, 'rgba(255, 140, 66, 0.4)'); gradientOrange.addColorStop(1, 'rgba(255, 140, 66, 0)');
-        const gradientPurple = ctx.createLinearGradient(0, 0, 0, 300); gradientPurple.addColorStop(0, 'rgba(108, 92, 231, 0.4)'); gradientPurple.addColorStop(1, 'rgba(108, 92, 231, 0)');
-        
+        const gradientOrange = ctx.createLinearGradient(0, 0, 0, 300);
+        gradientOrange.addColorStop(0, 'rgba(255, 122, 0, 0.5)');
+        gradientOrange.addColorStop(1, 'rgba(255, 122, 0, 0.0)');
+        const gradientPurple = ctx.createLinearGradient(0, 0, 0, 300);
+        gradientPurple.addColorStop(0, 'rgba(139, 92, 246, 0.5)');
+        gradientPurple.addColorStop(1, 'rgba(139, 92, 246, 0.0)');
+        const gradientGreen = ctx.createLinearGradient(0, 0, 0, 300);
+        gradientGreen.addColorStop(0, 'rgba(16, 185, 129, 0.5)');
+        gradientGreen.addColorStop(1, 'rgba(16, 185, 129, 0.0)');
         new Chart(ctx, {{
             type: 'line',
             data: {{
-                labels: {{{{ stats.chart.labels | tojson }}}}, // Real-time Labels
+                labels: {{{{ stats.chart.labels | tojson }}}},
                 datasets: [
                     {{
                         label: 'Closing',
                         data: {{{{ stats.chart.closing | tojson }}}},
-                        borderColor: '#FF8C42',
+                        borderColor: '#FF7A00',
                         backgroundColor: gradientOrange,
-                        tension: 0.4, // Wavy
-                        fill: true
+                        tension: 0.4,
+                        fill: true,
+                        pointBackgroundColor: '#FF7A00',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2,
+                        pointRadius: 4,
+                        pointHoverRadius: 7,
+                        borderWidth: 3
                     }},
                     {{
                         label: 'Accessories',
                         data: {{{{ stats.chart.acc | tojson }}}},
-                        borderColor: '#6C5CE7',
+                        borderColor: '#8B5CF6',
                         backgroundColor: gradientPurple,
-                        tension: 0.4, // Wavy
-                        fill: true
+                        tension: 0.4,
+                        fill: true,
+                        pointBackgroundColor: '#8B5CF6',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2,
+                        pointRadius: 4,
+                        pointHoverRadius: 7,
+                        borderWidth: 3
                     }},
                     {{
                         label: 'PO Sheets',
                         data: {{{{ stats.chart.po | tojson }}}},
-                        borderColor: '#00b894',
-                        borderDash: [5, 5],
-                        tension: 0.4, // Wavy
-                        fill: false
+                        borderColor: '#10B981',
+                        backgroundColor: gradientGreen,
+                        tension: 0.4,
+                        fill: true,
+                        pointBackgroundColor: '#10B981',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2,
+                        pointRadius: 4,
+                        pointHoverRadius: 7,
+                        borderWidth: 3
                     }}
                 ]
             }},
             options: {{
-                plugins: {{ legend: {{ display: true, labels: {{ color: '#A0A0A0', font: {{ size: 11 }} }} }} }},
+                plugins: {{
+                    legend: {{
+                        display: true,
+                        position: 'top',
+                        labels: {{
+                            color: '#8b8b9e',
+                            font: {{ size: 11, weight: 500 }},
+                            usePointStyle: true,
+                            padding: 15,
+                            boxWidth: 8
+                        }}
+                    }},
+                    tooltip: {{
+                        mode: 'index',
+                        intersect: false,
+                        backgroundColor: 'rgba(22, 22, 31, 0.95)',
+                        titleColor: '#fff',
+                        bodyColor: '#8b8b9e',
+                        borderColor: 'rgba(255, 122, 0, 0.3)',
+                        borderWidth: 1,
+                        padding: 12,
+                        cornerRadius: 10,
+                        displayColors: true
+                    }}
+                }},
                 scales: {{
-                    x: {{ grid: {{ display: false, color: '#333' }}, ticks: {{ color: '#A0A0A0' }} }},
-                    y: {{ grid: {{ color: '#2D2D2D' }}, ticks: {{ color: '#A0A0A0' }} }}
+                    x: {{
+                        grid: {{ 
+                            display: false 
+                        }},
+                        ticks: {{ 
+                            color: '#8b8b9e', 
+                            font: {{ size: 10 }},
+                            maxRotation: 45,
+                            minRotation: 45
+                        }}
+                    }},
+                    y: {{
+                        grid: {{ 
+                            color: 'rgba(255,255,255,0.03)',
+                            drawBorder: false
+                        }},
+                        ticks: {{ 
+                            color: '#8b8b9e', 
+                            font: {{ size: 10 }},
+                            stepSize: 1
+                        }},
+                        beginAtZero: true
+                    }}
                 }},
                 responsive: true,
-                maintainAspectRatio: false
+                maintainAspectRatio: false,
+                interaction: {{
+                    intersect: false,
+                    mode: 'index'
+                }},
+                animation: {{
+                    duration: 2000,
+                    easing: 'easeOutQuart'
+                }}
             }}
         }});
+
+        // ===== COUNT UP ANIMATION =====
+        function animateCountUp() {{
+            document.querySelectorAll('.count-up').forEach(counter => {{
+                const target = parseInt(counter.getAttribute('data-target'));
+                const duration = 2000;
+                const step = target / (duration / 16);
+                let current = 0;
+                
+                const updateCounter = () => {{
+                    current += step;
+                    if (current < target) {{
+                        counter.textContent = Math.floor(current);
+                        requestAnimationFrame(updateCounter);
+                    }} else {{
+                        counter.textContent = target;
+                    }}
+                }};
+                
+                updateCounter();
+            }});
+        }}
         
-        // --- ANIMATION CONTROLLER ---
+        setTimeout(animateCountUp, 500);
+
+        // ===== LOADING ANIMATION =====
         function showLoading() {{
             const overlay = document.getElementById('loading-overlay');
-            const spinner = document.getElementById('spinner-anim');
+            const spinner = document.getElementById('spinner-anim').parentElement;
             const success = document.getElementById('success-anim');
             const fail = document.getElementById('fail-anim');
             const text = document.getElementById('loading-text');
@@ -1388,222 +3088,497 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
             spinner.style.display = 'block';
             success.style.display = 'none';
             fail.style.display = 'none';
-            text.innerText = 'Processing...';
+            text.style.display = 'block';
+            text.textContent = 'Processing Request...';
+            
             return true;
         }}
 
         function showSuccess() {{
             const overlay = document.getElementById('loading-overlay');
-            const spinner = document.getElementById('spinner-anim');
+            const spinner = document.getElementById('spinner-anim').parentElement;
             const success = document.getElementById('success-anim');
             const text = document.getElementById('loading-text');
             
-            overlay.style.display = 'flex';
             spinner.style.display = 'none';
             success.style.display = 'block';
-            text.innerText = '';
+            text.style.display = 'none';
             
             setTimeout(() => {{ overlay.style.display = 'none'; }}, 1500);
         }}
 
+        // ===== USER MANAGEMENT =====
         function loadUsers() {{
-            fetch('/admin/get-users').then(res => res.json()).then(data => {{
-                let html = '<table class="dark-table"><thead><tr><th>User</th><th>Role</th><th style="text-align:right;">Actions</th></tr></thead><tbody>';
-                for(const [u, d] of Object.entries(data)) {{
-                    html += `<tr><td>${{u}}</td><td><span style="background:rgba(255,255,255,0.1); padding:2px 8px; border-radius:4px; font-size:11px;">${{d.role}}</span></td><td style="text-align:right;">${{d.role !== 'admin' ? 
-                        `<div class="action-cell">
-                            <button class="action-btn btn-edit" onclick="editUser('${{u}}', '${{d.password}}', '${{d.permissions.join(',')}}')"><i class="fas fa-edit"></i></button> 
-                            <button class="action-btn btn-del" onclick="deleteUser('${{u}}')"><i class="fas fa-trash"></i></button>
-                        </div>` : 
-                        '<i class="fas fa-shield-alt" style="color:var(--text-secondary); margin-right:10px;"></i>'}}</td></tr>`;
-                }}
-                document.getElementById('userTableContainer').innerHTML = html + '</tbody></table>';
-            }});
+            fetch('/admin/get-users')
+                .then(res => res.json())
+                .then(data => {{
+                    let html = '<table class="dark-table"><thead><tr><th>User</th><th>Role</th><th style="text-align:right;">Actions</th></tr></thead><tbody>';
+                    
+                    for (const [u, d] of Object.entries(data)) {{
+                        const roleClass = d.role === 'admin' ? 'background: rgba(255, 122, 0, 0.1); color: var(--accent-orange);' : 'background: rgba(139, 92, 246, 0.1); color: var(--accent-purple);';
+                        
+                        html += `<tr>
+                            <td style="font-weight: 600;">${{u}}</td>
+                            <td><span class="table-badge" style="${{roleClass}}">${{d.role}}</span></td>
+                            <td style="text-align:right;">
+                                ${{d.role !== 'admin' ? `
+                                    <div class="action-cell">
+                                        <button class="action-btn btn-edit" onclick="editUser('${{u}}', '${{d.password}}', '${{d.permissions.join(',')}}')">
+                                            <i class="fas fa-edit"></i>
+                                        </button> 
+                                        <button class="action-btn btn-del" onclick="deleteUser('${{u}}')">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                ` : '<i class="fas fa-shield-alt" style="color: var(--accent-orange); opacity: 0.5;"></i>'}}
+                            </td>
+                        </tr>`;
+                    }}
+                    
+                    document.getElementById('userTableContainer').innerHTML = html + '</tbody></table>';
+                }});
         }}
         
         function handleUserSubmit() {{
-            const u = document.getElementById('new_username').value, p = document.getElementById('new_password').value, a = document.getElementById('action_type').value;
-            let perms = []; 
-            ['closing', 'po_sheet', 'accessories', 'store'].forEach(id => {{ 
-                if(document.getElementById('perm_' + (id==='po_sheet'?'po':(id==='accessories'?'acc':id))).checked) perms.push(id); 
-            }});
+            const u = document.getElementById('new_username').value;
+            const p = document.getElementById('new_password').value;
+            const a = document.getElementById('action_type').value;
+            
+            let perms = [];
+            if (document.getElementById('perm_closing').checked) perms.push('closing');
+            if (document.getElementById('perm_po').checked) perms.push('po_sheet');
+            if (document.getElementById('perm_acc').checked) perms.push('accessories');
             
             showLoading();
-            fetch('/admin/save-user', {{ method: 'POST', headers: {{'Content-Type': 'application/json'}}, body: JSON.stringify({{ username: u, password: p, permissions: perms, action_type: a }}) }}).then(r => r.json()).then(d => {{ 
-                if(d.status === 'success') {{ showSuccess(); loadUsers(); resetForm(); }} else {{ alert(d.message); document.getElementById('loading-overlay').style.display = 'none'; }}
-            }});
-        }}
-        
-        function editUser(u, p, permsStr) {{ document.getElementById('new_username').value = u; document.getElementById('new_username').readOnly = true; document.getElementById('new_password').value = p; document.getElementById('action_type').value = 'update'; document.getElementById('saveUserBtn').innerHTML = '<i class="fas fa-sync"></i> Update User'; let pArr = permsStr.split(','); ['closing', 'po_sheet', 'accessories', 'store'].forEach(id => {{ document.getElementById('perm_' + (id==='po_sheet'?'po':(id==='accessories'?'acc':id))).checked = pArr.includes(id); }}); }}
-        function resetForm() {{ document.getElementById('userForm').reset(); document.getElementById('action_type').value = 'create'; document.getElementById('saveUserBtn').innerHTML = '<i class="fas fa-save"></i> Save User'; document.getElementById('new_username').readOnly = false; }}
-        function deleteUser(u) {{ if(confirm('Are you sure you want to delete this user?')) fetch('/admin/delete-user', {{ method: 'POST', headers: {{'Content-Type': 'application/json'}}, body: JSON.stringify({{ username: u }}) }}).then(() => loadUsers()); }}
-
-        // --- STORE JS LOGIC ---
-        function openProductModal() {{ document.getElementById('productModal').style.display = 'flex'; document.getElementById('prod_id').value = ''; document.getElementById('prod_name').value=''; document.getElementById('prod_size').value=''; document.getElementById('prod_price').value=''; }}
-        function closeProductModal() {{ document.getElementById('productModal').style.display = 'none'; }}
-        
-        function saveProduct() {{
-            const id = document.getElementById('prod_id').value;
-            const name = document.getElementById('prod_name').value;
-            const size = document.getElementById('prod_size').value;
-            const price = document.getElementById('prod_price').value;
-            if(!name) return alert("Name required");
             
-            showLoading();
-            fetch('/store/save-product', {{ method:'POST', headers: {{'Content-Type':'application/json'}}, body: JSON.stringify({{id, name, size, price}}) }})
-            .then(r=>r.json()).then(d=>{{ showSuccess(); closeProductModal(); loadProducts(); }});
-        }}
-
-        function loadProducts() {{
-             fetch('/store/get-products').then(r=>r.json()).then(data=>{{
-                 let h = '<table class="dark-table"><thead><tr><th>Name</th><th>Size</th><th>Price</th><th>Action</th></tr></thead><tbody>';
-                 data.forEach(p=>{{
-                     h+=`<tr><td>${{p.name}}</td><td>${{p.size||'-'}}</td><td>${{p.price||'-'}}</td>
-                     <td><button class="action-btn btn-del" onclick="deleteProduct('${{p._id}}')"><i class="fas fa-trash"></i></button></td></tr>`;
-                 }});
-                 document.getElementById('productTableContainer').innerHTML = h + '</tbody></table>';
-             }});
-        }}
-        
-        function deleteProduct(id) {{ if(confirm("Delete?")) fetch('/store/delete-product',{{method:'POST', headers:{{'Content-Type':'application/json'}}, body:JSON.stringify({{id}})}}).then(()=>loadProducts()); }}
-
-        function openCustomerModal() {{ document.getElementById('customerModal').style.display='flex'; document.getElementById('cust_name').value=''; document.getElementById('cust_phone').value=''; document.getElementById('cust_address').value=''; }}
-        function closeCustomerModal() {{ document.getElementById('customerModal').style.display='none'; }}
-
-        function saveCustomer() {{
-             const name = document.getElementById('cust_name').value;
-             const phone = document.getElementById('cust_phone').value;
-             const address = document.getElementById('cust_address').value;
-             if(!name) return alert("Name required");
-             showLoading();
-             fetch('/store/save-customer', {{method:'POST', headers:{{'Content-Type':'application/json'}}, body:JSON.stringify({{name,phone,address}})}})
-             .then(r=>r.json()).then(d=>{{ showSuccess(); closeCustomerModal(); loadCustomers(); }});
-        }}
-
-        function loadCustomers() {{
-            fetch('/store/get-customers').then(r=>r.json()).then(data=>{{
-                 let h = '<table class="dark-table"><thead><tr><th>Name</th><th>Phone</th><th>Due</th></tr></thead><tbody>';
-                 data.forEach(c=>{{
-                     h+=`<tr><td>${{c.name}}</td><td>${{c.phone||'-'}}</td><td style="color:${{c.due>0?'var(--accent-red)':'var(--accent-green)'}}">${{c.due||0}}</td></tr>`;
-                 }});
-                 document.getElementById('customerListContainer').innerHTML = h + '</tbody></table>';
+            fetch('/admin/save-user', {{
+                method: 'POST',
+                headers: {{'Content-Type': 'application/json'}},
+                body: JSON.stringify({{ username: u, password: p, permissions: perms, action_type: a }})
+            }})
+            .then(r => r.json())
+            .then(d => {{
+                if (d.status === 'success') {{
+                    showSuccess();
+                    loadUsers();
+                    resetForm();
+                }} else {{
+                    alert(d.message);
+                    document.getElementById('loading-overlay').style.display = 'none';
+                }}
             }});
         }}
         
-        function loadInvoices() {{
-             fetch('/store/get-invoices').then(r=>r.json()).then(data=>{{
-                 let h = '<table class="dark-table"><thead><tr><th>Inv No</th><th>Date</th><th>Customer</th><th>Total</th><th>Type</th><th>Action</th></tr></thead><tbody>';
-                 data.forEach(i=>{{
-                     h+=`<tr><td>${{i.invoice_no}}</td><td>${{i.date}}</td><td>${{i.customer_name}}</td><td>${{i.grand_total}}</td>
-                     <td><span style="background:${{i.type==='invoice'?'rgba(0,184,148,0.2)':'rgba(255,140,66,0.2)'}}; padding:2px 6px; border-radius:4px; font-size:11px;">${{i.type.toUpperCase()}}</span></td>
-                     <td><a href="/store/print-invoice?inv=${{i.invoice_no}}" target="_blank" class="action-btn btn-view"><i class="fas fa-print"></i></a></td></tr>`;
-                 }});
-                 document.getElementById('invoiceListContainer').innerHTML = h + '</tbody></table>';
-             }});
+        function editUser(u, p, permsStr) {{
+            document.getElementById('new_username').value = u;
+            document.getElementById('new_username').readOnly = true;
+            document.getElementById('new_password').value = p;
+            document.getElementById('action_type').value = 'update';
+            document.getElementById('saveUserBtn').innerHTML = '<i class="fas fa-sync" style="margin-right: 10px;"></i> Update User';
+            const pArr = permsStr.split(',');
+            document.getElementById('perm_closing').checked = pArr.includes('closing');
+            document.getElementById('perm_po').checked = pArr.includes('po_sheet');
+            document.getElementById('perm_acc').checked = pArr.includes('accessories');
         }}
         
-        function searchDueInvoice() {{
-             const inv = document.getElementById('due_search_challan').value;
-             if(!inv) return;
-             fetch('/store/get-invoice-due?inv='+inv).then(r=>r.json()).then(d=>{{
-                 const res = document.getElementById('dueResult');
-                 if(d.status === 'found') {{
-                     res.innerHTML = `<div style="background:#222; padding:15px; border-radius:8px; margin-top:10px;">
-                        <div style="color:var(--accent-orange); font-weight:bold;">${{d.data.invoice_no}}</div>
-                        <div style="font-size:13px;">Customer: ${{d.data.customer_name}}</div>
-                        <div style="font-size:13px;">Total Due: <span style="color:var(--accent-red)">${{d.data.due}}</span></div>
-                        <div style="margin-top:10px;">
-                             <input type="number" id="pay_amount" placeholder="Amount to Pay" style="width:120px; padding:5px;">
-                             <button onclick="payDue('${{d.data.invoice_no}}')" style="padding:5px 10px; width:auto;">Pay</button>
-                        </div>
-                     </div>`;
-                 }} else {{ res.innerHTML = '<div style="color:var(--accent-red)">Not Found</div>'; }}
-             }});
+        function resetForm() {{
+            document.getElementById('userForm').reset();
+            document.getElementById('action_type').value = 'create';
+            document.getElementById('saveUserBtn').innerHTML = '<i class="fas fa-save" style="margin-right: 10px;"></i> Save User';
+            document.getElementById('new_username').readOnly = false;
+            document.getElementById('perm_closing').checked = true;
         }}
         
-        function payDue(inv) {{
-             const amt = document.getElementById('pay_amount').value;
-             if(!amt) return alert("Enter Amount");
-             showLoading();
-             fetch('/store/pay-due', {{method:'POST', headers:{{'Content-Type':'application/json'}}, body:JSON.stringify({{inv, amount:amt}})}})
-             .then(r=>r.json()).then(d=>{{ showSuccess(); document.getElementById('dueResult').innerHTML = '<div style="color:green">Payment Added!</div>'; loadCustomers(); }});
+        function deleteUser(u) {{
+            if (confirm('Are you sure you want to delete "' + u + '"?')) {{
+                fetch('/admin/delete-user', {{
+                    method: 'POST',
+                    headers: {{'Content-Type': 'application/json'}},
+                    body: JSON.stringify({{ username: u }})
+                }}).then(() => loadUsers());
+            }}
         }}
-
+        
+        // ===== PARTICLES.JS INITIALIZATION =====
+        if (typeof particlesJS !== 'undefined') {{
+            particlesJS('particles-js', {{
+                particles: {{
+                    number: {{ value: 50, density: {{ enable: true, value_area: 800 }} }},
+                    color: {{ value: '#FF7A00' }},
+                    shape: {{ type: 'circle' }},
+                    opacity: {{ value: 0.3, random: true }},
+                    size: {{ value: 3, random: true }},
+                    line_linked: {{ enable: true, distance: 150, color: '#FF7A00', opacity: 0.1, width: 1 }},
+                    move: {{ enable: true, speed: 1, direction: 'none', random: true, out_mode: 'out' }}
+                }},
+                interactivity: {{
+                    events: {{ onhover: {{ enable: true, mode: 'grab' }} }},
+                    modes: {{ grab: {{ distance: 140, line_linked: {{ opacity: 0.3 }} }} }}
+                }}
+            }});
+        }}
+        
+        // Add CSS for fadeInUp animation
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes fadeInUp {{
+                from {{ opacity: 0; transform: translateY(20px); }}
+                to {{ opacity: 1; transform: translateY(0); }}
+            }}
+            @keyframes modalFadeOut {{
+                to {{ opacity: 0; }}
+            }}
+        `;
+        document.head.appendChild(style);
     </script>
 </body>
 </html>
 """
+# ==============================================================================
+# USER DASHBOARD TEMPLATE - MODERN UI
+# ==============================================================================
+
 USER_DASHBOARD_TEMPLATE = f"""
 <!doctype html>
 <html lang="en">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>User Dashboard</title>
+    <title>Dashboard - MNM Software</title>
     {COMMON_STYLES}
 </head>
 <body>
-    <div id="loading-overlay"><div class="spinner"></div><div style="color:white; margin-top:15px; font-weight:600;">Processing...</div></div>
-    <div class="sidebar">
-        <div class="brand-logo"><i class="fas fa-layer-group"></i> MNM<span>Software</span></div>
-        <div class="nav-menu">
-            <div class="nav-link active"><i class="fas fa-home"></i> Home</div>
-            <a href="/logout" class="nav-link" style="color:var(--accent-red); margin-top:auto;"><i class="fas fa-sign-out-alt"></i> Log Out</a>
+    <div class="animated-bg"></div>
+    
+    <div class="welcome-modal" id="welcomeModal">
+        <div class="welcome-content">
+            <div class="welcome-icon" id="welcomeIcon"><i class="fas fa-hand-sparkles"></i></div>
+            <div class="welcome-greeting" id="greetingText">Good Morning</div>
+            <div class="welcome-title">Welcome, <span>{{{{ session.user }}}}</span>!</div>
+            <div class="welcome-message">
+                Your workspace is ready.
+                Access your assigned modules below.
+            </div>
+            <button class="welcome-close" onclick="closeWelcome()">
+                <i class="fas fa-rocket" style="margin-right: 8px;"></i> Get Started
+            </button>
         </div>
-        <div class="sidebar-footer">© Mehedi Hasan</div>
     </div>
+    
+    <div id="loading-overlay">
+        <div class="spinner-container">
+            <div class="spinner"></div>
+            <div class="spinner-inner"></div>
+        </div>
+        <div class="loading-text">Processing...</div>
+    </div>
+    
+    <div class="sidebar">
+        <div class="brand-logo">
+            <i class="fas fa-layer-group"></i> 
+            MNM<span>Software</span>
+        </div>
+        <div class="nav-menu">
+            <div class="nav-link active">
+                <i class="fas fa-home"></i> Home
+            </div>
+            <a href="/logout" class="nav-link" style="color: var(--accent-red); margin-top: auto;">
+                <i class="fas fa-sign-out-alt"></i> Sign Out
+            </a>
+        </div>
+        <div class="sidebar-footer">
+            <i class="fas fa-code" style="margin-right: 5px;"></i> Powered by Mehedi Hasan
+        </div>
+    </div>
+    
     <div class="main-content">
         <div class="header-section">
-            <div><div class="page-title">Welcome, {{{{ session.user }}}}</div><div class="page-subtitle">Your assigned production modules.</div></div>
-            <div style="background:var(--bg-card); padding:10px 20px; border-radius:30px; border:1px solid var(--border-color); font-size:13px; font-weight:600; display:flex; align-items:center; gap:8px;">
-                    <span class="status-online-glow"></span> Online
+            <div>
+                <div class="page-title">Welcome, {{{{ session.user }}}}!</div>
+                <div class="page-subtitle">Your assigned production modules</div>
+            </div>
+            <div class="status-badge">
+                <div class="status-dot"></div>
+                <span>Online</span>
             </div>
         </div>
 
         {{% with messages = get_flashed_messages() %}}
             {{% if messages %}}
-                <div style="margin-bottom: 20px; color: #ff7675; font-size: 13px; text-align: center; background: rgba(255, 118, 117, 0.1); padding: 10px; border-radius: 8px; border: 1px solid rgba(255, 118, 117, 0.2);"><i class="fas fa-exclamation-circle"></i> {{{{ messages[0] }}}}</div>
+                <div class="flash-message flash-error">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <span>{{{{ messages[0] }}}}</span>
+                </div>
             {{% endif %}}
         {{% endwith %}}
 
         <div class="stats-grid">
             {{% if 'closing' in session.permissions %}}
-            <div class="card"><div class="section-header"><span>Closing Report</span><i class="fas fa-file-export" style="color:var(--accent-orange)"></i></div>
-            <form action="/generate-report" method="post" onsubmit="document.getElementById('loading-overlay').style.display='flex'"><div class="input-group"><label>REF NO</label><input type="text" name="ref_no" required placeholder="Booking Ref"></div><button>Generate</button></form></div>{{% endif %}}
+            <div class="card" style="animation: fadeInUp 0.5s ease-out 0.1s backwards;">
+                <div class="section-header">
+                    <span><i class="fas fa-file-export" style="margin-right: 10px; color: var(--accent-orange);"></i>Closing Report</span>
+                </div>
+                <p style="color: var(--text-secondary); margin-bottom: 20px; font-size: 14px; line-height: 1.6;">
+                    Generate production closing reports with real-time data.  
+                </p>
+                <form action="/generate-report" method="post" onsubmit="showLoading()">
+                    <div class="input-group">
+                        <label>BOOKING REF NO</label>
+                        <input type="text" name="ref_no" required placeholder="Enter Booking Reference">
+                    </div>
+                    <button type="submit">
+                        <i class="fas fa-magic" style="margin-right: 8px;"></i> Generate
+                    </button>
+                </form>
+            </div>
+            {{% endif %}}
             
             {{% if 'po_sheet' in session.permissions %}}
-            <div class="card"><div class="section-header"><span>PO Sheet</span><i class="fas fa-file-pdf" style="color:var(--accent-green)"></i></div>
-            <form action="/generate-po-report" method="post" enctype="multipart/form-data" onsubmit="document.getElementById('loading-overlay').style.display='flex'"><div class="input-group"><label>FILES</label><input type="file" name="pdf_files" multiple accept=".pdf" required style="padding:10px;"></div><button style="background:var(--accent-green)">Process Files</button></form></div>{{% endif %}}
+            <div class="card" style="animation: fadeInUp 0.5s ease-out 0.2s backwards;">
+                <div class="section-header">
+                    <span><i class="fas fa-file-pdf" style="margin-right: 10px; color: var(--accent-green);"></i>PO Sheet</span>
+                </div>
+                <p style="color: var(--text-secondary); margin-bottom: 20px; font-size: 14px; line-height: 1.6;">
+                    Process PDF files and generate PO summary reports.
+                </p>
+                <form action="/generate-po-report" method="post" enctype="multipart/form-data" onsubmit="showLoading()">
+                    <div class="input-group">
+                        <label>PDF FILES</label>
+                        <input type="file" name="pdf_files" multiple accept=".pdf" required style="padding: 12px;">
+                    </div>
+                    <button type="submit" style="background: linear-gradient(135deg, #10B981 0%, #34D399 100%);">
+                        <i class="fas fa-cogs" style="margin-right: 8px;"></i> Process Files
+                    </button>
+                </form>
+            </div>
+            {{% endif %}}
             
             {{% if 'accessories' in session.permissions %}}
-            <div class="card"><div class="section-header"><span>Accessories</span><i class="fas fa-boxes" style="color:var(--accent-purple)"></i></div><p style="color:var(--text-secondary); margin-bottom:20px; font-size:13px; line-height:1.5;">Manage Challans, entries and history for accessories.</p><a href="/admin/accessories"><button style="background:var(--accent-purple)">Open Dashboard</button></a></div>{{% endif %}}
-            
-            {{% if 'store' in session.permissions %}}
-            <div class="card"><div class="section-header"><span>Store Manage</span><i class="fas fa-store" style="color:var(--accent-blue)"></i></div><p style="color:var(--text-secondary); margin-bottom:20px; font-size:13px; line-height:1.5;">Manage Products, Invoices & Customers.</p><a href="/store/dashboard"><button style="background:var(--accent-blue)">Access Store</button></a></div>{{% endif %}}
+            <div class="card" style="animation: fadeInUp 0.5s ease-out 0.3s backwards;">
+                <div class="section-header">
+                    <span><i class="fas fa-boxes" style="margin-right: 10px; color: var(--accent-purple);"></i>Accessories</span>
+                </div>
+                <p style="color: var(--text-secondary); margin-bottom: 20px; font-size: 14px; line-height: 1.6;">
+                    Manage challans, entries and delivery history for accessories.
+                </p>
+                <a href="/admin/accessories">
+                    <button style="background: linear-gradient(135deg, #8B5CF6 0%, #A78BFA 100%);">
+                        <i class="fas fa-external-link-alt" style="margin-right: 8px;"></i> Open Dashboard
+                    </button>
+                </a>
+            </div>
+            {{% endif %}}
         </div>
     </div>
+    
+    <script>
+        // Welcome Popup
+        function showWelcomePopup() {{
+            const hour = new Date().getHours();
+            let greeting, icon;
+            
+            if (hour >= 5 && hour < 12) {{
+                greeting = "Good Morning";
+                icon = '<i class="fas fa-sun"></i>';
+            }} else if (hour >= 12 && hour < 17) {{
+                greeting = "Good Afternoon";
+                icon = '<i class="fas fa-sun"></i>';
+            }} else if (hour >= 17 && hour < 21) {{
+                greeting = "Good Evening";
+                icon = '<i class="fas fa-city"></i>';
+            }} else {{
+                greeting = "Good Night";
+                icon = '<i class="fas fa-moon"></i>';
+            }}
+            
+            document.getElementById('greetingText').textContent = greeting;
+            document.getElementById('welcomeIcon').innerHTML = icon;
+            document.getElementById('welcomeModal').style.display = 'flex';
+        }}
+        
+        function closeWelcome() {{
+            const modal = document.getElementById('welcomeModal');
+            modal.style.opacity = '0';
+            setTimeout(() => {{
+                modal.style.display = 'none';
+                sessionStorage.setItem('welcomeShown', 'true');
+            }}, 300);
+        }}
+        
+        if (!sessionStorage.getItem('welcomeShown')) {{
+            setTimeout(showWelcomePopup, 500);
+        }}
+        
+        function showLoading() {{
+            document.getElementById('loading-overlay').style.display = 'flex';
+            return true;
+        }}
+        
+        // Add fadeInUp animation
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes fadeInUp {{
+                from {{ opacity: 0; transform: translateY(20px); }}
+                to {{ opacity: 1; transform: translateY(0); }}
+            }}
+        `;
+        document.head.appendChild(style);
+    </script>
 </body>
 </html>
 """
 
 ACCESSORIES_SEARCH_TEMPLATE = f"""
-<!doctype html><html lang="en"><head><title>Search</title>{COMMON_STYLES}</head><body style="justify-content:center; align-items:center;">
-<div class="card" style="width:100%; max-width:450px; padding:40px;">
-    <div class="section-header" style="justify-content:center; margin-bottom:30px; border-bottom:none;">Accessories Challan</div>
-    <form action="/admin/accessories/input" method="post"><div class="input-group"><label><i class="fas fa-search"></i> BOOKING REFERENCE</label><input type="text" name="ref_no" required placeholder="Enter Booking No"></div>
-    <button style="background:var(--accent-orange);">Proceed to Entry <i class="fas fa-arrow-right"></i></button>
-    </form>
-    {{% with messages = get_flashed_messages() %}}
-        {{% if messages %}}
-            <div style="margin-top: 15px; color: #ff7675; font-size: 13px; text-align: center; background: rgba(255, 118, 117, 0.1); padding: 10px; border-radius: 8px;"><i class="fas fa-exclamation-circle"></i> {{{{ messages[0] }}}}</div>
-        {{% endif %}}
-    {{% endwith %}}
-    <div style="display:flex; justify-content:space-between; margin-top:25px; align-items:center;">
-        <a href="/" style="color:var(--text-secondary); text-decoration:none; font-size:13px;"><i class="fas fa-arrow-left"></i> Back to Dashboard</a>
-        <a href="/logout" style="color:var(--accent-red); text-decoration:none; font-size:13px; font-weight:600;">Sign Out <i class="fas fa-sign-out-alt"></i></a>
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Accessories Search - MNM Software</title>
+    {COMMON_STYLES}
+    <style>
+        body {{
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }}
+        
+        .search-container {{
+            position: relative;
+            z-index: 10;
+            width: 100%;
+            max-width: 480px;
+            padding: 20px;
+        }}
+        
+        .search-card {{
+            background: var(--gradient-card);
+            border: 1px solid var(--border-color);
+            border-radius: 24px;
+            padding: 50px 45px;
+            backdrop-filter: blur(20px);
+            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.5), 0 0 60px var(--accent-orange-glow);
+            animation: cardAppear 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }}
+        
+        @keyframes cardAppear {{
+            from {{ opacity: 0; transform: translateY(20px) scale(0.95); }}
+            to {{ opacity: 1; transform: translateY(0) scale(1); }}
+        }}
+        
+        .search-header {{
+            text-align: center;
+            margin-bottom: 40px;
+        }}
+        
+        .search-icon {{
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(145deg, rgba(139, 92, 246, 0.2), rgba(139, 92, 246, 0.05));
+            border-radius: 20px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
+            color: var(--accent-purple);
+            margin-bottom: 20px;
+            animation: iconFloat 3s ease-in-out infinite;
+        }}
+        
+        @keyframes iconFloat {{
+            0%, 100% {{ transform: translateY(0); }}
+            50% {{ transform: translateY(-10px); }}
+        }}
+        
+        .search-title {{
+            font-size: 28px;
+            font-weight: 800;
+            color: white;
+            margin-bottom: 8px;
+        }}
+        
+        .search-subtitle {{
+            color: var(--text-secondary);
+            font-size: 14px;
+        }}
+        
+        .nav-links {{
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border-color);
+        }}
+        
+        .nav-links a {{
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: var(--transition-smooth);
+        }}
+        
+        .nav-links a:hover {{
+            color: var(--accent-orange);
+        }}
+        
+        .nav-links a.logout {{
+            color: var(--accent-red);
+        }}
+        
+        .nav-links a.logout:hover {{
+            color: #ff6b6b;
+        }}
+    </style>
+</head>
+<body>
+    <div class="animated-bg"></div>
+    
+    <div class="search-container">
+        <div class="search-card">
+            <div class="search-header">
+                <div class="search-icon">
+                    <i class="fas fa-boxes"></i>
+                </div>
+                <div class="search-title">Accessories Challan</div>
+                <div class="search-subtitle">Enter booking reference to continue</div>
+            </div>
+            
+            <form action="/admin/accessories/input" method="post">
+                <div class="input-group">
+                    <label><i class="fas fa-search" style="margin-right: 5px;"></i> BOOKING REFERENCE</label>
+                    <input type="text" name="ref_no" required placeholder="e.g. IB-12345" autocomplete="off">
+                </div>
+                <button type="submit" style="background: linear-gradient(135deg, #8B5CF6 0%, #A78BFA 100%);">
+                    Proceed to Entry <i class="fas fa-arrow-right" style="margin-left: 10px;"></i>
+                </button>
+            </form>
+            
+            {{% with messages = get_flashed_messages() %}}
+                {{% if messages %}}
+                    <div class="flash-message flash-error" style="margin-top: 20px;">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <span>{{{{ messages[0] }}}}</span>
+                    </div>
+                {{% endif %}}
+            {{% endwith %}}
+            
+            <div class="nav-links">
+                <a href="/"><i class="fas fa-arrow-left"></i> Back to Dashboard</a>
+                <a href="/logout" class="logout">Sign Out <i class="fas fa-sign-out-alt"></i></a>
+            </div>
+        </div>
+        
+        <div style="text-align: center; margin-top: 25px; color: var(--text-secondary); font-size: 11px; opacity: 0.4;">
+            © 2025 Mehedi Hasan
+        </div>
     </div>
-    <div style="text-align: center; margin-top: 30px; color: var(--text-secondary); font-size: 11px; opacity: 0.5;">© Mehedi Hasan</div>
-</div></body></html>
+</body>
+</html>
 """
 
 ACCESSORIES_INPUT_TEMPLATE = f"""
@@ -1612,105 +3587,768 @@ ACCESSORIES_INPUT_TEMPLATE = f"""
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Accessories Input</title>
+    <title>Accessories Entry - MNM Software</title>
     {COMMON_STYLES}
+    <style>
+        .ref-badge {{
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(255, 122, 0, 0.1);
+            border: 1px solid rgba(255, 122, 0, 0.2);
+            padding: 10px 20px;
+            border-radius: 12px;
+            margin-top: 10px;
+        }}
+        
+        .ref-badge .ref-no {{
+            font-size: 18px;
+            font-weight: 800;
+            color: var(--accent-orange);
+        }}
+        
+        .ref-badge .ref-info {{
+            color: var(--text-secondary);
+            font-size: 13px;
+            font-weight: 500;
+        }}
+        
+        .history-scroll {{
+            max-height: 500px;
+            overflow-y: auto;
+            padding-right: 5px;
+        }}
+        
+        .challan-row {{
+            display: grid;
+            grid-template-columns: 60px 1fr 80px 60px 80px;
+            gap: 10px;
+            padding: 14px;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 10px;
+            margin-bottom: 8px;
+            align-items: center;
+            transition: var(--transition-smooth);
+            border: 1px solid transparent;
+        }}
+        
+        .challan-row:hover {{
+            background: rgba(255, 122, 0, 0.05);
+            border-color: var(--border-glow);
+        }}
+        
+        .line-badge {{
+            background: var(--gradient-orange);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 13px;
+            text-align: center;
+        }}
+        
+        .qty-value {{
+            font-size: 18px;
+            font-weight: 800;
+            color: var(--accent-green);
+        }}
+        
+        .status-check {{
+            color: var(--accent-green);
+            font-size: 20px;
+        }}
+        
+        .print-btn {{
+            background: linear-gradient(135deg, #10B981 0%, #34D399 100%) !important;
+        }}
+        
+        .empty-state {{
+            text-align: center;
+            padding: 50px 20px;
+            color: var(--text-secondary);
+        }}
+        
+        .empty-state i {{
+            font-size: 50px;
+            opacity: 0.2;
+            margin-bottom: 15px;
+        }}
+        
+        .grid-2-cols {{
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }}
+        
+        .count-badge {{
+            background: var(--accent-purple);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+            margin-left: 10px;
+        }}
+        
+        /* Fixed Select Styling */
+        select {{
+            background-color: #1a1a25 !important;
+            color: white !important;
+        }}
+        
+        select option {{
+            background-color: #1a1a25 !important;
+            color: white !important;
+            padding: 10px;
+        }}
+    </style>
 </head>
 <body>
+    <div class="animated-bg"></div>
+    
     <div id="loading-overlay">
-        <div class="spinner" id="spinner-anim"></div>
-        <div class="checkmark-container" id="success-anim"><div class="checkmark-circle"></div><div class="anim-text">Done!</div></div>
-        <div style="color:white; margin-top:15px; font-weight:600;" id="loading-text">Saving...</div>
+        <div class="spinner-container">
+            <div class="spinner" id="spinner-anim"></div>
+            <div class="spinner-inner"></div>
+        </div>
+        <div class="checkmark-container" id="success-anim">
+            <div class="checkmark-circle"></div>
+            <div class="anim-text">Saved!</div>
+        </div>
+        <div class="loading-text" id="loading-text">Saving Entry...</div>
     </div>
 
     <div class="sidebar">
-        <div class="brand-logo"><i class="fas fa-boxes"></i> Accessories</div>
-        <div class="nav-menu">
-            <a href="/" class="nav-link"><i class="fas fa-home"></i> Home</a>
-            <a href="/admin/accessories" class="nav-link active"><i class="fas fa-search"></i> Search</a>
-            <a href="/logout" class="nav-link" style="color:var(--accent-red); margin-top:10px;"><i class="fas fa-sign-out-alt"></i> Sign Out</a>
+        <div class="brand-logo">
+            <i class="fas fa-boxes"></i> 
+            Accessories
         </div>
-        <div class="sidebar-footer">© Mehedi Hasan</div>
+        <div class="nav-menu">
+            <a href="/" class="nav-link"><i class="fas fa-home"></i> Dashboard</a>
+            <a href="/admin/accessories" class="nav-link active"><i class="fas fa-search"></i> Search</a>
+            <a href="/logout" class="nav-link" style="color: var(--accent-red); margin-top: 20px;">
+                <i class="fas fa-sign-out-alt"></i> Sign Out
+            </a>
+        </div>
+        <div class="sidebar-footer">© 2025 Mehedi Hasan</div>
     </div>
+    
     <div class="main-content">
         <div class="header-section">
             <div>
                 <div class="page-title">Accessories Entry</div>
-                <div style="color:var(--accent-orange); font-weight:700; font-size:16px;">{{{{ ref }}}} <span style="color:var(--text-secondary); font-weight:400; margin-left:10px; font-size:14px;">{{{{ buyer }}}} | {{{{ style }}}}</span></div>
+                <div class="ref-badge">
+                    <span class="ref-no">{{{{ ref }}}}</span>
+                    <span class="ref-info">{{{{ buyer }}}} • {{{{ style }}}}</span>
+                </div>
             </div>
-            <a href="/admin/accessories/print?ref={{{{ ref }}}}" target="_blank"><button style="width:auto; padding:12px 25px; background:var(--accent-green);"> <i class="fas fa-print" style="margin-right:8px;"></i> Print Report</button></a>
+            <a href="/admin/accessories/print?ref={{{{ ref }}}}" target="_blank">
+                <button class="print-btn" style="width: auto; padding: 14px 30px;">
+                    <i class="fas fa-print" style="margin-right: 10px;"></i> Print Report
+                </button>
+            </a>
         </div>
 
         <div class="dashboard-grid-2">
             <div class="card">
-                <div class="section-header"><span>New Challan Entry</span><i class="fas fa-plus-circle" style="color:var(--accent-orange)"></i></div>
-                <form action="/admin/accessories/save" method="post" onsubmit="showLoading()">
+                <div class="section-header">
+                    <span><i class="fas fa-plus-circle" style="margin-right: 10px; color: var(--accent-orange);"></i>New Challan Entry</span>
+                </div>
+                <form action="/admin/accessories/save" method="post" onsubmit="return showLoading()">
                     <input type="hidden" name="ref" value="{{{{ ref }}}}">
-                    <div class="input-group"><label>TYPE</label><select name="item_type"><option value="Top">Top</option><option value="Bottom">Bottom</option></select></div>
-                    <div class="input-group"><label>COLOR</label><select name="color" required><option value="" disabled selected>Select Color</option>{{% for c in colors %}}<option value="{{{{ c }}}}">{{{{ c }}}}</option>{{% endfor %}}</select></div>
-                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px;">
-                        <div class="input-group"><label>LINE NO</label><input type="text" name="line_no" required placeholder="Line"></div>
-                        <div class="input-group"><label>SIZE</label><input type="text" name="size" value="ALL"></div>
+                    
+                    <div class="grid-2-cols">
+                        <div class="input-group">
+                            <label><i class="fas fa-tag" style="margin-right: 5px;"></i> TYPE</label>
+                            <select name="item_type">
+                                <option value="Top">Top</option>
+                                <option value="Bottom">Bottom</option>
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <label><i class="fas fa-palette" style="margin-right: 5px;"></i> COLOR</label>
+                            <select name="color" required>
+                                <option value="" disabled selected>Select Color</option>
+                                {{% for c in colors %}}
+                                <option value="{{{{ c }}}}">{{{{ c }}}}</option>
+                                {{% endfor %}}
+                            </select>
+                        </div>
                     </div>
-                    <div class="input-group"><label>QUANTITY</label><input type="number" name="qty" required placeholder="0"></div>
-                    <button type="submit"><i class="fas fa-save" style="margin-right:8px;"></i> Save Entry</button>
+                    
+                    <div class="grid-2-cols">
+                        <div class="input-group">
+                            <label><i class="fas fa-industry" style="margin-right: 5px;"></i> LINE NO</label>
+                            <input type="text" name="line_no" required placeholder="e.g. L-01">
+                        </div>
+                        <div class="input-group">
+                            <label><i class="fas fa-ruler" style="margin-right: 5px;"></i> SIZE</label>
+                            <input type="text" name="size" value="ALL" placeholder="Size">
+                        </div>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label><i class="fas fa-sort-numeric-up" style="margin-right: 5px;"></i> QUANTITY</label>
+                        <input type="number" name="qty" required placeholder="Enter Quantity" min="1">
+                    </div>
+                    
+                    <button type="submit">
+                        <i class="fas fa-save" style="margin-right: 10px;"></i> Save Entry
+                    </button>
                 </form>
             </div>
 
             <div class="card">
-                <div class="section-header">Recent History <span style="background:var(--accent-purple); padding:2px 8px; border-radius:4px; font-size:11px; margin-left:10px;">{{{{ challans|length }}}}</span></div>
-                <div style="overflow-y:auto; max-height:450px; padding-right:5px;">
-                    <table class="dark-table">
-                        <thead><tr><th>Ln</th><th>Color</th><th>Qty</th><th>St</th><th style="text-align:right;">Act</th></tr></thead>
-                        <tbody>
-                            {{% for item in challans|reverse %}}
-                            <tr>
-                                <td>{{{{ item.line }}}}</td>
-                                <td>{{{{ item.color }}}}</td>
-                                <td style="font-weight:700; color:var(--accent-green);">{{{{ item.qty }}}}</td>
-                                <td style="color:var(--accent-green); font-weight:bold;">{{{{ item.status }}}}</td>
-                                <td style="text-align:right;">
-                                    {{% if session.role == 'admin' %}}
-                                    <div class="action-cell">
-                                        <a href="/admin/accessories/edit?ref={{{{ ref }}}}&index={{{{ (challans|length) - loop.index }}}}" class="action-btn btn-edit"><i class="fas fa-pen"></i></a>
-                                        <form action="/admin/accessories/delete" method="POST" style="display:inline;" onsubmit="return confirm('Delete this entry?');">
-                                            <input type="hidden" name="ref" value="{{{{ ref }}}}">
-                                            <input type="hidden" name="index" value="{{{{ (challans|length) - loop.index }}}}">
-                                            <button type="submit" class="action-btn btn-del"><i class="fas fa-trash"></i></button>
-                                        </form>
-                                    </div>
-                                    {{% else %}}<span style="font-size:10px; opacity:0.5;">Locked</span>{{% endif %}}
-                                </td>
-                            </tr>
-                            {{% else %}}
-                            <tr><td colspan="5" style="text-align:center; padding:30px; color:var(--text-secondary); font-size:12px;">No challans added yet.</td></tr>
-                            {{% endfor %}}
-                        </tbody>
-                    </table>
+                <div class="section-header">
+                    <span>Recent History</span>
+                    <span class="count-badge">{{{{ challans|length }}}}</span>
+                </div>
+                <div class="history-scroll">
+                    {{% if challans %}}
+                        {{% for item in challans|reverse %}}
+                        <div class="challan-row" style="animation: fadeInUp 0.3s ease-out {{{{ loop.index * 0.05 }}}}s backwards;">
+                            <div class="line-badge">{{{{ item.line }}}}</div>
+                            <div style="color: white; font-weight: 500; font-size: 13px;">{{{{ item.color }}}}</div>
+                            <div class="qty-value">{{{{ item.qty }}}}</div>
+                            <div class="status-check">{{{{ item.status if item.status else '●' }}}}</div>
+                            <div class="action-cell">
+                                {{% if session.role == 'admin' %}}
+                                <a href="/admin/accessories/edit?ref={{{{ ref }}}}&index={{{{ (challans|length) - loop.index }}}}" class="action-btn btn-edit">
+                                    <i class="fas fa-pen"></i>
+                                </a>
+                                <form action="/admin/accessories/delete" method="POST" style="display: inline;" onsubmit="return confirm('Delete this entry?');">
+                                    <input type="hidden" name="ref" value="{{{{ ref }}}}">
+                                    <input type="hidden" name="index" value="{{{{ (challans|length) - loop.index }}}}">
+                                    <button type="submit" class="action-btn btn-del"><i class="fas fa-trash"></i></button>
+                                </form>
+                                {{% else %}}
+                                <span style="font-size: 10px; color: var(--text-secondary); opacity: 0.5;">🔒</span>
+                                {{% endif %}}
+                            </div>
+                        </div>
+                        {{% endfor %}}
+                    {{% else %}}
+                        <div class="empty-state">
+                            <i class="fas fa-inbox"></i>
+                            <div>No challans added yet</div>
+                            <div style="font-size: 12px; margin-top: 5px;">Add your first entry using the form</div>
+                        </div>
+                    {{% endif %}}
                 </div>
             </div>
         </div>
     </div>
+    
     <script>
         function showLoading() {{
-            document.getElementById('loading-overlay').style.display = 'flex';
-            document.getElementById('spinner-anim').style.display = 'block';
-            document.getElementById('success-anim').style.display = 'none';
+            const overlay = document.getElementById('loading-overlay');
+            const spinner = document.getElementById('spinner-anim').parentElement;
+            const success = document.getElementById('success-anim');
+            const text = document.getElementById('loading-text');
+            
+            overlay.style.display = 'flex';
+            spinner.style.display = 'block';
+            success.style.display = 'none';
+            text.style.display = 'block';
+            text.textContent = 'Saving Entry...';
+            
             return true;
         }}
+        
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes fadeInUp {{
+                from {{ opacity: 0; transform: translateY(10px); }}
+                to {{ opacity: 1; transform: translateY(0); }}
+            }}
+        `;
+        document.head.appendChild(style);
     </script>
 </body>
 </html>
 """
 
-ACCESSORIES_EDIT_TEMPLATE = f"""<!doctype html><html lang="en"><head><title>Edit</title>{COMMON_STYLES}</head><body style="justify-content:center; align-items:center;">
-<div class="card" style="width:100%; max-width:400px; padding:40px;"><div class="section-header" style="justify-content:center; border-bottom:none; margin-bottom:20px;">Edit Entry</div>
-<form action="/admin/accessories/update" method="post"><input type="hidden" name="ref" value="{{{{ ref }}}}"><input type="hidden" name="index" value="{{{{ index }}}}">
-<div class="input-group"><label>LINE NO</label><input type="text" name="line_no" value="{{{{ item.line }}}}" required></div>
-<div class="input-group"><label>COLOR</label><input type="text" name="color" value="{{{{ item.color }}}}" required></div>
-<div class="input-group"><label>SIZE</label><input type="text" name="size" value="{{{{ item.size }}}}" required></div>
-<div class="input-group"><label>QUANTITY</label><input type="number" name="qty" value="{{{{ item.qty }}}}" required></div>
-<button type="submit" style="background:var(--accent-purple); margin-top:10px;"><i class="fas fa-sync-alt"></i> Update</button></form>
-<div style="text-align:center; margin-top:20px;"><a href="/admin/accessories/input_direct?ref={{{{ ref }}}}" style="color:var(--text-secondary); font-size:13px; text-decoration:none;">Cancel</a></div></div></body></html>"""
+ACCESSORIES_EDIT_TEMPLATE = f"""
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Edit Entry - MNM Software</title>
+    {COMMON_STYLES}
+    <style>
+        body {{
+            justify-content: center;
+            align-items: center;
+        }}
+        
+        .edit-container {{
+            position: relative;
+            z-index: 10;
+            width: 100%;
+            max-width: 450px;
+            padding: 20px;
+        }}
+        
+        .edit-card {{
+            background: var(--gradient-card);
+            border: 1px solid var(--border-color);
+            border-radius: 24px;
+            padding: 45px;
+            backdrop-filter: blur(20px);
+            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.5);
+            animation: cardAppear 0.5s ease-out;
+        }}
+        
+        @keyframes cardAppear {{
+            from {{ opacity: 0; transform: scale(0.95); }}
+            to {{ opacity: 1; transform: scale(1); }}
+        }}
+        
+        .edit-header {{
+            text-align: center;
+            margin-bottom: 35px;
+        }}
+        
+        .edit-icon {{
+            width: 70px;
+            height: 70px;
+            background: linear-gradient(145deg, rgba(139, 92, 246, 0.2), rgba(139, 92, 246, 0.05));
+            border-radius: 16px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            color: var(--accent-purple);
+            margin-bottom: 15px;
+        }}
+        
+        .edit-title {{
+            font-size: 24px;
+            font-weight: 800;
+            color: white;
+        }}
+        
+        .cancel-link {{
+            display: block;
+            text-align: center;
+            margin-top: 20px;
+            color: var(--text-secondary);
+            font-size: 13px;
+            text-decoration: none;
+            transition: var(--transition-smooth);
+        }}
+        
+        .cancel-link:hover {{
+            color: var(--accent-orange);
+        }}
+    </style>
+</head>
+<body>
+    <div class="animated-bg"></div>
+    
+    <div class="edit-container">
+        <div class="edit-card">
+            <div class="edit-header">
+                <div class="edit-icon">
+                    <i class="fas fa-edit"></i>
+                </div>
+                <div class="edit-title">Edit Entry</div>
+            </div>
+            
+            <form action="/admin/accessories/update" method="post">
+                <input type="hidden" name="ref" value="{{{{ ref }}}}">
+                <input type="hidden" name="index" value="{{{{ index }}}}">
+                
+                <div class="input-group">
+                    <label><i class="fas fa-industry" style="margin-right: 5px;"></i> LINE NO</label>
+                    <input type="text" name="line_no" value="{{{{ item.line }}}}" required>
+                </div>
+                
+                <div class="input-group">
+                    <label><i class="fas fa-palette" style="margin-right: 5px;"></i> COLOR</label>
+                    <input type="text" name="color" value="{{{{ item.color }}}}" required>
+                </div>
+                
+                <div class="input-group">
+                    <label><i class="fas fa-ruler" style="margin-right: 5px;"></i> SIZE</label>
+                    <input type="text" name="size" value="{{{{ item.size }}}}" required>
+                </div>
+                
+                <div class="input-group">
+                    <label><i class="fas fa-sort-numeric-up" style="margin-right: 5px;"></i> QUANTITY</label>
+                    <input type="number" name="qty" value="{{{{ item.qty }}}}" required>
+                </div>
+                
+                <button type="submit" style="background: linear-gradient(135deg, #8B5CF6 0%, #A78BFA 100%);">
+                    <i class="fas fa-sync-alt" style="margin-right: 10px;"></i> Update Entry
+                </button>
+            </form>
+            
+            <a href="/admin/accessories/input_direct?ref={{{{ ref }}}}" class="cancel-link">
+                <i class="fas fa-times" style="margin-right: 5px;"></i> Cancel
+            </a>
+        </div>
+    </div>
+</body>
+</html>
+"""
+
+# ==============================================================================
+# STORE DASHBOARD TEMPLATE - NEW (ALUMINUM SHOP)
+# ==============================================================================
+
+STORE_DASHBOARD_TEMPLATE = f"""
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Store Dashboard - MNM Software</title>
+    {COMMON_STYLES}
+    <style>
+        .store-card {{
+            background: var(--gradient-card);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 30px;
+            transition: var(--transition-smooth);
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }}
+        
+        .store-card::before {{
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--gradient-orange);
+            opacity: 0;
+            transition: var(--transition-smooth);
+        }}
+        
+        .store-card:hover {{
+            transform: translateY(-8px);
+            border-color: var(--accent-orange);
+            box-shadow: 0 20px 40px rgba(255, 122, 0, 0.15);
+        }}
+        
+        .store-card:hover::before {{
+            opacity: 1;
+        }}
+        
+        .store-card-icon {{
+            width: 70px;
+            height: 70px;
+            border-radius: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            margin-bottom: 20px;
+            transition: var(--transition-smooth);
+        }}
+        
+        .store-card:hover .store-card-icon {{
+            transform: scale(1.1) rotate(-5deg);
+        }}
+        
+        .icon-orange {{
+            background: linear-gradient(145deg, rgba(255, 122, 0, 0.2), rgba(255, 122, 0, 0.05));
+            color: var(--accent-orange);
+        }}
+        
+        .icon-purple {{
+            background: linear-gradient(145deg, rgba(139, 92, 246, 0.2), rgba(139, 92, 246, 0.05));
+            color: var(--accent-purple);
+        }}
+        
+        .icon-green {{
+            background: linear-gradient(145deg, rgba(16, 185, 129, 0.2), rgba(16, 185, 129, 0.05));
+            color: var(--accent-green);
+        }}
+        
+        .icon-blue {{
+            background: linear-gradient(145deg, rgba(59, 130, 246, 0.2), rgba(59, 130, 246, 0.05));
+            color: var(--accent-blue);
+        }}
+        
+        .icon-cyan {{
+            background: linear-gradient(145deg, rgba(6, 182, 212, 0.2), rgba(6, 182, 212, 0.05));
+            color: var(--accent-cyan);
+        }}
+        
+        .icon-red {{
+            background: linear-gradient(145deg, rgba(239, 68, 68, 0.2), rgba(239, 68, 68, 0.05));
+            color: var(--accent-red);
+        }}
+        
+        .store-card-title {{
+            font-size: 20px;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 8px;
+        }}
+        
+        .store-card-desc {{
+            font-size: 13px;
+            color: var(--text-secondary);
+            line-height: 1.5;
+            margin-bottom: 20px;
+        }}
+        
+        .store-card-stat {{
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-top: 15px;
+            border-top: 1px solid var(--border-color);
+        }}
+        
+        .stat-number {{
+            font-size: 28px;
+            font-weight: 800;
+            color: white;
+        }}
+        
+        .stat-label {{
+            font-size: 11px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }}
+        
+        .store-grid {{
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+            margin-top: 30px;
+        }}
+        
+        .coming-soon-badge {{
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: rgba(255, 122, 0, 0.2);
+            color: var(--accent-orange);
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }}
+        
+        .quick-action {{
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 12px;
+            color: var(--text-secondary);
+            transition: var(--transition-smooth);
+        }}
+        
+        .quick-action:hover {{
+            background: var(--accent-orange);
+            color: white;
+        }}
+    </style>
+</head>
+<body>
+    <div class="animated-bg"></div>
+
+    <div class="mobile-toggle" onclick="document.querySelector('.sidebar').classList.toggle('active')">
+        <i class="fas fa-bars"></i>
+    </div>
+
+    <div class="sidebar">
+        <div class="brand-logo">
+            <i class="fas fa-store"></i> 
+            Store<span>Panel</span>
+        </div>
+        <div class="nav-menu">
+            <a href="/" class="nav-link">
+                <i class="fas fa-arrow-left"></i> Back to Main
+            </a>
+            <div class="nav-link active">
+                <i class="fas fa-th-large"></i> Store Dashboard
+            </div>
+            <div class="nav-link" style="opacity: 0.5; cursor: not-allowed;">
+                <i class="fas fa-box"></i> Products
+                <span class="nav-badge" style="background: var(--accent-purple);">Soon</span>
+            </div>
+            <div class="nav-link" style="opacity: 0.5; cursor: not-allowed;">
+                <i class="fas fa-users"></i> Customers
+                <span class="nav-badge" style="background: var(--accent-purple);">Soon</span>
+            </div>
+            <div class="nav-link" style="opacity: 0.5; cursor: not-allowed;">
+                <i class="fas fa-file-invoice-dollar"></i> Invoices
+                <span class="nav-badge" style="background: var(--accent-purple);">Soon</span>
+            </div>
+            <a href="/logout" class="nav-link" style="color: var(--accent-red); margin-top: 20px;">
+                <i class="fas fa-sign-out-alt"></i> Sign Out
+            </a>
+        </div>
+        <div class="sidebar-footer">
+            <i class="fas fa-code" style="margin-right: 5px;"></i> Powered by Mehedi Hasan
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="header-section">
+            <div>
+                <div class="page-title">Store Dashboard</div>
+                <div class="page-subtitle">Aluminum Shop Management System</div>
+            </div>
+            <div class="status-badge">
+                <div class="status-dot"></div>
+                <span>Store Active</span>
+            </div>
+        </div>
+
+        <div class="store-grid">
+            <div class="store-card">
+                <span class="coming-soon-badge">Coming Soon</span>
+                <div class="store-card-icon icon-orange">
+                    <i class="fas fa-boxes"></i>
+                </div>
+                <div class="store-card-title">Product Inventory</div>
+                <div class="store-card-desc">
+                    Manage aluminum products, profiles, sheets, and accessories. Track stock levels and reorder points.
+                </div>
+                <div class="store-card-stat">
+                    <div>
+                        <div class="stat-number">0</div>
+                        <div class="stat-label">Total Products</div>
+                    </div>
+                    <div class="quick-action">
+                        <i class="fas fa-plus"></i> Add Product
+                    </div>
+                </div>
+            </div>
+
+            <div class="store-card">
+                <span class="coming-soon-badge">Coming Soon</span>
+                <div class="store-card-icon icon-green">
+                    <i class="fas fa-shopping-cart"></i>
+                </div>
+                <div class="store-card-title">Sales & Orders</div>
+                <div class="store-card-desc">
+                    Create new sales orders, manage pending orders, and track delivery status.
+                </div>
+                <div class="store-card-stat">
+                    <div>
+                        <div class="stat-number">0</div>
+                        <div class="stat-label">Today's Sales</div>
+                    </div>
+                    <div class="quick-action">
+                        <i class="fas fa-receipt"></i> New Sale
+                    </div>
+                </div>
+            </div>
+
+            <div class="store-card">
+                <span class="coming-soon-badge">Coming Soon</span>
+                <div class="store-card-icon icon-purple">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div class="store-card-title">Customer Management</div>
+                <div class="store-card-desc">
+                    Maintain customer database, track purchase history, and manage credit accounts.
+                </div>
+                <div class="store-card-stat">
+                    <div>
+                        <div class="stat-number">0</div>
+                        <div class="stat-label">Total Customers</div>
+                    </div>
+                    <div class="quick-action">
+                        <i class="fas fa-user-plus"></i> Add Customer
+                    </div>
+                </div>
+            </div>
+
+            <div class="store-card">
+                <span class="coming-soon-badge">Coming Soon</span>
+                <div class="store-card-icon icon-blue">
+                    <i class="fas fa-file-invoice-dollar"></i>
+                </div>
+                <div class="store-card-title">Invoices & Billing</div>
+                <div class="store-card-desc">
+                    Generate professional invoices, track payments, and manage outstanding dues.
+                </div>
+                <div class="store-card-stat">
+                    <div>
+                        <div class="stat-number">৳0</div>
+                        <div class="stat-label">This Month</div>
+                    </div>
+                    <div class="quick-action">
+                        <i class="fas fa-file-alt"></i> Create Invoice
+                    </div>
+                </div>
+            </div>
+
+            <div class="store-card">
+                <span class="coming-soon-badge">Coming Soon</span>
+                <div class="store-card-icon icon-red">
+                    <i class="fas fa-wallet"></i>
+                </div>
+                <div class="store-card-title">Expense Tracker</div>
+                <div class="store-card-desc">
+                    Record daily expenses, categorize costs, and monitor profit margins.
+                </div>
+                <div class="store-card-stat">
+                    <div>
+                        <div class="stat-number">৳0</div>
+                        <div class="stat-label">Total Expense</div>
+                    </div>
+                    <div class="quick-action">
+                        <i class="fas fa-plus"></i> Add Expense
+                    </div>
+                </div>
+            </div>
+
+            <div class="store-card">
+                <span class="coming-soon-badge">Coming Soon</span>
+                <div class="store-card-icon icon-cyan">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <div class="store-card-title">Reports & Analytics</div>
+                <div class="store-card-desc">
+                    View sales reports, profit analysis, stock movement, and business insights.
+                </div>
+                <div class="store-card-stat">
+                    <div>
+                        <div class="stat-number">0</div>
+                        <div class="stat-label">Reports Generated</div>
+                    </div>
+                    <div class="quick-action">
+                        <i class="fas fa-download"></i> Export Report
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card" style="margin-top: 30px;">
+            <div class="section-header">
+                <span><i class="fas fa-info-circle" style="margin-right: 10px; color: var(--accent-orange);"></i>About Store Module</span>
+            </div>
+            <p style="color: var(--text-secondary); line-height: 1.8; font-size: 14px;">
+                এই Store মডিউলটি একটি এলুমিনিয়াম দোকানের জন্য ডিজাইন করা হয়েছে। এখানে আপনি প্রোডাক্ট ইনভেন্টরি, 
+                সেলস অর্ডার, কাস্টমার ম্যানেজমেন্ট, ইনভয়েস জেনারেশন, খরচ ট্র্যাকিং এবং বিজনেস রিপোর্ট তৈরি করতে পারবেন।
+                <br><br>
+                <strong style="color: var(--accent-orange);">Coming Soon:</strong> সকল ফিচার শীঘ্রই অ্যাক্টিভ করা হবে।
+            </p>
+        </div>
+    </div>
+</body>
+</html>
+"""
 # ==============================================================================
 # REPORT TEMPLATES (ORIGINAL WHITE DESIGN - PRINT FRIENDLY)
 # ==============================================================================
@@ -1734,7 +4372,8 @@ CLOSING_REPORT_PREVIEW_TEMPLATE = """
         .info-container { margin-bottom: 15px; background: white; padding: 15px; display: flex; justify-content: space-between; align-items: flex-end;}
         .info-row { display: flex; flex-direction: column; gap: 5px; }
         .info-item { font-size: 1.2rem; font-weight: 600; color: #444; }
-        .info-value { color: #000; font-weight: 800; }
+        .info-label { font-weight: 800; color: #444; width: 90px; display: inline-block; }
+        .info-value { font-weight: 800; color: #000; }
         .booking-box { background: #2c3e50; color: white; padding: 10px 20px; border-radius: 5px; text-align: right; box-shadow: 0 4px 10px rgba(44, 62, 80, 0.3); display: flex; flex-direction: column; justify-content: center; min-width: 200px; }
         .booking-label { font-size: 1.1rem; opacity: 0.9; text-transform: uppercase; letter-spacing: 1px; font-weight: 700; }
         .booking-value { font-size: 1.8rem; font-weight: 800; line-height: 1.1; }
@@ -1782,8 +4421,8 @@ CLOSING_REPORT_PREVIEW_TEMPLATE = """
         {% if report_data %}
         <div class="info-container">
             <div class="info-row">
-                <div class="info-item">Buyer: <span class="info-value">{{ report_data[0].buyer }}</span></div>
-                <div class="info-item">Style: <span class="info-value">{{ report_data[0].style }}</span></div>
+                <div class="info-item"><span class="info-label">Buyer:</span> <span class="info-value">{{ report_data[0].buyer }}</span></div>
+                <div class="info-item"><span class="info-label">Style:</span> <span class="info-value">{{ report_data[0].style }}</span></div>
             </div>
             <div class="booking-box">
                 <div class="booking-label">IR/IB NO</div>
@@ -2050,7 +4689,7 @@ PO_REPORT_TEMPLATE = """
         .color-header { background-color: #e9ecef; color: #2c3e50; padding: 10px 12px; font-size: 1.5rem; font-weight: 900; border-bottom: 1px solid #dee2e6; text-transform: uppercase; }
         .table { margin-bottom: 0; width: 100%; border-collapse: collapse; }
         .table th { background-color: #2c3e50; color: white; font-weight: 900; font-size: 1.2rem; text-align: center; border: 1px solid #34495e; padding: 8px 4px; vertical-align: middle; }
-        .table th:empty { background-color: white !important; border: none; } /* Fix for Empty Blue Cell */
+        .table th:empty { background-color: white !important; border: none; }
         .table td { text-align: center; vertical-align: middle; border: 1px solid #dee2e6; padding: 6px 3px; color: #000; font-weight: 800; font-size: 1.15rem; }
         .table-striped tbody tr:nth-of-type(odd) { background-color: #f8f9fa; }
         .order-col { font-weight: 900 !important; text-align: center !important; background-color: #fdfdfd; white-space: nowrap; width: 1%; }
@@ -2073,7 +4712,7 @@ PO_REPORT_TEMPLATE = """
             .total-box { border: 2px solid #000 !important; background: white !important; color: black !important; padding: 5px 10px; }
             .info-item { font-size: 13pt !important; font-weight: 800 !important; }
             .table th, .table td { border: 1px solid #000 !important; padding: 2px !important; font-size: 13pt !important; font-weight: 800 !important; }
-            .table th:empty { background-color: white !important; border: none !important; } /* Print Fix Empty Cell */
+            .table th:empty { background-color: white !important; border: none !important; }
             .table-striped tbody tr.summary-row td { background-color: #d1ecff !important; box-shadow: inset 0 0 0 9999px #d1ecff !important; color: #000 !important; font-weight: 900 !important; }
             .color-header { background-color: #f1f1f1 !important; border: 1px solid #000 !important; font-size: 1.4rem !important; font-weight: 900; padding: 5px; margin-top: 10px; box-shadow: inset 0 0 0 9999px #f1f1f1 !important; }
             .total-col-header { background-color: #e8f6f3 !important; box-shadow: inset 0 0 0 9999px #e8f6f3 !important; color: #000 !important; }
@@ -2086,7 +4725,7 @@ PO_REPORT_TEMPLATE = """
     <div class="container">
         <div class="action-bar no-print">
             <a href="/" class="btn btn-outline-secondary rounded-pill px-4">Back to Dashboard</a>
-            <button onclick="window.print()" class="btn btn-print"><i class="fas fa-file-pdf"></i>Print</button>
+            <button onclick="window.print()" class="btn btn-print"><i class="fas fa-file-pdf"></i> Print</button>
         </div>
         <div class="company-header">
             <div class="company-name">COTTON CLOTHING BD LTD</div>
@@ -2135,164 +4774,25 @@ PO_REPORT_TEMPLATE = """
 </body>
 </html>
 """
-
-STORE_INVOICE_TEMPLATE = """
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Invoice</title>
-    <style>
-        body { font-family: 'Inter', sans-serif; padding: 40px; color: #333; background: #fff; }
-        .container { max-width: 800px; margin: 0 auto; border: 1px solid #ddd; padding: 40px; }
-        
-        .header { display: flex; justify-content: space-between; border-bottom: 2px solid #eee; padding-bottom: 20px; margin-bottom: 30px; }
-        .brand { font-size: 28px; font-weight: 800; color: #2c3e50; text-transform: uppercase; line-height: 1.2; }
-        .brand span { color: #e67e22; }
-        .meta { text-align: right; font-size: 14px; }
-        .meta div { margin-bottom: 5px; }
-
-        .title { text-align: center; font-size: 20px; font-weight: 700; text-transform: uppercase; margin-bottom: 30px; border: 2px solid #333; display: inline-block; padding: 5px 20px; }
-        .center-box { text-align: center; }
-        
-        .info-section { display: flex; justify-content: space-between; margin-bottom: 30px; font-size: 14px; }
-        .to-section { border-left: 3px solid #e67e22; padding-left: 15px; }
-        .to-title { font-weight: 700; color: #e67e22; margin-bottom: 5px; }
-        
-        table { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
-        th { background: #2c3e50; color: white; padding: 12px; text-align: left; font-size: 13px; }
-        td { padding: 12px; border-bottom: 1px solid #eee; font-size: 14px; }
-        .amount-col { text-align: right; }
-        
-        .total-section { display: flex; justify-content: flex-end; }
-        .total-table { width: 300px; }
-        .total-table td { border-bottom: 1px solid #eee; padding: 8px; }
-        .grand-total { font-size: 18px; font-weight: 800; color: #2c3e50; border-top: 2px solid #333; }
-
-        .footer { margin-top: 60px; border-top: 1px solid #eee; padding-top: 20px; text-align: center; font-size: 12px; color: #888; }
-        
-        @media print {
-            body { padding: 0; } .container { border: none; padding: 0; }
-            .no-print { display: none; }
-        }
-    </style>
-</head>
-<body>
-    <div class="no-print" style="margin-bottom: 20px; text-align: right;">
-        <button onclick="window.print()" style="padding: 10px 20px; background: #2c3e50; color: white; border: none; cursor: pointer;">Print Invoice</button>
-    </div>
-
-    <div class="container">
-        <div class="header">
-            <div class="brand">MEHEDI THAI<br><span>ALUMINUM AND GLASS</span></div>
-            <div class="meta">
-                <div><strong>Invoice No:</strong> {{ invoice.invoice_no }}</div>
-                <div><strong>Date:</strong> {{ invoice.date }}</div>
-                <div><strong>Status:</strong> {{ invoice.status|upper }}</div>
-            </div>
-        </div>
-
-        <div class="center-box">
-            <div class="title">{{ invoice.type|upper }}</div>
-        </div>
-
-        <div class="info-section">
-            <div class="to-section">
-                <div class="to-title">BILL TO</div>
-                <div style="font-weight: 700; font-size: 16px;">{{ invoice.customer_name }}</div>
-                <div>{{ invoice.customer_phone }}</div>
-                <div>{{ invoice.customer_address }}</div>
-            </div>
-        </div>
-
-        <table>
-            <thead>
-                <tr>
-                    <th>SL</th>
-                    <th>DESCRIPTION / ITEM</th>
-                    <th>SIZE / DIMENSION</th>
-                    <th class="amount-col">UNIT PRICE</th>
-                    <th class="amount-col">QTY</th>
-                    <th class="amount-col">TOTAL</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for item in invoice.items %}
-                <tr>
-                    <td>{{ loop.index }}</td>
-                    <td>{{ item.name }}</td>
-                    <td>{{ item.size }}</td>
-                    <td class="amount-col">{{ item.price }}</td>
-                    <td class="amount-col">{{ item.qty }}</td>
-                    <td class="amount-col">{{ item.total }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-
-        <div class="total-section">
-            <table class="total-table">
-                <tr>
-                    <td>Sub Total:</td>
-                    <td class="amount-col">{{ invoice.sub_total }}</td>
-                </tr>
-                <tr>
-                    <td>Discount:</td>
-                    <td class="amount-col">- {{ invoice.discount }}</td>
-                </tr>
-                <tr class="grand-total">
-                    <td>GRAND TOTAL:</td>
-                    <td class="amount-col">{{ invoice.grand_total }} Tk</td>
-                </tr>
-                {% if invoice.type == 'invoice' %}
-                <tr>
-                    <td>Paid:</td>
-                    <td class="amount-col">{{ invoice.paid }}</td>
-                </tr>
-                <tr>
-                    <td style="color: #e74c3c; font-weight: 700;">Due:</td>
-                    <td class="amount-col" style="color: #e74c3c; font-weight: 700;">{{ invoice.due }}</td>
-                </tr>
-                {% endif %}
-            </table>
-        </div>
-        
-        <div style="margin-top: 40px; font-size: 13px;">
-            <strong>In Words:</strong> <span style="text-transform: capitalize;">{{ invoice.in_words }} Taka Only.</span>
-        </div>
-
-        <div class="footer">
-            Thank you for your business!<br>
-            This is a computer generated invoice.
-        </div>
-    </div>
-</body>
-</html>
-"""
 # ==============================================================================
 # FLASK ROUTES (CONTROLLER LOGIC)
 # ==============================================================================
 
 @app.route('/')
 def index():
-    load_users() # Ensure users exist
+    load_users()
     if not session.get('logged_in'):
         return render_template_string(LOGIN_TEMPLATE)
     else:
         if session.get('role') == 'admin':
-            # ড্যাশবোর্ড ডাটা লোড (রিয়েল-টাইম চার্ট এবং স্ট্যাটাস)
             stats = get_dashboard_summary_v2()
             return render_template_string(ADMIN_DASHBOARD_TEMPLATE, stats=stats)
         else:
-            # User Dashboard Logic
             perms = session.get('permissions', [])
-            
-            # Redirect based on permission if user has only one module access
-            if len(perms) == 1:
-                if 'accessories' in perms: return redirect(url_for('accessories_search_page'))
-                if 'store' in perms: return redirect('/store/dashboard') # Direct Store Link (Route below)
-                
-            return render_template_string(USER_DASHBOARD_TEMPLATE)
+            if len(perms) == 1 and 'accessories' in perms:
+                return redirect(url_for('accessories_search_page'))
+            else:
+                return render_template_string(USER_DASHBOARD_TEMPLATE)
 
 @app.route('/login', methods=['POST'])
 def login():
@@ -2308,7 +4808,6 @@ def login():
         session['role'] = users_db[username]['role']
         session['permissions'] = users_db[username].get('permissions', [])
         
-        # Login Time Tracking
         now = get_bd_time()
         session['login_start'] = now.isoformat()
         
@@ -2341,15 +4840,16 @@ def logout():
     flash('Session terminated.')
     return redirect(url_for('index'))
 
-# --- USER MANAGEMENT ROUTES ---
 @app.route('/admin/get-users', methods=['GET'])
 def get_users():
-    if not session.get('logged_in') or session.get('role') != 'admin': return jsonify({})
+    if not session.get('logged_in') or session.get('role') != 'admin': 
+        return jsonify({})
     return jsonify(load_users())
 
 @app.route('/admin/save-user', methods=['POST'])
 def save_user():
-    if not session.get('logged_in') or session.get('role') != 'admin': return jsonify({'status': 'error', 'message': 'Unauthorized'})
+    if not session.get('logged_in') or session.get('role') != 'admin': 
+        return jsonify({'status': 'error', 'message': 'Unauthorized'})
     
     data = request.json
     username = data.get('username', '').strip()
@@ -2357,18 +4857,25 @@ def save_user():
     permissions = data.get('permissions', [])
     action = data.get('action_type')
     
-    if not username or not password: return jsonify({'status': 'error', 'message': 'Invalid Data'})
+    if not username or not password: 
+        return jsonify({'status': 'error', 'message': 'Invalid Data'})
 
     users_db = load_users()
     
     if action == 'create':
-        if username in users_db: return jsonify({'status': 'error', 'message': 'User already exists!'})
+        if username in users_db: 
+            return jsonify({'status': 'error', 'message': 'User already exists!'})
         users_db[username] = {
-            "password": password, "role": "user", "permissions": permissions,
-            "created_at": get_bd_date_str(), "last_login": "Never", "last_duration": "N/A"
+            "password": password, 
+            "role": "user", 
+            "permissions": permissions,
+            "created_at": get_bd_date_str(), 
+            "last_login": "Never", 
+            "last_duration": "N/A"
         }
     elif action == 'update':
-        if username not in users_db: return jsonify({'status': 'error', 'message': 'User not found!'})
+        if username not in users_db: 
+            return jsonify({'status': 'error', 'message': 'User not found!'})
         users_db[username]['password'] = password
         users_db[username]['permissions'] = permissions
     
@@ -2377,11 +4884,14 @@ def save_user():
 
 @app.route('/admin/delete-user', methods=['POST'])
 def delete_user():
-    if not session.get('logged_in') or session.get('role') != 'admin': return jsonify({'status': 'error', 'message': 'Unauthorized'})
+    if not session.get('logged_in') or session.get('role') != 'admin': 
+        return jsonify({'status': 'error', 'message': 'Unauthorized'})
+    
     username = request.json.get('username')
     users_db = load_users()
     
-    if username == 'Admin': return jsonify({'status': 'error', 'message': 'Cannot delete Main Admin!'})
+    if username == 'Admin': 
+        return jsonify({'status': 'error', 'message': 'Cannot delete Main Admin!'})
 
     if username in users_db:
         del users_db[username]
@@ -2389,7 +4899,13 @@ def delete_user():
         return jsonify({'status': 'success', 'message': 'User deleted!'})
     
     return jsonify({'status': 'error', 'message': 'User not found'})
-    # --- CLOSING REPORT ROUTES ---
+
+@app.route('/admin/store')
+def store_dashboard():
+    if not session.get('logged_in'):
+        return redirect(url_for('index'))
+    return render_template_string(STORE_DASHBOARD_TEMPLATE)
+
 @app.route('/generate-report', methods=['POST'])
 def generate_report():
     if not session.get('logged_in'): return redirect(url_for('index'))
@@ -2412,15 +4928,16 @@ def generate_report():
 @app.route('/download-closing-excel', methods=['GET'])
 def download_closing_excel():
     if not session.get('logged_in'): return redirect(url_for('index'))
-    internal_ref_no = request.args.get('ref_no')
     
+    internal_ref_no = request.args.get('ref_no')
     try:
         report_data = fetch_closing_report_data(internal_ref_no)
         if report_data:
             excel_file = create_formatted_excel_report(report_data, internal_ref_no)
             update_stats(internal_ref_no, session.get('user', 'Unknown'))
             return make_response(send_file(
-                excel_file, as_attachment=True, 
+                excel_file, 
+                as_attachment=True, 
                 download_name=f"Report-{internal_ref_no.replace('/', '_')}.xlsx", 
                 mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
             ))
@@ -2431,11 +4948,10 @@ def download_closing_excel():
         flash("Failed to generate Excel.")
         return redirect(url_for('index'))
 
-# --- ACCESSORIES ROUTES ---
 @app.route('/admin/accessories', methods=['GET'])
 def accessories_search_page():
     if not session.get('logged_in'): return redirect(url_for('index'))
-    if 'accessories' not in session.get('permissions', []) and session.get('role') != 'admin':
+    if 'accessories' not in session.get('permissions', []):
         flash("Access Denied")
         return redirect(url_for('index'))
     return render_template_string(ACCESSORIES_SEARCH_TEMPLATE)
@@ -2443,25 +4959,36 @@ def accessories_search_page():
 @app.route('/admin/accessories/input', methods=['POST'])
 def accessories_input_page():
     if not session.get('logged_in'): return redirect(url_for('index'))
+    
     ref_no = request.form.get('ref_no') or request.args.get('ref')
     if ref_no: ref_no = ref_no.strip().upper()
+    
     if not ref_no: return redirect(url_for('accessories_search_page'))
 
     db_acc = load_accessories_db()
+
     if ref_no in db_acc:
         data = db_acc[ref_no]
-        colors, style, buyer, challans = data['colors'], data['style'], data['buyer'], data['challans']
+        colors = data['colors']
+        style = data['style']
+        buyer = data['buyer']
+        challans = data['challans'] 
     else:
         try:
             api_data = fetch_closing_report_data(ref_no)
             if not api_data:
                 flash(f"Booking not found: {ref_no}")
                 return redirect(url_for('accessories_search_page'))
+            
             colors = sorted(list(set([item['color'] for item in api_data])))
             style = api_data[0].get('style', 'N/A')
             buyer = api_data[0].get('buyer', 'N/A')
             challans = []
-            db_acc[ref_no] = { "style": style, "buyer": buyer, "colors": colors, "item_type": "", "challans": challans }
+            
+            db_acc[ref_no] = {
+                "style": style, "buyer": buyer, "colors": colors, 
+                "item_type": "", "challans": challans
+            }
             save_accessories_db(db_acc)
         except:
             flash("Connection Error with ERP")
@@ -2470,31 +4997,47 @@ def accessories_input_page():
     return render_template_string(ACCESSORIES_INPUT_TEMPLATE, ref=ref_no, colors=colors, style=style, buyer=buyer, challans=challans)
 
 @app.route('/admin/accessories/input_direct')
-def accessories_input_direct(): return accessories_input_page() 
+def accessories_input_direct():
+    return accessories_input_page() 
 
 @app.route('/admin/accessories/save', methods=['POST'])
 def accessories_save():
     if not session.get('logged_in'): return redirect(url_for('index'))
+    
     ref = request.form.get('ref').strip().upper()
     db_acc = load_accessories_db()
     
     if ref in db_acc:
         if request.form.get('item_type'): db_acc[ref]['item_type'] = request.form.get('item_type')
-        for item in db_acc[ref]['challans']: item['status'] = "✔"
-        new_entry = { "date": get_bd_date_str(), "line": request.form.get('line_no'), "color": request.form.get('color'), "size": request.form.get('size'), "qty": request.form.get('qty'), "status": "" }
+        
+        for item in db_acc[ref]['challans']:
+            item['status'] = "✔"
+        
+        new_entry = {
+            "date": get_bd_date_str(),
+            "line": request.form.get('line_no'),
+            "color": request.form.get('color'),
+            "size": request.form.get('size'),
+            "qty": request.form.get('qty'),
+            "status": ""
+        }
         db_acc[ref]['challans'].append(new_entry)
         save_accessories_db(db_acc)
+    
     return redirect(url_for('accessories_print_view', ref=ref))
 
 @app.route('/admin/accessories/print', methods=['GET'])
 def accessories_print_view():
     if not session.get('logged_in'): return redirect(url_for('index'))
+    
     ref = request.args.get('ref').strip().upper()
     db_acc = load_accessories_db()
+    
     if ref not in db_acc: return redirect(url_for('accessories_search_page'))
     
     data = db_acc[ref]
     challans = data['challans']
+    
     line_summary = {}
     for c in challans:
         ln = c['line']
@@ -2508,47 +5051,62 @@ def accessories_print_view():
 @app.route('/admin/accessories/edit', methods=['GET'])
 def accessories_edit():
     if not session.get('logged_in'): return redirect(url_for('index'))
+    
     ref = request.args.get('ref')
     try: index = int(request.args.get('index'))
     except: return redirect(url_for('accessories_search_page'))
+    
     db_acc = load_accessories_db()
     if ref in db_acc and 0 <= index < len(db_acc[ref]['challans']):
         item = db_acc[ref]['challans'][index]
         return render_template_string(ACCESSORIES_EDIT_TEMPLATE, ref=ref, index=index, item=item)
+    
     return redirect(url_for('accessories_print_view', ref=ref))
 
 @app.route('/admin/accessories/update', methods=['POST'])
 def accessories_update():
     if not session.get('logged_in'): return redirect(url_for('index'))
+    
     ref = request.form.get('ref')
     index = int(request.form.get('index'))
     db_acc = load_accessories_db()
+
     if ref in db_acc and 0 <= index < len(db_acc[ref]['challans']):
-        db_acc[ref]['challans'][index].update({'line': request.form.get('line_no'), 'color': request.form.get('color'), 'size': request.form.get('size'), 'qty': request.form.get('qty')})
+        db_acc[ref]['challans'][index]['line'] = request.form.get('line_no')
+        db_acc[ref]['challans'][index]['color'] = request.form.get('color')
+        db_acc[ref]['challans'][index]['size'] = request.form.get('size')
+        db_acc[ref]['challans'][index]['qty'] = request.form.get('qty')
         save_accessories_db(db_acc)
+    
     return redirect(url_for('accessories_input_direct', ref=ref))
 
 @app.route('/admin/accessories/delete', methods=['POST'])
 def accessories_delete():
     if not session.get('logged_in') or session.get('role') != 'admin': return redirect(url_for('index'))
+    
     ref = request.form.get('ref')
     index = int(request.form.get('index'))
     db_acc = load_accessories_db()
+
     if ref in db_acc and 0 <= index < len(db_acc[ref]['challans']):
         del db_acc[ref]['challans'][index]
         save_accessories_db(db_acc)
+    
     return redirect(url_for('accessories_input_direct', ref=ref))
 
-# --- PO SHEET ROUTE ---
 @app.route('/generate-po-report', methods=['POST'])
 def generate_po_report():
     if not session.get('logged_in'): return redirect(url_for('index'))
-    if os.path.exists(UPLOAD_FOLDER): shutil.rmtree(UPLOAD_FOLDER)
+
+    if os.path.exists(UPLOAD_FOLDER): 
+        shutil.rmtree(UPLOAD_FOLDER)
     os.makedirs(UPLOAD_FOLDER)
+
     try:
         uploaded_files = request.files.getlist('pdf_files')
         all_data = []
-        final_meta = {'buyer': 'N/A', 'booking': 'N/A', 'style': 'N/A'}
+        final_meta = {'buyer': 'N/A', 'booking': 'N/A', 'style': 'N/A', 'season': 'N/A', 'dept': 'N/A', 'item': 'N/A'}
+        
         for file in uploaded_files:
             if file.filename == '': continue
             file_path = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
@@ -2557,31 +5115,51 @@ def generate_po_report():
             if meta['buyer'] != 'N/A': final_meta = meta
             if data: all_data.extend(data)
         
-        if not all_data: return render_template_string(PO_REPORT_TEMPLATE, tables=None, message="No PO data found in uploaded files.")
+        if not all_data:
+            return render_template_string(PO_REPORT_TEMPLATE, tables=None, message="No PO data found in uploaded files.")
+
         update_po_stats(session.get('user', 'Unknown'), len(uploaded_files))
 
         df = pd.DataFrame(all_data)
         df['Color'] = df['Color'].str.strip()
         df = df[df['Color'] != ""]
-        final_tables, grand_total_qty = [], 0
+        unique_colors = df['Color'].unique()
         
-        for color in df['Color'].unique():
+        final_tables = []
+        grand_total_qty = 0
+
+        for color in unique_colors:
             color_df = df[df['Color'] == color]
             pivot = color_df.pivot_table(index='P.O NO', columns='Size', values='Quantity', aggfunc='sum', fill_value=0)
             pivot.columns.name = None
-            try: pivot = pivot[sort_sizes(pivot.columns.tolist())]
+            
+            try:
+                sorted_cols = sort_sizes(pivot.columns.tolist())
+                pivot = pivot[sorted_cols]
             except: pass
             
             pivot['Total'] = pivot.sum(axis=1)
             grand_total_qty += pivot['Total'].sum()
-            actual_qty = pivot.sum(); actual_qty.name = 'Actual Qty'
-            qty_plus_3 = (actual_qty * 1.03).round().astype(int); qty_plus_3.name = '3% Order Qty'
+
+            actual_qty = pivot.sum()
+            actual_qty.name = 'Actual Qty'
+            qty_plus_3 = (actual_qty * 1.03).round().astype(int)
+            qty_plus_3.name = '3% Order Qty'
             
-            pivot_final = pd.concat([pivot, actual_qty.to_frame().T, qty_plus_3.to_frame().T]).reset_index().rename(columns={'index': 'P.O NO'})
+            pivot_final = pd.concat([pivot, actual_qty.to_frame().T, qty_plus_3.to_frame().T])
+            pivot_final = pivot_final.reset_index()
+            pivot_final = pivot_final.rename(columns={'index': 'P.O NO'})
+            
             pd.set_option('colheader_justify', 'center')
             html_table = pivot_final.to_html(classes='table table-bordered table-striped', index=False, border=0)
-            html_table = re.sub(r'<tr>\s*<td>', '<tr><td class="order-col">', html_table).replace('<th>Total</th>', '<th class="total-col-header">Total</th>').replace('<td>Total</td>', '<td class="total-col">Total</td>').replace('<td>Actual Qty</td>', '<td class="summary-label">Actual Qty</td>').replace('<td>3% Order Qty</td>', '<td class="summary-label">3% Order Qty</td>')
+            
+            html_table = re.sub(r'<tr>\s*<td>', '<tr><td class="order-col">', html_table)
+            html_table = html_table.replace('<th>Total</th>', '<th class="total-col-header">Total</th>')
+            html_table = html_table.replace('<td>Total</td>', '<td class="total-col">Total</td>')
+            html_table = html_table.replace('<td>Actual Qty</td>', '<td class="summary-label">Actual Qty</td>')
+            html_table = html_table.replace('<td>3% Order Qty</td>', '<td class="summary-label">3% Order Qty</td>')
             html_table = re.sub(r'<tr>\s*<td class="summary-label">', '<tr class="summary-row"><td class="summary-label">', html_table)
+
             final_tables.append({'color': color, 'table': html_table})
             
         return render_template_string(PO_REPORT_TEMPLATE, tables=final_tables, meta=final_meta, grand_total=f"{grand_total_qty:,}")
@@ -2589,285 +5167,12 @@ def generate_po_report():
         flash(f"Error processing files: {str(e)}")
         return redirect(url_for('index'))
 
+
 # ==============================================================================
-# NEW: STORE MANAGEMENT CONTROLLERS
+# APPLICATION ENTRY POINT
 # ==============================================================================
-
-# --- Product Routes ---
-@app.route('/store/get-products', methods=['GET'])
-def store_get_products():
-    if not session.get('logged_in'): return jsonify([])
-    return jsonify(get_all_products())
-
-@app.route('/store/save-product', methods=['POST'])
-def store_save_product():
-    if not session.get('logged_in'): return jsonify({'status': 'error'})
-    data = request.json
-    if not data.get('id'): data['_id'] = str(uuid.uuid4())
-    else: data['_id'] = data.pop('id')
-    save_product_db(data)
-    return jsonify({'status': 'success'})
-
-@app.route('/store/delete-product', methods=['POST'])
-def store_delete_product():
-    if not session.get('logged_in'): return jsonify({'status': 'error'})
-    delete_product_db(request.json.get('id'))
-    return jsonify({'status': 'success'})
-
-# --- Customer Routes ---
-@app.route('/store/get-customers', methods=['GET'])
-def store_get_customers():
-    if not session.get('logged_in'): return jsonify([])
-    return jsonify(get_all_customers())
-
-@app.route('/store/save-customer', methods=['POST'])
-def store_save_customer():
-    if not session.get('logged_in'): return jsonify({'status': 'error'})
-    data = request.json
-    data['_id'] = str(uuid.uuid4())
-    data['due'] = 0.0
-    save_customer_db(data)
-    return jsonify({'status': 'success'})
-
-# --- Invoice Routes ---
-@app.route('/store/get-invoices', methods=['GET'])
-def store_get_invoices():
-    if not session.get('logged_in'): return jsonify([])
-    return jsonify(get_all_invoices())
-
-@app.route('/store/create-invoice')
-def store_create_invoice_page():
-    if not session.get('logged_in'): return redirect('/')
-    # Simple inline template for creating invoice
-    products = get_all_products()
-    customers = get_all_customers()
-    
-    HTML = f"""
-    <!doctype html><html lang="en"><head><title>New Invoice</title>{COMMON_STYLES}</head><body>
-    <div class="card" style="width:90%; max-width:900px; margin:30px auto; padding:30px;">
-        <div class="section-header">Create New Invoice / Quotation</div>
-        <form id="invForm">
-            <div class="dashboard-grid-2">
-                <div class="input-group"><label>Customer</label>
-                    <select id="cust_id" onchange="fillCustInfo()">
-                        <option value="">Select Customer</option>
-                        <option value="new">+ New Customer (Walk-in)</option>
-                        {''.join([f'<option value="{c["_id"]}" data-phone="{c.get("phone","")}" data-addr="{c.get("address","")}">{c["name"]}</option>' for c in customers])}
-                    </select>
-                </div>
-                <div class="input-group"><label>Type</label><select id="inv_type"><option value="invoice">Final Invoice (Sale)</option><option value="quotation">Quotation / Estimate</option></select></div>
-            </div>
-            <div class="dashboard-grid-3">
-                <div class="input-group"><label>Customer Name</label><input type="text" id="c_name"></div>
-                <div class="input-group"><label>Phone</label><input type="text" id="c_phone"></div>
-                <div class="input-group"><label>Address</label><input type="text" id="c_address"></div>
-            </div>
-            
-            <div style="margin-top:20px; border-top:1px solid #333; padding-top:20px;">
-                <table class="dark-table" id="itemTable">
-                    <thead><tr><th>Product</th><th>Size</th><th>Price</th><th>Qty</th><th>Total</th><th>X</th></tr></thead>
-                    <tbody></tbody>
-                </table>
-                <button type="button" onclick="addRow()" style="width:auto; margin-top:10px; background:#333;">+ Add Item</button>
-            </div>
-
-            <div style="margin-top:30px; display:flex; justify-content:flex-end;">
-                <div style="width:300px;">
-                    <div class="input-group" style="display:flex; justify-content:space-between; align-items:center;"><label>Sub Total:</label><span id="sub_total">0.00</span></div>
-                    <div class="input-group"><label>Discount</label><input type="number" id="discount" value="0" onkeyup="calcTotal()"></div>
-                    <div class="input-group" style="border-top:1px solid #555; padding-top:10px;"><label style="font-size:16px; color:white;">Grand Total:</label><span id="grand_total" style="font-size:18px; font-weight:bold; color:var(--accent-orange);">0.00</span></div>
-                    <div class="input-group"><label>Paid Amount</label><input type="number" id="paid" value="0" onkeyup="calcTotal()"></div>
-                    <div class="input-group"><label>Due</label><span id="due_amount" style="color:var(--accent-red);">0.00</span></div>
-                </div>
-            </div>
-            
-            <button type="button" onclick="submitInvoice()" style="margin-top:20px; font-size:16px;">Generate & Print <i class="fas fa-arrow-right"></i></button>
-        </form>
-    </div>
-    <script>
-        let products = {json.dumps(products, default=str)};
-        function fillCustInfo() {{
-            let sel = document.getElementById('cust_id');
-            let opt = sel.options[sel.selectedIndex];
-            if(sel.value === 'new') {{ document.getElementById('c_name').value=''; }}
-            else if(sel.value) {{
-                document.getElementById('c_name').value = opt.text;
-                document.getElementById('c_phone').value = opt.getAttribute('data-phone');
-                document.getElementById('c_address').value = opt.getAttribute('data-addr');
-            }}
-        }}
-        
-        function addRow() {{
-            let tr = document.createElement('tr');
-            let opts = products.map(p=>`<option value='${{JSON.stringify(p)}}'>${{p.name}}</option>`).join('');
-            tr.innerHTML = `
-                <td><select onchange="setProd(this)" style="padding:8px;">${{opts}}</select></td>
-                <td><input type="text" class="i-size" style="padding:8px;"></td>
-                <td><input type="number" class="i-price" onkeyup="calcRow(this)" style="padding:8px;"></td>
-                <td><input type="number" class="i-qty" value="1" onkeyup="calcRow(this)" style="padding:8px;"></td>
-                <td class="i-total">0</td>
-                <td><button type="button" onclick="this.parentElement.parentElement.remove();calcTotal()" style="padding:5px; background:red;">x</button></td>
-            `;
-            document.querySelector('#itemTable tbody').appendChild(tr);
-            // Trigger first calc
-            setProd(tr.querySelector('select'));
-        }}
-        
-        function setProd(sel) {{
-            let row = sel.parentElement.parentElement;
-            let p = JSON.parse(sel.value);
-            row.querySelector('.i-size').value = p.size || '';
-            row.querySelector('.i-price').value = p.price || 0;
-            calcRow(sel);
-        }}
-        
-        function calcRow(el) {{
-            let row = el.parentElement.parentElement;
-            let p = parseFloat(row.querySelector('.i-price').value) || 0;
-            let q = parseFloat(row.querySelector('.i-qty').value) || 0;
-            row.querySelector('.i-total').innerText = (p*q).toFixed(2);
-            calcTotal();
-        }}
-        
-        function calcTotal() {{
-            let sub = 0;
-            document.querySelectorAll('.i-total').forEach(e => sub += parseFloat(e.innerText));
-            document.getElementById('sub_total').innerText = sub.toFixed(2);
-            
-            let dis = parseFloat(document.getElementById('discount').value) || 0;
-            let grand = sub - dis;
-            document.getElementById('grand_total').innerText = grand.toFixed(2);
-            
-            let paid = parseFloat(document.getElementById('paid').value) || 0;
-            document.getElementById('due_amount').innerText = (grand - paid).toFixed(2);
-        }}
-        
-        function submitInvoice() {{
-            let items = [];
-            document.querySelectorAll('#itemTable tbody tr').forEach(r => {{
-                items.push({{
-                    name: r.querySelector('select').options[r.querySelector('select').selectedIndex].text,
-                    size: r.querySelector('.i-size').value,
-                    price: r.querySelector('.i-price').value,
-                    qty: r.querySelector('.i-qty').value,
-                    total: r.querySelector('.i-total').innerText
-                }});
-            }});
-            
-            let data = {{
-                cust_id: document.getElementById('cust_id').value,
-                c_name: document.getElementById('c_name').value,
-                c_phone: document.getElementById('c_phone').value,
-                c_address: document.getElementById('c_address').value,
-                type: document.getElementById('inv_type').value,
-                items: items,
-                discount: document.getElementById('discount').value,
-                paid: document.getElementById('paid').value,
-                grand_total: document.getElementById('grand_total').innerText
-            }};
-            
-            fetch('/store/save-invoice', {{method:'POST', headers:{{'Content-Type':'application/json'}}, body:JSON.stringify(data)}})
-            .then(r=>r.json()).then(d => {{
-                if(d.status === 'success') window.location.href = '/store/print-invoice?inv=' + d.inv_no;
-                else alert('Error saving');
-            }});
-        }}
-    </script>
-    </body></html>
-    """
-    return render_template_string(HTML)
-
-@app.route('/store/save-invoice', methods=['POST'])
-def store_save_invoice():
-    if not session.get('logged_in'): return jsonify({'status': 'error'})
-    data = request.json
-    
-    inv_no = get_next_invoice_number()
-    
-    # Calculate Due
-    grand = float(data['grand_total'])
-    paid = float(data.get('paid', 0))
-    due = grand - paid
-    
-    # If New Customer, Save first
-    cust_id = data.get('cust_id')
-    if cust_id == 'new' or not cust_id:
-        cust_id = str(uuid.uuid4())
-        save_customer_db({
-            "_id": cust_id,
-            "name": data['c_name'],
-            "phone": data['c_phone'],
-            "address": data['c_address'],
-            "due": 0.0
-        })
-    
-    # Update Customer Due if it's a FINAL Invoice (Not Quotation)
-    if data['type'] == 'invoice':
-        update_customer_due_db(cust_id, due)
-
-    invoice_record = {
-        "invoice_no": inv_no,
-        "date": get_bd_date_str(),
-        "date_iso": datetime.now().strftime('%Y-%m-%d'),
-        "customer_id": cust_id,
-        "customer_name": data['c_name'],
-        "customer_phone": data['c_phone'],
-        "customer_address": data['c_address'],
-        "type": data['type'],
-        "items": data['items'],
-        "sub_total": float(data['grand_total']) + float(data['discount']), # Approx reverse
-        "discount": data['discount'],
-        "grand_total": grand,
-        "paid": paid,
-        "due": due,
-        "status": "Paid" if due <= 0 else "Due",
-        "created_by": session.get('user')
-    }
-    save_invoice_db(invoice_record)
-    
-    return jsonify({'status': 'success', 'inv_no': inv_no})
-
-@app.route('/store/print-invoice')
-def store_print_invoice():
-    inv_no = request.args.get('inv')
-    inv = get_invoice(inv_no)
-    if not inv: return "Invoice Not Found"
-    
-    # Simple Number to Words (Basic implementation)
-    try:
-        # Just a placeholder, for real production use 'num2words' library
-        inv['in_words'] = f"{int(inv['grand_total'])} Taka" 
-    except: pass
-    
-    return render_template_string(STORE_INVOICE_TEMPLATE, invoice=inv)
-
-@app.route('/store/get-invoice-due')
-def store_get_invoice_due():
-    inv_no = request.args.get('inv')
-    inv = get_invoice(inv_no)
-    if inv and inv['due'] > 0 and inv['type'] == 'invoice':
-        return jsonify({'status': 'found', 'data': {'invoice_no': inv['invoice_no'], 'customer_name': inv['customer_name'], 'due': inv['due']}})
-    return jsonify({'status': 'not_found'})
-
-@app.route('/store/pay-due', methods=['POST'])
-def store_pay_due():
-    if not session.get('logged_in'): return jsonify({'status': 'error'})
-    data = request.json
-    inv_no = data.get('inv')
-    amount = float(data.get('amount'))
-    
-    inv = get_invoice(inv_no)
-    if inv:
-        # Update Invoice
-        new_paid = inv['paid'] + amount
-        new_due = inv['due'] - amount
-        store_invoices_col.update_one({"invoice_no": inv_no}, {"$set": {"paid": new_paid, "due": new_due, "status": "Paid" if new_due <= 0 else "Due"}})
-        
-        # Update Customer Total Due (Subtract payment)
-        update_customer_due_db(inv['customer_id'], -amount)
-        
-        return jsonify({'status': 'success'})
-    return jsonify({'status': 'error'})
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5000)
+    # Render requires binding to 0.0.0.0 and the PORT env variable
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host='0.0.0.0', port=port, debug=True)
