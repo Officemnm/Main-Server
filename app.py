@@ -43,7 +43,7 @@ if not os.path.exists(UPLOAD_FOLDER):
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 # সেশন টাইমআউট কনফিগারেশন (2 মিনিট)
-app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=2) 
+app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=10) 
 
 # টাইমজোন কনফিগারেশন (বাংলাদেশ)
 bd_tz = pytz.timezone('Asia/Dhaka')
@@ -8663,3 +8663,4 @@ def store_dues_collect():
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)
+
