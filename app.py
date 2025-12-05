@@ -1,11 +1,11 @@
 import requests
 import openpyxl
-from openpyxl. styles import Font, Alignment, Border, Side, PatternFill
+from openpyxl.styles import Font, Alignment, Border, Side, PatternFill
 from bs4 import BeautifulSoup
 from datetime import datetime, timedelta
 import pytz 
 from io import BytesIO
-from openpyxl. drawing.image import Image
+from openpyxl.drawing.image import Image
 from PIL import Image as PILImage
 import time
 import json
@@ -30,7 +30,7 @@ app.secret_key = 'super-secret-secure-key-bd'
 
 # PO ফাইলের জন্য আপলোড ফোল্ডার
 UPLOAD_FOLDER = 'uploads'
-if not os.path. exists(UPLOAD_FOLDER):
+if not os.path.exists(UPLOAD_FOLDER):
     os.makedirs(UPLOAD_FOLDER)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
@@ -38,7 +38,7 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=2) 
 
 # টাইমজোন কনফিগারেশন (বাংলাদেশ)
-bd_tz = pytz. timezone('Asia/Dhaka')
+bd_tz = pytz.timezone('Asia/Dhaka')
 
 def get_bd_time():
     return datetime.now(bd_tz)
@@ -52,14 +52,14 @@ def get_bd_date_str():
 @app.after_request
 def add_header(response):
     response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, post-check=0, pre-check=0, max-age=0'
-    response. headers['Pragma'] = 'no-cache'
+    response.headers['Pragma'] = 'no-cache'
     response.headers['Expires'] = '-1'
     return response
 
 # ==============================================================================
 # MongoDB কানেকশন সেটআপ
 # ==============================================================================
-MONGO_URI = "mongodb+srv://Mehedi:Mehedi123@office. jxdnuaj.mongodb.net/? appName=Office"
+MONGO_URI = "mongodb+srv://Mehedi:Mehedi123@office.jxdnuaj.mongodb.net/?appName=Office"
 
 try:
     client = MongoClient(MONGO_URI)
@@ -87,7 +87,7 @@ except Exception as e:
 # ==============================================================================
 
 def load_users():
-    record = users_col. find_one({"_id": "global_users"})
+    record = users_col.find_one({"_id": "global_users"})
     default_users = {
         "Admin": {
             "password": "@Nijhum@12", 
@@ -112,7 +112,7 @@ def save_users(users_data):
     )
 
 def load_stats():
-    record = stats_col. find_one({"_id": "dashboard_stats"})
+    record = stats_col.find_one({"_id": "dashboard_stats"})
     if record:
         return record['data']
     else:
@@ -153,9 +153,9 @@ def update_po_stats(username, file_count):
         "user": username,
         "file_count": file_count,
         "date": now.strftime('%d-%m-%Y'),
-        "time": now. strftime('%I:%M %p'),
+        "time": now.strftime('%I:%M %p'),
         "type": "PO Sheet",
-        "iso_time": now. isoformat()
+        "iso_time": now.isoformat()
     }
     if 'downloads' not in data: data['downloads'] = []
     data['downloads'].insert(0, new_record)
@@ -176,8 +176,7 @@ def save_accessories_db(data):
         {"_id": "accessories_data", "data": data},
         upsert=True
     )
-
-# ==============================================================================
+    # ==============================================================================
 # Store Helper Functions
 # ==============================================================================
 
@@ -195,7 +194,7 @@ def load_store_users():
     if record:
         return record['data']
     else:
-        store_users_col. insert_one({"_id": "store_users_data", "data": default_users})
+        store_users_col.insert_one({"_id": "store_users_data", "data": default_users})
         return default_users
 
 def save_store_users(users_data):
@@ -248,7 +247,7 @@ def save_store_invoices(invoices):
     )
 
 def load_store_estimates():
-    record = store_estimates_col. find_one({"_id": "estimates_data"})
+    record = store_estimates_col.find_one({"_id": "estimates_data"})
     if record:
         return record['data']
     else:
@@ -282,7 +281,7 @@ def generate_invoice_number():
     last_num = 0
     for inv in invoices:
         try:
-            num = int(inv['invoice_no']. split('-')[1])
+            num = int(inv['invoice_no'].split('-')[1])
             if num > last_num:
                 last_num = num
         except:
@@ -314,23 +313,23 @@ def get_dashboard_summary_v2():
     
     # 1. User Stats
     user_details = []
-    for u, d in users_data. items():
+    for u, d in users_data.items():
         user_details.append({
             "username": u,
-            "role": d. get('role', 'user'),
-            "created_at": d. get('created_at', 'N/A'),
+            "role": d.get('role', 'user'),
+            "created_at": d.get('created_at', 'N/A'),
             "last_login": d.get('last_login', 'Never'),
-            "last_duration": d. get('last_duration', 'N/A')
+            "last_duration": d.get('last_duration', 'N/A')
         })
 
-    # 2.   Accessories Today & Analytics - LIFETIME COUNT
+    # 2.  Accessories Today & Analytics - LIFETIME COUNT
     acc_lifetime_count = 0
     acc_today_list = []
     
     # Analytics Container: {'YYYY-MM-DD': {'label': '01-Dec', 'closing': 0, 'po': 0, 'acc': 0}}
     daily_data = defaultdict(lambda: {'closing': 0, 'po': 0, 'acc': 0})
 
-    for ref, data in acc_db. items():
+    for ref, data in acc_db.items():
         for challan in data.get('challans', []):
             acc_lifetime_count += 1  # LIFETIME COUNT
             c_date = challan.get('date')
@@ -346,12 +345,12 @@ def get_dashboard_summary_v2():
             # Analytics Calculation - Daily basis
             try:
                 dt_obj = datetime.strptime(c_date, '%d-%m-%Y')
-                sort_key = dt_obj. strftime('%Y-%m-%d')
+                sort_key = dt_obj.strftime('%Y-%m-%d')
                 daily_data[sort_key]['acc'] += 1
                 daily_data[sort_key]['label'] = dt_obj.strftime('%d-%b')
             except: pass
 
-    # 3.   Closing & PO - LIFETIME COUNT & Analytics
+    # 3.  Closing & PO - LIFETIME COUNT & Analytics
     closing_lifetime_count = 0
     po_lifetime_count = 0
     closing_list = []
@@ -359,8 +358,8 @@ def get_dashboard_summary_v2():
     
     history = stats_data.get('downloads', [])
     for item in history:
-        item_date = item. get('date', '')
-        if item. get('type') == 'PO Sheet':
+        item_date = item.get('date', '')
+        if item.get('type') == 'PO Sheet':
             po_lifetime_count += 1  # LIFETIME COUNT
             if item_date == today_str:
                 po_list.append(item)
@@ -403,10 +402,10 @@ def get_dashboard_summary_v2():
     else:
         for k in sorted_keys:
             d = daily_data[k]
-            chart_labels.append(d. get('label', k))
+            chart_labels.append(d.get('label', k))
             chart_closing.append(d['closing'])
             chart_po.append(d['po'])
-            chart_acc. append(d['acc'])
+            chart_acc.append(d['acc'])
 
     return {
         "users": { "count": len(users_data), "details": user_details },
@@ -437,8 +436,8 @@ def get_store_dashboard_summary():
     for inv in invoices:
         inv_date = inv.get('date', '')
         try:
-            if inv_date. split('-')[1] + '-' + inv_date.split('-')[2] == current_month:
-                monthly_sales += inv. get('total', 0)
+            if inv_date.split('-')[1] + '-' + inv_date.split('-')[2] == current_month:
+                monthly_sales += inv.get('total', 0)
         except:
             pass
         total_due += inv.get('due', 0)
@@ -451,48 +450,15 @@ def get_store_dashboard_summary():
         "monthly_sales": monthly_sales,
         "total_due": total_due
     }
-
-# ==============================================================================
-# API CACHING HELPER - নতুন ফাংশন যোগ করা হয়েছে
-# ==============================================================================
-
-def should_refresh_api_data(last_api_call_time):
-    """২৪ ঘন্টা পরে API রিফ্রেশ করা উচিত কিনা চেক করে"""
-    if not last_api_call_time:
-        return True
-    try:
-        last_call = datetime.fromisoformat(last_api_call_time)
-        now = get_bd_time()
-        # টাইমজোন aware করা
-        if last_call. tzinfo is None:
-            last_call = bd_tz.localize(last_call)
-        time_diff = now - last_call
-        return time_diff.total_seconds() > 86400  # 24 hours = 86400 seconds
-    except:
-        return True
-
-def get_colors_from_cached_data(ref, acc_db):
-    """ক্যাশ থেকে কালার লিস্ট বের করে"""
-    colors = []
-    if ref in acc_db:
-        cached_colors = acc_db[ref].get('colors', [])
-        if cached_colors:
-            return cached_colors
-        # চালান থেকে কালার বের করা
-        for challan in acc_db[ref].get('challans', []):
-            color = challan.get('color', '')
-            if color and color not in colors:
-                colors.append(color)
-    return colors
-    # ==============================================================================
+        # ==============================================================================
 # ENHANCED CSS STYLES - PREMIUM MODERN UI WITH ANIMATIONS
 # ==============================================================================
 COMMON_STYLES = """
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all. min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4. 1.1/animate.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min. js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
     <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
     <style>
         :root {
@@ -514,12 +480,12 @@ COMMON_STYLES = """
             --border-color: rgba(255, 255, 255, 0.08);
             --border-glow: rgba(255, 122, 0, 0.2);
             --card-radius: 16px;
-            --transition-smooth: all 0. 4s cubic-bezier(0.4, 0, 0.2, 1);
+            --transition-smooth: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             --shadow-card: 0 4px 24px rgba(0, 0, 0, 0.4);
             --shadow-glow: 0 0 40px rgba(255, 122, 0, 0.15);
             --gradient-orange: linear-gradient(135deg, #FF7A00 0%, #FF9A40 100%);
             --gradient-dark: linear-gradient(180deg, #12121a 0%, #0a0a0f 100%);
-            --gradient-card: linear-gradient(145deg, rgba(22, 22, 31, 0.9) 0%, rgba(16, 16, 22, 0. 95) 100%);
+            --gradient-card: linear-gradient(145deg, rgba(22, 22, 31, 0.9) 0%, rgba(16, 16, 22, 0.95) 100%);
         }
 
         * { 
@@ -556,7 +522,7 @@ COMMON_STYLES = """
         }
 
         /* Animated Gradient Background */
-        . animated-bg {
+        .animated-bg {
             position: fixed;
             top: 0;
             left: 0;
@@ -577,7 +543,7 @@ COMMON_STYLES = """
 
         /* Glassmorphism Effect */
         .glass {
-            background: rgba(22, 22, 31, 0. 7);
+            background: rgba(22, 22, 31, 0.7);
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
             border: 1px solid var(--border-color);
@@ -599,7 +565,7 @@ COMMON_STYLES = """
             transition: var(--transition-smooth);
             box-shadow: 4px 0 30px rgba(0, 0, 0, 0.3);
         }
-        . sidebar::before {
+        .sidebar::before {
             content: '';
             position: absolute;
             top: 0;
@@ -641,7 +607,7 @@ COMMON_STYLES = """
             50% { transform: translateY(-5px) rotate(5deg); }
         }
         
-        . nav-menu { 
+        .nav-menu { 
             flex-grow: 1; 
             display: flex; 
             flex-direction: column;
@@ -663,7 +629,7 @@ COMMON_STYLES = """
             overflow: hidden;
         }
 
-        . nav-link::before {
+        .nav-link::before {
             content: '';
             position: absolute;
             left: 0;
@@ -674,9 +640,9 @@ COMMON_STYLES = """
             transition: var(--transition-smooth);
             z-index: -1;
         }
-        . nav-link:hover::before, .nav-link. active::before { width: 100%; }
+        .nav-link:hover::before, .nav-link.active::before { width: 100%; }
 
-        .nav-link:hover, .nav-link. active { 
+        .nav-link:hover, .nav-link.active { 
             color: var(--accent-orange); 
             transform: translateX(5px);
         }
@@ -687,7 +653,7 @@ COMMON_STYLES = """
             box-shadow: 0 0 20px var(--accent-orange-glow);
         }
 
-        . nav-link i { 
+        .nav-link i { 
             width: 24px;
             margin-right: 12px; 
             font-size: 18px; 
@@ -696,11 +662,11 @@ COMMON_STYLES = """
         }
 
         .nav-link:hover i {
-            transform: scale(1. 2);
+            transform: scale(1.2);
             filter: drop-shadow(0 0 8px var(--accent-orange));
         }
 
-        . nav-link . nav-badge {
+        .nav-link .nav-badge {
             margin-left: auto;
             background: var(--accent-orange);
             color: white;
@@ -786,12 +752,12 @@ COMMON_STYLES = """
         }
         
         .status-badge:hover {
-            border-color: rgba(16, 185, 129, 0. 3);
+            border-color: rgba(16, 185, 129, 0.3);
             box-shadow: 0 0 20px rgba(16, 185, 129, 0.15);
         }
         
         /* FIXED: Glowing Green Status Dot */
-        . status-dot {
+        .status-dot {
             width: 10px;
             height: 10px;
             background: var(--accent-green);
@@ -802,10 +768,10 @@ COMMON_STYLES = """
                 0 0 5px var(--accent-green),
                 0 0 10px var(--accent-green),
                 0 0 20px var(--accent-green),
-                0 0 30px rgba(16, 185, 129, 0. 5);
+                0 0 30px rgba(16, 185, 129, 0.5);
         }
         
-        . status-dot::before {
+        .status-dot::before {
             content: '';
             position: absolute;
             top: 50%;
@@ -818,7 +784,7 @@ COMMON_STYLES = """
             animation: statusPulseRing 2s ease-out infinite;
         }
         
-        . status-dot::after {
+        .status-dot::after {
             content: '';
             position: absolute;
             top: 50%;
@@ -841,12 +807,12 @@ COMMON_STYLES = """
                     0 0 30px rgba(16, 185, 129, 0.5);
             }
             50% { 
-                opacity: 0. 8;
+                opacity: 0.8;
                 box-shadow: 
                     0 0 10px var(--accent-green),
                     0 0 20px var(--accent-green),
                     0 0 40px var(--accent-green),
-                    0 0 60px rgba(16, 185, 129, 0. 6);
+                    0 0 60px rgba(16, 185, 129, 0.6);
             }
         }
         
@@ -856,7 +822,7 @@ COMMON_STYLES = """
                 opacity: 0.8;
             }
             100% {
-                transform: translate(-50%, -50%) scale(2. 5);
+                transform: translate(-50%, -50%) scale(2.5);
                 opacity: 0;
             }
         }
@@ -973,16 +939,16 @@ COMMON_STYLES = """
             box-shadow: 0 0 30px var(--accent-orange-glow);
         }
 
-        .stat-card:hover . stat-icon i {
+        .stat-card:hover .stat-icon i {
             animation: iconBounce 0.5s ease-out;
         }
 
         @keyframes iconBounce {
             0%, 100% { transform: scale(1); }
-            50% { transform: scale(1. 3); }
+            50% { transform: scale(1.3); }
         }
 
-        . stat-info h3 { 
+        .stat-info h3 { 
             font-size: 36px;
             font-weight: 800; 
             margin: 0; 
@@ -1000,7 +966,7 @@ COMMON_STYLES = """
             color: var(--text-secondary); 
             margin: 6px 0 0 0; 
             text-transform: uppercase;
-            letter-spacing: 1. 5px;
+            letter-spacing: 1.5px;
             font-weight: 600;
         }
 
@@ -1008,8 +974,7 @@ COMMON_STYLES = """
         .count-up {
             display: inline-block;
         }
-
-        /* Progress Bars with Animation */
+                /* Progress Bars with Animation */
         .progress-item { margin-bottom: 24px; }
 
         .progress-header {
@@ -1042,7 +1007,7 @@ COMMON_STYLES = """
             transform-origin: left;
         }
 
-        . progress-bar-fill::after {
+        .progress-bar-fill::after {
             content: '';
             position: absolute;
             top: 0;
@@ -1063,9 +1028,9 @@ COMMON_STYLES = """
             100% { transform: translateX(100%); }
         }
 
-        . progress-orange { background: var(--gradient-orange); }
+        .progress-orange { background: var(--gradient-orange); }
         .progress-purple { background: linear-gradient(135deg, #8B5CF6 0%, #A78BFA 100%); }
-        . progress-green { background: linear-gradient(135deg, #10B981 0%, #34D399 100%); }
+        .progress-green { background: linear-gradient(135deg, #10B981 0%, #34D399 100%); }
         
         /* Enhanced Forms */
         .input-group { margin-bottom: 20px; }
@@ -1077,7 +1042,7 @@ COMMON_STYLES = """
             margin-bottom: 8px; 
             text-transform: uppercase; 
             font-weight: 700;
-            letter-spacing: 1. 5px;
+            letter-spacing: 1.5px;
         }
 
         input, select, textarea { 
@@ -1112,7 +1077,7 @@ COMMON_STYLES = """
         select {
             cursor: pointer;
             appearance: none;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3. org/2000/svg' fill='%23FF7A00' viewBox='0 0 24 24'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%23FF7A00' viewBox='0 0 24 24'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
             background-repeat: no-repeat;
             background-position: right 12px center;
             background-size: 24px;
@@ -1125,7 +1090,7 @@ COMMON_STYLES = """
             padding: 10px;
         }
         
-        button, . btn-primary { 
+        button, .btn-primary { 
             width: 100%;
             padding: 14px 24px; 
             background: var(--gradient-orange);
@@ -1178,18 +1143,18 @@ COMMON_STYLES = """
         }
         
         .btn-success:hover {
-            box-shadow: 0 10px 30px rgba(16, 185, 129, 0. 3);
+            box-shadow: 0 10px 30px rgba(16, 185, 129, 0.3);
         }
         
-        . btn-danger {
+        .btn-danger {
             background: linear-gradient(135deg, #EF4444 0%, #F87171 100%);
         }
         
         .btn-danger:hover {
-            box-shadow: 0 10px 30px rgba(239, 68, 68, 0. 3);
+            box-shadow: 0 10px 30px rgba(239, 68, 68, 0.3);
         }
         
-        . btn-purple {
+        .btn-purple {
             background: linear-gradient(135deg, #8B5CF6 0%, #A78BFA 100%);
         }
         
@@ -1269,7 +1234,7 @@ COMMON_STYLES = """
             overflow: hidden;
         }
 
-        . btn-edit { 
+        .btn-edit { 
             background: rgba(139, 92, 246, 0.15);
             color: #A78BFA; 
         }
@@ -1282,38 +1247,38 @@ COMMON_STYLES = """
         }
 
         .btn-del { 
-            background: rgba(239, 68, 68, 0. 15);
+            background: rgba(239, 68, 68, 0.15);
             color: #F87171; 
         }
 
-        . btn-del:hover { 
+        .btn-del:hover { 
             background: var(--accent-red);
             color: white;
             transform: scale(1.1);
-            box-shadow: 0 0 20px rgba(239, 68, 68, 0. 4);
+            box-shadow: 0 0 20px rgba(239, 68, 68, 0.4);
         }
         
         .btn-view {
-            background: rgba(59, 130, 246, 0. 15);
+            background: rgba(59, 130, 246, 0.15);
             color: #60A5FA;
         }
         
         .btn-view:hover {
             background: var(--accent-blue);
             color: white;
-            transform: scale(1. 1);
+            transform: scale(1.1);
             box-shadow: 0 0 20px rgba(59, 130, 246, 0.4);
         }
         
         .btn-print-sm {
-            background: rgba(16, 185, 129, 0. 15);
+            background: rgba(16, 185, 129, 0.15);
             color: #34D399;
         }
         
         .btn-print-sm:hover {
             background: var(--accent-green);
             color: white;
-            transform: scale(1. 1);
+            transform: scale(1.1);
             box-shadow: 0 0 20px rgba(16, 185, 129, 0.4);
         }
         
@@ -1352,18 +1317,18 @@ COMMON_STYLES = """
             box-shadow: 0 0 30px var(--accent-orange-glow);
         }
 
-        . spinner-inner {
+        .spinner-inner {
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
             width: 50px;
             height: 50px;
-            border: 3px solid rgba(139, 92, 246, 0. 1);
+            border: 3px solid rgba(139, 92, 246, 0.1);
             border-bottom: 3px solid var(--accent-purple);
             border-left: 3px solid var(--accent-purple);
             border-radius: 50%;
-            animation: spin 1. 2s linear infinite reverse;
+            animation: spin 1.2s linear infinite reverse;
         }
 
         @keyframes spin { 
@@ -1386,7 +1351,7 @@ COMMON_STYLES = """
             border: 3px solid var(--accent-green);
             margin-bottom: 24px;
             animation: success-anim 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-            box-shadow: 0 0 40px rgba(16, 185, 129, 0. 3);
+            box-shadow: 0 0 40px rgba(16, 185, 129, 0.3);
         }
 
         .checkmark-circle::before {
@@ -1401,11 +1366,11 @@ COMMON_STYLES = """
             left: 35px;
             transform: rotate(45deg); 
             opacity: 0;
-            animation: checkmark-anim 0.4s 0. 4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+            animation: checkmark-anim 0.4s 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
         }
         
         /* Fail Cross Animation */
-        . fail-container { 
+        .fail-container { 
             display: none; 
             text-align: center;
         }
@@ -1418,7 +1383,7 @@ COMMON_STYLES = """
             border-radius: 50%; 
             border: 3px solid var(--accent-red);
             margin-bottom: 24px;
-            animation: fail-anim 0.6s cubic-bezier(0. 4, 0, 0.2, 1) forwards;
+            animation: fail-anim 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
             box-shadow: 0 0 40px rgba(239, 68, 68, 0.3);
         }
 
@@ -1435,12 +1400,12 @@ COMMON_STYLES = """
             opacity: 0;
         }
 
-        . fail-circle::before { transform: rotate(45deg); }
+        .fail-circle::before { transform: rotate(45deg); }
         .fail-circle::after { transform: rotate(-45deg); }
 
         @keyframes success-anim { 
             0% { transform: scale(0); opacity: 0; } 
-            50% { transform: scale(1. 2); } 
+            50% { transform: scale(1.2); } 
             100% { transform: scale(1); opacity: 1; } 
         }
 
@@ -1460,7 +1425,7 @@ COMMON_STYLES = """
             100% { opacity: 1; transform: rotate(45deg) scale(1); }
         }
 
-        . anim-text { 
+        .anim-text { 
             font-size: 24px; 
             font-weight: 800; 
             color: white;
@@ -1468,22 +1433,21 @@ COMMON_STYLES = """
             letter-spacing: 1px;
         }
 
-        . loading-text {
+        .loading-text {
             color: var(--text-secondary);
             font-size: 15px;
             margin-top: 20px;
             font-weight: 500;
             letter-spacing: 2px;
             text-transform: uppercase;
-            animation: textPulse 1. 5s ease-in-out infinite;
+            animation: textPulse 1.5s ease-in-out infinite;
         }
 
         @keyframes textPulse {
-            0%, 100% { opacity: 0. 5; }
+            0%, 100% { opacity: 0.5; }
             50% { opacity: 1; }
         }
-
-        /* Welcome Popup Modal */
+                /* Welcome Popup Modal */
         .welcome-modal {
             display: none;
             position: fixed;
@@ -1491,7 +1455,7 @@ COMMON_STYLES = """
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(10, 10, 15, 0. 9);
+            background: rgba(10, 10, 15, 0.9);
             backdrop-filter: blur(10px);
             -webkit-backdrop-filter: blur(10px);
             z-index: 10000;
@@ -1505,7 +1469,7 @@ COMMON_STYLES = """
             to { opacity: 1; }
         }
         
-        . welcome-content {
+        .welcome-content {
             background: var(--gradient-card);
             border: 1px solid var(--border-color);
             border-radius: 24px;
@@ -1513,13 +1477,13 @@ COMMON_STYLES = """
             text-align: center;
             max-width: 500px;
             width: 90%;
-            animation: welcomeSlideIn 0. 5s cubic-bezier(0.4, 0, 0.2, 1);
+            animation: welcomeSlideIn 0.5s cubic-bezier(0.4, 0, 0.2, 1);
             box-shadow: 0 25px 80px rgba(0, 0, 0, 0.5), 0 0 60px var(--accent-orange-glow);
             position: relative;
             overflow: hidden;
         }
 
-        . welcome-content::before {
+        .welcome-content::before {
             content: '';
             position: absolute;
             top: -50%;
@@ -1528,7 +1492,7 @@ COMMON_STYLES = """
             height: 200%;
             background: radial-gradient(circle, var(--accent-orange-glow) 0%, transparent 60%);
             animation: welcomeGlow 3s ease-in-out infinite;
-            opacity: 0. 3;
+            opacity: 0.3;
         }
         
         @keyframes welcomeSlideIn {
@@ -1560,7 +1524,7 @@ COMMON_STYLES = """
             100% { transform: scale(1) rotate(0deg); }
         }
 
-        . welcome-greeting {
+        .welcome-greeting {
             font-size: 16px;
             color: var(--accent-orange);
             font-weight: 600;
@@ -1652,7 +1616,7 @@ COMMON_STYLES = """
             overflow: hidden;
         }
 
-        . upload-zone::before {
+        .upload-zone::before {
             content: '';
             position: absolute;
             top: 0;
@@ -1664,7 +1628,7 @@ COMMON_STYLES = """
             transition: var(--transition-smooth);
         }
 
-        . upload-zone:hover {
+        .upload-zone:hover {
             border-color: var(--accent-orange);
             background: rgba(255, 122, 0, 0.05);
         }
@@ -1673,7 +1637,7 @@ COMMON_STYLES = """
             opacity: 0.03;
         }
 
-        .upload-zone. dragover {
+        .upload-zone.dragover {
             border-color: var(--accent-orange);
             background: rgba(255, 122, 0, 0.1);
             transform: scale(1.02);
@@ -1712,7 +1676,7 @@ COMMON_STYLES = """
         }
 
         /* Flash Messages */
-        . flash-message {
+        .flash-message {
             margin-bottom: 20px;
             padding: 16px 20px;
             border-radius: 12px;
@@ -1735,19 +1699,19 @@ COMMON_STYLES = """
             }
         }
 
-        . flash-error {
-            background: rgba(239, 68, 68, 0. 1);
+        .flash-error {
+            background: rgba(239, 68, 68, 0.1);
             border: 1px solid rgba(239, 68, 68, 0.2);
             color: #F87171;
         }
 
         .flash-success {
-            background: rgba(16, 185, 129, 0. 1);
+            background: rgba(16, 185, 129, 0.1);
             border: 1px solid rgba(16, 185, 129, 0.2);
             color: #34D399;
         }
         
-        . flash-warning {
+        .flash-warning {
             background: rgba(245, 158, 11, 0.1);
             border: 1px solid rgba(245, 158, 11, 0.2);
             color: #FBBF24;
@@ -1776,7 +1740,7 @@ COMMON_STYLES = """
         }
         
         /* Mobile Toggle & Responsive */
-        . mobile-toggle { 
+        .mobile-toggle { 
             display: none; 
             position: fixed; 
             top: 20px;
@@ -1800,10 +1764,10 @@ COMMON_STYLES = """
                 transform: translateX(-100%);
                 width: 280px;
             } 
-            . sidebar. active { 
+            .sidebar.active { 
                 transform: translateX(0);
             }
-            . main-content { 
+            .main-content { 
                 margin-left: 0;
                 width: 100%; 
                 padding: 20px; 
@@ -1823,7 +1787,7 @@ COMMON_STYLES = """
         }
 
         @media (max-width: 768px) {
-            . stats-grid {
+            .stats-grid {
                 grid-template-columns: 1fr;
             }
             .page-title {
@@ -1838,7 +1802,7 @@ COMMON_STYLES = """
         }
 
         /* Skeleton Loading */
-        . skeleton {
+        .skeleton {
             background: linear-gradient(90deg, var(--bg-card) 25%, rgba(255,255,255,0.05) 50%, var(--bg-card) 75%);
             background-size: 200% 100%;
             animation: skeletonLoad 1.5s infinite;
@@ -1883,12 +1847,12 @@ COMMON_STYLES = """
             font-size: 12px;
             color: var(--text-secondary);
             padding: 6px 12px;
-            background: rgba(16, 185, 129, 0. 1);
+            background: rgba(16, 185, 129, 0.1);
             border-radius: 20px;
             border: 1px solid rgba(16, 185, 129, 0.2);
         }
 
-        . realtime-dot {
+        .realtime-dot {
             width: 8px;
             height: 8px;
             background: var(--accent-green);
@@ -1949,10 +1913,10 @@ COMMON_STYLES = """
             z-index: -1;
             animation: gradientBorder 3s ease infinite;
             opacity: 0;
-            transition: opacity 0. 3s;
+            transition: opacity 0.3s;
         }
 
-        . animated-border:hover::after {
+        .animated-border:hover::after {
             opacity: 1;
         }
 
@@ -1963,7 +1927,7 @@ COMMON_STYLES = """
         }
         
         /* Permission Checkbox Styles */
-        . perm-checkbox {
+        .perm-checkbox {
             background: rgba(255, 255, 255, 0.03);
             padding: 14px 18px;
             border-radius: 12px;
@@ -1981,7 +1945,7 @@ COMMON_STYLES = """
             background: rgba(255, 122, 0, 0.05);
         }
 
-        . perm-checkbox input {
+        .perm-checkbox input {
             width: auto;
             margin-right: 10px;
             accent-color: var(--accent-orange);
@@ -1993,12 +1957,12 @@ COMMON_STYLES = """
             color: var(--text-secondary);
         }
 
-        . perm-checkbox:has(input:checked) {
+        .perm-checkbox:has(input:checked) {
             border-color: var(--accent-orange);
             background: rgba(255, 122, 0, 0.1);
         }
 
-        . perm-checkbox:has(input:checked) span {
+        .perm-checkbox:has(input:checked) span {
             color: var(--accent-orange);
         }
 
@@ -2014,7 +1978,7 @@ COMMON_STYLES = """
             color: var(--text-secondary);
         }
 
-        . time-badge i {
+        .time-badge i {
             color: var(--accent-orange);
         }
         
@@ -2051,7 +2015,7 @@ COMMON_STYLES = """
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(10, 10, 15, 0. 9);
+            background: rgba(10, 10, 15, 0.9);
             backdrop-filter: blur(10px);
             z-index: 9000;
             justify-content: center;
@@ -2071,7 +2035,7 @@ COMMON_STYLES = """
             width: 90%;
             max-height: 90vh;
             overflow-y: auto;
-            animation: modalSlideIn 0. 3s ease-out;
+            animation: modalSlideIn 0.3s ease-out;
         }
         
         @keyframes modalSlideIn {
@@ -2085,7 +2049,7 @@ COMMON_STYLES = """
             }
         }
         
-        . modal-header {
+        .modal-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -2126,7 +2090,7 @@ COMMON_STYLES = """
             margin-bottom: 20px;
         }
         
-        . search-box input {
+        .search-box input {
             padding-left: 45px;
         }
         
@@ -2139,7 +2103,7 @@ COMMON_STYLES = """
         }
         
         /* Tab Navigation */
-        . tab-nav {
+        .tab-nav {
             display: flex;
             gap: 10px;
             margin-bottom: 30px;
@@ -2147,7 +2111,7 @@ COMMON_STYLES = """
             padding-bottom: 10px;
         }
         
-        . tab-btn {
+        .tab-btn {
             padding: 10px 20px;
             background: transparent;
             border: none;
@@ -2165,10 +2129,10 @@ COMMON_STYLES = """
         
         .tab-btn.active {
             color: var(--accent-orange);
-            background: rgba(255, 122, 0, 0. 15);
+            background: rgba(255, 122, 0, 0.15);
         }
         
-        . tab-content {
+        .tab-content {
             display: none;
         }
         
@@ -2189,12 +2153,12 @@ COMMON_STYLES = """
             color: var(--accent-green);
         }
         
-        . amount-due {
+        .amount-due {
             color: var(--accent-red);
         }
         
         /* Empty State */
-        . empty-state {
+        .empty-state {
             text-align: center;
             padding: 60px 20px;
             color: var(--text-secondary);
@@ -2207,40 +2171,9 @@ COMMON_STYLES = """
             display: block;
         }
         
-        . empty-state p {
+        .empty-state p {
             font-size: 16px;
             margin-bottom: 20px;
-        }
-        
-        /* Current Entry Indicator - নতুন যোগ করা হয়েছে */
-        . current-entry {
-            background: rgba(255, 122, 0, 0.1) !important;
-            border-left: 3px solid var(--accent-orange) !important;
-        }
-        
-        . current-entry . status-cell {
-            color: var(--accent-orange) !important;
-        }
-        
-        /* API Cache Indicator */
-        . cache-indicator {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            padding: 4px 10px;
-            border-radius: 6px;
-            font-size: 11px;
-            font-weight: 600;
-        }
-        
-        . cache-fresh {
-            background: rgba(16, 185, 129, 0. 1);
-            color: var(--accent-green);
-        }
-        
-        .cache-stale {
-            background: rgba(245, 158, 11, 0. 1);
-            color: #FBBF24;
         }
     </style>
 """
@@ -2249,8 +2182,8 @@ COMMON_STYLES = """
 # ==============================================================================
 
 def is_potential_size(header):
-    h = header.strip(). upper()
-    if h in ["COLO", "SIZE", "TOTAL", "QUANTITY", "PRICE", "AMOUNT", "CURRENCY", "ORDER NO", "P. O NO"]:
+    h = header.strip().upper()
+    if h in ["COLO", "SIZE", "TOTAL", "QUANTITY", "PRICE", "AMOUNT", "CURRENCY", "ORDER NO", "P.O NO"]:
         return False
     if re.match(r'^\d+$', h): return True
     if re.match(r'^\d+[AMYT]$', h): return True
@@ -2282,31 +2215,31 @@ def extract_metadata(first_page_text):
     if "KIABI" in first_page_text.upper():
         meta['buyer'] = "KIABI"
     else:
-        buyer_match = re. search(r"Buyer.*?Name[\s\S]*?([\w\s&]+)(? :\n|$)", first_page_text)
+        buyer_match = re.search(r"Buyer.*?Name[\s\S]*?([\w\s&]+)(?:\n|$)", first_page_text)
         if buyer_match: meta['buyer'] = buyer_match.group(1).strip()
 
-    booking_block_match = re.search(r"(? :Internal )?Booking NO\.  ?  [:\s]*([\s\S]*?)(? :System NO|Control No|Buyer)", first_page_text, re.IGNORECASE)
+    booking_block_match = re.search(r"(?:Internal )?Booking NO\. ? [:\s]*([\s\S]*?)(?:System NO|Control No|Buyer)", first_page_text, re.IGNORECASE)
     if booking_block_match: 
         raw_booking = booking_block_match.group(1).strip()
         clean_booking = raw_booking.replace('\n', '').replace('\r', '').replace(' ', '')
         if "System" in clean_booking: clean_booking = clean_booking.split("System")[0]
         meta['booking'] = clean_booking
 
-    style_match = re.search(r"Style Ref\. ? [:\s]*([\w-]+)", first_page_text, re.IGNORECASE)
+    style_match = re.search(r"Style Ref\. ?[:\s]*([\w-]+)", first_page_text, re.IGNORECASE)
     if style_match: meta['style'] = style_match.group(1).strip()
     else:
         style_match = re.search(r"Style Des\. ?[\s\S]*?([\w-]+)", first_page_text, re.IGNORECASE)
         if style_match: meta['style'] = style_match.group(1).strip()
 
-    season_match = re.search(r"Season\s*[:\n\"]*([\w\d-]+)", first_page_text, re. IGNORECASE)
-    if season_match: meta['season'] = season_match.group(1). strip()
-    dept_match = re. search(r"Dept\.  ?[\s\n:]*([A-Za-z]+)", first_page_text, re. IGNORECASE)
-    if dept_match: meta['dept'] = dept_match. group(1).strip()
+    season_match = re.search(r"Season\s*[:\n\"]*([\w\d-]+)", first_page_text, re.IGNORECASE)
+    if season_match: meta['season'] = season_match.group(1).strip()
+    dept_match = re.search(r"Dept\. ?[\s\n:]*([A-Za-z]+)", first_page_text, re.IGNORECASE)
+    if dept_match: meta['dept'] = dept_match.group(1).strip()
 
-    item_match = re.search(r"Garments?     Item[\s\n:]*([^\n\r]+)", first_page_text, re.IGNORECASE)
+    item_match = re.search(r"Garments?    Item[\s\n:]*([^\n\r]+)", first_page_text, re.IGNORECASE)
     if item_match: 
         item_text = item_match.group(1).strip()
-        if "Style" in item_text: item_text = item_text.split("Style")[0]. strip()
+        if "Style" in item_text: item_text = item_text.split("Style")[0].strip()
         meta['item'] = item_text
 
     return meta
@@ -2330,11 +2263,11 @@ def extract_data_dynamic(file_path):
         order_match = re.search(r"Order no\D*(\d+)", first_page_text, re.IGNORECASE)
         if order_match: order_no = order_match.group(1)
         else:
-            alt_match = re.search(r"Order\s*[:\.]?\s*(\d+)", first_page_text, re. IGNORECASE)
+            alt_match = re.search(r"Order\s*[:\.]?\s*(\d+)", first_page_text, re.IGNORECASE)
             if alt_match: order_no = alt_match.group(1)
         
         order_no = str(order_no).strip()
-        if order_no. endswith("00"): order_no = order_no[:-2]
+        if order_no.endswith("00"): order_no = order_no[:-2]
 
         for page in reader.pages:
             text = page.extract_text()
@@ -2367,15 +2300,15 @@ def extract_data_dynamic(file_path):
                     if line.startswith("Total Quantity") or line.startswith("Total Amount"):
                         capturing_data = False
                         continue
-                    lower_line = line. lower()
+                    lower_line = line.lower()
                     if "quantity" in lower_line or "currency" in lower_line or "price" in lower_line or "amount" in lower_line:
                         continue
                         
-                    clean_line = line. replace("Spec.  price", ""). replace("Spec", "").strip()
+                    clean_line = line.replace("Spec. price", "").replace("Spec", "").strip()
                     if not re.search(r'[a-zA-Z]', clean_line): continue
                     if re.match(r'^[A-Z]\d+$', clean_line) or "Assortment" in clean_line: continue
 
-                    numbers_in_line = re. findall(r'\b\d+\b', line)
+                    numbers_in_line = re.findall(r'\b\d+\b', line)
                     quantities = [int(n) for n in numbers_in_line]
                     color_name = clean_line
                     final_qtys = []
@@ -2383,12 +2316,12 @@ def extract_data_dynamic(file_path):
                     if len(quantities) >= len(sizes):
                         if len(quantities) == len(sizes) + 1: final_qtys = quantities[:-1] 
                         else: final_qtys = quantities[:len(sizes)]
-                        color_name = re.sub(r'\s\d+$', '', color_name). strip()
+                        color_name = re.sub(r'\s\d+$', '', color_name).strip()
                     elif len(quantities) < len(sizes): 
                         vertical_qtys = []
                         for next_line in lines[i+1:]:
                             next_line = next_line.strip()
-                            if "Total" in next_line or re.search(r'[a-zA-Z]', next_line. replace("Spec", "").replace("price", "")): break
+                            if "Total" in next_line or re.search(r'[a-zA-Z]', next_line.replace("Spec", "").replace("price", "")): break
                             if re.match(r'^\d+$', next_line): vertical_qtys.append(int(next_line))
                         
                         if len(vertical_qtys) >= len(sizes): final_qtys = vertical_qtys[:len(sizes)]
@@ -2409,7 +2342,7 @@ def extract_data_dynamic(file_path):
 # ==============================================================================
 
 def get_authenticated_session(username, password):
-    login_url = 'http://180.92.235.190:8022/erp/login. php'
+    login_url = 'http://180.92.235.190:8022/erp/login.php'
     login_payload = {'txt_userid': username, 'txt_password': password, 'submit': 'Login'}
     session_req = requests.Session()
     session_req.headers.update({
@@ -2417,20 +2350,19 @@ def get_authenticated_session(username, password):
     })
     try:
         response = session_req.post(login_url, data=login_payload, timeout=300)
-        if "dashboard. php" in response. url or "Invalid" not in response.text:
+        if "dashboard.php" in response.url or "Invalid" not in response.text:
             return session_req
         else:
             return None
-    except requests. exceptions.RequestException as e:
+    except requests.exceptions.RequestException as e:
         print(f"Connection Error: {e}")
         return None
 
 def fetch_closing_report_data(internal_ref_no):
-    """API থেকে ক্লোজিং রিপোর্ট ডাটা ফেচ করে"""
-    active_session = get_authenticated_session("input2. clothing-cutting", "123456")
+    active_session = get_authenticated_session("input2.clothing-cutting", "123456")
     if not active_session: return None
 
-    report_url = 'http://180. 92.235.190:8022/erp/prod_planning/reports/requires/cutting_lay_production_report_controller.php'
+    report_url = 'http://180.92.235.190:8022/erp/prod_planning/reports/requires/cutting_lay_production_report_controller.php'
     payload_template = {'action': 'report_generate', 'cbo_wo_company_name': '2', 'cbo_location_name': '2', 'cbo_floor_id': '0', 'cbo_buyer_name': '0', 'txt_internal_ref_no': internal_ref_no, 'reportType': '3'}
     found_data = None
    
@@ -2441,7 +2373,7 @@ def fetch_closing_report_data(internal_ref_no):
             payload['cbo_company_name'] = str(company_id)
             try:
                 response = active_session.post(report_url, data=payload, timeout=300)
-                if response.status_code == 200 and "Data not Found" not in response. text:
+                if response.status_code == 200 and "Data not Found" not in response.text:
                     found_data = response.text
                     break
             except: continue
@@ -2451,83 +2383,15 @@ def fetch_closing_report_data(internal_ref_no):
         return parse_report_data(found_data)
     return None
 
-def fetch_closing_report_data_with_cache(internal_ref_no):
-    """
-    ক্যাশিং সহ API থেকে ডাটা ফেচ করে।
-    - যদি ডাটা ক্যাশে থাকে এবং ২৪ ঘন্টার মধ্যে ফেচ করা হয়েছে, ক্যাশ থেকে রিটার্ন করে
-    - অন্যথায় নতুন API কল করে এবং ক্যাশ আপডেট করে
-    """
-    acc_db = load_accessories_db()
-    ref = internal_ref_no. upper()
-    
-    # চেক করা যে ডাটা ক্যাশে আছে কিনা এবং ২৪ ঘন্টার মধ্যে আপডেট হয়েছে কিনা
-    if ref in acc_db:
-        last_api_call = acc_db[ref]. get('last_api_call')
-        cached_colors = acc_db[ref].get('colors', [])
-        
-        # যদি ২৪ ঘন্টার মধ্যে API কল হয়ে থাকে এবং কালার ক্যাশ আছে
-        if not should_refresh_api_data(last_api_call) and cached_colors:
-            print(f"[CACHE HIT] Using cached data for {ref}")
-            return {
-                'colors': cached_colors,
-                'buyer': acc_db[ref].get('buyer', 'N/A'),
-                'style': acc_db[ref].get('style', 'N/A'),
-                'from_cache': True,
-                'last_updated': last_api_call
-            }
-    
-    # নতুন API কল করা
-    print(f"[API CALL] Fetching fresh data for {ref}")
-    report_data = fetch_closing_report_data(ref)
-    
-    colors = []
-    buyer = "N/A"
-    style = "N/A"
-    
-    if report_data:
-        for block in report_data:
-            color_name = block.get('color', '')
-            if color_name and color_name not in colors:
-                colors.append(color_name)
-            if block.get('buyer') != 'N/A':
-                buyer = block.get('buyer')
-            if block. get('style') != 'N/A':
-                style = block.get('style')
-    
-    # ক্যাশ আপডেট করা
-    if ref not in acc_db:
-        acc_db[ref] = {
-            "buyer": buyer,
-            "style": style,
-            "colors": colors,
-            "challans": [],
-            "last_api_call": get_bd_time(). isoformat()
-        }
-    else:
-        acc_db[ref]['buyer'] = buyer if buyer != 'N/A' else acc_db[ref]. get('buyer', 'N/A')
-        acc_db[ref]['style'] = style if style != 'N/A' else acc_db[ref].get('style', 'N/A')
-        acc_db[ref]['colors'] = colors if colors else acc_db[ref].get('colors', [])
-        acc_db[ref]['last_api_call'] = get_bd_time().isoformat()
-    
-    save_accessories_db(acc_db)
-    
-    return {
-        'colors': colors,
-        'buyer': buyer,
-        'style': style,
-        'from_cache': False,
-        'last_updated': get_bd_time().isoformat()
-    }
-
 def parse_report_data(html_content):
     all_report_data = []
     try:
         soup = BeautifulSoup(html_content, 'lxml')
         header_row = soup.select_one('thead tr:nth-of-type(2)')
         if not header_row: return None
-        all_th = header_row. find_all('th')
+        all_th = header_row.find_all('th')
         headers = [th.get_text(strip=True) for th in all_th if 'total' not in th.get_text(strip=True).lower()]
-        data_rows = soup. select('div#scroll_body table tbody tr')
+        data_rows = soup.select('div#scroll_body table tbody tr')
         item_blocks = []
         current_block = []
         for row in data_rows:
@@ -2535,20 +2399,20 @@ def parse_report_data(html_content):
                 if current_block: item_blocks.append(current_block)
                 current_block = []
             else:
-                current_block. append(row)
-        if current_block: item_blocks. append(current_block)
+                current_block.append(row)
+        if current_block: item_blocks.append(current_block)
         
         for block in item_blocks:
             style, color, buyer_name, gmts_qty_data, sewing_input_data, cutting_qc_data = "N/A", "N/A", "N/A", None, None, None
             for row in block:
                 cells = row.find_all('td')
                 if len(cells) > 2:
-                    criteria_main = cells[0]. get_text(strip=True)
+                    criteria_main = cells[0].get_text(strip=True)
                     criteria_sub = cells[2].get_text(strip=True)
                     main_lower, sub_lower = criteria_main.lower(), criteria_sub.lower()
                     
                     if main_lower == "style": style = cells[1].get_text(strip=True)
-                    elif main_lower == "color & gmts.  item": color = cells[1].get_text(strip=True)
+                    elif main_lower == "color & gmts. item": color = cells[1].get_text(strip=True)
                     elif "buyer" in main_lower: buyer_name = cells[1].get_text(strip=True)
                     
                     if sub_lower == "gmts. color /country qty": gmts_qty_data = [cell.get_text(strip=True) for cell in cells[3:len(headers)+3]]
@@ -2564,11 +2428,11 @@ def parse_report_data(html_content):
                 plus_3_percent_data = []
                 for value in gmts_qty_data:
                     try:
-                        new_qty = round(int(value. replace(',', '')) * 1.03)
+                        new_qty = round(int(value.replace(',', '')) * 1.03)
                         plus_3_percent_data.append(str(new_qty))
                     except (ValueError, TypeError):
-                        plus_3_percent_data. append(value)
-                all_report_data. append({
+                        plus_3_percent_data.append(value)
+                all_report_data.append({
                     'style': style, 'buyer': buyer_name, 'color': color, 
                     'headers': headers, 'gmts_qty': gmts_qty_data, 
                     'plus_3_percent': plus_3_percent_data, 
@@ -2577,18 +2441,17 @@ def parse_report_data(html_content):
                 })
         return all_report_data
     except Exception as e:
-        print(f"Parse error: {e}")
         return None
 
 def create_formatted_excel_report(report_data, internal_ref_no=""):
     if not report_data: return None
-    wb = openpyxl. Workbook()
-    ws = wb. active
-    ws. title = "Closing Report"
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.title = "Closing Report"
     # Styles
     bold_font = Font(bold=True)
     title_font = Font(size=32, bold=True, color="7B261A") 
-    white_bold_font = Font(size=16. 5, bold=True, color="FFFFFF")
+    white_bold_font = Font(size=16.5, bold=True, color="FFFFFF")
     center_align = Alignment(horizontal='center', vertical='center')
     left_align = Alignment(horizontal='left', vertical='center')
     color_align = Alignment(horizontal='center', vertical='center', wrap_text=True)
@@ -2609,17 +2472,17 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
     ws['A1'].font = title_font 
     ws['A1'].alignment = center_align
 
-    ws. merge_cells(start_row=2, start_column=1, end_row=2, end_column=NUM_COLUMNS)
+    ws.merge_cells(start_row=2, start_column=1, end_row=2, end_column=NUM_COLUMNS)
     ws['A2'].value = "CLOSING REPORT [ INPUT SECTION ]"
     ws['A2'].font = Font(size=15, bold=True) 
     ws['A2'].alignment = center_align
-    ws. row_dimensions[3].height = 6
+    ws.row_dimensions[3].height = 6
 
     formatted_ref_no = internal_ref_no.upper()
     current_date = get_bd_time().strftime("%d/%m/%Y")
     
     left_sub_headers = {
-        'A4': 'BUYER', 'B4': report_data[0]. get('buyer', ''), 
+        'A4': 'BUYER', 'B4': report_data[0].get('buyer', ''), 
         'A5': 'IR/IB NO', 'B5': formatted_ref_no, 
         'A6': 'STYLE NO', 'B6': report_data[0].get('style', '')
     }
@@ -2634,22 +2497,22 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
             cell.fill = ir_ib_fill 
             cell.font = white_bold_font 
         else:
-            cell. fill = dark_green_fill 
+            cell.fill = dark_green_fill 
 
-    ws.merge_cells('B4:G4'); ws. merge_cells('B5:G5'); ws.merge_cells('B6:G6')
+    ws.merge_cells('B4:G4'); ws.merge_cells('B5:G5'); ws.merge_cells('B6:G6')
     
     right_sub_headers = {'H4': 'CLOSING DATE', 'I4': current_date, 'H5': 'SHIPMENT', 'I5': 'ALL', 'H6': 'PO NO', 'I6': 'ALL'}
     for cell_ref, value in right_sub_headers.items():
         cell = ws[cell_ref]
         cell.value = value
-        cell. font = bold_font
+        cell.font = bold_font
         cell.alignment = left_align
         cell.border = thin_border
         cell.fill = dark_green_fill 
 
     for row in range(4, 7):
         for col in range(3, 8): 
-            cell = ws. cell(row=row, column=col)
+            cell = ws.cell(row=row, column=col)
             cell.border = thin_border
        
     current_row = TABLE_START_ROW
@@ -2659,18 +2522,18 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
             cell = ws.cell(row=current_row, column=col_idx, value=header)
             cell.font = bold_font
             cell.alignment = center_align
-            cell. border = medium_border
+            cell.border = medium_border
             cell.fill = header_row_fill 
 
         current_row += 1
         start_merge_row = current_row
-        full_color_name = block. get('color', 'N/A')
+        full_color_name = block.get('color', 'N/A')
 
         for i, size in enumerate(block['headers']):
             color_to_write = full_color_name if i == 0 else ""
-            actual_qty = int(block['gmts_qty'][i]. replace(',', '') or 0)
+            actual_qty = int(block['gmts_qty'][i].replace(',', '') or 0)
             input_qty = int(block['sewing_input'][i].replace(',', '') or 0) if i < len(block['sewing_input']) else 0
-            cutting_qc_val = int(block. get('cutting_qc', [])[i].replace(',', '') or 0) if i < len(block.get('cutting_qc', [])) else 0
+            cutting_qc_val = int(block.get('cutting_qc', [])[i].replace(',', '') or 0) if i < len(block.get('cutting_qc', [])) else 0
             
             ws.cell(row=current_row, column=1, value=color_to_write)
             ws.cell(row=current_row, column=2, value=size)
@@ -2681,7 +2544,7 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
             ws.cell(row=current_row, column=3, value=f"=ROUND(D{current_row}*1.03, 0)")      
             ws.cell(row=current_row, column=7, value=f"=E{current_row}-F{current_row}")      
             ws.cell(row=current_row, column=8, value=f"=F{current_row}-C{current_row}")      
-            ws. cell(row=current_row, column=9, value=f'=IF(C{current_row}<>0, H{current_row}/C{current_row}, 0)') 
+            ws.cell(row=current_row, column=9, value=f'=IF(C{current_row}<>0, H{current_row}/C{current_row}, 0)') 
             
             for col_idx in range(1, NUM_COLUMNS + 1):
                 cell = ws.cell(row=current_row, column=col_idx)
@@ -2695,15 +2558,15 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
                 else: cell.fill = dark_green_fill 
 
                 if col_idx == 9:
-                    cell. number_format = '0.00%' 
+                    cell.number_format = '0.00%' 
             current_row += 1
             
         end_merge_row = current_row - 1
         if start_merge_row <= end_merge_row:
-            ws. merge_cells(start_row=start_merge_row, start_column=1, end_row=end_merge_row, end_column=1)
-            merged_cell = ws. cell(row=start_merge_row, column=1)
-            merged_cell. alignment = color_align
-            if not merged_cell.font. bold: merged_cell.font = bold_font
+            ws.merge_cells(start_row=start_merge_row, start_column=1, end_row=end_merge_row, end_column=1)
+            merged_cell = ws.cell(row=start_merge_row, column=1)
+            merged_cell.alignment = color_align
+            if not merged_cell.font.bold: merged_cell.font = bold_font
         
         total_row_str = str(current_row)
         ws.merge_cells(start_row=current_row, start_column=1, end_row=current_row, end_column=2)
@@ -2730,7 +2593,7 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
                 cell.number_format = '0.00%'
         
         for col_idx in range(2, NUM_COLUMNS + 1):
-            cell = ws. cell(row=current_row, column=col_idx)
+            cell = ws.cell(row=current_row, column=col_idx)
             if not cell.value: 
                 cell.fill = dark_green_fill 
                 cell.border = medium_border
@@ -2742,7 +2605,7 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
         image_response = requests.get(direct_image_url)
         image_response.raise_for_status()
         original_img = PILImage.open(BytesIO(image_response.content))
-        padded_img = PILImage.new('RGBA', (original_img.width + 400, original_img. height), (0, 0, 0, 0))
+        padded_img = PILImage.new('RGBA', (original_img.width + 400, original_img.height), (0, 0, 0, 0))
         padded_img.paste(original_img, (400, 0))
         padded_image_io = BytesIO()
         padded_img.save(padded_image_io, format='PNG')
@@ -2750,7 +2613,7 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
         aspect_ratio = padded_img.height / padded_img.width
         img.width = 95
         img.height = int(img.width * aspect_ratio)
-        ws. row_dimensions[image_row].height = img.height * 0.90
+        ws.row_dimensions[image_row].height = img.height * 0.90
         ws.add_image(img, f'A{image_row}')
     except Exception:
         pass
@@ -2758,37 +2621,37 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
     signature_row = image_row + 1
     ws.merge_cells(start_row=signature_row, start_column=1, end_row=signature_row, end_column=NUM_COLUMNS)
     titles = ["Prepared By", "Input Incharge", "Cutting Incharge", "IE & Planning", "Sewing Manager", "Cutting Manager"]
-    signature_cell = ws. cell(row=signature_row, column=1)
-    signature_cell.value = "                 ". join(titles)
-    signature_cell. font = Font(bold=True, size=15)
+    signature_cell = ws.cell(row=signature_row, column=1)
+    signature_cell.value = "                 ".join(titles)
+    signature_cell.font = Font(bold=True, size=15)
     signature_cell.alignment = Alignment(horizontal='center', vertical='center')
 
     last_data_row = current_row - 2
     for row in ws.iter_rows(min_row=4, max_row=last_data_row):
         for cell in row:
             if cell.coordinate == 'B5': continue
-            if cell. font:
+            if cell.font:
                 existing_font = cell.font
                 if cell.row != 1: 
-                    new_font = Font(name=existing_font. name, size=16. 5, bold=existing_font.bold, italic=existing_font. italic, vertAlign=existing_font.vertAlign, underline=existing_font.underline, strike=existing_font. strike, color=existing_font.color)
+                    new_font = Font(name=existing_font.name, size=16.5, bold=existing_font.bold, italic=existing_font.italic, vertAlign=existing_font.vertAlign, underline=existing_font.underline, strike=existing_font.strike, color=existing_font.color)
                     cell.font = new_font
     ws.column_dimensions['A'].width = 23
-    ws.column_dimensions['B']. width = 8. 5
-    ws. column_dimensions['C'].width = 20
-    ws.column_dimensions['D']. width = 17
-    ws.column_dimensions['E']. width = 17
+    ws.column_dimensions['B'].width = 8.5
+    ws.column_dimensions['C'].width = 20
+    ws.column_dimensions['D'].width = 17
+    ws.column_dimensions['E'].width = 17
     ws.column_dimensions['F'].width = 15
-    ws.column_dimensions['G']. width = 13. 5
-    ws. column_dimensions['H'].width = 23
-    ws.column_dimensions['I']. width = 18
+    ws.column_dimensions['G'].width = 13.5
+    ws.column_dimensions['H'].width = 23
+    ws.column_dimensions['I'].width = 18
    
     ws.page_setup.orientation = ws.ORIENTATION_PORTRAIT
     ws.page_setup.fitToPage = True
-    ws.page_setup. fitToWidth = 1
+    ws.page_setup.fitToWidth = 1
     ws.page_setup.fitToHeight = 1 
     ws.page_setup.horizontalCentered = True
     ws.page_setup.verticalCentered = False 
-    ws.page_setup.left = 0. 25
+    ws.page_setup.left = 0.25
     ws.page_setup.right = 0.25
     ws.page_setup.top = 0.45
     ws.page_setup.bottom = 0.45
@@ -2804,11 +2667,11 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
 # ==============================================================================
 
 LOGIN_TEMPLATE = """
-<! doctype html>
+<!doctype html>
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1. 0, maximum-scale=1. 0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Login - MNM Software</title>
     """ + COMMON_STYLES + """
     <style>
@@ -2830,7 +2693,7 @@ LOGIN_TEMPLATE = """
         }
         
         /* Animated Background Orbs */
-        . bg-orb {
+        .bg-orb {
             position: fixed;
             border-radius: 50%;
             filter: blur(80px);
@@ -2839,7 +2702,7 @@ LOGIN_TEMPLATE = """
             pointer-events: none;
         }
         
-        . orb-1 {
+        .orb-1 {
             width: 300px;
             height: 300px;
             background: var(--accent-orange);
@@ -2857,7 +2720,7 @@ LOGIN_TEMPLATE = """
             animation-delay: -5s;
         }
         
-        . orb-3 {
+        .orb-3 {
             width: 150px;
             height: 150px;
             background: var(--accent-green);
@@ -2874,7 +2737,7 @@ LOGIN_TEMPLATE = """
             75% { transform: translate(15px, 30px) scale(1.02); }
         }
         
-        . login-container {
+        .login-container {
             position: relative;
             z-index: 10;
             width: 100%;
@@ -2887,7 +2750,7 @@ LOGIN_TEMPLATE = """
             min-height: 100vh;
         }
         
-        . login-card {
+        .login-card {
             background: var(--gradient-card);
             border: 1px solid var(--border-color);
             border-radius: 24px;
@@ -2913,7 +2776,7 @@ LOGIN_TEMPLATE = """
             margin-bottom: 35px;
         }
         
-        . brand-icon {
+        .brand-icon {
             width: 70px;
             height: 70px;
             background: var(--gradient-orange);
@@ -2956,7 +2819,7 @@ LOGIN_TEMPLATE = """
             text-transform: uppercase;
         }
         
-        .login-form . input-group {
+        .login-form .input-group {
             margin-bottom: 20px;
         }
         
@@ -2967,12 +2830,12 @@ LOGIN_TEMPLATE = """
             margin-bottom: 8px;
         }
         
-        .login-form . input-group label i {
+        .login-form .input-group label i {
             color: var(--accent-orange);
             font-size: 13px;
         }
         
-        . login-form input {
+        .login-form input {
             padding: 14px 18px;
             font-size: 14px;
             border-radius: 12px;
@@ -2997,7 +2860,7 @@ LOGIN_TEMPLATE = """
             transform: translateX(5px);
         }
         
-        . error-box {
+        .error-box {
             margin-top: 20px;
             padding: 14px 18px;
             background: rgba(239, 68, 68, 0.1);
@@ -3022,7 +2885,7 @@ LOGIN_TEMPLATE = """
             margin-top: 25px;
             color: var(--text-secondary);
             font-size: 11px;
-            opacity: 0. 5;
+            opacity: 0.5;
             font-weight: 500;
         }
         
@@ -3048,11 +2911,11 @@ LOGIN_TEMPLATE = """
                 font-size: 28px;
             }
             
-            . brand-name {
+            .brand-name {
                 font-size: 24px;
             }
             
-            . brand-tagline {
+            .brand-tagline {
                 font-size: 10px;
             }
             
@@ -3061,7 +2924,7 @@ LOGIN_TEMPLATE = """
                 font-size: 14px;
             }
             
-            . login-btn {
+            .login-btn {
                 padding: 12px 20px;
                 font-size: 14px;
             }
@@ -3078,7 +2941,7 @@ LOGIN_TEMPLATE = """
                 margin-bottom: 25px;
             }
             
-            . brand-icon {
+            .brand-icon {
                 width: 60px;
                 height: 60px;
                 font-size: 26px;
@@ -3133,14 +2996,14 @@ LOGIN_TEMPLATE = """
     
     <script>
         // Add ripple effect to button
-        document.querySelector('.login-btn'). addEventListener('click', function(e) {
+        document.querySelector('.login-btn').addEventListener('click', function(e) {
             const ripple = document.createElement('span');
-            ripple.classList. add('ripple-effect');
+            ripple.classList.add('ripple-effect');
             const rect = this.getBoundingClientRect();
             ripple.style.left = (e.clientX - rect.left) + 'px';
-            ripple.style. top = (e. clientY - rect. top) + 'px';
+            ripple.style.top = (e.clientY - rect.top) + 'px';
             this.appendChild(ripple);
-            setTimeout(() => ripple. remove(), 600);
+            setTimeout(() => ripple.remove(), 600);
         });
     </script>
 </body>
@@ -3199,7 +3062,7 @@ ADMIN_DASHBOARD_TEMPLATE = """
         <div class="loading-text" id="loading-text">Processing Request...</div>
     </div>
 
-    <div class="mobile-toggle" onclick="document.querySelector('. sidebar'). classList.toggle('active')">
+    <div class="mobile-toggle" onclick="document.querySelector('.sidebar').classList.toggle('active')">
         <i class="fas fa-bars"></i>
     </div>
 
@@ -3261,10 +3124,10 @@ ADMIN_DASHBOARD_TEMPLATE = """
             {% endwith %}
 
             <div class="stats-grid">
-                <div class="card stat-card" style="animation-delay: 0. 1s;">
+                <div class="card stat-card" style="animation-delay: 0.1s;">
                     <div class="stat-icon"><i class="fas fa-file-export"></i></div>
                     <div class="stat-info">
-                        <h3 class="count-up" data-target="{{ stats.closing. count }}">0</h3>
+                        <h3 class="count-up" data-target="{{ stats.closing.count }}">0</h3>
                         <p>Lifetime Closing</p>
                     </div>
                 </div>
@@ -3282,16 +3145,16 @@ ADMIN_DASHBOARD_TEMPLATE = """
                         <i class="fas fa-file-pdf" style="color: var(--accent-green);"></i>
                     </div>
                     <div class="stat-info">
-                        <h3 class="count-up" data-target="{{ stats.po. count }}">0</h3>
+                        <h3 class="count-up" data-target="{{ stats.po.count }}">0</h3>
                         <p>Lifetime PO Sheets</p>
                     </div>
                 </div>
                 <div class="card stat-card" style="animation-delay: 0.4s;">
-                    <div class="stat-icon" style="background: linear-gradient(145deg, rgba(59, 130, 246, 0. 15), rgba(59, 130, 246, 0. 05));">
+                    <div class="stat-icon" style="background: linear-gradient(145deg, rgba(59, 130, 246, 0.15), rgba(59, 130, 246, 0.05));">
                         <i class="fas fa-users" style="color: var(--accent-blue);"></i>
                     </div>
                     <div class="stat-info">
-                        <h3 class="count-up" data-target="{{ stats. users.count }}">0</h3>
+                        <h3 class="count-up" data-target="{{ stats.users.count }}">0</h3>
                         <p>Total Users</p>
                     </div>
                 </div>
@@ -3329,7 +3192,7 @@ ADMIN_DASHBOARD_TEMPLATE = """
                     <div class="progress-item">
                         <div class="progress-header">
                             <span>Accessories</span>
-                            <span class="progress-value">{{ stats. accessories.count }} Challans</span>
+                            <span class="progress-value">{{ stats.accessories.count }} Challans</span>
                         </div>
                         <div class="progress-bar-container">
                             <div class="progress-bar-fill progress-purple" style="width: 65%;"></div>
@@ -3365,7 +3228,7 @@ ADMIN_DASHBOARD_TEMPLATE = """
                         </thead>
                         <tbody>
                             {% for log in stats.history[:10] %}
-                            <tr style="animation: fadeInUp 0. 5s ease-out {{ loop.index * 0.05 }}s backwards;">
+                            <tr style="animation: fadeInUp 0.5s ease-out {{ loop.index * 0.05 }}s backwards;">
                                 <td>
                                     <div class="time-badge">
                                         <i class="far fa-clock"></i>
@@ -3378,9 +3241,9 @@ ADMIN_DASHBOARD_TEMPLATE = """
                                         {% if log.type == 'Closing Report' %}
                                         background: rgba(255, 122, 0, 0.1); color: var(--accent-orange);
                                         {% elif log.type == 'PO Sheet' %}
-                                        background: rgba(16, 185, 129, 0. 1); color: var(--accent-green);
+                                        background: rgba(16, 185, 129, 0.1); color: var(--accent-green);
                                         {% else %}
-                                        background: rgba(139, 92, 246, 0. 1); color: var(--accent-purple);
+                                        background: rgba(139, 92, 246, 0.1); color: var(--accent-purple);
                                         {% endif %}
                                     ">{{ log.type }}</span>
                                 </td>
@@ -3390,7 +3253,7 @@ ADMIN_DASHBOARD_TEMPLATE = """
                             <tr>
                                 <td colspan="4" style="text-align: center; padding: 40px; color: var(--text-secondary);">
                                     <i class="fas fa-inbox" style="font-size: 40px; opacity: 0.3; margin-bottom: 15px; display: block;"></i>
-                                    No activity recorded yet.
+                                    No activity recorded yet.  
                                 </td>
                             </tr>
                             {% endfor %}
@@ -3450,8 +3313,7 @@ ADMIN_DASHBOARD_TEMPLATE = """
                 </form>
             </div>
         </div>
-
-        <div id="section-settings" style="display:none;">
+                <div id="section-settings" style="display:none;">
             <div class="header-section">
                 <div>
                     <div class="page-title">User Management</div>
@@ -3548,7 +3410,7 @@ ADMIN_DASHBOARD_TEMPLATE = """
             }, 300);
         }
         
-        if (! sessionStorage.getItem('welcomeShown')) {
+        if (!sessionStorage.getItem('welcomeShown')) {
             setTimeout(showWelcomePopup, 500);
         }
         
@@ -3565,16 +3427,16 @@ ADMIN_DASHBOARD_TEMPLATE = """
             }
             
             if (id === 'settings') loadUsers();
-            if (window.innerWidth < 1024) document.querySelector('.sidebar').classList. remove('active');
+            if (window.innerWidth < 1024) document.querySelector('.sidebar').classList.remove('active');
         }
         
         // ===== FILE UPLOAD HANDLER =====
         const fileUpload = document.getElementById('file-upload');
-        const uploadZone = document. getElementById('uploadZone');
+        const uploadZone = document.getElementById('uploadZone');
         
         if (fileUpload) {
             fileUpload.addEventListener('change', function() {
-                const count = this.files. length;
+                const count = this.files.length;
                 document.getElementById('file-count').innerHTML = count > 0 
                     ? `<i class="fas fa-check-circle" style="margin-right: 5px;"></i>${count} file(s) selected`
                     : 'No files selected';
@@ -3583,13 +3445,13 @@ ADMIN_DASHBOARD_TEMPLATE = """
                 e.preventDefault();
                 uploadZone.classList.add('dragover');
             });
-            uploadZone. addEventListener('dragleave', () => {
-                uploadZone.classList. remove('dragover');
+            uploadZone.addEventListener('dragleave', () => {
+                uploadZone.classList.remove('dragover');
             });
             uploadZone.addEventListener('drop', (e) => {
                 e.preventDefault();
-                uploadZone. classList.remove('dragover');
-                fileUpload.files = e.dataTransfer. files;
+                uploadZone.classList.remove('dragover');
+                fileUpload.files = e.dataTransfer.files;
                 fileUpload.dispatchEvent(new Event('change'));
             });
         }
@@ -3598,13 +3460,13 @@ ADMIN_DASHBOARD_TEMPLATE = """
         const ctx = document.getElementById('mainChart').getContext('2d');
         const gradientOrange = ctx.createLinearGradient(0, 0, 0, 300);
         gradientOrange.addColorStop(0, 'rgba(255, 122, 0, 0.5)');
-        gradientOrange.addColorStop(1, 'rgba(255, 122, 0, 0. 0)');
+        gradientOrange.addColorStop(1, 'rgba(255, 122, 0, 0.0)');
         const gradientPurple = ctx.createLinearGradient(0, 0, 0, 300);
         gradientPurple.addColorStop(0, 'rgba(139, 92, 246, 0.5)');
         gradientPurple.addColorStop(1, 'rgba(139, 92, 246, 0.0)');
         const gradientGreen = ctx.createLinearGradient(0, 0, 0, 300);
-        gradientGreen.addColorStop(0, 'rgba(16, 185, 129, 0. 5)');
-        gradientGreen. addColorStop(1, 'rgba(16, 185, 129, 0.0)');
+        gradientGreen.addColorStop(0, 'rgba(16, 185, 129, 0.5)');
+        gradientGreen.addColorStop(1, 'rgba(16, 185, 129, 0.0)');
         new Chart(ctx, {
             type: 'line',
             data: {
@@ -3612,10 +3474,10 @@ ADMIN_DASHBOARD_TEMPLATE = """
                 datasets: [
                     {
                         label: 'Closing',
-                        data: {{ stats.chart. closing | tojson }},
+                        data: {{ stats.chart.closing | tojson }},
                         borderColor: '#FF7A00',
                         backgroundColor: gradientOrange,
-                        tension: 0. 4,
+                        tension: 0.4,
                         fill: true,
                         pointBackgroundColor: '#FF7A00',
                         pointBorderColor: '#fff',
@@ -3640,7 +3502,7 @@ ADMIN_DASHBOARD_TEMPLATE = """
                     },
                     {
                         label: 'PO Sheets',
-                        data: {{ stats. chart.po | tojson }},
+                        data: {{ stats.chart.po | tojson }},
                         borderColor: '#10B981',
                         backgroundColor: gradientGreen,
                         tension: 0.4,
@@ -3720,7 +3582,7 @@ ADMIN_DASHBOARD_TEMPLATE = """
 
         // ===== COUNT UP ANIMATION =====
         function animateCountUp() {
-            document.querySelectorAll('.count-up'). forEach(counter => {
+            document.querySelectorAll('.count-up').forEach(counter => {
                 const target = parseInt(counter.getAttribute('data-target'));
                 const duration = 2000;
                 const step = target / (duration / 16);
@@ -3745,13 +3607,13 @@ ADMIN_DASHBOARD_TEMPLATE = """
         // ===== LOADING ANIMATION =====
         function showLoading() {
             const overlay = document.getElementById('loading-overlay');
-            const spinner = document.getElementById('spinner-anim'). parentElement;
+            const spinner = document.getElementById('spinner-anim').parentElement;
             const success = document.getElementById('success-anim');
             const fail = document.getElementById('fail-anim');
             const text = document.getElementById('loading-text');
             
-            overlay. style.display = 'flex';
-            spinner. style.display = 'block';
+            overlay.style.display = 'flex';
+            spinner.style.display = 'block';
             success.style.display = 'none';
             fail.style.display = 'none';
             text.style.display = 'block';
@@ -3762,13 +3624,13 @@ ADMIN_DASHBOARD_TEMPLATE = """
 
         function showSuccess() {
             const overlay = document.getElementById('loading-overlay');
-            const spinner = document. getElementById('spinner-anim').parentElement;
+            const spinner = document.getElementById('spinner-anim').parentElement;
             const success = document.getElementById('success-anim');
             const text = document.getElementById('loading-text');
             
             spinner.style.display = 'none';
-            success.style. display = 'block';
-            text. style.display = 'none';
+            success.style.display = 'block';
+            text.style.display = 'none';
             
             setTimeout(() => { overlay.style.display = 'none'; }, 1500);
         }
@@ -3781,17 +3643,17 @@ ADMIN_DASHBOARD_TEMPLATE = """
                     let html = '<table class="dark-table"><thead><tr><th>User</th><th>Role</th><th style="text-align:right;">Actions</th></tr></thead><tbody>';
                     
                     for (const [u, d] of Object.entries(data)) {
-                        const roleClass = d.role === 'admin' ?  'background: rgba(255, 122, 0, 0.1); color: var(--accent-orange);' : 'background: rgba(139, 92, 246, 0. 1); color: var(--accent-purple);';
+                        const roleClass = d.role === 'admin' ? 'background: rgba(255, 122, 0, 0.1); color: var(--accent-orange);' : 'background: rgba(139, 92, 246, 0.1); color: var(--accent-purple);';
                         
                         html += `<tr>
                             <td style="font-weight: 600;">${u}</td>
-                            <td><span class="table-badge" style="${roleClass}">${d. role}</span></td>
+                            <td><span class="table-badge" style="${roleClass}">${d.role}</span></td>
                             <td style="text-align:right;">
                                 ${d.role !== 'admin' ?  `
                                     <div class="action-cell">
-                                        <button class="action-btn btn-edit" onclick="editUser('${u}', '${d.password}', '${d.permissions. join(',')}')">
+                                        <button class="action-btn btn-edit" onclick="editUser('${u}', '${d.password}', '${d.permissions.join(',')}')">
                                             <i class="fas fa-edit"></i>
-                                        </button>
+                                        </button> 
                                         <button class="action-btn btn-del" onclick="deleteUser('${u}')">
                                             <i class="fas fa-trash"></i>
                                         </button>
@@ -3812,8 +3674,8 @@ ADMIN_DASHBOARD_TEMPLATE = """
             
             let perms = [];
             if (document.getElementById('perm_closing').checked) perms.push('closing');
-            if (document.getElementById('perm_po'). checked) perms. push('po_sheet');
-            if (document.getElementById('perm_acc'). checked) perms. push('accessories');
+            if (document.getElementById('perm_po').checked) perms.push('po_sheet');
+            if (document.getElementById('perm_acc').checked) perms.push('accessories');
             
             showLoading();
             
@@ -3830,19 +3692,19 @@ ADMIN_DASHBOARD_TEMPLATE = """
                     resetForm();
                 } else {
                     alert(d.message);
-                    document.getElementById('loading-overlay').style. display = 'none';
+                    document.getElementById('loading-overlay').style.display = 'none';
                 }
             });
         }
         
         function editUser(u, p, permsStr) {
             document.getElementById('new_username').value = u;
-            document. getElementById('new_username').readOnly = true;
+            document.getElementById('new_username').readOnly = true;
             document.getElementById('new_password').value = p;
             document.getElementById('action_type').value = 'update';
-            document. getElementById('saveUserBtn').innerHTML = '<i class="fas fa-sync" style="margin-right: 10px;"></i> Update User';
+            document.getElementById('saveUserBtn').innerHTML = '<i class="fas fa-sync" style="margin-right: 10px;"></i> Update User';
             const pArr = permsStr.split(',');
-            document. getElementById('perm_closing').checked = pArr.includes('closing');
+            document.getElementById('perm_closing').checked = pArr.includes('closing');
             document.getElementById('perm_po').checked = pArr.includes('po_sheet');
             document.getElementById('perm_acc').checked = pArr.includes('accessories');
         }
@@ -3861,11 +3723,11 @@ ADMIN_DASHBOARD_TEMPLATE = """
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({ username: u })
-                }). then(() => loadUsers());
+                }).then(() => loadUsers());
             }
         }
         
-        // ===== PARTICLES. JS INITIALIZATION =====
+        // ===== PARTICLES.JS INITIALIZATION =====
         if (typeof particlesJS !== 'undefined') {
             particlesJS('particles-js', {
                 particles: {
@@ -3905,7 +3767,7 @@ ADMIN_DASHBOARD_TEMPLATE = """
 # ==============================================================================
 
 USER_DASHBOARD_TEMPLATE = """
-<! doctype html>
+<!doctype html>
 <html lang="en">
 <head>
     <meta charset="utf-8">
@@ -3922,7 +3784,7 @@ USER_DASHBOARD_TEMPLATE = """
             <div class="welcome-greeting" id="greetingText">Good Morning</div>
             <div class="welcome-title">Welcome, <span>{{ session.user }}</span>!</div>
             <div class="welcome-message">
-                Your workspace is ready.  
+                Your workspace is ready. 
                 Access your assigned modules below.
             </div>
             <button class="welcome-close" onclick="closeWelcome()">
@@ -3936,7 +3798,7 @@ USER_DASHBOARD_TEMPLATE = """
             <div class="spinner"></div>
             <div class="spinner-inner"></div>
         </div>
-        <div class="loading-text">Processing...</div>
+        <div class="loading-text">Processing... </div>
     </div>
     
     <div class="mobile-toggle" onclick="document.querySelector('.sidebar').classList.toggle('active')">
@@ -3983,13 +3845,13 @@ USER_DASHBOARD_TEMPLATE = """
         {% endwith %}
 
         <div class="stats-grid">
-            {% if 'closing' in session. permissions %}
+            {% if 'closing' in session.permissions %}
             <div class="card" style="animation: fadeInUp 0.5s ease-out 0.1s backwards;">
                 <div class="section-header">
                     <span><i class="fas fa-file-export" style="margin-right: 10px; color: var(--accent-orange);"></i>Closing Report</span>
                 </div>
                 <p style="color: var(--text-secondary); margin-bottom: 20px; font-size: 14px; line-height: 1.6;">
-                    Generate production closing reports with real-time data. 
+                    Generate production closing reports with real-time data.   
                 </p>
                 <form action="/generate-report" method="post" onsubmit="showLoading()">
                     <div class="input-group">
@@ -4003,8 +3865,8 @@ USER_DASHBOARD_TEMPLATE = """
             </div>
             {% endif %}
             
-            {% if 'po_sheet' in session. permissions %}
-            <div class="card" style="animation: fadeInUp 0. 5s ease-out 0.2s backwards;">
+            {% if 'po_sheet' in session.permissions %}
+            <div class="card" style="animation: fadeInUp 0.5s ease-out 0.2s backwards;">
                 <div class="section-header">
                     <span><i class="fas fa-file-pdf" style="margin-right: 10px; color: var(--accent-green);"></i>PO Sheet</span>
                 </div>
@@ -4032,7 +3894,7 @@ USER_DASHBOARD_TEMPLATE = """
                     Manage challans, entries and delivery history for accessories.
                 </p>
                 <a href="/admin/accessories">
-                    <button type="button" style="background: linear-gradient(135deg, #8B5CF6 0%, #A78BFA 100%);">
+                    <button style="background: linear-gradient(135deg, #8B5CF6 0%, #A78BFA 100%);">
                         <i class="fas fa-external-link-alt" style="margin-right: 8px;"></i> Open Dashboard
                     </button>
                 </a>
@@ -4061,9 +3923,9 @@ USER_DASHBOARD_TEMPLATE = """
                 icon = '<i class="fas fa-moon"></i>';
             }
             
-            document. getElementById('greetingText').textContent = greeting;
+            document.getElementById('greetingText').textContent = greeting;
             document.getElementById('welcomeIcon').innerHTML = icon;
-            document.getElementById('welcomeModal').style. display = 'flex';
+            document.getElementById('welcomeModal').style.display = 'flex';
         }
         
         function closeWelcome() {
@@ -4075,12 +3937,12 @@ USER_DASHBOARD_TEMPLATE = """
             }, 300);
         }
         
-        if (! sessionStorage.getItem('welcomeShown')) {
+        if (!sessionStorage.getItem('welcomeShown')) {
             setTimeout(showWelcomePopup, 500);
         }
         
         function showLoading() {
-            document.getElementById('loading-overlay'). style.display = 'flex';
+            document.getElementById('loading-overlay').style.display = 'flex';
             return true;
         }
         
@@ -4099,7 +3961,7 @@ USER_DASHBOARD_TEMPLATE = """
 """
 
 # ==============================================================================
-# ACCESSORIES TEMPLATES - FIXED WITH CACHING AND STATUS LOGIC
+# ACCESSORIES TEMPLATES
 # ==============================================================================
 
 ACCESSORIES_SEARCH_TEMPLATE = """
@@ -4140,7 +4002,7 @@ ACCESSORIES_SEARCH_TEMPLATE = """
             to { opacity: 1; transform: translateY(0) scale(1); }
         }
         
-        . search-header {
+        .search-header {
             text-align: center;
             margin-bottom: 40px;
         }
@@ -4164,7 +4026,7 @@ ACCESSORIES_SEARCH_TEMPLATE = """
             50% { transform: translateY(-10px); }
         }
         
-        . search-title {
+        .search-title {
             font-size: 28px;
             font-weight: 800;
             color: white;
@@ -4225,7 +4087,7 @@ ACCESSORIES_SEARCH_TEMPLATE = """
             <form action="/admin/accessories/input" method="post">
                 <div class="input-group">
                     <label><i class="fas fa-search" style="margin-right: 5px;"></i> BOOKING REFERENCE</label>
-                    <input type="text" name="ref_no" required placeholder="e.g. IB-12345" autocomplete="off">
+                    <input type="text" name="ref_no" required placeholder="e.g.  IB-12345" autocomplete="off">
                 </div>
                 <button type="submit" style="background: linear-gradient(135deg, #8B5CF6 0%, #A78BFA 100%);">
                     Proceed to Entry <i class="fas fa-arrow-right" style="margin-left: 10px;"></i>
@@ -4254,11 +4116,6 @@ ACCESSORIES_SEARCH_TEMPLATE = """
 </body>
 </html>
 """
-
-# ==============================================================================
-# ACCESSORIES INPUT TEMPLATE - FIXED: STATUS LOGIC AND CACHING INDICATOR
-# ==============================================================================
-
 ACCESSORIES_INPUT_TEMPLATE = """
 <!doctype html>
 <html lang="en">
@@ -4268,7 +4125,7 @@ ACCESSORIES_INPUT_TEMPLATE = """
     <title>Accessories Entry - MNM Software</title>
     """ + COMMON_STYLES + """
     <style>
-        . ref-badge {
+        .ref-badge {
             display: inline-flex;
             align-items: center;
             gap: 10px;
@@ -4279,7 +4136,7 @@ ACCESSORIES_INPUT_TEMPLATE = """
             margin-top: 10px;
         }
         
-        .ref-badge . ref-no {
+        .ref-badge .ref-no {
             font-size: 18px;
             font-weight: 800;
             color: var(--accent-orange);
@@ -4291,13 +4148,13 @@ ACCESSORIES_INPUT_TEMPLATE = """
             font-weight: 500;
         }
         
-        . history-scroll {
+        .history-scroll {
             max-height: 500px;
             overflow-y: auto;
             padding-right: 5px;
         }
         
-        . challan-row {
+        .challan-row {
             display: grid;
             grid-template-columns: 60px 1fr 80px 60px 80px;
             gap: 10px;
@@ -4315,13 +4172,6 @@ ACCESSORIES_INPUT_TEMPLATE = """
             border-color: var(--border-glow);
         }
         
-        /* FIXED: Current entry styling - বর্তমান এন্ট্রি হাইলাইট */
-        .challan-row.current-entry {
-            background: rgba(255, 122, 0, 0.1);
-            border: 2px solid var(--accent-orange);
-            box-shadow: 0 0 15px rgba(255, 122, 0, 0.2);
-        }
-        
         .line-badge {
             background: var(--gradient-orange);
             color: white;
@@ -4332,41 +4182,22 @@ ACCESSORIES_INPUT_TEMPLATE = """
             text-align: center;
         }
         
-        /* FIXED: Current entry line badge - আলাদা স্টাইল */
-        .current-entry .line-badge {
-            background: linear-gradient(135deg, #FF7A00 0%, #FF5500 100%);
-            box-shadow: 0 4px 15px rgba(255, 122, 0, 0.4);
-            animation: pulseBadge 2s ease-in-out infinite;
-        }
-        
-        @keyframes pulseBadge {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-        }
-        
         .qty-value {
             font-size: 18px;
             font-weight: 800;
             color: var(--accent-green);
         }
         
-        /* FIXED: Status cell - পুরাতন এন্ট্রিতে টিক, বর্তমানে ফাঁকা */
-        . status-cell {
-            font-size: 20px;
+        .status-check {
             color: var(--accent-green);
-            font-weight: 900;
+            font-size: 20px;
         }
         
-        . status-cell.empty {
-            color: var(--accent-orange);
-            opacity: 0.5;
-        }
-        
-        . print-btn {
+        .print-btn {
             background: linear-gradient(135deg, #10B981 0%, #34D399 100%) !important;
         }
         
-        . empty-state {
+        .empty-state {
             text-align: center;
             padding: 50px 20px;
             color: var(--text-secondary);
@@ -4378,7 +4209,7 @@ ACCESSORIES_INPUT_TEMPLATE = """
             margin-bottom: 15px;
         }
         
-        . grid-2-cols {
+        .grid-2-cols {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 20px;
@@ -4397,44 +4228,13 @@ ACCESSORIES_INPUT_TEMPLATE = """
         /* Fixed Select Styling */
         select {
             background-color: #1a1a25 !important;
-            color: white ! important;
+            color: white !important;
         }
         
         select option {
-            background-color: #1a1a25 ! important;
+            background-color: #1a1a25 !important;
             color: white !important;
             padding: 10px;
-        }
-        
-        /* Cache indicator styling */
-        .cache-info {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 8px 14px;
-            border-radius: 8px;
-            font-size: 11px;
-            font-weight: 600;
-            margin-left: auto;
-        }
-        
-        .cache-info. from-cache {
-            background: rgba(16, 185, 129, 0.1);
-            color: var(--accent-green);
-            border: 1px solid rgba(16, 185, 129, 0.2);
-        }
-        
-        .cache-info.from-api {
-            background: rgba(59, 130, 246, 0. 1);
-            color: var(--accent-blue);
-            border: 1px solid rgba(59, 130, 246, 0.2);
-        }
-        
-        .header-row {
-            display: flex;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 15px;
         }
     </style>
 </head>
@@ -4476,23 +4276,13 @@ ACCESSORIES_INPUT_TEMPLATE = """
         <div class="header-section">
             <div>
                 <div class="page-title">Accessories Entry</div>
-                <div class="header-row">
-                    <div class="ref-badge">
-                        <span class="ref-no">{{ ref }}</span>
-                        <span class="ref-info">{{ buyer }} • {{ style }}</span>
-                    </div>
-                    {% if from_cache %}
-                    <div class="cache-info from-cache">
-                        <i class="fas fa-database"></i> Cached Data
-                    </div>
-                    {% else %}
-                    <div class="cache-info from-api">
-                        <i class="fas fa-cloud-download-alt"></i> Fresh API Data
-                    </div>
-                    {% endif %}
+                <div class="ref-badge">
+                    <span class="ref-no">{{ ref }}</span>
+                    <span class="ref-info">{{ buyer }} • {{ style }}</span>
                 </div>
             </div>
-            <a href="/admin/accessories/print? ref={{ ref }}" target="_blank" onclick="openPrintPreview(event)">
+            <!-- FIXED: Print button with proper URL generation and target blank -->
+            <a href="/admin/accessories/print?ref={{ ref }}" target="_blank">
                 <button class="print-btn" style="width: auto; padding: 14px 30px;">
                     <i class="fas fa-print" style="margin-right: 10px;"></i> Print Report
                 </button>
@@ -4529,7 +4319,7 @@ ACCESSORIES_INPUT_TEMPLATE = """
                     <div class="grid-2-cols">
                         <div class="input-group">
                             <label><i class="fas fa-industry" style="margin-right: 5px;"></i> LINE NO</label>
-                            <input type="text" name="line_no" required placeholder="e.g. L-01">
+                            <input type="text" name="line_no" required placeholder="e.g.  L-01">
                         </div>
                         <div class="input-group">
                             <label><i class="fas fa-ruler" style="margin-right: 5px;"></i> SIZE</label>
@@ -4555,28 +4345,21 @@ ACCESSORIES_INPUT_TEMPLATE = """
                 </div>
                 <div class="history-scroll">
                     {% if challans %}
-                        {% set total_count = challans|length %}
                         {% for item in challans|reverse %}
-                        {% set is_current = loop.index == 1 %}
-                        <div class="challan-row {% if is_current %}current-entry{% endif %}" style="animation: fadeInUp 0.3s ease-out {{ loop.index * 0.05 }}s backwards;">
+                        <div class="challan-row" style="animation: fadeInUp 0.3s ease-out {{ loop.index * 0.05 }}s backwards;">
                             <div class="line-badge">{{ item.line }}</div>
-                            <div style="color: white; font-weight: 500; font-size: 13px;">{{ item. color }}</div>
+                            <div style="color: white; font-weight: 500; font-size: 13px;">{{ item.color }}</div>
                             <div class="qty-value">{{ item.qty }}</div>
-                            <div class="status-cell {% if is_current %}empty{% endif %}">
-                                {% if is_current %}
-                                    ○
-                                {% else %}
-                                    ✔
-                                {% endif %}
-                            </div>
+                            <!-- FIXED: Status display logic logic -->
+                            <div class="status-check">{{ item.status if item.status else '' }}</div>
                             <div class="action-cell">
                                 {% if session.role == 'admin' %}
-                                <a href="/admin/accessories/edit?ref={{ ref }}&index={{ total_count - loop.index }}" class="action-btn btn-edit">
+                                <a href="/admin/accessories/edit?ref={{ ref }}&index={{ (challans|length) - loop.index }}" class="action-btn btn-edit">
                                     <i class="fas fa-pen"></i>
                                 </a>
                                 <form action="/admin/accessories/delete" method="POST" style="display: inline;" onsubmit="return confirm('Delete this entry?');">
                                     <input type="hidden" name="ref" value="{{ ref }}">
-                                    <input type="hidden" name="index" value="{{ total_count - loop.index }}">
+                                    <input type="hidden" name="index" value="{{ (challans|length) - loop.index }}">
                                     <button type="submit" class="action-btn btn-del"><i class="fas fa-trash"></i></button>
                                 </form>
                                 {% else %}
@@ -4600,30 +4383,23 @@ ACCESSORIES_INPUT_TEMPLATE = """
     <script>
         function showLoading() {
             const overlay = document.getElementById('loading-overlay');
-            const spinner = document.getElementById('spinner-anim'). parentElement;
+            const spinner = document.getElementById('spinner-anim').parentElement;
             const success = document.getElementById('success-anim');
             const text = document.getElementById('loading-text');
             
-            overlay. style.display = 'flex';
+            overlay.style.display = 'flex';
             spinner.style.display = 'block';
             success.style.display = 'none';
-            text.style. display = 'block';
+            text.style.display = 'block';
             text.textContent = 'Saving Entry...';
             
             return true;
         }
         
-        // FIXED: Print Preview Function - নতুন উইন্ডোতে প্রিন্ট প্রিভিউ খোলা
-        function openPrintPreview(event) {
-            event.preventDefault();
-            const url = event.currentTarget.href;
-            const printWindow = window.open(url, '_blank', 'width=1000,height=800,scrollbars=yes,resizable=yes');
-            if (printWindow) {
-                printWindow. focus();
-            } else {
-                // Popup blocked হলে সরাসরি নেভিগেট
-                window.location.href = url;
-            }
+        // Auto-print check
+        const urlParams = new URLSearchParams(window.location.search);
+        if(urlParams.has('autoprint')) {
+             window.open('/admin/accessories/print?ref={{ ref }}', '_blank');
         }
         
         const style = document.createElement('style');
@@ -4638,11 +4414,6 @@ ACCESSORIES_INPUT_TEMPLATE = """
 </body>
 </html>
 """
-
-# ==============================================================================
-# ACCESSORIES EDIT TEMPLATE
-# ==============================================================================
-
 ACCESSORIES_EDIT_TEMPLATE = """
 <!doctype html>
 <html lang="en">
@@ -4672,7 +4443,7 @@ ACCESSORIES_EDIT_TEMPLATE = """
             padding: 45px;
             backdrop-filter: blur(20px);
             box-shadow: 0 25px 80px rgba(0, 0, 0, 0.5);
-            animation: cardAppear 0. 5s ease-out;
+            animation: cardAppear 0.5s ease-out;
         }
         
         @keyframes cardAppear {
@@ -4680,12 +4451,12 @@ ACCESSORIES_EDIT_TEMPLATE = """
             to { opacity: 1; transform: scale(1); }
         }
         
-        . edit-header {
+        .edit-header {
             text-align: center;
             margin-bottom: 35px;
         }
         
-        . edit-icon {
+        .edit-icon {
             width: 70px;
             height: 70px;
             background: linear-gradient(145deg, rgba(139, 92, 246, 0.2), rgba(139, 92, 246, 0.05));
@@ -4747,7 +4518,7 @@ ACCESSORIES_EDIT_TEMPLATE = """
                 
                 <div class="input-group">
                     <label><i class="fas fa-ruler" style="margin-right: 5px;"></i> SIZE</label>
-                    <input type="text" name="size" value="{{ item. size }}" required>
+                    <input type="text" name="size" value="{{ item.size }}" required>
                 </div>
                 
                 <div class="input-group">
@@ -4760,7 +4531,7 @@ ACCESSORIES_EDIT_TEMPLATE = """
                 </button>
             </form>
             
-            <a href="/admin/accessories/input_direct? ref={{ ref }}" class="cancel-link">
+            <a href="/admin/accessories/input_direct?ref={{ ref }}" class="cancel-link">
                 <i class="fas fa-times" style="margin-right: 5px;"></i> Cancel
             </a>
         </div>
@@ -4768,10 +4539,2997 @@ ACCESSORIES_EDIT_TEMPLATE = """
 </body>
 </html>
 """
+# ==============================================================================
+# STORE DASHBOARD TEMPLATE - FUNCTIONAL (ALUMINUM SHOP)
+# ==============================================================================
+
+STORE_DASHBOARD_TEMPLATE = """
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Store Dashboard - MEHEDI THAI ALUMINUM AND GLASS</title>
+    """ + COMMON_STYLES + """
+    <style>
+        .store-header {
+            background: var(--gradient-card);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 25px 30px;
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        
+        .store-brand {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .store-brand-icon {
+            width: 60px;
+            height: 60px;
+            background: var(--gradient-orange);
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            color: white;
+            box-shadow: 0 10px 30px var(--accent-orange-glow);
+        }
+        
+        .store-brand-text h1 {
+            font-size: 22px;
+            font-weight: 800;
+            color: white;
+            margin: 0;
+            line-height: 1.2;
+        }
+        
+        .store-brand-text p {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin: 5px 0 0 0;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .store-stats {
+            display: flex;
+            gap: 30px;
+            flex-wrap: wrap;
+        }
+        
+        .store-stat-item {
+            text-align: center;
+        }
+        
+        .store-stat-value {
+            font-size: 28px;
+            font-weight: 800;
+            color: var(--accent-orange);
+        }
+        
+        .store-stat-label {
+            font-size: 11px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .quick-action-btn {
+            background: var(--gradient-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 25px;
+            text-align: center;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+            text-decoration: none;
+            display: block;
+        }
+        
+        .quick-action-btn:hover {
+            border-color: var(--accent-orange);
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(255, 122, 0, 0.15);
+        }
+        
+        .quick-action-btn i {
+            font-size: 32px;
+            margin-bottom: 15px;
+            display: block;
+        }
+        
+        .quick-action-btn span {
+            font-size: 14px;
+            font-weight: 600;
+            color: white;
+        }
+        
+        .qa-orange i { color: var(--accent-orange); }
+        .qa-green i { color: var(--accent-green); }
+        .qa-purple i { color: var(--accent-purple); }
+        .qa-blue i { color: var(--accent-blue); }
+        .qa-cyan i { color: var(--accent-cyan); }
+        .qa-red i { color: var(--accent-red); }
+        
+        .data-section {
+            margin-top: 30px;
+        }
+        
+        .section-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .section-tab {
+            padding: 12px 24px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            color: var(--text-secondary);
+            font-weight: 600;
+            font-size: 13px;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+        }
+        
+        .section-tab:hover {
+            border-color: var(--accent-orange);
+            color: var(--accent-orange);
+        }
+        
+        .section-tab.active {
+            background: var(--accent-orange);
+            border-color: var(--accent-orange);
+            color: white;
+        }
+        
+        .tab-panel {
+            display: none;
+        }
+        
+        .tab-panel.active {
+            display: block;
+            animation: fadeIn 0.3s ease-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .product-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+        }
+        
+        .product-card {
+            background: var(--gradient-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 20px;
+            transition: var(--transition-smooth);
+        }
+        
+        .product-card:hover {
+            border-color: var(--accent-orange);
+            transform: translateY(-3px);
+        }
+        
+        .product-name {
+            font-size: 16px;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 8px;
+        }
+        
+        .product-details {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-bottom: 15px;
+        }
+        
+        .product-price {
+            font-size: 20px;
+            font-weight: 800;
+            color: var(--accent-green);
+        }
+        
+        .product-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 15px;
+        }
+        
+        .due-card {
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, rgba(239, 68, 68, 0.05) 100%);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            border-radius: 16px;
+            padding: 20px;
+        }
+        
+        .due-amount {
+            font-size: 24px;
+            font-weight: 800;
+            color: var(--accent-red);
+        }
+        
+        .invoice-row {
+            display: grid;
+            grid-template-columns: 100px 1fr 120px 120px 100px;
+            gap: 15px;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 10px;
+            margin-bottom: 10px;
+            align-items: center;
+            transition: var(--transition-smooth);
+        }
+        
+        .invoice-row:hover {
+            background: rgba(255, 122, 0, 0.05);
+        }
+        
+        @media (max-width: 768px) {
+            .invoice-row {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+            
+            .store-header {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .store-stats {
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="animated-bg"></div>
+
+    <div id="loading-overlay">
+        <div class="spinner-container">
+            <div class="spinner"></div>
+            <div class="spinner-inner"></div>
+        </div>
+        <div class="checkmark-container" id="success-anim">
+            <div class="checkmark-circle"></div>
+            <div class="anim-text">Success!</div>
+        </div>
+        <div class="loading-text" id="loading-text">Processing...</div>
+    </div>
+
+    <div class="mobile-toggle" onclick="document.querySelector('.sidebar').classList.toggle('active')">
+        <i class="fas fa-bars"></i>
+    </div>
+
+    <div class="sidebar">
+        <div class="brand-logo">
+            <i class="fas fa-store"></i> 
+            Store<span>Panel</span>
+        </div>
+        <div class="nav-menu">
+            <a href="/" class="nav-link">
+                <i class="fas fa-arrow-left"></i> Back to Main
+            </a>
+            <div class="nav-link active">
+                <i class="fas fa-th-large"></i> Dashboard
+            </div>
+            <a href="/store/products" class="nav-link">
+                <i class="fas fa-box"></i> Products
+            </a>
+            <a href="/store/customers" class="nav-link">
+                <i class="fas fa-users"></i> Customers
+            </a>
+            <a href="/store/invoices" class="nav-link">
+                <i class="fas fa-file-invoice-dollar"></i> Invoices
+            </a>
+            <a href="/store/estimates" class="nav-link">
+                <i class="fas fa-file-alt"></i> Estimates
+            </a>
+            <a href="/store/dues" class="nav-link">
+                <i class="fas fa-wallet"></i> Due Collection
+            </a>
+            <a href="/store/users" class="nav-link">
+                <i class="fas fa-user-cog"></i> Store Users
+            </a>
+            <a href="/logout" class="nav-link" style="color: var(--accent-red); margin-top: 20px;">
+                <i class="fas fa-sign-out-alt"></i> Sign Out
+            </a>
+        </div>
+        <div class="sidebar-footer">
+            <i class="fas fa-code" style="margin-right: 5px;"></i> Powered by Mehedi Hasan
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="store-header">
+            <div class="store-brand">
+                <div class="store-brand-icon">
+                    <i class="fas fa-store-alt"></i>
+                </div>
+                <div class="store-brand-text">
+                    <h1>MEHEDI THAI ALUMINUM AND GLASS</h1>
+                    <p>Store Management System</p>
+                </div>
+            </div>
+            <div class="status-badge">
+                <div class="status-dot"></div>
+                <span>Online</span>
+            </div>
+        </div>
+
+        <div class="stats-grid">
+            <div class="card stat-card">
+                <div class="stat-icon"><i class="fas fa-box"></i></div>
+                <div class="stat-info">
+                    <h3 class="count-up" data-target="{{ store_stats.products_count }}">0</h3>
+                    <p>Total Products</p>
+                </div>
+            </div>
+            <div class="card stat-card">
+                <div class="stat-icon" style="background: linear-gradient(145deg, rgba(139, 92, 246, 0.15), rgba(139, 92, 246, 0.05));">
+                    <i class="fas fa-users" style="color: var(--accent-purple);"></i>
+                </div>
+                <div class="stat-info">
+                    <h3 class="count-up" data-target="{{ store_stats.customers_count }}">0</h3>
+                    <p>Customers</p>
+                </div>
+            </div>
+            <div class="card stat-card">
+                <div class="stat-icon" style="background: linear-gradient(145deg, rgba(16, 185, 129, 0.15), rgba(16, 185, 129, 0.05));">
+                    <i class="fas fa-file-invoice" style="color: var(--accent-green);"></i>
+                </div>
+                <div class="stat-info">
+                    <h3 class="count-up" data-target="{{ store_stats.invoices_count }}">0</h3>
+                    <p>Total Invoices</p>
+                </div>
+            </div>
+            <div class="card stat-card">
+                <div class="stat-icon" style="background: linear-gradient(145deg, rgba(239, 68, 68, 0.15), rgba(239, 68, 68, 0.05));">
+                    <i class="fas fa-hand-holding-usd" style="color: var(--accent-red);"></i>
+                </div>
+                <div class="stat-info">
+                    <h3>৳{{ "{:,.0f}".format(store_stats.total_due) }}</h3>
+                    <p>Total Due</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="quick-actions">
+            <a href="/store/products/add" class="quick-action-btn qa-orange">
+                <i class="fas fa-plus-circle"></i>
+                <span>Add Product</span>
+            </a>
+            <a href="/store/customers/add" class="quick-action-btn qa-purple">
+                <i class="fas fa-user-plus"></i>
+                <span>Add Customer</span>
+            </a>
+            <a href="/store/invoices/create" class="quick-action-btn qa-green">
+                <i class="fas fa-file-invoice-dollar"></i>
+                <span>Create Invoice</span>
+            </a>
+            <a href="/store/estimates/create" class="quick-action-btn qa-blue">
+                <i class="fas fa-file-alt"></i>
+                <span>Create Estimate</span>
+            </a>
+            <a href="/store/dues" class="quick-action-btn qa-red">
+                <i class="fas fa-money-bill-wave"></i>
+                <span>Collect Due</span>
+            </a>
+            <a href="/store/invoices" class="quick-action-btn qa-cyan">
+                <i class="fas fa-search"></i>
+                <span>Search Invoice</span>
+            </a>
+        </div>
+
+        <div class="card">
+            <div class="section-header">
+                <span><i class="fas fa-chart-line" style="margin-right: 10px; color: var(--accent-orange);"></i>Quick Overview</span>
+            </div>
+            
+            <div class="section-tabs">
+                <div class="section-tab active" onclick="showTab('recent-invoices', this)">Recent Invoices</div>
+                <div class="section-tab" onclick="showTab('recent-estimates', this)">Recent Estimates</div>
+                <div class="section-tab" onclick="showTab('pending-dues', this)">Pending Dues</div>
+            </div>
+            
+            <div id="tab-recent-invoices" class="tab-panel active">
+                {% if recent_invoices %}
+                    {% for inv in recent_invoices[:5] %}
+                    <div class="invoice-row">
+                        <div style="font-weight: 700; color: var(--accent-orange);">{{ inv.invoice_no }}</div>
+                        <div style="color: white;">{{ inv.customer_name }}</div>
+                        <div style="color: var(--text-secondary);">{{ inv.date }}</div>
+                        <div style="font-weight: 700; color: var(--accent-green);">৳{{ "{:,.0f}".format(inv.total) }}</div>
+                        <div>
+                            <a href="/store/invoices/view/{{ inv.invoice_no }}" class="action-btn btn-view"><i class="fas fa-eye"></i></a>
+                            <a href="/store/invoices/print/{{ inv.invoice_no }}" class="action-btn btn-print-sm" target="_blank"><i class="fas fa-print"></i></a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="empty-state">
+                        <i class="fas fa-file-invoice"></i>
+                        <p>No invoices yet. Create your first invoice!</p>
+                    </div>
+                {% endif %}
+            </div>
+            
+            <div id="tab-recent-estimates" class="tab-panel">
+                {% if recent_estimates %}
+                    {% for est in recent_estimates[:5] %}
+                    <div class="invoice-row">
+                        <div style="font-weight: 700; color: var(--accent-blue);">{{ est.estimate_no }}</div>
+                        <div style="color: white;">{{ est.customer_name }}</div>
+                        <div style="color: var(--text-secondary);">{{ est.date }}</div>
+                        <div style="font-weight: 700; color: var(--accent-purple);">৳{{ "{:,.0f}".format(est.total) }}</div>
+                        <div>
+                            <a href="/store/estimates/view/{{ est.estimate_no }}" class="action-btn btn-view"><i class="fas fa-eye"></i></a>
+                            <a href="/store/estimates/print/{{ est.estimate_no }}" class="action-btn btn-print-sm" target="_blank"><i class="fas fa-print"></i></a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="empty-state">
+                        <i class="fas fa-file-alt"></i>
+                        <p>No estimates yet. Create quotations for your customers!</p>
+                    </div>
+                {% endif %}
+            </div>
+            
+            <div id="tab-pending-dues" class="tab-panel">
+                {% if pending_dues %}
+                    {% for due in pending_dues[:5] %}
+                    <div class="invoice-row" style="border-left: 3px solid var(--accent-red);">
+                        <div style="font-weight: 700; color: var(--accent-orange);">{{ due.invoice_no }}</div>
+                        <div style="color: white;">{{ due.customer_name }}</div>
+                        <div style="color: var(--text-secondary);">{{ due.date }}</div>
+                        <div style="font-weight: 700; color: var(--accent-red);">৳{{ "{:,.0f}".format(due.due) }} Due</div>
+                        <div>
+                            <a href="/store/dues/collect/{{ due.invoice_no }}" class="action-btn btn-edit"><i class="fas fa-money-bill"></i></a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="empty-state">
+                        <i class="fas fa-check-circle" style="color: var(--accent-green);"></i>
+                        <p>No pending dues!  All payments collected.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function showTab(tabId, element) {
+            document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.section-tab').forEach(t => t.classList.remove('active'));
+            document.getElementById('tab-' + tabId).classList.add('active');
+            element.classList.add('active');
+        }
+        
+        // Count up animation
+        function animateCountUp() {
+            document.querySelectorAll('.count-up').forEach(counter => {
+                const target = parseInt(counter.getAttribute('data-target')) || 0;
+                const duration = 1500;
+                const step = target / (duration / 16);
+                let current = 0;
+                
+                const updateCounter = () => {
+                    current += step;
+                    if (current < target) {
+                        counter.textContent = Math.floor(current);
+                        requestAnimationFrame(updateCounter);
+                    } else {
+                        counter.textContent = target;
+                    }
+                };
+                
+                if (target > 0) updateCounter();
+            });
+        }
+        
+        setTimeout(animateCountUp, 300);
+        
+        // Mobile sidebar
+        if (window.innerWidth < 1024) {
+            document.querySelector('.sidebar').classList.remove('active');
+        }
+    </script>
+</body>
+</html>
+"""
+# ==============================================================================
+# STORE PRODUCT ADD/LIST TEMPLATE
+# ==============================================================================
+
+STORE_PRODUCTS_TEMPLATE = """
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Products - MEHEDI THAI ALUMINUM AND GLASS</title>
+    """ + COMMON_STYLES + """
+</head>
+<body>
+    <div class="animated-bg"></div>
+    
+    <div id="loading-overlay">
+        <div class="spinner-container">
+            <div class="spinner"></div>
+            <div class="spinner-inner"></div>
+        </div>
+        <div class="checkmark-container" id="success-anim">
+            <div class="checkmark-circle"></div>
+            <div class="anim-text">Saved! </div>
+        </div>
+        <div class="loading-text">Processing... </div>
+    </div>
+
+    <div class="mobile-toggle" onclick="document.querySelector('.sidebar').classList.toggle('active')">
+        <i class="fas fa-bars"></i>
+    </div>
+
+    <div class="sidebar">
+        <div class="brand-logo">
+            <i class="fas fa-store"></i> 
+            Store<span>Panel</span>
+        </div>
+        <div class="nav-menu">
+            <a href="/admin/store" class="nav-link">
+                <i class="fas fa-th-large"></i> Dashboard
+            </a>
+            <div class="nav-link active">
+                <i class="fas fa-box"></i> Products
+            </div>
+            <a href="/store/customers" class="nav-link">
+                <i class="fas fa-users"></i> Customers
+            </a>
+            <a href="/store/invoices" class="nav-link">
+                <i class="fas fa-file-invoice-dollar"></i> Invoices
+            </a>
+            <a href="/store/estimates" class="nav-link">
+                <i class="fas fa-file-alt"></i> Estimates
+            </a>
+            <a href="/logout" class="nav-link" style="color: var(--accent-red); margin-top: 20px;">
+                <i class="fas fa-sign-out-alt"></i> Sign Out
+            </a>
+        </div>
+        <div class="sidebar-footer">© 2025 Mehedi Hasan</div>
+    </div>
+
+    <div class="main-content">
+        <div class="header-section">
+            <div>
+                <div class="page-title">Product Management</div>
+                <div class="page-subtitle">Add and manage aluminum & glass products</div>
+            </div>
+            <div class="status-badge">
+                <div class="status-dot"></div>
+                <span>Online</span>
+            </div>
+        </div>
+
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                <div class="flash-message flash-success">
+                    <i class="fas fa-check-circle"></i>
+                    <span>{{ messages[0] }}</span>
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <div class="dashboard-grid-2">
+            <div class="card">
+                <div class="section-header">
+                    <span><i class="fas fa-plus-circle" style="margin-right: 10px; color: var(--accent-orange);"></i>Add New Product</span>
+                </div>
+                <form action="/store/products/save" method="post" onsubmit="showLoading()">
+                    <div class="input-group">
+                        <label><i class="fas fa-cube" style="margin-right: 5px;"></i> PRODUCT NAME</label>
+                        <input type="text" name="name" required placeholder="e.g.  Thai Glass 5mm">
+                    </div>
+                    
+                    <div class="grid-2">
+                        <div class="input-group">
+                            <label><i class="fas fa-ruler" style="margin-right: 5px;"></i> SIZE (FEET)</label>
+                            <input type="text" name="size_feet" placeholder="e.g.  4x6 or 3x4">
+                        </div>
+                        <div class="input-group">
+                            <label><i class="fas fa-layer-group" style="margin-right: 5px;"></i> THICKNESS</label>
+                            <input type="text" name="thickness" placeholder="e.g. 5mm, 8mm">
+                        </div>
+                    </div>
+                    
+                    <div class="grid-2">
+                        <div class="input-group">
+                            <label><i class="fas fa-tag" style="margin-right: 5px;"></i> CATEGORY</label>
+                            <select name="category">
+                                <option value="Glass">Glass</option>
+                                <option value="Aluminum Profile">Aluminum Profile</option>
+                                <option value="Thai Aluminum">Thai Aluminum</option>
+                                <option value="Accessories">Accessories</option>
+                                <option value="Mirror">Mirror</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <label><i class="fas fa-money-bill" style="margin-right: 5px;"></i> PRICE (Optional)</label>
+                            <input type="number" name="price" placeholder="৳ Per Unit" step="0.01">
+                        </div>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label><i class="fas fa-info-circle" style="margin-right: 5px;"></i> DESCRIPTION (Optional)</label>
+                        <textarea name="description" placeholder="Additional details about the product... "></textarea>
+                    </div>
+                    
+                    <button type="submit">
+                        <i class="fas fa-save" style="margin-right: 10px;"></i> Save Product
+                    </button>
+                </form>
+            </div>
+
+            <div class="card">
+                <div class="section-header">
+                    <span>Product List</span>
+                    <span class="table-badge" style="background: var(--accent-orange); color: white;">{{ products|length }} Items</span>
+                </div>
+                
+                <div class="search-box">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="productSearch" placeholder="Search products..." onkeyup="filterProducts()">
+                </div>
+                
+                <div style="max-height: 500px; overflow-y: auto;" id="productList">
+                    {% if products %}
+                        {% for p in products|reverse %}
+                        <div class="product-item" style="display: flex; justify-content: space-between; align-items: center; padding: 15px; background: rgba(255,255,255,0.02); border-radius: 10px; margin-bottom: 10px; border: 1px solid var(--border-color);">
+                            <div>
+                                <div style="font-weight: 700; color: white; margin-bottom: 5px;">{{ p.name }}</div>
+                                <div style="font-size: 12px; color: var(--text-secondary);">
+                                    {% if p.size_feet %}{{ p.size_feet }} ft | {% endif %}
+                                    {% if p.thickness %}{{ p.thickness }} | {% endif %}
+                                    {{ p.category }}
+                                </div>
+                            </div>
+                            <div style="text-align: right;">
+                                {% if p.price %}
+                                <div style="font-weight: 800; color: var(--accent-green); font-size: 18px;">৳{{ p.price }}</div>
+                                {% else %}
+                                <div style="color: var(--text-secondary); font-size: 12px;">No price set</div>
+                                {% endif %}
+                                <div class="action-cell" style="margin-top: 8px;">
+                                    <a href="/store/products/edit/{{ loop.index0 }}" class="action-btn btn-edit"><i class="fas fa-edit"></i></a>
+                                    <form action="/store/products/delete/{{ loop.index0 }}" method="post" style="display:inline;" onsubmit="return confirm('Delete this product?');">
+                                        <button type="submit" class="action-btn btn-del"><i class="fas fa-trash"></i></button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="empty-state">
+                            <i class="fas fa-box-open"></i>
+                            <p>No products added yet</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function showLoading() {
+            document.getElementById('loading-overlay').style.display = 'flex';
+            return true;
+        }
+        
+        function filterProducts() {
+            const search = document.getElementById('productSearch').value.toLowerCase();
+            document.querySelectorAll('.product-item').forEach(item => {
+                const text = item.textContent.toLowerCase();
+                item.style.display = text.includes(search) ?  'flex' : 'none';
+            });
+        }
+    </script>
+</body>
+</html>
+"""
 
 # ==============================================================================
-# ACCESSORIES PRINT REPORT TEMPLATE - FIXED: AUTO PRINT PREVIEW
+# STORE CUSTOMERS TEMPLATE
 # ==============================================================================
+
+STORE_CUSTOMERS_TEMPLATE = """
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Customers - MEHEDI THAI ALUMINUM AND GLASS</title>
+    """ + COMMON_STYLES + """
+</head>
+<body>
+    <div class="animated-bg"></div>
+    
+    <div id="loading-overlay">
+        <div class="spinner-container">
+            <div class="spinner"></div>
+            <div class="spinner-inner"></div>
+        </div>
+        <div class="loading-text">Processing... </div>
+    </div>
+
+    <div class="mobile-toggle" onclick="document.querySelector('.sidebar').classList.toggle('active')">
+        <i class="fas fa-bars"></i>
+    </div>
+
+    <div class="sidebar">
+        <div class="brand-logo">
+            <i class="fas fa-store"></i> 
+            Store<span>Panel</span>
+        </div>
+        <div class="nav-menu">
+            <a href="/admin/store" class="nav-link">
+                <i class="fas fa-th-large"></i> Dashboard
+            </a>
+            <a href="/store/products" class="nav-link">
+                <i class="fas fa-box"></i> Products
+            </a>
+            <div class="nav-link active">
+                <i class="fas fa-users"></i> Customers
+            </div>
+            <a href="/store/invoices" class="nav-link">
+                <i class="fas fa-file-invoice-dollar"></i> Invoices
+            </a>
+            <a href="/store/estimates" class="nav-link">
+                <i class="fas fa-file-alt"></i> Estimates
+            </a>
+            <a href="/logout" class="nav-link" style="color: var(--accent-red); margin-top: 20px;">
+                <i class="fas fa-sign-out-alt"></i> Sign Out
+            </a>
+        </div>
+        <div class="sidebar-footer">© 2025 Mehedi Hasan</div>
+    </div>
+
+    <div class="main-content">
+        <div class="header-section">
+            <div>
+                <div class="page-title">Customer Management</div>
+                <div class="page-subtitle">Add and manage your customers</div>
+            </div>
+            <div class="status-badge">
+                <div class="status-dot"></div>
+                <span>Online</span>
+            </div>
+        </div>
+
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                <div class="flash-message flash-success">
+                    <i class="fas fa-check-circle"></i>
+                    <span>{{ messages[0] }}</span>
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <div class="dashboard-grid-2">
+            <div class="card">
+                <div class="section-header">
+                    <span><i class="fas fa-user-plus" style="margin-right: 10px; color: var(--accent-purple);"></i>Add New Customer</span>
+                </div>
+                <form action="/store/customers/save" method="post" onsubmit="showLoading()">
+                    <div class="input-group">
+                        <label><i class="fas fa-user" style="margin-right: 5px;"></i> CUSTOMER NAME</label>
+                        <input type="text" name="name" required placeholder="Full Name">
+                    </div>
+                    
+                    <div class="input-group">
+                        <label><i class="fas fa-phone" style="margin-right: 5px;"></i> PHONE NUMBER</label>
+                        <input type="text" name="phone" required placeholder="01XXXXXXXXX">
+                    </div>
+                    
+                    <div class="input-group">
+                        <label><i class="fas fa-map-marker-alt" style="margin-right: 5px;"></i> ADDRESS</label>
+                        <textarea name="address" placeholder="Full Address (Optional)"></textarea>
+                    </div>
+                    
+                    <button type="submit" style="background: linear-gradient(135deg, #8B5CF6 0%, #A78BFA 100%);">
+                        <i class="fas fa-save" style="margin-right: 10px;"></i> Save Customer
+                    </button>
+                </form>
+            </div>
+
+            <div class="card">
+                <div class="section-header">
+                    <span>Customer List</span>
+                    <span class="table-badge" style="background: var(--accent-purple); color: white;">{{ customers|length }} Customers</span>
+                </div>
+                
+                <div class="search-box">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="customerSearch" placeholder="Search customers..." onkeyup="filterCustomers()">
+                </div>
+                
+                <div style="max-height: 500px; overflow-y: auto;" id="customerList">
+                    {% if customers %}
+                        {% for c in customers|reverse %}
+                        <div class="customer-item" style="display: flex; justify-content: space-between; align-items: center; padding: 15px; background: rgba(255,255,255,0.02); border-radius: 10px; margin-bottom: 10px; border: 1px solid var(--border-color);">
+                            <div>
+                                <div style="font-weight: 700; color: white; margin-bottom: 5px;">{{ c.name }}</div>
+                                <div style="font-size: 13px; color: var(--accent-orange);">
+                                    <i class="fas fa-phone" style="margin-right: 5px;"></i>{{ c.phone }}
+                                </div>
+                                {% if c.address %}
+                                <div style="font-size: 12px; color: var(--text-secondary); margin-top: 3px;">
+                                    <i class="fas fa-map-marker-alt" style="margin-right: 5px;"></i>{{ c.address[:50] }}... 
+                                </div>
+                                {% endif %}
+                            </div>
+                            <div class="action-cell">
+                                <a href="/store/customers/edit/{{ loop.index0 }}" class="action-btn btn-edit"><i class="fas fa-edit"></i></a>
+                                <form action="/store/customers/delete/{{ loop.index0 }}" method="post" style="display:inline;" onsubmit="return confirm('Delete this customer?');">
+                                    <button type="submit" class="action-btn btn-del"><i class="fas fa-trash"></i></button>
+                                </form>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="empty-state">
+                            <i class="fas fa-users"></i>
+                            <p>No customers added yet</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function showLoading() {
+            document.getElementById('loading-overlay').style.display = 'flex';
+            return true;
+        }
+        
+        function filterCustomers() {
+            const search = document.getElementById('customerSearch').value.toLowerCase();
+            document.querySelectorAll('.customer-item').forEach(item => {
+                const text = item.textContent.toLowerCase();
+                item.style.display = text.includes(search) ? 'flex' : 'none';
+            });
+        }
+    </script>
+</body>
+</html>
+"""
+# ==============================================================================
+# STORE INVOICE CREATE TEMPLATE
+# ==============================================================================
+
+STORE_INVOICE_CREATE_TEMPLATE = """
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Create Invoice - MEHEDI THAI ALUMINUM AND GLASS</title>
+    """ + COMMON_STYLES + """
+    <style>
+        .invoice-items-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .invoice-items-table th {
+            background: rgba(255, 122, 0, 0.1);
+            padding: 12px;
+            text-align: left;
+            font-size: 12px;
+            text-transform: uppercase;
+            color: var(--accent-orange);
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .invoice-items-table td {
+            padding: 10px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .invoice-items-table input, .invoice-items-table select {
+            padding: 10px;
+            font-size: 14px;
+        }
+        
+        .item-row {
+            transition: var(--transition-smooth);
+        }
+        
+        .item-row:hover {
+            background: rgba(255, 122, 0, 0.03);
+        }
+        
+        .add-item-btn {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px dashed var(--accent-green);
+            color: var(--accent-green);
+            padding: 12px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: var(--transition-smooth);
+            width: 100%;
+            margin-top: 15px;
+        }
+        
+        .add-item-btn:hover {
+            background: var(--accent-green);
+            color: white;
+        }
+        
+        .remove-item-btn {
+            background: rgba(239, 68, 68, 0.1);
+            border: none;
+            color: var(--accent-red);
+            width: 35px;
+            height: 35px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+        }
+        
+        .remove-item-btn:hover {
+            background: var(--accent-red);
+            color: white;
+        }
+        
+        .totals-section {
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+        
+        .total-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .total-row:last-child {
+            border-bottom: none;
+            font-size: 20px;
+            font-weight: 800;
+            color: var(--accent-green);
+        }
+        
+        .total-label {
+            color: var(--text-secondary);
+        }
+        
+        .total-value {
+            font-weight: 700;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="animated-bg"></div>
+    
+    <div id="loading-overlay">
+        <div class="spinner-container">
+            <div class="spinner"></div>
+            <div class="spinner-inner"></div>
+        </div>
+        <div class="loading-text">Creating Invoice...</div>
+    </div>
+
+    <div class="mobile-toggle" onclick="document.querySelector('.sidebar').classList.toggle('active')">
+        <i class="fas fa-bars"></i>
+    </div>
+
+    <div class="sidebar">
+        <div class="brand-logo">
+            <i class="fas fa-store"></i> 
+            Store<span>Panel</span>
+        </div>
+        <div class="nav-menu">
+            <a href="/admin/store" class="nav-link">
+                <i class="fas fa-th-large"></i> Dashboard
+            </a>
+            <a href="/store/products" class="nav-link">
+                <i class="fas fa-box"></i> Products
+            </a>
+            <a href="/store/customers" class="nav-link">
+                <i class="fas fa-users"></i> Customers
+            </a>
+            <div class="nav-link active">
+                <i class="fas fa-file-invoice-dollar"></i> Invoices
+            </div>
+            <a href="/store/estimates" class="nav-link">
+                <i class="fas fa-file-alt"></i> Estimates
+            </a>
+            <a href="/logout" class="nav-link" style="color: var(--accent-red); margin-top: 20px;">
+                <i class="fas fa-sign-out-alt"></i> Sign Out
+            </a>
+        </div>
+        <div class="sidebar-footer">© 2025 Mehedi Hasan</div>
+    </div>
+
+    <div class="main-content">
+        <div class="header-section">
+            <div>
+                <div class="page-title">Create Invoice</div>
+                <div class="page-subtitle">Invoice No: <span style="color: var(--accent-orange); font-weight: 700;">{{ invoice_no }}</span></div>
+            </div>
+            <a href="/store/invoices" class="btn-secondary" style="padding: 12px 24px; border-radius: 10px; text-decoration: none; color: var(--text-secondary);">
+                <i class="fas fa-arrow-left" style="margin-right: 8px;"></i> Back to List
+            </a>
+        </div>
+
+        <form action="/store/invoices/save" method="post" onsubmit="return validateAndSubmit()">
+            <input type="hidden" name="invoice_no" value="{{ invoice_no }}">
+            
+            <div class="grid-2" style="margin-bottom: 30px;">
+                <div class="card">
+                    <div class="section-header">
+                        <span><i class="fas fa-user" style="margin-right: 10px; color: var(--accent-purple);"></i>Customer Info</span>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label>SELECT CUSTOMER</label>
+                        <select name="customer_id" id="customerSelect" onchange="fillCustomerInfo()">
+                            <option value="">-- Select Existing Customer --</option>
+                            {% for c in customers %}
+                            <option value="{{ loop.index0 }}" data-name="{{ c.name }}" data-phone="{{ c.phone }}" data-address="{{ c.address }}">{{ c.name }} - {{ c.phone }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label>CUSTOMER NAME</label>
+                        <input type="text" name="customer_name" id="customerName" required placeholder="Customer Name">
+                    </div>
+                    
+                    <div class="input-group">
+                        <label>PHONE</label>
+                        <input type="text" name="customer_phone" id="customerPhone" placeholder="Phone Number">
+                    </div>
+                    
+                    <div class="input-group">
+                        <label>ADDRESS</label>
+                        <textarea name="customer_address" id="customerAddress" placeholder="Address"></textarea>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="section-header">
+                        <span><i class="fas fa-calendar" style="margin-right: 10px; color: var(--accent-blue);"></i>Invoice Details</span>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label>INVOICE DATE</label>
+                        <input type="date" name="invoice_date" value="{{ today }}" required>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label>NOTES (Optional)</label>
+                        <textarea name="notes" placeholder="Any additional notes..."></textarea>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="section-header">
+                    <span><i class="fas fa-list" style="margin-right: 10px; color: var(--accent-green);"></i>Invoice Items</span>
+                </div>
+                
+                <div style="overflow-x: auto;">
+                    <table class="invoice-items-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 30%;">Product/Description</th>
+                                <th style="width: 15%;">Size (ft)</th>
+                                <th style="width: 12%;">Quantity</th>
+                                <th style="width: 15%;">Unit Price</th>
+                                <th style="width: 18%;">Total</th>
+                                <th style="width: 10%;"></th>
+                            </tr>
+                        </thead>
+                        <tbody id="itemsBody">
+                            <tr class="item-row">
+                                <td>
+                                    <input type="text" name="items[0][description]" placeholder="Product name" required>
+                                </td>
+                                <td>
+                                    <input type="text" name="items[0][size]" placeholder="e.g.  4x6">
+                                </td>
+                                <td>
+                                    <input type="number" name="items[0][qty]" class="item-qty" value="1" min="1" onchange="calculateRow(this)" required>
+                                </td>
+                                <td>
+                                    <input type="number" name="items[0][price]" class="item-price" placeholder="৳" step="0.01" onchange="calculateRow(this)" required>
+                                </td>
+                                <td>
+                                    <input type="number" name="items[0][total]" class="item-total" readonly placeholder="৳ 0">
+                                </td>
+                                <td>
+                                    <button type="button" class="remove-item-btn" onclick="removeRow(this)"><i class="fas fa-times"></i></button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <button type="button" class="add-item-btn" onclick="addItemRow()">
+                    <i class="fas fa-plus" style="margin-right: 8px;"></i> Add Another Item
+                </button>
+                
+                <div class="totals-section">
+                    <div class="total-row">
+                        <span class="total-label">Subtotal</span>
+                        <span class="total-value" id="subtotal">৳ 0</span>
+                    </div>
+                    <div class="total-row">
+                        <span class="total-label">Discount</span>
+                        <input type="number" name="discount" id="discountInput" value="0" min="0" step="0.01" style="width: 120px; text-align: right;" onchange="calculateTotals()">
+                    </div>
+                    <div class="total-row">
+                        <span class="total-label">Paid Amount</span>
+                        <input type="number" name="paid" id="paidInput" value="0" min="0" step="0.01" style="width: 120px; text-align: right;" onchange="calculateTotals()">
+                    </div>
+                    <div class="total-row" style="background: rgba(239, 68, 68, 0.1); margin: 10px -20px -20px -20px; padding: 15px 20px; border-radius: 0 0 12px 12px;">
+                        <span style="color: var(--accent-red);">Due Amount</span>
+                        <span style="color: var(--accent-red);" id="dueAmount">৳ 0</span>
+                    </div>
+                    <input type="hidden" name="total" id="totalInput">
+                    <input type="hidden" name="due" id="dueInput">
+                </div>
+            </div>
+            
+            <div style="margin-top: 30px; display: flex; gap: 15px; justify-content: flex-end;">
+                <button type="submit" name="action" value="save" style="width: auto; padding: 15px 40px;">
+                    <i class="fas fa-save" style="margin-right: 10px;"></i> Save Invoice
+                </button>
+                <button type="submit" name="action" value="save_print" style="width: auto; padding: 15px 40px; background: linear-gradient(135deg, #10B981 0%, #34D399 100%);">
+                    <i class="fas fa-print" style="margin-right: 10px;"></i> Save & Print
+                </button>
+            </div>
+        </form>
+    </div>
+    
+    <script>
+        let itemIndex = 1;
+        
+        function fillCustomerInfo() {
+            const select = document.getElementById('customerSelect');
+            const option = select.options[select.selectedIndex];
+            if (option.value) {
+                document.getElementById('customerName').value = option.dataset.name || '';
+                document.getElementById('customerPhone').value = option.dataset.phone || '';
+                document.getElementById('customerAddress').value = option.dataset.address || '';
+            }
+        }
+        
+        function addItemRow() {
+            const tbody = document.getElementById('itemsBody');
+            const row = document.createElement('tr');
+            row.className = 'item-row';
+            row.innerHTML = `
+                <td><input type="text" name="items[${itemIndex}][description]" placeholder="Product name" required></td>
+                <td><input type="text" name="items[${itemIndex}][size]" placeholder="e.g. 4x6"></td>
+                <td><input type="number" name="items[${itemIndex}][qty]" class="item-qty" value="1" min="1" onchange="calculateRow(this)" required></td>
+                <td><input type="number" name="items[${itemIndex}][price]" class="item-price" placeholder="৳" step="0.01" onchange="calculateRow(this)" required></td>
+                <td><input type="number" name="items[${itemIndex}][total]" class="item-total" readonly placeholder="৳ 0"></td>
+                <td><button type="button" class="remove-item-btn" onclick="removeRow(this)"><i class="fas fa-times"></i></button></td>
+            `;
+            tbody.appendChild(row);
+            itemIndex++;
+        }
+        
+        function removeRow(btn) {
+            const rows = document.querySelectorAll('.item-row');
+            if (rows.length > 1) {
+                btn.closest('tr').remove();
+                calculateTotals();
+            }
+        }
+        
+        function calculateRow(input) {
+            const row = input.closest('tr');
+            const qty = parseFloat(row.querySelector('.item-qty').value) || 0;
+            const price = parseFloat(row.querySelector('.item-price').value) || 0;
+            const total = qty * price;
+            row.querySelector('.item-total').value = total.toFixed(2);
+            calculateTotals();
+        }
+        
+        function calculateTotals() {
+            let subtotal = 0;
+            document.querySelectorAll('.item-total').forEach(input => {
+                subtotal += parseFloat(input.value) || 0;
+            });
+            
+            const discount = parseFloat(document.getElementById('discountInput').value) || 0;
+            const paid = parseFloat(document.getElementById('paidInput').value) || 0;
+            const grandTotal = subtotal - discount;
+            const due = grandTotal - paid;
+            
+            document.getElementById('subtotal').textContent = '৳ ' + subtotal.toFixed(2);
+            document.getElementById('dueAmount').textContent = '৳ ' + due.toFixed(2);
+            document.getElementById('totalInput').value = grandTotal.toFixed(2);
+            document.getElementById('dueInput').value = due.toFixed(2);
+        }
+        
+        function validateAndSubmit() {
+            calculateTotals();
+            document.getElementById('loading-overlay').style.display = 'flex';
+            return true;
+        }
+        
+        function showLoading() {
+            document.getElementById('loading-overlay').style.display = 'flex';
+            return true;
+        }
+    </script>
+</body>
+</html>
+"""
+
+# ==============================================================================
+# STORE ESTIMATE CREATE TEMPLATE
+# ==============================================================================
+
+STORE_ESTIMATE_CREATE_TEMPLATE = """
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Create Estimate - MEHEDI THAI ALUMINUM AND GLASS</title>
+    """ + COMMON_STYLES + """
+    <style>
+        .invoice-items-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .invoice-items-table th {
+            background: rgba(59, 130, 246, 0.1);
+            padding: 12px;
+            text-align: left;
+            font-size: 12px;
+            text-transform: uppercase;
+            color: var(--accent-blue);
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .invoice-items-table td {
+            padding: 10px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .invoice-items-table input, .invoice-items-table select {
+            padding: 10px;
+            font-size: 14px;
+        }
+        
+        .item-row {
+            transition: var(--transition-smooth);
+        }
+        
+        .item-row:hover {
+            background: rgba(59, 130, 246, 0.03);
+        }
+        
+        .add-item-btn {
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px dashed var(--accent-blue);
+            color: var(--accent-blue);
+            padding: 12px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: var(--transition-smooth);
+            width: 100%;
+            margin-top: 15px;
+        }
+        
+        .add-item-btn:hover {
+            background: var(--accent-blue);
+            color: white;
+        }
+        
+        .remove-item-btn {
+            background: rgba(239, 68, 68, 0.1);
+            border: none;
+            color: var(--accent-red);
+            width: 35px;
+            height: 35px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+        }
+        
+        .remove-item-btn:hover {
+            background: var(--accent-red);
+            color: white;
+        }
+        
+        .totals-section {
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+        
+        .total-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .total-row:last-child {
+            border-bottom: none;
+            font-size: 20px;
+            font-weight: 800;
+            color: var(--accent-blue);
+            background: rgba(59, 130, 246, 0.1);
+            margin: 10px -20px -20px -20px;
+            padding: 15px 20px;
+            border-radius: 0 0 12px 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="animated-bg"></div>
+    
+    <div id="loading-overlay">
+        <div class="spinner-container">
+            <div class="spinner"></div>
+            <div class="spinner-inner"></div>
+        </div>
+        <div class="loading-text">Creating Estimate...</div>
+    </div>
+
+    <div class="mobile-toggle" onclick="document.querySelector('.sidebar').classList.toggle('active')">
+        <i class="fas fa-bars"></i>
+    </div>
+
+    <div class="sidebar">
+        <div class="brand-logo">
+            <i class="fas fa-store"></i> 
+            Store<span>Panel</span>
+        </div>
+        <div class="nav-menu">
+            <a href="/admin/store" class="nav-link">
+                <i class="fas fa-th-large"></i> Dashboard
+            </a>
+            <a href="/store/products" class="nav-link">
+                <i class="fas fa-box"></i> Products
+            </a>
+            <a href="/store/customers" class="nav-link">
+                <i class="fas fa-users"></i> Customers
+            </a>
+            <a href="/store/invoices" class="nav-link">
+                <i class="fas fa-file-invoice-dollar"></i> Invoices
+            </a>
+            <div class="nav-link active">
+                <i class="fas fa-file-alt"></i> Estimates
+            </div>
+            <a href="/logout" class="nav-link" style="color: var(--accent-red); margin-top: 20px;">
+                <i class="fas fa-sign-out-alt"></i> Sign Out
+            </a>
+        </div>
+        <div class="sidebar-footer">© 2025 Mehedi Hasan</div>
+    </div>
+
+    <div class="main-content">
+        <div class="header-section">
+            <div>
+                <div class="page-title">Create Estimate / Quotation</div>
+                <div class="page-subtitle">Estimate No: <span style="color: var(--accent-blue); font-weight: 700;">{{ estimate_no }}</span></div>
+            </div>
+            <a href="/store/estimates" style="padding: 12px 24px; border-radius: 10px; text-decoration: none; color: var(--text-secondary); background: rgba(255,255,255,0.05); border: 1px solid var(--border-color);">
+                <i class="fas fa-arrow-left" style="margin-right: 8px;"></i> Back
+            </a>
+        </div>
+
+        <form action="/store/estimates/save" method="post" onsubmit="return validateAndSubmit()">
+            <input type="hidden" name="estimate_no" value="{{ estimate_no }}">
+            
+            <div class="grid-2" style="margin-bottom: 30px;">
+                <div class="card">
+                    <div class="section-header">
+                        <span><i class="fas fa-user" style="margin-right: 10px; color: var(--accent-purple);"></i>Customer Info</span>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label>CUSTOMER NAME</label>
+                        <input type="text" name="customer_name" id="customerName" required placeholder="Customer Name">
+                    </div>
+                    
+                    <div class="input-group">
+                        <label>PHONE</label>
+                        <input type="text" name="customer_phone" id="customerPhone" placeholder="Phone Number">
+                    </div>
+                    
+                    <div class="input-group">
+                        <label>ADDRESS</label>
+                        <textarea name="customer_address" id="customerAddress" placeholder="Address"></textarea>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="section-header">
+                        <span><i class="fas fa-calendar" style="margin-right: 10px; color: var(--accent-blue);"></i>Estimate Details</span>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label>ESTIMATE DATE</label>
+                        <input type="date" name="estimate_date" value="{{ today }}" required>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label>VALID UNTIL (Optional)</label>
+                        <input type="date" name="valid_until">
+                    </div>
+                    
+                    <div class="input-group">
+                        <label>NOTES / TERMS</label>
+                        <textarea name="notes" placeholder="Terms & Conditions..."></textarea>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="section-header">
+                    <span><i class="fas fa-list" style="margin-right: 10px; color: var(--accent-blue);"></i>Estimate Items</span>
+                </div>
+                
+                <div style="overflow-x: auto;">
+                    <table class="invoice-items-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 30%;">Product/Description</th>
+                                <th style="width: 15%;">Size (ft)</th>
+                                <th style="width: 12%;">Quantity</th>
+                                <th style="width: 15%;">Unit Price</th>
+                                <th style="width: 18%;">Total</th>
+                                <th style="width: 10%;"></th>
+                            </tr>
+                        </thead>
+                        <tbody id="itemsBody">
+                            <tr class="item-row">
+                                <td><input type="text" name="items[0][description]" placeholder="Product/Work description" required></td>
+                                <td><input type="text" name="items[0][size]" placeholder="e.g.  4x6"></td>
+                                <td><input type="number" name="items[0][qty]" class="item-qty" value="1" min="1" onchange="calculateRow(this)" required></td>
+                                <td><input type="number" name="items[0][price]" class="item-price" placeholder="৳" step="0.01" onchange="calculateRow(this)" required></td>
+                                <td><input type="number" name="items[0][total]" class="item-total" readonly placeholder="৳ 0"></td>
+                                <td><button type="button" class="remove-item-btn" onclick="removeRow(this)"><i class="fas fa-times"></i></button></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <button type="button" class="add-item-btn" onclick="addItemRow()">
+                    <i class="fas fa-plus" style="margin-right: 8px;"></i> Add Another Item
+                </button>
+                
+                <div class="totals-section">
+                    <div class="total-row">
+                        <span style="color: var(--text-secondary);">Subtotal</span>
+                        <span style="font-weight: 700; color: white;" id="subtotal">৳ 0</span>
+                    </div>
+                    <div class="total-row">
+                        <span style="color: var(--text-secondary);">Discount</span>
+                        <input type="number" name="discount" id="discountInput" value="0" min="0" step="0.01" style="width: 120px; text-align: right;" onchange="calculateTotals()">
+                    </div>
+                    <div class="total-row">
+                        <span>Estimated Total</span>
+                        <span id="grandTotal">৳ 0</span>
+                    </div>
+                    <input type="hidden" name="total" id="totalInput">
+                </div>
+            </div>
+            
+            <div style="margin-top: 30px; display: flex; gap: 15px; justify-content: flex-end;">
+                <button type="submit" name="action" value="save" style="width: auto; padding: 15px 40px; background: linear-gradient(135deg, #3B82F6 0%, #60A5FA 100%);">
+                    <i class="fas fa-save" style="margin-right: 10px;"></i> Save Estimate
+                </button>
+                <button type="submit" name="action" value="save_print" style="width: auto; padding: 15px 40px; background: linear-gradient(135deg, #10B981 0%, #34D399 100%);">
+                    <i class="fas fa-print" style="margin-right: 10px;"></i> Save & Print
+                </button>
+            </div>
+        </form>
+    </div>
+    
+    <script>
+        let itemIndex = 1;
+        
+        function addItemRow() {
+            const tbody = document.getElementById('itemsBody');
+            const row = document.createElement('tr');
+            row.className = 'item-row';
+            row.innerHTML = `
+                <td><input type="text" name="items[${itemIndex}][description]" placeholder="Product/Work description" required></td>
+                <td><input type="text" name="items[${itemIndex}][size]" placeholder="e.g. 4x6"></td>
+                <td><input type="number" name="items[${itemIndex}][qty]" class="item-qty" value="1" min="1" onchange="calculateRow(this)" required></td>
+                <td><input type="number" name="items[${itemIndex}][price]" class="item-price" placeholder="৳" step="0.01" onchange="calculateRow(this)" required></td>
+                <td><input type="number" name="items[${itemIndex}][total]" class="item-total" readonly placeholder="৳ 0"></td>
+                <td><button type="button" class="remove-item-btn" onclick="removeRow(this)"><i class="fas fa-times"></i></button></td>
+            `;
+            tbody.appendChild(row);
+            itemIndex++;
+        }
+        
+        function removeRow(btn) {
+            const rows = document.querySelectorAll('.item-row');
+            if (rows.length > 1) {
+                btn.closest('tr').remove();
+                calculateTotals();
+            }
+        }
+        
+        function calculateRow(input) {
+            const row = input.closest('tr');
+            const qty = parseFloat(row.querySelector('.item-qty').value) || 0;
+            const price = parseFloat(row.querySelector('.item-price').value) || 0;
+            const total = qty * price;
+            row.querySelector('.item-total').value = total.toFixed(2);
+            calculateTotals();
+        }
+        
+        function calculateTotals() {
+            let subtotal = 0;
+            document.querySelectorAll('.item-total').forEach(input => {
+                subtotal += parseFloat(input.value) || 0;
+            });
+            
+            const discount = parseFloat(document.getElementById('discountInput').value) || 0;
+            const grandTotal = subtotal - discount;
+            
+            document.getElementById('subtotal').textContent = '৳ ' + subtotal.toFixed(2);
+            document.getElementById('grandTotal').textContent = '৳ ' + grandTotal.toFixed(2);
+            document.getElementById('totalInput').value = grandTotal.toFixed(2);
+        }
+        
+        function validateAndSubmit() {
+            calculateTotals();
+            document.getElementById('loading-overlay').style.display = 'flex';
+            return true;
+        }
+    </script>
+</body>
+</html>
+"""
+
+# ==============================================================================
+# STORE DUE COLLECTION TEMPLATE
+# ==============================================================================
+
+STORE_DUE_COLLECTION_TEMPLATE = """
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Due Collection - MEHEDI THAI ALUMINUM AND GLASS</title>
+    """ + COMMON_STYLES + """
+    <style>
+        .due-card {
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, rgba(239, 68, 68, 0.05) 100%);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            border-radius: 16px;
+            padding: 25px;
+            margin-bottom: 20px;
+        }
+        
+        .due-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .due-invoice-no {
+            font-size: 20px;
+            font-weight: 800;
+            color: var(--accent-orange);
+        }
+        
+        .due-amount {
+            font-size: 24px;
+            font-weight: 800;
+            color: var(--accent-red);
+        }
+        
+        .due-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .due-detail-item {
+            background: rgba(255, 255, 255, 0.03);
+            padding: 12px;
+            border-radius: 10px;
+        }
+        
+        .due-detail-label {
+            font-size: 11px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            margin-bottom: 5px;
+        }
+        
+        .due-detail-value {
+            font-size: 15px;
+            font-weight: 600;
+            color: white;
+        }
+        
+        .payment-form {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            border-radius: 12px;
+            padding: 20px;
+        }
+        
+        .payment-history {
+            margin-top: 20px;
+        }
+        
+        .payment-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 8px;
+            margin-bottom: 8px;
+        }
+        
+        .payment-date {
+            color: var(--text-secondary);
+            font-size: 13px;
+        }
+        
+        .payment-amount {
+            font-weight: 700;
+            color: var(--accent-green);
+        }
+    </style>
+</head>
+<body>
+    <div class="animated-bg"></div>
+    
+    <div id="loading-overlay">
+        <div class="spinner-container">
+            <div class="spinner"></div>
+            <div class="spinner-inner"></div>
+        </div>
+        <div class="loading-text">Processing Payment...</div>
+    </div>
+
+    <div class="mobile-toggle" onclick="document.querySelector('.sidebar').classList.toggle('active')">
+        <i class="fas fa-bars"></i>
+    </div>
+
+    <div class="sidebar">
+        <div class="brand-logo">
+            <i class="fas fa-store"></i> 
+            Store<span>Panel</span>
+        </div>
+        <div class="nav-menu">
+            <a href="/admin/store" class="nav-link">
+                <i class="fas fa-th-large"></i> Dashboard
+            </a>
+            <a href="/store/products" class="nav-link">
+                <i class="fas fa-box"></i> Products
+            </a>
+            <a href="/store/customers" class="nav-link">
+                <i class="fas fa-users"></i> Customers
+            </a>
+            <a href="/store/invoices" class="nav-link">
+                <i class="fas fa-file-invoice-dollar"></i> Invoices
+            </a>
+            <div class="nav-link active">
+                <i class="fas fa-wallet"></i> Due Collection
+            </div>
+            <a href="/logout" class="nav-link" style="color: var(--accent-red); margin-top: 20px;">
+                <i class="fas fa-sign-out-alt"></i> Sign Out
+            </a>
+        </div>
+        <div class="sidebar-footer">© 2025 Mehedi Hasan</div>
+    </div>
+
+    <div class="main-content">
+        <div class="header-section">
+            <div>
+                <div class="page-title">Due Collection</div>
+                <div class="page-subtitle">Manage pending payments</div>
+            </div>
+            <div class="status-badge">
+                <div class="status-dot"></div>
+                <span>Online</span>
+            </div>
+        </div>
+
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                <div class="flash-message flash-success">
+                    <i class="fas fa-check-circle"></i>
+                    <span>{{ messages[0] }}</span>
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <div class="card" style="margin-bottom: 30px;">
+            <div class="section-header">
+                <span><i class="fas fa-search" style="margin-right: 10px; color: var(--accent-orange);"></i>Search Invoice</span>
+            </div>
+            <form action="/store/dues/search" method="get" style="display: flex; gap: 15px; flex-wrap: wrap;">
+                <div style="flex: 1; min-width: 200px;">
+                    <input type="text" name="invoice_no" placeholder="Enter Invoice Number (e.g.  INV-0001)" value="{{ search_invoice }}">
+                </div>
+                <button type="submit" style="width: auto; padding: 14px 30px;">
+                    <i class="fas fa-search" style="margin-right: 8px;"></i> Search
+                </button>
+            </form>
+        </div>
+
+        {% if invoice %}
+        <div class="due-card">
+            <div class="due-header">
+                <div class="due-invoice-no">{{ invoice.invoice_no }}</div>
+                <div class="due-amount">Due: ৳{{ "{:,.0f}".format(invoice.due) }}</div>
+            </div>
+            
+            <div class="due-details">
+                <div class="due-detail-item">
+                    <div class="due-detail-label">Customer</div>
+                    <div class="due-detail-value">{{ invoice.customer_name }}</div>
+                </div>
+                <div class="due-detail-item">
+                    <div class="due-detail-label">Phone</div>
+                    <div class="due-detail-value">{{ invoice.customer_phone }}</div>
+                </div>
+                <div class="due-detail-item">
+                    <div class="due-detail-label">Invoice Date</div>
+                    <div class="due-detail-value">{{ invoice.date }}</div>
+                </div>
+                <div class="due-detail-item">
+                    <div class="due-detail-label">Total Amount</div>
+                    <div class="due-detail-value">৳{{ "{:,.0f}".format(invoice.total) }}</div>
+                </div>
+                <div class="due-detail-item">
+                    <div class="due-detail-label">Already Paid</div>
+                    <div class="due-detail-value" style="color: var(--accent-green);">৳{{ "{:,.0f}".format(invoice.paid) }}</div>
+                </div>
+            </div>
+            
+            {% if invoice.due > 0 %}
+            <div class="payment-form">
+                <h4 style="margin-bottom: 15px; color: var(--accent-green);"><i class="fas fa-money-bill-wave" style="margin-right: 10px;"></i>Record Payment</h4>
+                <form action="/store/dues/collect" method="post" onsubmit="return validatePayment()">
+                    <input type="hidden" name="invoice_no" value="{{ invoice.invoice_no }}">
+                    <div class="grid-2">
+                        <div class="input-group">
+                            <label>PAYMENT AMOUNT</label>
+                            <input type="number" name="amount" id="paymentAmount" required placeholder="৳" step="0.01" max="{{ invoice.due }}">
+                        </div>
+                        <div class="input-group">
+                            <label>PAYMENT DATE</label>
+                            <input type="date" name="payment_date" value="{{ today }}" required>
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <label>NOTES (Optional)</label>
+                        <input type="text" name="notes" placeholder="Payment notes... ">
+                    </div>
+                    <button type="submit" style="background: linear-gradient(135deg, #10B981 0%, #34D399 100%);">
+                        <i class="fas fa-check" style="margin-right: 10px;"></i> Record Payment
+                    </button>
+                </form>
+            </div>
+            {% else %}
+            <div style="text-align: center; padding: 30px; background: rgba(16, 185, 129, 0.1); border-radius: 12px; border: 1px solid rgba(16, 185, 129, 0.2);">
+                <i class="fas fa-check-circle" style="font-size: 50px; color: var(--accent-green); margin-bottom: 15px;"></i>
+                <h3 style="color: var(--accent-green);">Fully Paid! </h3>
+                <p style="color: var(--text-secondary);">This invoice has no pending dues.</p>
+            </div>
+            {% endif %}
+            
+            {% if invoice.payments %}
+            <div class="payment-history">
+                <h4 style="margin-bottom: 15px; color: var(--text-secondary);"><i class="fas fa-history" style="margin-right: 10px;"></i>Payment History</h4>
+                {% for p in invoice.payments %}
+                <div class="payment-item">
+                    <div>
+                        <div class="payment-date">{{ p.date }}</div>
+                        {% if p.notes %}<div style="font-size: 12px; color: var(--text-secondary);">{{ p.notes }}</div>{% endif %}
+                    </div>
+                    <div class="payment-amount">+ ৳{{ "{:,.0f}".format(p.amount) }}</div>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+        {% elif search_invoice %}
+        <div class="empty-state">
+            <i class="fas fa-search"></i>
+            <p>Invoice "{{ search_invoice }}" not found</p>
+        </div>
+        {% endif %}
+
+        <div class="card">
+            <div class="section-header">
+                <span><i class="fas fa-exclamation-triangle" style="margin-right: 10px; color: var(--accent-red);"></i>All Pending Dues</span>
+                <span class="table-badge" style="background: var(--accent-red); color: white;">{{ pending_dues|length }} Invoices</span>
+            </div>
+            
+            <div style="max-height: 400px; overflow-y: auto;">
+                {% if pending_dues %}
+                    {% for due in pending_dues %}
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 15px; background: rgba(255,255,255,0.02); border-radius: 10px; margin-bottom: 10px; border-left: 3px solid var(--accent-red);">
+                        <div>
+                            <div style="font-weight: 700; color: var(--accent-orange);">{{ due.invoice_no }}</div>
+                            <div style="font-size: 13px; color: white;">{{ due.customer_name }}</div>
+                            <div style="font-size: 12px; color: var(--text-secondary);">{{ due.date }}</div>
+                        </div>
+                        <div style="text-align: right;">
+                            <div style="font-size: 18px; font-weight: 800; color: var(--accent-red);">৳{{ "{:,.0f}".format(due.due) }}</div>
+                            <a href="/store/dues/search?invoice_no={{ due.invoice_no }}" class="action-btn btn-edit" style="margin-top: 8px;">
+                                <i class="fas fa-money-bill"></i> Collect
+                            </a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="empty-state">
+                        <i class="fas fa-check-circle" style="color: var(--accent-green);"></i>
+                        <p>No pending dues!  All payments collected.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function validatePayment() {
+            const amount = parseFloat(document.getElementById('paymentAmount').value);
+            if (amount <= 0) {
+                alert('Please enter a valid amount');
+                return false;
+            }
+            document.getElementById('loading-overlay').style.display = 'flex';
+            return true;
+        }
+    </script>
+</body>
+</html>
+"""
+# ==============================================================================
+# STORE INVOICES LIST TEMPLATE
+# ==============================================================================
+
+STORE_INVOICES_LIST_TEMPLATE = """
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Invoices - MEHEDI THAI ALUMINUM AND GLASS</title>
+    """ + COMMON_STYLES + """
+</head>
+<body>
+    <div class="animated-bg"></div>
+
+    <div class="mobile-toggle" onclick="document.querySelector('.sidebar').classList.toggle('active')">
+        <i class="fas fa-bars"></i>
+    </div>
+
+    <div class="sidebar">
+        <div class="brand-logo">
+            <i class="fas fa-store"></i> 
+            Store<span>Panel</span>
+        </div>
+        <div class="nav-menu">
+            <a href="/admin/store" class="nav-link">
+                <i class="fas fa-th-large"></i> Dashboard
+            </a>
+            <a href="/store/products" class="nav-link">
+                <i class="fas fa-box"></i> Products
+            </a>
+            <a href="/store/customers" class="nav-link">
+                <i class="fas fa-users"></i> Customers
+            </a>
+            <div class="nav-link active">
+                <i class="fas fa-file-invoice-dollar"></i> Invoices
+            </div>
+            <a href="/store/estimates" class="nav-link">
+                <i class="fas fa-file-alt"></i> Estimates
+            </a>
+            <a href="/store/dues" class="nav-link">
+                <i class="fas fa-wallet"></i> Due Collection
+            </a>
+            <a href="/logout" class="nav-link" style="color: var(--accent-red); margin-top: 20px;">
+                <i class="fas fa-sign-out-alt"></i> Sign Out
+            </a>
+        </div>
+        <div class="sidebar-footer">© 2025 Mehedi Hasan</div>
+    </div>
+
+    <div class="main-content">
+        <div class="header-section">
+            <div>
+                <div class="page-title">Invoice Management</div>
+                <div class="page-subtitle">View and manage all invoices</div>
+            </div>
+            <a href="/store/invoices/create" style="padding: 14px 30px; background: var(--gradient-orange); border-radius: 12px; text-decoration: none; color: white; font-weight: 600;">
+                <i class="fas fa-plus" style="margin-right: 8px;"></i> New Invoice
+            </a>
+        </div>
+
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                <div class="flash-message flash-success">
+                    <i class="fas fa-check-circle"></i>
+                    <span>{{ messages[0] }}</span>
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <div class="card" style="margin-bottom: 20px;">
+            <div class="section-header">
+                <span><i class="fas fa-search" style="margin-right: 10px; color: var(--accent-orange);"></i>Search Invoice</span>
+            </div>
+            <form action="/store/invoices" method="get" style="display: flex; gap: 15px; flex-wrap: wrap;">
+                <div style="flex: 1; min-width: 200px;">
+                    <input type="text" name="search" placeholder="Search by Invoice No or Customer Name..." value="{{ search_query }}">
+                </div>
+                <button type="submit" style="width: auto; padding: 14px 30px;">
+                    <i class="fas fa-search" style="margin-right: 8px;"></i> Search
+                </button>
+                {% if search_query %}
+                <a href="/store/invoices" style="padding: 14px 20px; background: rgba(255,255,255,0.05); border: 1px solid var(--border-color); border-radius: 12px; text-decoration: none; color: var(--text-secondary);">
+                    <i class="fas fa-times"></i> Clear
+                </a>
+                {% endif %}
+            </form>
+        </div>
+
+        <div class="card">
+            <div class="section-header">
+                <span>All Invoices</span>
+                <span class="table-badge" style="background: var(--accent-green); color: white;">{{ invoices|length }} Total</span>
+            </div>
+            
+            <div style="overflow-x: auto;">
+                <table class="dark-table">
+                    <thead>
+                        <tr>
+                            <th>Invoice No</th>
+                            <th>Customer</th>
+                            <th>Date</th>
+                            <th>Total</th>
+                            <th>Paid</th>
+                            <th>Due</th>
+                            <th style="text-align: right;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if invoices %}
+                            {% for inv in invoices|reverse %}
+                            <tr>
+                                <td style="font-weight: 700; color: var(--accent-orange);">{{ inv.invoice_no }}</td>
+                                <td style="color: white;">{{ inv.customer_name }}</td>
+                                <td style="color: var(--text-secondary);">{{ inv.date }}</td>
+                                <td style="font-weight: 700; color: var(--accent-green);">৳{{ "{:,.0f}".format(inv.total) }}</td>
+                                <td style="color: var(--accent-green);">৳{{ "{:,.0f}".format(inv.paid) }}</td>
+                                <td>
+                                    {% if inv.due > 0 %}
+                                    <span style="color: var(--accent-red); font-weight: 700;">৳{{ "{:,.0f}".format(inv.due) }}</span>
+                                    {% else %}
+                                    <span style="color: var(--accent-green);"><i class="fas fa-check-circle"></i> Paid</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="action-cell">
+                                        <a href="/store/invoices/print/{{ inv.invoice_no }}" class="action-btn btn-print-sm" target="_blank"><i class="fas fa-print"></i></a>
+                                        {% if inv.due > 0 %}
+                                        <a href="/store/dues/search?invoice_no={{ inv.invoice_no }}" class="action-btn btn-edit"><i class="fas fa-money-bill"></i></a>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="7" style="text-align: center; padding: 50px; color: var(--text-secondary);">
+                                    <i class="fas fa-file-invoice" style="font-size: 50px; opacity: 0.2; margin-bottom: 15px; display: block;"></i>
+                                    {% if search_query %}
+                                    No invoices found for "{{ search_query }}"
+                                    {% else %}
+                                    No invoices created yet.  Create your first invoice! 
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+"""
+
+# ==============================================================================
+# STORE ESTIMATES LIST TEMPLATE
+# ==============================================================================
+
+STORE_ESTIMATES_LIST_TEMPLATE = """
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Estimates - MEHEDI THAI ALUMINUM AND GLASS</title>
+    """ + COMMON_STYLES + """
+</head>
+<body>
+    <div class="animated-bg"></div>
+
+    <div class="mobile-toggle" onclick="document.querySelector('.sidebar').classList.toggle('active')">
+        <i class="fas fa-bars"></i>
+    </div>
+
+    <div class="sidebar">
+        <div class="brand-logo">
+            <i class="fas fa-store"></i> 
+            Store<span>Panel</span>
+        </div>
+        <div class="nav-menu">
+            <a href="/admin/store" class="nav-link">
+                <i class="fas fa-th-large"></i> Dashboard
+            </a>
+            <a href="/store/products" class="nav-link">
+                <i class="fas fa-box"></i> Products
+            </a>
+            <a href="/store/customers" class="nav-link">
+                <i class="fas fa-users"></i> Customers
+            </a>
+            <a href="/store/invoices" class="nav-link">
+                <i class="fas fa-file-invoice-dollar"></i> Invoices
+            </a>
+            <div class="nav-link active">
+                <i class="fas fa-file-alt"></i> Estimates
+            </div>
+            <a href="/store/dues" class="nav-link">
+                <i class="fas fa-wallet"></i> Due Collection
+            </a>
+            <a href="/logout" class="nav-link" style="color: var(--accent-red); margin-top: 20px;">
+                <i class="fas fa-sign-out-alt"></i> Sign Out
+            </a>
+        </div>
+        <div class="sidebar-footer">© 2025 Mehedi Hasan</div>
+    </div>
+
+    <div class="main-content">
+        <div class="header-section">
+            <div>
+                <div class="page-title">Estimates / Quotations</div>
+                <div class="page-subtitle">View and manage all estimates</div>
+            </div>
+            <a href="/store/estimates/create" style="padding: 14px 30px; background: linear-gradient(135deg, #3B82F6 0%, #60A5FA 100%); border-radius: 12px; text-decoration: none; color: white; font-weight: 600;">
+                <i class="fas fa-plus" style="margin-right: 8px;"></i> New Estimate
+            </a>
+        </div>
+
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                <div class="flash-message flash-success">
+                    <i class="fas fa-check-circle"></i>
+                    <span>{{ messages[0] }}</span>
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <div class="card">
+            <div class="section-header">
+                <span>All Estimates</span>
+                <span class="table-badge" style="background: var(--accent-blue); color: white;">{{ estimates|length }} Total</span>
+            </div>
+            
+            <div style="overflow-x: auto;">
+                <table class="dark-table">
+                    <thead>
+                        <tr>
+                            <th>Estimate No</th>
+                            <th>Customer</th>
+                            <th>Date</th>
+                            <th>Valid Until</th>
+                            <th>Total</th>
+                            <th style="text-align: right;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if estimates %}
+                            {% for est in estimates|reverse %}
+                            <tr>
+                                <td style="font-weight: 700; color: var(--accent-blue);">{{ est.estimate_no }}</td>
+                                <td style="color: white;">{{ est.customer_name }}</td>
+                                <td style="color: var(--text-secondary);">{{ est.date }}</td>
+                                <td style="color: var(--text-secondary);">{{ est.valid_until if est.valid_until else '-' }}</td>
+                                <td style="font-weight: 700; color: var(--accent-purple);">৳{{ "{:,.0f}".format(est.total) }}</td>
+                                <td>
+                                    <div class="action-cell">
+                                        <a href="/store/estimates/print/{{ est.estimate_no }}" class="action-btn btn-print-sm" target="_blank"><i class="fas fa-print"></i></a>
+                                        <a href="/store/estimates/to-invoice/{{ est.estimate_no }}" class="action-btn btn-view" title="Convert to Invoice"><i class="fas fa-file-invoice"></i></a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="6" style="text-align: center; padding: 50px; color: var(--text-secondary);">
+                                    <i class="fas fa-file-alt" style="font-size: 50px; opacity: 0.2; margin-bottom: 15px; display: block;"></i>
+                                    No estimates created yet. Create your first estimate! 
+                                </td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+"""
+# ==============================================================================
+# STORE INVOICE PRINT TEMPLATE - PROFESSIONAL PRINT LAYOUT
+# ==============================================================================
+
+STORE_INVOICE_PRINT_TEMPLATE = """
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Invoice {{ invoice.invoice_no }} - MEHEDI THAI ALUMINUM AND GLASS</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #fff;
+            color: #000;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        
+        .invoice-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 30px;
+            border: 2px solid #000;
+            min-height: 100vh;
+            position: relative;
+        }
+        
+        /* Header */
+        .invoice-header {
+            text-align: center;
+            border-bottom: 3px double #000;
+            padding-bottom: 20px;
+            margin-bottom: 25px;
+        }
+        
+        .company-name {
+            font-size: 28px;
+            font-weight: 900;
+            color: #1a5f2a;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 5px;
+        }
+        
+        .company-tagline {
+            font-size: 14px;
+            color: #555;
+            margin-bottom: 8px;
+        }
+        
+        .company-contact {
+            font-size: 12px;
+            color: #333;
+        }
+        
+        .invoice-title {
+            display: inline-block;
+            background: #1a5f2a;
+            color: white;
+            padding: 8px 40px;
+            font-size: 20px;
+            font-weight: 700;
+            margin-top: 15px;
+            letter-spacing: 3px;
+        }
+        
+        /* Info Section */
+        .info-section {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 25px;
+            gap: 20px;
+        }
+        
+        .customer-info, .invoice-info {
+            flex: 1;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background: #f9f9f9;
+        }
+        
+        .info-title {
+            font-weight: 800;
+            font-size: 13px;
+            text-transform: uppercase;
+            color: #1a5f2a;
+            border-bottom: 2px solid #1a5f2a;
+            padding-bottom: 5px;
+            margin-bottom: 10px;
+        }
+        
+        .info-row {
+            display: flex;
+            margin-bottom: 5px;
+            font-size: 13px;
+        }
+        
+        .info-label {
+            font-weight: 700;
+            width: 80px;
+            color: #555;
+        }
+        
+        .info-value {
+            flex: 1;
+            color: #000;
+            font-weight: 600;
+        }
+        
+        .invoice-no-box {
+            background: #1a5f2a;
+            color: white;
+            padding: 10px 20px;
+            text-align: center;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+        
+        .invoice-no-box .label {
+            font-size: 11px;
+            opacity: 0.9;
+        }
+        
+        .invoice-no-box .value {
+            font-size: 22px;
+            font-weight: 900;
+        }
+        
+        /* Items Table */
+        .items-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 25px;
+        }
+        
+        .items-table th {
+            background: #1a5f2a;
+            color: white;
+            padding: 12px 10px;
+            text-align: left;
+            font-size: 12px;
+            text-transform: uppercase;
+            font-weight: 700;
+        }
+        
+        .items-table th:last-child,
+        .items-table td:last-child {
+            text-align: right;
+        }
+        
+        .items-table td {
+            padding: 12px 10px;
+            border-bottom: 1px solid #ddd;
+            font-size: 13px;
+        }
+        
+        .items-table tr:nth-child(even) {
+            background: #f5f5f5;
+        }
+        
+        .items-table .item-name {
+            font-weight: 700;
+        }
+        
+        .items-table .item-size {
+            color: #666;
+            font-size: 12px;
+        }
+        
+        /* Totals Section */
+        .totals-container {
+            display: flex;
+            justify-content: flex-end;
+        }
+        
+        .totals-box {
+            width: 300px;
+            border: 2px solid #1a5f2a;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+        
+        .totals-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 15px;
+            border-bottom: 1px solid #ddd;
+            font-size: 14px;
+        }
+        
+        .totals-row:last-child {
+            border-bottom: none;
+        }
+        
+        .totals-row.subtotal {
+            background: #f5f5f5;
+        }
+        
+        .totals-row.grand-total {
+            background: #1a5f2a;
+            color: white;
+            font-size: 18px;
+            font-weight: 800;
+        }
+        
+        .totals-row.paid {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .totals-row.due {
+            background: #f8d7da;
+            color: #721c24;
+            font-weight: 800;
+            font-size: 16px;
+        }
+        
+        /* Notes */
+        .notes-section {
+            margin-top: 25px;
+            padding: 15px;
+            background: #f9f9f9;
+            border: 1px dashed #ccc;
+            border-radius: 5px;
+        }
+        
+        .notes-title {
+            font-weight: 700;
+            color: #555;
+            margin-bottom: 5px;
+        }
+        
+        /* Footer */
+        .invoice-footer {
+            margin-top: 50px;
+            padding-top: 20px;
+            border-top: 1px solid #ddd;
+        }
+        
+        .signatures {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 60px;
+            padding: 0 30px;
+        }
+        
+        .signature-box {
+            text-align: center;
+            width: 150px;
+        }
+        
+        .signature-line {
+            border-top: 2px solid #000;
+            padding-top: 8px;
+            font-weight: 700;
+            font-size: 13px;
+        }
+        
+        .thank-you {
+            text-align: center;
+            margin-top: 30px;
+            font-size: 16px;
+            font-weight: 700;
+            color: #1a5f2a;
+        }
+        
+        .powered-by {
+            text-align: center;
+            margin-top: 15px;
+            font-size: 10px;
+            color: #999;
+        }
+        
+        /* Print Styles */
+        @media print {
+            body {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+            
+            .invoice-container {
+                border: none;
+                padding: 20px;
+                max-width: 100%;
+            }
+            
+            .no-print {
+                display: none !important;
+            }
+            
+            .items-table th {
+                background: #1a5f2a !important;
+                -webkit-print-color-adjust: exact;
+            }
+            
+            .totals-row.grand-total {
+                background: #1a5f2a !important;
+                -webkit-print-color-adjust: exact;
+            }
+        }
+        
+        /* Action Buttons */
+        .action-buttons {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            gap: 10px;
+            z-index: 1000;
+        }
+        
+        .action-btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 14px;
+        }
+        
+        .btn-print {
+            background: #1a5f2a;
+            color: white;
+        }
+        
+        .btn-back {
+            background: #6c757d;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="action-buttons no-print">
+        <a href="/store/invoices" class="action-btn btn-back">← Back</a>
+        <button onclick="window.print()" class="action-btn btn-print">🖨️ Print Invoice</button>
+    </div>
+
+    <div class="invoice-container">
+        <div class="invoice-header">
+            <div class="company-name">MEHEDI THAI ALUMINUM AND GLASS</div>
+            <div class="company-tagline">Quality Aluminum & Glass Solutions</div>
+            <div class="company-contact">
+                📞 01XXXXXXXXX | 📍 Your Address Here
+            </div>
+            <div class="invoice-title">INVOICE / চালান</div>
+        </div>
+        
+        <div class="info-section">
+            <div class="customer-info">
+                <div class="info-title">Customer Details / ক্রেতার তথ্য</div>
+                <div class="info-row">
+                    <span class="info-label">Name:</span>
+                    <span class="info-value">{{ invoice.customer_name }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Phone:</span>
+                    <span class="info-value">{{ invoice.customer_phone }}</span>
+                </div>
+                {% if invoice.customer_address %}
+                <div class="info-row">
+                    <span class="info-label">Address:</span>
+                    <span class="info-value">{{ invoice.customer_address }}</span>
+                </div>
+                {% endif %}
+            </div>
+            
+            <div class="invoice-info">
+                <div class="invoice-no-box">
+                    <div class="label">Invoice No / চালান নং</div>
+                    <div class="value">{{ invoice.invoice_no }}</div>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Date:</span>
+                    <span class="info-value">{{ invoice.date }}</span>
+                </div>
+            </div>
+        </div>
+        
+        <table class="items-table">
+            <thead>
+                <tr>
+                    <th style="width: 5%;">SL</th>
+                    <th style="width: 40%;">Description / বিবরণ</th>
+                    <th style="width: 15%;">Size (ft)</th>
+                    <th style="width: 10%;">Qty</th>
+                    <th style="width: 15%;">Rate</th>
+                    <th style="width: 15%;">Amount</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in invoice.items %}
+                <tr>
+                    <td>{{ loop.index }}</td>
+                    <td class="item-name">{{ item.description }}</td>
+                    <td class="item-size">{{ item.size if item.size else '-' }}</td>
+                    <td>{{ item.qty }}</td>
+                    <td>৳{{ "{:,.2f}".format(item.price) }}</td>
+                    <td>৳{{ "{:,.2f}".format(item.total) }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        
+        <div class="totals-container">
+            <div class="totals-box">
+                <div class="totals-row subtotal">
+                    <span>Subtotal / উপমোট</span>
+                    <span>৳{{ "{:,.2f}".format(invoice.total + invoice.discount) }}</span>
+                </div>
+                {% if invoice.discount > 0 %}
+                <div class="totals-row">
+                    <span>Discount / ছাড়</span>
+                    <span>- ৳{{ "{:,.2f}".format(invoice.discount) }}</span>
+                </div>
+                {% endif %}
+                <div class="totals-row grand-total">
+                    <span>Grand Total / সর্বমোট</span>
+                    <span>৳{{ "{:,.2f}".format(invoice.total) }}</span>
+                </div>
+                <div class="totals-row paid">
+                    <span>Paid / পরিশোধিত</span>
+                    <span>৳{{ "{:,.2f}".format(invoice.paid) }}</span>
+                </div>
+                {% if invoice.due > 0 %}
+                <div class="totals-row due">
+                    <span>Due / বাকি</span>
+                    <span>৳{{ "{:,.2f}".format(invoice.due) }}</span>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        {% if invoice.notes %}
+        <div class="notes-section">
+            <div class="notes-title">Notes / নোট:</div>
+            <div>{{ invoice.notes }}</div>
+        </div>
+        {% endif %}
+        
+        <div class="invoice-footer">
+            <div class="signatures">
+                <div class="signature-box">
+                    <div class="signature-line">Customer Signature<br>ক্রেতার স্বাক্ষর</div>
+                </div>
+                <div class="signature-box">
+                    <div class="signature-line">Authorized Signature<br>বিক্রেতার স্বাক্ষর</div>
+                </div>
+            </div>
+            
+            <div class="thank-you">Thank You For Your Business!  / ব্যবসায় আপনাকে ধন্যবাদ!</div>
+            <div class="powered-by">Powered by Mehedi Hasan | MNM Software</div>
+        </div>
+    </div>
+</body>
+</html>
+"""
+
+# ==============================================================================
+# ESTIMATE PRINT TEMPLATE - PROFESSIONAL QUOTATION
+# ==============================================================================
+
+STORE_ESTIMATE_PRINT_TEMPLATE = """
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Estimate {{ estimate.estimate_no }} - MEHEDI THAI ALUMINUM AND GLASS</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #fff; color: #000; font-size: 14px; }
+        .container { max-width: 800px; margin: 0 auto; padding: 30px; border: 2px solid #000; min-height: 100vh; }
+        .header { text-align: center; border-bottom: 3px double #000; padding-bottom: 20px; margin-bottom: 25px; }
+        .company-name { font-size: 28px; font-weight: 900; color: #2563eb; text-transform: uppercase; letter-spacing: 2px; }
+        .company-tagline { font-size: 14px; color: #555; margin: 5px 0 8px; }
+        .estimate-title { display: inline-block; background: #2563eb; color: white; padding: 8px 40px; font-size: 20px; font-weight: 700; margin-top: 15px; letter-spacing: 3px; }
+        .info-section { display: flex; justify-content: space-between; margin-bottom: 25px; gap: 20px; }
+        .customer-info, .estimate-info { flex: 1; padding: 15px; border: 1px solid #ddd; background: #f9f9f9; }
+        .info-title { font-weight: 800; color: #2563eb; border-bottom: 2px solid #2563eb; padding-bottom: 5px; margin-bottom: 10px; text-transform: uppercase; font-size: 13px; }
+        .info-row { display: flex; margin-bottom: 5px; font-size: 13px; }
+        .info-label { font-weight: 700; width: 80px; color: #555; }
+        .info-value { flex: 1; color: #000; font-weight: 600; }
+        .estimate-no-box { background: #2563eb; color: white; padding: 10px 20px; text-align: center; margin-bottom: 10px; }
+        .estimate-no-box .label { font-size: 11px; opacity: 0.9; }
+        .estimate-no-box .value { font-size: 22px; font-weight: 900; }
+        .items-table { width: 100%; border-collapse: collapse; margin-bottom: 25px; }
+        .items-table th { background: #2563eb; color: white; padding: 12px 10px; text-align: left; font-size: 12px; text-transform: uppercase; }
+        .items-table th:last-child, .items-table td:last-child { text-align: right; }
+        .items-table td { padding: 12px 10px; border-bottom: 1px solid #ddd; font-size: 13px; }
+        .items-table tr:nth-child(even) { background: #f5f5f5; }
+        .totals-container { display: flex; justify-content: flex-end; }
+        .totals-box { width: 300px; border: 2px solid #2563eb; overflow: hidden; }
+        .totals-row { display: flex; justify-content: space-between; padding: 10px 15px; border-bottom: 1px solid #ddd; font-size: 14px; }
+        .totals-row:last-child { border-bottom: none; }
+        .totals-row.grand-total { background: #2563eb; color: white; font-size: 18px; font-weight: 800; }
+        .terms-section { margin-top: 30px; padding: 15px; background: #f0f7ff; border: 1px solid #2563eb; border-radius: 5px; }
+        .terms-title { font-weight: 700; color: #2563eb; margin-bottom: 10px; }
+        .terms-list { margin-left: 20px; font-size: 12px; color: #555; }
+        .terms-list li { margin-bottom: 5px; }
+        .footer { margin-top: 50px; padding-top: 20px; border-top: 1px solid #ddd; }
+        .signatures { display: flex; justify-content: space-between; margin-top: 60px; padding: 0 30px; }
+        .signature-box { text-align: center; width: 150px; }
+        .signature-line { border-top: 2px solid #000; padding-top: 8px; font-weight: 700; font-size: 13px; }
+        .validity-notice { text-align: center; margin-top: 20px; padding: 10px; background: #fff3cd; border: 1px solid #ffc107; font-weight: 600; color: #856404; }
+        .powered-by { text-align: center; margin-top: 15px; font-size: 10px; color: #999; }
+        .action-buttons { position: fixed; top: 20px; right: 20px; display: flex; gap: 10px; z-index: 1000; }
+        .action-btn { padding: 12px 25px; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; text-decoration: none; font-size: 14px; }
+        .btn-print { background: #2563eb; color: white; }
+        .btn-back { background: #6c757d; color: white; }
+        @media print {
+            .action-buttons { display: none !important; }
+            .container { border: none; padding: 20px; }
+            .items-table th, .totals-row.grand-total { background: #2563eb !important; -webkit-print-color-adjust: exact; }
+        }
+    </style>
+</head>
+<body>
+    <div class="action-buttons">
+        <a href="/store/estimates" class="action-btn btn-back">← Back</a>
+        <button onclick="window.print()" class="action-btn btn-print">🖨️ Print Estimate</button>
+    </div>
+
+    <div class="container">
+        <div class="header">
+            <div class="company-name">MEHEDI THAI ALUMINUM AND GLASS</div>
+            <div class="company-tagline">Quality Aluminum & Glass Solutions</div>
+            <div class="estimate-title">ESTIMATE / কোটেশন</div>
+        </div>
+        
+        <div class="info-section">
+            <div class="customer-info">
+                <div class="info-title">Customer Details / ক্রেতার তথ্য</div>
+                <div class="info-row">
+                    <span class="info-label">Name:</span>
+                    <span class="info-value">{{ estimate.customer_name }}</span>
+                </div>
+                {% if estimate.customer_phone %}
+                <div class="info-row">
+                    <span class="info-label">Phone:</span>
+                    <span class="info-value">{{ estimate.customer_phone }}</span>
+                </div>
+                {% endif %}
+                {% if estimate.customer_address %}
+                <div class="info-row">
+                    <span class="info-label">Address:</span>
+                    <span class="info-value">{{ estimate.customer_address }}</span>
+                </div>
+                {% endif %}
+            </div>
+            
+            <div class="estimate-info">
+                <div class="estimate-no-box">
+                    <div class="label">Estimate No / কোটেশন নং</div>
+                    <div class="value">{{ estimate.estimate_no }}</div>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Date:</span>
+                    <span class="info-value">{{ estimate.date }}</span>
+                </div>
+                {% if estimate.valid_until %}
+                <div class="info-row">
+                    <span class="info-label">Valid Until:</span>
+                    <span class="info-value">{{ estimate.valid_until }}</span>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <table class="items-table">
+            <thead>
+                <tr>
+                    <th style="width: 5%;">SL</th>
+                    <th style="width: 40%;">Description / বিবরণ</th>
+                    <th style="width: 15%;">Size (ft)</th>
+                    <th style="width: 10%;">Qty</th>
+                    <th style="width: 15%;">Rate</th>
+                    <th style="width: 15%;">Amount</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in estimate.items %}
+                <tr>
+                    <td>{{ loop.index }}</td>
+                    <td>{{ item.description }}</td>
+                    <td>{{ item.size if item.size else '-' }}</td>
+                    <td>{{ item.qty }}</td>
+                    <td>৳{{ "{:,.2f}".format(item.price) }}</td>
+                    <td>৳{{ "{:,.2f}".format(item.total) }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        
+        <div class="totals-container">
+            <div class="totals-box">
+                <div class="totals-row" style="background: #f5f5f5;">
+                    <span>Subtotal / উপমোট</span>
+                    <span>৳{{ "{:,.2f}".format(estimate.total + estimate.discount) }}</span>
+                </div>
+                {% if estimate.discount > 0 %}
+                <div class="totals-row">
+                    <span>Discount / ছাড়</span>
+                    <span>- ৳{{ "{:,.2f}".format(estimate.discount) }}</span>
+                </div>
+                {% endif %}
+                <div class="totals-row grand-total">
+                    <span>Estimated Total / সর্বমোট</span>
+                    <span>৳{{ "{:,.2f}".format(estimate.total) }}</span>
+                </div>
+            </div>
+        </div>
+
+        {% if estimate.valid_until %}
+        <div class="validity-notice">
+            ⚠️ This quotation is valid until {{ estimate.valid_until }}.  Prices may change after this date.
+        </div>
+        {% endif %}
+        
+        {% if estimate.notes %}
+        <div class="terms-section">
+            <div class="terms-title">Terms & Conditions / শর্তাবলী:</div>
+            <div>{{ estimate.notes }}</div>
+        </div>
+        {% endif %}
+        
+        <div class="footer">
+            <div class="signatures">
+                <div class="signature-box">
+                    <div class="signature-line">Customer Signature<br>ক্রেতার স্বাক্ষর</div>
+                </div>
+                <div class="signature-box">
+                    <div class="signature-line">Authorized Signature<br>বিক্রেতার স্বাক্ষর</div>
+                </div>
+            </div>
+            <div class="powered-by">Powered by Mehedi Hasan | MNM Software</div>
+        </div>
+    </div>
+</body>
+</html>
+"""
+
+# ==============================================================================
+# REPORT TEMPLATES (ORIGINAL - CLOSING, ACCESSORIES, PO)
+# ==============================================================================
+
+CLOSING_REPORT_PREVIEW_TEMPLATE = """
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Closing Report Preview</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { background-color: #f8f9fa; padding: 30px 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; font-size: 1.1rem; }
+        .container { max-width: 1400px; }
+        .company-header { text-align: center; margin-bottom: 20px; border-bottom: 2px solid #000; padding-bottom: 10px; }
+        .company-name { font-size: 2.2rem; font-weight: 800; color: #2c3e50; text-transform: uppercase; letter-spacing: 1px; line-height: 1; }
+        .report-title { font-size: 1.1rem; color: #555; font-weight: 600; text-transform: uppercase; margin-top: 5px; }
+        .date-section { font-size: 1.2rem; font-weight: 800; color: #000; margin-top: 5px; }
+        .info-container { margin-bottom: 15px; background: white; padding: 15px; display: flex; justify-content: space-between; align-items: flex-end;}
+        .info-row { display: flex; flex-direction: column; gap: 5px; }
+        .info-item { font-size: 1.2rem; font-weight: 600; color: #444; }
+        .info-label { font-weight: 800; color: #444; width: 90px; display: inline-block; }
+        .info-value { font-weight: 800; color: #000; }
+        .booking-box { background: #2c3e50; color: white; padding: 10px 20px; border-radius: 5px; text-align: right; box-shadow: 0 4px 10px rgba(44, 62, 80, 0.3); display: flex; flex-direction: column; justify-content: center; min-width: 200px; }
+        .booking-label { font-size: 1.1rem; opacity: 0.9; text-transform: uppercase; letter-spacing: 1px; font-weight: 700; }
+        .booking-value { font-size: 1.8rem; font-weight: 800; line-height: 1.1; }
+        .table-card { background: white; border-radius: 0; margin-bottom: 30px; border: none; }
+        .color-header { background-color: #2c3e50 !important; color: white; padding: 10px 15px; font-size: 1.4rem; font-weight: 800; text-transform: uppercase; border: 1px solid #000;}
+        .table { margin-bottom: 0; width: 100%; border-collapse: collapse; font-size: 1rem; }
+        .table th { background-color: #fff !important; color: #000 !important; text-align: center; border: 1px solid #000; padding: 8px; vertical-align: middle; font-weight: 900; font-size: 1.2rem; }
+        .table td { text-align: center; vertical-align: middle; border: 1px solid #000; padding: 6px; color: #000; font-weight: 600; font-size: 1.1rem; }
+        .col-3pct { background-color: #B9C2DF !important; font-weight: 700; }
+        .col-input { background-color: #C4D09D !important; font-weight: 700; }
+        .col-balance { font-weight: 700; color: #c0392b; }
+        .total-row td { background-color: #fff !important; color: #000 !important; font-weight: 900; font-size: 1.2rem; border-top: 2px solid #000; }
+        .action-bar { margin-bottom: 20px; display: flex; justify-content: flex-end; gap: 15px; position: sticky; top: 0; z-index: 1000; background: #f8f9fa; padding: 10px 0; }
+        .btn-print { background-color: #2c3e50; color: white; border-radius: 50px; padding: 10px 30px; font-weight: 600; border: none; }
+        .btn-excel { background-color: #27ae60; color: white; border-radius: 50px; padding: 10px 30px; font-weight: 600; text-decoration: none; display: inline-block; }
+        .btn-excel:hover { color: white; background-color: #219150; }
+        .footer-credit { text-align: center; margin-top: 40px; margin-bottom: 20px; font-size: 1rem; color: #2c3e50; padding-top: 10px; border-top: 1px solid #000; font-weight: 600;}
+        @media print {
+            @page { margin: 5mm; size: portrait; } 
+            body { background-color: white; padding: 0; }
+            .container { max-width: 100% !important; width: 100%; }
+            .no-print { display: none !important; }
+            .action-bar { display: none; }
+            .table th, .table td { border: 1px solid #000 !important; }
+            .color-header { background-color: #2c3e50 !important; -webkit-print-color-adjust: exact; color: white !important;}
+            .col-3pct { background-color: #B9C2DF !important; -webkit-print-color-adjust: exact; }
+            .col-input { background-color: #C4D09D !important; -webkit-print-color-adjust: exact; }
+            .booking-box { background-color: #2c3e50 !important; -webkit-print-color-adjust: exact; color: white !important; border: 1px solid #000;}
+            .total-row td { font-weight: 900 !important; color: #000 !important; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="action-bar no-print">
+            <a href="/" class="btn btn-outline-secondary rounded-pill px-4">Back to Dashboard</a>
+            <button onclick="window.print()" class="btn btn-print"><i class="fas fa-print"></i> Print Report</button>
+            <a href="/download-closing-excel?ref_no={{ ref_no }}" class="btn btn-excel"><i class="fas fa-file-excel"></i> Download Excel</a>
+        </div>
+        <div class="company-header">
+            <div class="company-name">COTTON CLOTHING BD LTD</div>
+            <div class="report-title">CLOSING REPORT [ INPUT SECTION ]</div>
+            <div class="date-section">Date: <span id="date"></span></div>
+        </div>
+        {% if report_data %}
+        <div class="info-container">
+            <div class="info-row">
+                <div class="info-item"><span class="info-label">Buyer:</span> <span class="info-value">{{ report_data[0].buyer }}</span></div>
+                <div class="info-item"><span class="info-label">Style:</span> <span class="info-value">{{ report_data[0].style }}</span></div>
+            </div>
+            <div class="booking-box">
+                <div class="booking-label">IR/IB NO</div>
+                <div class="booking-value">{{ ref_no }}</div>
+            </div>
+        </div>
+        {% for block in report_data %}
+        <div class="table-card">
+            <div class="color-header">COLOR: {{ block.color }}</div>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>SIZE</th>
+                        <th>ORDER QTY 3%</th>
+                        <th>ACTUAL QTY</th>
+                        <th>CUTTING QC</th>
+                        <th>INPUT QTY</th>
+                        <th>BALANCE</th>
+                        <th>SHORT/PLUS</th>
+                        <th>PERCENTAGE %</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% set ns = namespace(tot_3=0, tot_act=0, tot_cut=0, tot_inp=0, tot_bal=0, tot_sp=0) %}
+                    {% for i in range(block.headers|length) %}
+                        {% set actual = block.gmts_qty[i]|replace(',', '')|int %}
+                        {% set qty_3 = (actual * 1.03)|round|int %}
+                        {% set cut_qc = 0 %}
+                        {% if i < block.cutting_qc|length %}
+                            {% set cut_qc = block.cutting_qc[i]|replace(',', '')|int %}
+                        {% endif %}
+                        {% set inp_qty = 0 %}
+                        {% if i < block.sewing_input|length %}
+                            {% set inp_qty = block.sewing_input[i]|replace(',', '')|int %}
+                        {% endif %}
+                        {% set balance = cut_qc - inp_qty %}
+                        {% set short_plus = inp_qty - qty_3 %}
+                        {% set percentage = 0 %}
+                        {% if qty_3 > 0 %}
+                            {% set percentage = (short_plus / qty_3) * 100 %}
+                        {% endif %}
+                        {% set ns.tot_3 = ns.tot_3 + qty_3 %}
+                        {% set ns.tot_act = ns.tot_act + actual %}
+                        {% set ns.tot_cut = ns.tot_cut + cut_qc %}
+                        {% set ns.tot_inp = ns.tot_inp + inp_qty %}
+                        {% set ns.tot_bal = ns.tot_bal + balance %}
+                        {% set ns.tot_sp = ns.tot_sp + short_plus %}
+                        <tr>
+                            <td>{{ block.headers[i] }}</td>
+                            <td class="col-3pct">{{ qty_3 }}</td>
+                            <td>{{ actual }}</td>
+                            <td>{{ cut_qc }}</td>
+                            <td class="col-input">{{ inp_qty }}</td>
+                            <td class="col-balance">{{ balance }}</td>
+                            <td style="color: {{ 'green' if short_plus >= 0 else 'red' }}">{{ short_plus }}</td>
+                            <td>{{ "%.2f"|format(percentage) }}%</td>
+                        </tr>
+                    {% endfor %}
+                    <tr class="total-row">
+                        <td>TOTAL</td>
+                        <td>{{ ns.tot_3 }}</td>
+                        <td>{{ ns.tot_act }}</td>
+                        <td>{{ ns.tot_cut }}</td>
+                        <td>{{ ns.tot_inp }}</td>
+                        <td>{{ ns.tot_bal }}</td>
+                        <td>{{ ns.tot_sp }}</td>
+                        <td>
+                            {% if ns.tot_3 > 0 %}
+                                {{ "%.2f"|format((ns.tot_sp / ns.tot_3) * 100) }}%
+                            {% else %}
+                                0.00%
+                            {% endif %}
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        {% endfor %}
+        <div class="footer-credit">Report Generated By <span style="color: #000; font-weight: 900;">Mehedi Hasan</span></div>
+        {% endif %}
+    </div>
+    <script>
+        const dateObj = new Date();
+        document.getElementById('date').innerText = dateObj.toLocaleDateString('en-GB');
+    </script>
+</body>
+</html>
+"""
 
 ACCESSORIES_REPORT_TEMPLATE = """
 <!DOCTYPE html>
@@ -4779,12 +7537,11 @@ ACCESSORIES_REPORT_TEMPLATE = """
 <head>
     <meta charset="UTF-8">
     <title>Accessories Delivery Report</title>
-    <link href="https://fonts. googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0. 0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Poppins', sans-serif; background: #fff; padding: 20px; color: #000; }
-        . container { max-width: 1000px; margin: 0 auto; border: 2px solid #000; padding: 20px; min-height: 90vh; position: relative; }
+        .container { max-width: 1000px; margin: 0 auto; border: 2px solid #000; padding: 20px; min-height: 90vh; position: relative; }
         .header { text-align: center; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 20px; position: relative; }
         .company-name { font-size: 28px; font-weight: 800; text-transform: uppercase; color: #2c3e50; line-height: 1; }
         .company-address { font-size: 12px; font-weight: 600; color: #444; margin-top: 5px; margin-bottom: 10px; }
@@ -4793,8 +7550,8 @@ ACCESSORIES_REPORT_TEMPLATE = """
         .info-left { flex: 2; border: 1px dashed #555; padding: 15px; margin-right: 15px; }
         .info-row { display: flex; margin-bottom: 5px; font-size: 14px; align-items: center; }
         .info-label { font-weight: 800; width: 80px; color: #444; }
-        . info-val { font-weight: 700; font-size: 15px; color: #000; }
-        . booking-border { border: 2px solid #000; padding: 2px 8px; display: inline-block; font-weight: 900; }
+        .info-val { font-weight: 700; font-size: 15px; color: #000; }
+        .booking-border { border: 2px solid #000; padding: 2px 8px; display: inline-block; font-weight: 900; }
         .info-right { flex: 1; display: flex; flex-direction: column; justify-content: space-between; height: 100%; border-left: 1px solid #ddd; padding-left: 15px; }
         .right-item { font-size: 14px; margin-bottom: 8px; font-weight: 700; }
         .right-label { color: #555; }
@@ -4803,50 +7560,33 @@ ACCESSORIES_REPORT_TEMPLATE = """
         .summary-table { width: 100%; font-size: 13px; font-weight: 700; }
         .summary-table td { padding: 2px 5px; }
         .main-table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 14px; }
-        .main-table th { background: #2c3e50 !important; color: white ! important; padding: 10px; border: 1px solid #000; font-size: 14px; text-transform: uppercase; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        .main-table th { background: #2c3e50 !important; color: white !important; padding: 10px; border: 1px solid #000; font-size: 14px; text-transform: uppercase; -webkit-print-color-adjust: exact; }
         .main-table td { border: 1px solid #000; padding: 6px; text-align: center; vertical-align: middle; color: #000; font-weight: 600; }
-        
-        /* FIXED: Current entry styling - বর্তমান এন্ট্রি হাইলাইট */
-        . main-table tr. current-row {
-            background: #fff3cd ! important;
-            -webkit-print-color-adjust: exact;
-            print-color-adjust: exact;
-        }
-        
-        . main-table tr. current-row td {
-            border: 2px solid #ff9800;
-        }
-        
         .line-card { display: inline-block; padding: 4px 10px; border: 2px solid #000; font-size: 16px; font-weight: 900; border-radius: 4px; box-shadow: 2px 2px 0 #000; background: #fff; }
-        . line-text-bold { font-size: 14px; font-weight: 800; opacity: 0.7; }
-        . status-cell { font-size: 20px; color: green; font-weight: 900; }
-        .status-cell.empty { color: #ff9800; }
+        .line-text-bold { font-size: 14px; font-weight: 800; opacity: 0.7; }
+        .status-cell { font-size: 20px; color: green; font-weight: 900; }
         .qty-cell { font-size: 16px; font-weight: 800; }
         .action-btn { color: white; padding: 4px 8px; border-radius: 4px; text-decoration: none; font-size: 12px; margin: 0 2px; display: inline-block; }
         .btn-edit-row { background-color: #f39c12; }
         .btn-del-row { background-color: #e74c3c; }
         .footer-total { margin-top: 20px; display: flex; justify-content: flex-end; }
-        .total-box { border: 3px solid #000; padding: 8px 30px; font-size: 20px; font-weight: 900; background: #ddd; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        .total-box { border: 3px solid #000; padding: 8px 30px; font-size: 20px; font-weight: 900; background: #ddd; -webkit-print-color-adjust: exact; }
         .no-print { margin-bottom: 20px; text-align: right; }
-        . btn { padding: 8px 20px; background: #2c3e50; color: white; border: none; cursor: pointer; text-decoration: none; display: inline-block; border-radius: 4px; font-size: 14px; margin-left: 10px; }
-        .btn-print { background: #27ae60; }
-        .btn:hover { opacity: 0.9; }
-        . generator-sig { text-align: right; font-size: 10px; margin-top: 5px; color: #555; }
-        
+        .btn { padding: 8px 20px; background: #2c3e50; color: white; border: none; cursor: pointer; text-decoration: none; display: inline-block; border-radius: 4px; font-size: 14px; }
+        .btn-add { background: #27ae60; }
+        .generator-sig { text-align: right; font-size: 10px; margin-top: 5px; color: #555; }
         @media print {
-            .no-print { display: none ! important; }
-            .action-col { display: none ! important; }
+            .no-print { display: none; }
+            .action-col { display: none; }
             .container { border: none; padding: 0; margin: 0; max-width: 100%; }
-            body { padding: 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-            .main-table th { background: #2c3e50 !important; color: white !important; }
-            .main-table tr.current-row { background: #fff3cd !important; }
+            body { padding: 0; }
         }
     </style>
 </head>
 <body>
 <div class="no-print">
-    <a href="/admin/accessories/input_direct?ref={{ ref }}" class="btn">← Back</a>
-    <button onclick="window.print()" class="btn btn-print">🖨️ Print</button>
+    <a href="/admin/accessories/input_direct?ref={{ ref }}" class="btn">Back</a>
+    <button onclick="window.print()" class="btn">🖨️ Print</button>
 </div>
 <div class="container">
     <div class="header">
@@ -4895,14 +7635,12 @@ ACCESSORIES_REPORT_TEMPLATE = """
         </thead>
         <tbody>
             {% set ns = namespace(grand_total=0) %}
-            {% set total_items = challans|length %}
             {% for item in challans %}
                 {% set ns.grand_total = ns.grand_total + item.qty|int %}
-                {% set is_current = loop. index == total_items %}
-                <tr class="{% if is_current %}current-row{% endif %}">
+                <tr>
                     <td>{{ item.date }}</td>
                     <td>
-                        {% if is_current %}
+                        {% if loop.index == count %}
                             <div class="line-card">{{ item.line }}</div>
                         {% else %}
                             <span class="line-text-bold">{{ item.line }}</span>
@@ -4910,13 +7648,7 @@ ACCESSORIES_REPORT_TEMPLATE = """
                     </td>
                     <td>{{ item.color }}</td>
                     <td>{{ item.size }}</td>
-                    <td class="status-cell {% if is_current %}empty{% endif %}">
-                        {% if is_current %}
-                            ○
-                        {% else %}
-                            ✔
-                        {% endif %}
-                    </td>
+                    <td class="status-cell">{{ item.status }}</td>
                     <td class="qty-cell">{{ item.qty }}</td>
                     {% if session.role == 'admin' %}
                     <td class="action-col">
@@ -4944,4918 +7676,803 @@ ACCESSORIES_REPORT_TEMPLATE = """
         <div style="border-top: 2px solid #000; width: 180px; padding-top: 5px;">Store</div>
     </div>
 </div>
-
-<script>
-    // FIXED: Auto print dialog - পেজ লোড হলে অটো প্রিন্ট ডায়ালগ দেখাবে
-    window.onload = function() {
-        // Small delay to ensure page is fully rendered
-        setTimeout(function() {
-            window.print();
-        }, 500);
-    };
-</script>
-</body>
-</html>
-"""
-# ==============================================================================
-# STORE DASHBOARD TEMPLATE - MAIN STORE MANAGEMENT
-# ==============================================================================
-
-STORE_DASHBOARD_TEMPLATE = """
-<! doctype html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Store Dashboard - MNM Software</title>
-    """ + COMMON_STYLES + """
-</head>
-<body>
-    <div class="animated-bg"></div>
-    
-    <div id="loading-overlay">
-        <div class="spinner-container">
-            <div class="spinner"></div>
-            <div class="spinner-inner"></div>
-        </div>
-        <div class="checkmark-container" id="success-anim">
-            <div class="checkmark-circle"></div>
-            <div class="anim-text">Success! </div>
-        </div>
-        <div class="loading-text">Processing... </div>
-    </div>
-
-    <div class="mobile-toggle" onclick="document.querySelector('.sidebar').classList.toggle('active')">
-        <i class="fas fa-bars"></i>
-    </div>
-
-    <div class="sidebar">
-        <div class="brand-logo">
-            <i class="fas fa-store"></i> 
-            <span>Store</span>
-        </div>
-        <div class="nav-menu">
-            <a href="/admin/store" class="nav-link active">
-                <i class="fas fa-home"></i> Dashboard
-            </a>
-            <a href="/admin/store/products" class="nav-link">
-                <i class="fas fa-box"></i> Products
-            </a>
-            <a href="/admin/store/customers" class="nav-link">
-                <i class="fas fa-users"></i> Customers
-            </a>
-            <a href="/admin/store/invoices" class="nav-link">
-                <i class="fas fa-file-invoice-dollar"></i> Invoices
-            </a>
-            <a href="/admin/store/estimates" class="nav-link">
-                <i class="fas fa-file-alt"></i> Estimates
-            </a>
-            <a href="/admin/store/payments" class="nav-link">
-                <i class="fas fa-money-bill-wave"></i> Payments
-            </a>
-            {% if session.role == 'admin' or session.role == 'store_admin' %}
-            <a href="/admin/store/users" class="nav-link">
-                <i class="fas fa-users-cog"></i> User Management
-            </a>
-            {% endif %}
-            <a href="/" class="nav-link" style="margin-top: 20px;">
-                <i class="fas fa-arrow-left"></i> Back to Main
-            </a>
-            <a href="/logout" class="nav-link" style="color: var(--accent-red);">
-                <i class="fas fa-sign-out-alt"></i> Sign Out
-            </a>
-        </div>
-        <div class="sidebar-footer">© 2025 Mehedi Hasan</div>
-    </div>
-
-    <div class="main-content">
-        <div class="header-section">
-            <div>
-                <div class="page-title">Store Dashboard</div>
-                <div class="page-subtitle">Overview of store operations</div>
-            </div>
-            <div class="status-badge">
-                <div class="status-dot"></div>
-                <span>{{ session.user }}</span>
-            </div>
-        </div>
-
-        {% with messages = get_flashed_messages() %}
-            {% if messages %}
-                <div class="flash-message flash-success">
-                    <i class="fas fa-check-circle"></i>
-                    <span>{{ messages[0] }}</span>
-                </div>
-            {% endif %}
-        {% endwith %}
-
-        <div class="stats-grid">
-            <div class="card stat-card">
-                <div class="stat-icon" style="background: linear-gradient(145deg, rgba(59, 130, 246, 0. 15), rgba(59, 130, 246, 0.05));">
-                    <i class="fas fa-box" style="color: var(--accent-blue);"></i>
-                </div>
-                <div class="stat-info">
-                    <h3 class="count-up" data-target="{{ stats.products_count }}">0</h3>
-                    <p>Total Products</p>
-                </div>
-            </div>
-            <div class="card stat-card">
-                <div class="stat-icon" style="background: linear-gradient(145deg, rgba(139, 92, 246, 0.15), rgba(139, 92, 246, 0.05));">
-                    <i class="fas fa-users" style="color: var(--accent-purple);"></i>
-                </div>
-                <div class="stat-info">
-                    <h3 class="count-up" data-target="{{ stats.customers_count }}">0</h3>
-                    <p>Total Customers</p>
-                </div>
-            </div>
-            <div class="card stat-card">
-                <div class="stat-icon" style="background: linear-gradient(145deg, rgba(16, 185, 129, 0.15), rgba(16, 185, 129, 0.05));">
-                    <i class="fas fa-file-invoice-dollar" style="color: var(--accent-green);"></i>
-                </div>
-                <div class="stat-info">
-                    <h3 class="count-up" data-target="{{ stats. invoices_count }}">0</h3>
-                    <p>Total Invoices</p>
-                </div>
-            </div>
-            <div class="card stat-card">
-                <div class="stat-icon">
-                    <i class="fas fa-chart-line"></i>
-                </div>
-                <div class="stat-info">
-                    <h3>৳{{ "{:,.0f}".format(stats.monthly_sales) }}</h3>
-                    <p>Monthly Sales</p>
-                </div>
-            </div>
-        </div>
-
-        <div class="dashboard-grid-2">
-            <div class="card">
-                <div class="section-header">
-                    <span>Quick Actions</span>
-                    <i class="fas fa-bolt" style="color: var(--accent-orange);"></i>
-                </div>
-                <div class="grid-2" style="gap: 15px;">
-                    <a href="/admin/store/invoices/new" style="text-decoration: none;">
-                        <button class="btn-primary" style="background: linear-gradient(135deg, #10B981 0%, #34D399 100%);">
-                            <i class="fas fa-plus" style="margin-right: 8px;"></i> New Invoice
-                        </button>
-                    </a>
-                    <a href="/admin/store/estimates/new" style="text-decoration: none;">
-                        <button class="btn-primary" style="background: linear-gradient(135deg, #8B5CF6 0%, #A78BFA 100%);">
-                            <i class="fas fa-plus" style="margin-right: 8px;"></i> New Estimate
-                        </button>
-                    </a>
-                    <a href="/admin/store/products/new" style="text-decoration: none;">
-                        <button class="btn-primary btn-secondary">
-                            <i class="fas fa-box" style="margin-right: 8px;"></i> Add Product
-                        </button>
-                    </a>
-                    <a href="/admin/store/customers/new" style="text-decoration: none;">
-                        <button class="btn-primary btn-secondary">
-                            <i class="fas fa-user-plus" style="margin-right: 8px;"></i> Add Customer
-                        </button>
-                    </a>
-                </div>
-            </div>
-
-            <div class="card">
-                <div class="section-header">
-                    <span>Due Summary</span>
-                    <i class="fas fa-exclamation-triangle" style="color: var(--accent-red);"></i>
-                </div>
-                <div style="text-align: center; padding: 20px;">
-                    <div class="amount-display amount-due" style="font-size: 36px;">
-                        ৳{{ "{:,.0f}". format(stats.total_due) }}
-                    </div>
-                    <p style="color: var(--text-secondary); margin-top: 10px;">Total Outstanding</p>
-                </div>
-                <a href="/admin/store/payments/new" style="text-decoration: none;">
-                    <button class="btn-primary" style="margin-top: 15px;">
-                        <i class="fas fa-money-bill-wave" style="margin-right: 8px;"></i> Receive Payment
-                    </button>
-                </a>
-            </div>
-        </div>
-
-        <div class="card">
-            <div class="section-header">
-                <span>Recent Invoices</span>
-                <a href="/admin/store/invoices" style="color: var(--accent-orange); text-decoration: none; font-size: 13px;">View All →</a>
-            </div>
-            <div style="overflow-x: auto;">
-                <table class="dark-table">
-                    <thead>
-                        <tr>
-                            <th>Invoice #</th>
-                            <th>Customer</th>
-                            <th>Date</th>
-                            <th>Total</th>
-                            <th>Due</th>
-                            <th>Status</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for inv in recent_invoices[:5] %}
-                        <tr>
-                            <td style="font-weight: 700;">{{ inv.invoice_no }}</td>
-                            <td>{{ inv.customer_name }}</td>
-                            <td>{{ inv.date }}</td>
-                            <td style="font-weight: 600;">৳{{ "{:,.0f}".format(inv. total) }}</td>
-                            <td style="color: {% if inv.due > 0 %}var(--accent-red){% else %}var(--accent-green){% endif %}; font-weight: 700;">
-                                ৳{{ "{:,.0f}". format(inv.due) }}
-                            </td>
-                            <td>
-                                {% if inv.due == 0 %}
-                                <span class="table-badge" style="background: rgba(16, 185, 129, 0. 1); color: var(--accent-green);">Paid</span>
-                                {% elif inv.due < inv.total %}
-                                <span class="table-badge" style="background: rgba(245, 158, 11, 0.1); color: #FBBF24;">Partial</span>
-                                {% else %}
-                                <span class="table-badge" style="background: rgba(239, 68, 68, 0. 1); color: var(--accent-red);">Unpaid</span>
-                                {% endif %}
-                            </td>
-                        </tr>
-                        {% else %}
-                        <tr>
-                            <td colspan="6" class="empty-state">
-                                <i class="fas fa-file-invoice"></i>
-                                <p>No invoices yet</p>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-
-    <script>
-        // Count up animation
-        function animateCountUp() {
-            document.querySelectorAll('.count-up'). forEach(counter => {
-                const target = parseInt(counter.getAttribute('data-target')) || 0;
-                const duration = 1500;
-                const step = target / (duration / 16);
-                let current = 0;
-                
-                const updateCounter = () => {
-                    current += step;
-                    if (current < target) {
-                        counter.textContent = Math.floor(current);
-                        requestAnimationFrame(updateCounter);
-                    } else {
-                        counter.textContent = target;
-                    }
-                };
-                
-                if (target > 0) updateCounter();
-            });
-        }
-        
-        setTimeout(animateCountUp, 300);
-    </script>
 </body>
 </html>
 """
 
-# ==============================================================================
-# STORE PRODUCTS TEMPLATE
-# ==============================================================================
-
-STORE_PRODUCTS_TEMPLATE = """
-<!doctype html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Products - Store</title>
-    """ + COMMON_STYLES + """
-</head>
-<body>
-    <div class="animated-bg"></div>
-    
-    <div class="mobile-toggle" onclick="document.querySelector('.sidebar').classList.toggle('active')">
-        <i class="fas fa-bars"></i>
-    </div>
-
-    <div class="sidebar">
-        <div class="brand-logo">
-            <i class="fas fa-store"></i> 
-            <span>Store</span>
-        </div>
-        <div class="nav-menu">
-            <a href="/admin/store" class="nav-link">
-                <i class="fas fa-home"></i> Dashboard
-            </a>
-            <a href="/admin/store/products" class="nav-link active">
-                <i class="fas fa-box"></i> Products
-            </a>
-            <a href="/admin/store/customers" class="nav-link">
-                <i class="fas fa-users"></i> Customers
-            </a>
-            <a href="/admin/store/invoices" class="nav-link">
-                <i class="fas fa-file-invoice-dollar"></i> Invoices
-            </a>
-            <a href="/admin/store/estimates" class="nav-link">
-                <i class="fas fa-file-alt"></i> Estimates
-            </a>
-            <a href="/admin/store/payments" class="nav-link">
-                <i class="fas fa-money-bill-wave"></i> Payments
-            </a>
-            <a href="/" class="nav-link" style="margin-top: 20px;">
-                <i class="fas fa-arrow-left"></i> Back to Main
-            </a>
-            <a href="/logout" class="nav-link" style="color: var(--accent-red);">
-                <i class="fas fa-sign-out-alt"></i> Sign Out
-            </a>
-        </div>
-        <div class="sidebar-footer">© 2025 Mehedi Hasan</div>
-    </div>
-
-    <div class="main-content">
-        <div class="header-section">
-            <div>
-                <div class="page-title">Products</div>
-                <div class="page-subtitle">Manage your product inventory</div>
-            </div>
-            <a href="/admin/store/products/new">
-                <button class="btn-primary" style="width: auto; padding: 12px 25px;">
-                    <i class="fas fa-plus" style="margin-right: 8px;"></i> Add Product
-                </button>
-            </a>
-        </div>
-
-        {% with messages = get_flashed_messages() %}
-            {% if messages %}
-                <div class="flash-message flash-success">
-                    <i class="fas fa-check-circle"></i>
-                    <span>{{ messages[0] }}</span>
-                </div>
-            {% endif %}
-        {% endwith %}
-
-        <div class="card">
-            <div class="section-header">
-                <span>All Products ({{ products|length }})</span>
-                <div class="search-box" style="width: 300px; margin: 0;">
-                    <i class="fas fa-search"></i>
-                    <input type="text" id="searchProduct" placeholder="Search products..." onkeyup="filterProducts()">
-                </div>
-            </div>
-            <div style="overflow-x: auto;">
-                <table class="dark-table" id="productsTable">
-                    <thead>
-                        <tr>
-                            <th>Code</th>
-                            <th>Name</th>
-                            <th>Category</th>
-                            <th>Unit</th>
-                            <th>Price</th>
-                            <th>Stock</th>
-                            <th style="text-align: right;">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for p in products %}
-                        <tr>
-                            <td style="font-weight: 700;">{{ p.code }}</td>
-                            <td>{{ p.name }}</td>
-                            <td><span class="table-badge">{{ p.category }}</span></td>
-                            <td>{{ p.unit }}</td>
-                            <td style="font-weight: 600;">৳{{ "{:,.0f}".format(p. price) }}</td>
-                            <td>
-                                {% if p.stock <= 10 %}
-                                <span style="color: var(--accent-red); font-weight: 700;">{{ p.stock }}</span>
-                                {% else %}
-                                {{ p.stock }}
-                                {% endif %}
-                            </td>
-                            <td>
-                                <div class="action-cell">
-                                    <a href="/admin/store/products/edit/{{ loop.index0 }}" class="action-btn btn-edit">
-                                        <i class="fas fa-edit"></i>
-                                    </a>
-                                    <form action="/admin/store/products/delete/{{ loop.index0 }}" method="POST" style="display: inline;" onsubmit="return confirm('Delete this product?');">
-                                        <button type="submit" class="action-btn btn-del">
-                                            <i class="fas fa-trash"></i>
-                                        </button>
-                                    </form>
-                                </div>
-                            </td>
-                        </tr>
-                        {% else %}
-                        <tr>
-                            <td colspan="7" class="empty-state">
-                                <i class="fas fa-box-open"></i>
-                                <p>No products added yet</p>
-                                <a href="/admin/store/products/new">
-                                    <button class="btn-primary btn-sm" style="margin-top: 15px;">Add First Product</button>
-                                </a>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-
-    <script>
-        function filterProducts() {
-            const input = document.getElementById('searchProduct'). value.toLowerCase();
-            const rows = document.querySelectorAll('#productsTable tbody tr');
-            
-            rows.forEach(row => {
-                const text = row.textContent.toLowerCase();
-                row.style.display = text.includes(input) ? '' : 'none';
-            });
-        }
-    </script>
-</body>
-</html>
-"""
-
-# ==============================================================================
-# STORE PRODUCT FORM TEMPLATE (ADD/EDIT)
-# ==============================================================================
-
-STORE_PRODUCT_FORM_TEMPLATE = """
-<! doctype html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{{ 'Edit' if product else 'Add' }} Product - Store</title>
-    """ + COMMON_STYLES + """
-    <style>
-        .form-container {
-            max-width: 600px;
-            margin: 0 auto;
-        }
-    </style>
-</head>
-<body>
-    <div class="animated-bg"></div>
-    
-    <div class="mobile-toggle" onclick="document.querySelector('.sidebar').classList. toggle('active')">
-        <i class="fas fa-bars"></i>
-    </div>
-
-    <div class="sidebar">
-        <div class="brand-logo">
-            <i class="fas fa-store"></i> 
-            <span>Store</span>
-        </div>
-        <div class="nav-menu">
-            <a href="/admin/store" class="nav-link">
-                <i class="fas fa-home"></i> Dashboard
-            </a>
-            <a href="/admin/store/products" class="nav-link active">
-                <i class="fas fa-box"></i> Products
-            </a>
-            <a href="/admin/store/customers" class="nav-link">
-                <i class="fas fa-users"></i> Customers
-            </a>
-            <a href="/admin/store/invoices" class="nav-link">
-                <i class="fas fa-file-invoice-dollar"></i> Invoices
-            </a>
-            <a href="/" class="nav-link" style="margin-top: 20px;">
-                <i class="fas fa-arrow-left"></i> Back to Main
-            </a>
-        </div>
-        <div class="sidebar-footer">© 2025 Mehedi Hasan</div>
-    </div>
-
-    <div class="main-content">
-        <div class="header-section">
-            <div>
-                <div class="page-title">{{ 'Edit' if product else 'Add New' }} Product</div>
-                <div class="page-subtitle">{{ 'Update product details' if product else 'Add a new product to inventory' }}</div>
-            </div>
-        </div>
-
-        <div class="form-container">
-            <div class="card">
-                <form action="{{ '/admin/store/products/update/' ~ index if product else '/admin/store/products/save' }}" method="POST">
-                    <div class="grid-2">
-                        <div class="input-group">
-                            <label>Product Code</label>
-                            <input type="text" name="code" value="{{ product.code if product else '' }}" required placeholder="e.g.  PRD001">
-                        </div>
-                        <div class="input-group">
-                            <label>Product Name</label>
-                            <input type="text" name="name" value="{{ product.name if product else '' }}" required placeholder="Product name">
-                        </div>
-                    </div>
-                    
-                    <div class="grid-2">
-                        <div class="input-group">
-                            <label>Category</label>
-                            <select name="category" required>
-                                <option value="">Select Category</option>
-                                <option value="Accessories" {{ 'selected' if product and product.category == 'Accessories' }}>Accessories</option>
-                                <option value="Fabric" {{ 'selected' if product and product.category == 'Fabric' }}>Fabric</option>
-                                <option value="Thread" {{ 'selected' if product and product.category == 'Thread' }}>Thread</option>
-                                <option value="Button" {{ 'selected' if product and product.category == 'Button' }}>Button</option>
-                                <option value="Zipper" {{ 'selected' if product and product.category == 'Zipper' }}>Zipper</option>
-                                <option value="Label" {{ 'selected' if product and product.category == 'Label' }}>Label</option>
-                                <option value="Packaging" {{ 'selected' if product and product.category == 'Packaging' }}>Packaging</option>
-                                <option value="Other" {{ 'selected' if product and product.category == 'Other' }}>Other</option>
-                            </select>
-                        </div>
-                        <div class="input-group">
-                            <label>Unit</label>
-                            <select name="unit" required>
-                                <option value="">Select Unit</option>
-                                <option value="Pcs" {{ 'selected' if product and product.unit == 'Pcs' }}>Pcs</option>
-                                <option value="Kg" {{ 'selected' if product and product.unit == 'Kg' }}>Kg</option>
-                                <option value="Meter" {{ 'selected' if product and product.unit == 'Meter' }}>Meter</option>
-                                <option value="Yard" {{ 'selected' if product and product.unit == 'Yard' }}>Yard</option>
-                                <option value="Dozen" {{ 'selected' if product and product. unit == 'Dozen' }}>Dozen</option>
-                                <option value="Gross" {{ 'selected' if product and product.unit == 'Gross' }}>Gross</option>
-                                <option value="Set" {{ 'selected' if product and product.unit == 'Set' }}>Set</option>
-                            </select>
-                        </div>
-                    </div>
-                    
-                    <div class="grid-2">
-                        <div class="input-group">
-                            <label>Price (৳)</label>
-                            <input type="number" name="price" value="{{ product.price if product else '' }}" required placeholder="0.00" step="0.01" min="0">
-                        </div>
-                        <div class="input-group">
-                            <label>Stock Quantity</label>
-                            <input type="number" name="stock" value="{{ product.stock if product else '0' }}" placeholder="0" min="0">
-                        </div>
-                    </div>
-                    
-                    <div class="input-group">
-                        <label>Description (Optional)</label>
-                        <textarea name="description" placeholder="Product description..." rows="3">{{ product.description if product else '' }}</textarea>
-                    </div>
-                    
-                    <div style="display: flex; gap: 15px; margin-top: 10px;">
-                        <button type="submit" class="btn-success">
-                            <i class="fas fa-save" style="margin-right: 8px;"></i> 
-                            {{ 'Update' if product else 'Save' }} Product
-                        </button>
-                        <a href="/admin/store/products" style="flex: 1; text-decoration: none;">
-                            <button type="button" class="btn-secondary" style="width: 100%;">
-                                Cancel
-                            </button>
-                        </a>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-</body>
-</html>
-"""
-
-# ==============================================================================
-# STORE CUSTOMERS TEMPLATE
-# ==============================================================================
-
-STORE_CUSTOMERS_TEMPLATE = """
-<! doctype html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Customers - Store</title>
-    """ + COMMON_STYLES + """
-</head>
-<body>
-    <div class="animated-bg"></div>
-    
-    <div class="mobile-toggle" onclick="document.querySelector('.sidebar'). classList.toggle('active')">
-        <i class="fas fa-bars"></i>
-    </div>
-
-    <div class="sidebar">
-        <div class="brand-logo">
-            <i class="fas fa-store"></i> 
-            <span>Store</span>
-        </div>
-        <div class="nav-menu">
-            <a href="/admin/store" class="nav-link">
-                <i class="fas fa-home"></i> Dashboard
-            </a>
-            <a href="/admin/store/products" class="nav-link">
-                <i class="fas fa-box"></i> Products
-            </a>
-            <a href="/admin/store/customers" class="nav-link active">
-                <i class="fas fa-users"></i> Customers
-            </a>
-            <a href="/admin/store/invoices" class="nav-link">
-                <i class="fas fa-file-invoice-dollar"></i> Invoices
-            </a>
-            <a href="/admin/store/estimates" class="nav-link">
-                <i class="fas fa-file-alt"></i> Estimates
-            </a>
-            <a href="/" class="nav-link" style="margin-top: 20px;">
-                <i class="fas fa-arrow-left"></i> Back to Main
-            </a>
-            <a href="/logout" class="nav-link" style="color: var(--accent-red);">
-                <i class="fas fa-sign-out-alt"></i> Sign Out
-            </a>
-        </div>
-        <div class="sidebar-footer">© 2025 Mehedi Hasan</div>
-    </div>
-
-    <div class="main-content">
-        <div class="header-section">
-            <div>
-                <div class="page-title">Customers</div>
-                <div class="page-subtitle">Manage your customer database</div>
-            </div>
-            <a href="/admin/store/customers/new">
-                <button class="btn-primary" style="width: auto; padding: 12px 25px;">
-                    <i class="fas fa-user-plus" style="margin-right: 8px;"></i> Add Customer
-                </button>
-            </a>
-        </div>
-
-        {% with messages = get_flashed_messages() %}
-            {% if messages %}
-                <div class="flash-message flash-success">
-                    <i class="fas fa-check-circle"></i>
-                    <span>{{ messages[0] }}</span>
-                </div>
-            {% endif %}
-        {% endwith %}
-
-        <div class="card">
-            <div class="section-header">
-                <span>All Customers ({{ customers|length }})</span>
-                <div class="search-box" style="width: 300px; margin: 0;">
-                    <i class="fas fa-search"></i>
-                    <input type="text" id="searchCustomer" placeholder="Search customers..." onkeyup="filterCustomers()">
-                </div>
-            </div>
-            <div style="overflow-x: auto;">
-                <table class="dark-table" id="customersTable">
-                    <thead>
-                        <tr>
-                            <th>Name</th>
-                            <th>Phone</th>
-                            <th>Email</th>
-                            <th>Address</th>
-                            <th>Total Due</th>
-                            <th style="text-align: right;">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for c in customers %}
-                        <tr>
-                            <td style="font-weight: 600;">{{ c.name }}</td>
-                            <td>{{ c.phone }}</td>
-                            <td>{{ c. email if c.email else '-' }}</td>
-                            <td>{{ c.address[:30] ~ '...' if c.address and c.address|length > 30 else c.address if c.address else '-' }}</td>
-                            <td style="color: {% if c. due > 0 %}var(--accent-red){% else %}var(--accent-green){% endif %}; font-weight: 700;">
-                                ৳{{ "{:,.0f}". format(c.due if c.due else 0) }}
-                            </td>
-                            <td>
-                                <div class="action-cell">
-                                    <a href="/admin/store/customers/view/{{ loop.index0 }}" class="action-btn btn-view">
-                                        <i class="fas fa-eye"></i>
-                                    </a>
-                                    <a href="/admin/store/customers/edit/{{ loop.index0 }}" class="action-btn btn-edit">
-                                        <i class="fas fa-edit"></i>
-                                    </a>
-                                    <form action="/admin/store/customers/delete/{{ loop.index0 }}" method="POST" style="display: inline;" onsubmit="return confirm('Delete this customer?');">
-                                        <button type="submit" class="action-btn btn-del">
-                                            <i class="fas fa-trash"></i>
-                                        </button>
-                                    </form>
-                                </div>
-                            </td>
-                        </tr>
-                        {% else %}
-                        <tr>
-                            <td colspan="6" class="empty-state">
-                                <i class="fas fa-users"></i>
-                                <p>No customers added yet</p>
-                                <a href="/admin/store/customers/new">
-                                    <button class="btn-primary btn-sm" style="margin-top: 15px;">Add First Customer</button>
-                                </a>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-
-    <script>
-        function filterCustomers() {
-            const input = document.getElementById('searchCustomer').value. toLowerCase();
-            const rows = document.querySelectorAll('#customersTable tbody tr');
-            
-            rows.forEach(row => {
-                const text = row.textContent.toLowerCase();
-                row.style.display = text.includes(input) ? '' : 'none';
-            });
-        }
-    </script>
-</body>
-</html>
-"""
-
-# ==============================================================================
-# STORE CUSTOMER FORM TEMPLATE (ADD/EDIT)
-# ==============================================================================
-
-STORE_CUSTOMER_FORM_TEMPLATE = """
-<!doctype html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{{ 'Edit' if customer else 'Add' }} Customer - Store</title>
-    """ + COMMON_STYLES + """
-    <style>
-        .form-container {
-            max-width: 600px;
-            margin: 0 auto;
-        }
-    </style>
-</head>
-<body>
-    <div class="animated-bg"></div>
-    
-    <div class="mobile-toggle" onclick="document.querySelector('. sidebar').classList.toggle('active')">
-        <i class="fas fa-bars"></i>
-    </div>
-
-    <div class="sidebar">
-        <div class="brand-logo">
-            <i class="fas fa-store"></i> 
-            <span>Store</span>
-        </div>
-        <div class="nav-menu">
-            <a href="/admin/store" class="nav-link">
-                <i class="fas fa-home"></i> Dashboard
-            </a>
-            <a href="/admin/store/products" class="nav-link">
-                <i class="fas fa-box"></i> Products
-            </a>
-            <a href="/admin/store/customers" class="nav-link active">
-                <i class="fas fa-users"></i> Customers
-            </a>
-            <a href="/admin/store/invoices" class="nav-link">
-                <i class="fas fa-file-invoice-dollar"></i> Invoices
-            </a>
-            <a href="/" class="nav-link" style="margin-top: 20px;">
-                <i class="fas fa-arrow-left"></i> Back to Main
-            </a>
-        </div>
-        <div class="sidebar-footer">© 2025 Mehedi Hasan</div>
-    </div>
-
-    <div class="main-content">
-        <div class="header-section">
-            <div>
-                <div class="page-title">{{ 'Edit' if customer else 'Add New' }} Customer</div>
-                <div class="page-subtitle">{{ 'Update customer details' if customer else 'Add a new customer to database' }}</div>
-            </div>
-        </div>
-
-        <div class="form-container">
-            <div class="card">
-                <form action="{{ '/admin/store/customers/update/' ~ index if customer else '/admin/store/customers/save' }}" method="POST">
-                    <div class="input-group">
-                        <label><i class="fas fa-user" style="margin-right: 5px;"></i> Customer Name</label>
-                        <input type="text" name="name" value="{{ customer.name if customer else '' }}" required placeholder="Full name">
-                    </div>
-                    
-                    <div class="grid-2">
-                        <div class="input-group">
-                            <label><i class="fas fa-phone" style="margin-right: 5px;"></i> Phone Number</label>
-                            <input type="tel" name="phone" value="{{ customer. phone if customer else '' }}" required placeholder="01XXXXXXXXX">
-                        </div>
-                        <div class="input-group">
-                            <label><i class="fas fa-envelope" style="margin-right: 5px;"></i> Email (Optional)</label>
-                            <input type="email" name="email" value="{{ customer.email if customer else '' }}" placeholder="email@example.com">
-                        </div>
-                    </div>
-                    
-                    <div class="input-group">
-                        <label><i class="fas fa-map-marker-alt" style="margin-right: 5px;"></i> Address</label>
-                        <textarea name="address" placeholder="Full address..." rows="3">{{ customer.address if customer else '' }}</textarea>
-                    </div>
-                    
-                    <div class="input-group">
-                        <label><i class="fas fa-sticky-note" style="margin-right: 5px;"></i> Notes (Optional)</label>
-                        <textarea name="notes" placeholder="Additional notes..." rows="2">{{ customer.notes if customer else '' }}</textarea>
-                    </div>
-                    
-                    <div style="display: flex; gap: 15px; margin-top: 10px;">
-                        <button type="submit" class="btn-success">
-                            <i class="fas fa-save" style="margin-right: 8px;"></i> 
-                            {{ 'Update' if customer else 'Save' }} Customer
-                        </button>
-                        <a href="/admin/store/customers" style="flex: 1; text-decoration: none;">
-                            <button type="button" class="btn-secondary" style="width: 100%;">
-                                Cancel
-                            </button>
-                        </a>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-</body>
-</html>
-"""
-
-# ==============================================================================
-# STORE CUSTOMER VIEW TEMPLATE
-# ==============================================================================
-
-STORE_CUSTOMER_VIEW_TEMPLATE = """
-<!doctype html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Customer Details - Store</title>
-    """ + COMMON_STYLES + """
-</head>
-<body>
-    <div class="animated-bg"></div>
-    
-    <div class="mobile-toggle" onclick="document.querySelector('.sidebar').classList.toggle('active')">
-        <i class="fas fa-bars"></i>
-    </div>
-
-    <div class="sidebar">
-        <div class="brand-logo">
-            <i class="fas fa-store"></i> 
-            <span>Store</span>
-        </div>
-        <div class="nav-menu">
-            <a href="/admin/store" class="nav-link">
-                <i class="fas fa-home"></i> Dashboard
-            </a>
-            <a href="/admin/store/products" class="nav-link">
-                <i class="fas fa-box"></i> Products
-            </a>
-            <a href="/admin/store/customers" class="nav-link active">
-                <i class="fas fa-users"></i> Customers
-            </a>
-            <a href="/admin/store/invoices" class="nav-link">
-                <i class="fas fa-file-invoice-dollar"></i> Invoices
-            </a>
-            <a href="/" class="nav-link" style="margin-top: 20px;">
-                <i class="fas fa-arrow-left"></i> Back to Main
-            </a>
-        </div>
-        <div class="sidebar-footer">© 2025 Mehedi Hasan</div>
-    </div>
-
-    <div class="main-content">
-        <div class="header-section">
-            <div>
-                <div class="page-title">{{ customer.name }}</div>
-                <div class="page-subtitle">Customer Details & Transaction History</div>
-            </div>
-            <a href="/admin/store/customers/edit/{{ index }}">
-                <button class="btn-primary" style="width: auto; padding: 12px 25px;">
-                    <i class="fas fa-edit" style="margin-right: 8px;"></i> Edit
-                </button>
-            </a>
-        </div>
-
-        <div class="dashboard-grid-2">
-            <div class="card">
-                <div class="section-header">
-                    <span>Contact Information</span>
-                    <i class="fas fa-address-card" style="color: var(--accent-purple);"></i>
-                </div>
-                <div style="padding: 10px 0;">
-                    <div style="margin-bottom: 15px;">
-                        <div style="color: var(--text-secondary); font-size: 12px; margin-bottom: 5px;">PHONE</div>
-                        <div style="font-size: 16px; font-weight: 600;">{{ customer.phone }}</div>
-                    </div>
-                    <div style="margin-bottom: 15px;">
-                        <div style="color: var(--text-secondary); font-size: 12px; margin-bottom: 5px;">EMAIL</div>
-                        <div style="font-size: 16px;">{{ customer.email if customer.email else '-' }}</div>
-                    </div>
-                    <div style="margin-bottom: 15px;">
-                        <div style="color: var(--text-secondary); font-size: 12px; margin-bottom: 5px;">ADDRESS</div>
-                        <div style="font-size: 14px; line-height: 1.5;">{{ customer.address if customer.address else '-' }}</div>
-                    </div>
-                    {% if customer.notes %}
-                    <div>
-                        <div style="color: var(--text-secondary); font-size: 12px; margin-bottom: 5px;">NOTES</div>
-                        <div style="font-size: 14px; color: var(--text-secondary);">{{ customer.notes }}</div>
-                    </div>
-                    {% endif %}
-                </div>
-            </div>
-
-            <div class="card">
-                <div class="section-header">
-                    <span>Account Summary</span>
-                    <i class="fas fa-chart-pie" style="color: var(--accent-orange);"></i>
-                </div>
-                <div style="text-align: center; padding: 20px;">
-                    <div class="amount-display amount-due" style="font-size: 40px;">
-                        ৳{{ "{:,. 0f}".format(customer.due if customer.due else 0) }}
-                    </div>
-                    <p style="color: var(--text-secondary); margin-top: 10px;">Total Due Amount</p>
-                </div>
-                <a href="/admin/store/payments/new? customer={{ index }}">
-                    <button class="btn-success" style="margin-top: 15px;">
-                        <i class="fas fa-money-bill-wave" style="margin-right: 8px;"></i> Receive Payment
-                    </button>
-                </a>
-            </div>
-        </div>
-
-        <div class="card">
-            <div class="section-header">
-                <span>Invoice History</span>
-            </div>
-            <table class="dark-table">
-                <thead>
-                    <tr>
-                        <th>Invoice #</th>
-                        <th>Date</th>
-                        <th>Total</th>
-                        <th>Paid</th>
-                        <th>Due</th>
-                        <th>Status</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for inv in customer_invoices %}
-                    <tr>
-                        <td style="font-weight: 700;">{{ inv.invoice_no }}</td>
-                        <td>{{ inv.date }}</td>
-                        <td>৳{{ "{:,. 0f}".format(inv.total) }}</td>
-                        <td>৳{{ "{:,. 0f}".format(inv.paid) }}</td>
-                        <td style="color: {% if inv.due > 0 %}var(--accent-red){% else %}var(--accent-green){% endif %}; font-weight: 700;">
-                            ৳{{ "{:,.0f}".format(inv. due) }}
-                        </td>
-                        <td>
-                            {% if inv.due == 0 %}
-                            <span class="table-badge" style="background: rgba(16, 185, 129, 0.1); color: var(--accent-green);">Paid</span>
-                            {% else %}
-                            <span class="table-badge" style="background: rgba(239, 68, 68, 0. 1); color: var(--accent-red);">Due</span>
-                            {% endif %}
-                        </td>
-                    </tr>
-                    {% else %}
-                    <tr>
-                        <td colspan="6" style="text-align: center; color: var(--text-secondary); padding: 30px;">
-                            No invoices found for this customer
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-    </div>
-</body>
-</html>
-"""
-# ==============================================================================
-# STORE INVOICES LIST TEMPLATE
-# ==============================================================================
-
-STORE_INVOICES_TEMPLATE = """
-<! doctype html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Invoices - Store</title>
-    """ + COMMON_STYLES + """
-</head>
-<body>
-    <div class="animated-bg"></div>
-    
-    <div class="mobile-toggle" onclick="document.querySelector('.sidebar'). classList.toggle('active')">
-        <i class="fas fa-bars"></i>
-    </div>
-
-    <div class="sidebar">
-        <div class="brand-logo">
-            <i class="fas fa-store"></i> 
-            <span>Store</span>
-        </div>
-        <div class="nav-menu">
-            <a href="/admin/store" class="nav-link">
-                <i class="fas fa-home"></i> Dashboard
-            </a>
-            <a href="/admin/store/products" class="nav-link">
-                <i class="fas fa-box"></i> Products
-            </a>
-            <a href="/admin/store/customers" class="nav-link">
-                <i class="fas fa-users"></i> Customers
-            </a>
-            <a href="/admin/store/invoices" class="nav-link active">
-                <i class="fas fa-file-invoice-dollar"></i> Invoices
-            </a>
-            <a href="/admin/store/estimates" class="nav-link">
-                <i class="fas fa-file-alt"></i> Estimates
-            </a>
-            <a href="/admin/store/payments" class="nav-link">
-                <i class="fas fa-money-bill-wave"></i> Payments
-            </a>
-            <a href="/" class="nav-link" style="margin-top: 20px;">
-                <i class="fas fa-arrow-left"></i> Back to Main
-            </a>
-            <a href="/logout" class="nav-link" style="color: var(--accent-red);">
-                <i class="fas fa-sign-out-alt"></i> Sign Out
-            </a>
-        </div>
-        <div class="sidebar-footer">© 2025 Mehedi Hasan</div>
-    </div>
-
-    <div class="main-content">
-        <div class="header-section">
-            <div>
-                <div class="page-title">Invoices</div>
-                <div class="page-subtitle">Manage sales invoices</div>
-            </div>
-            <a href="/admin/store/invoices/new">
-                <button class="btn-primary" style="width: auto; padding: 12px 25px; background: linear-gradient(135deg, #10B981 0%, #34D399 100%);">
-                    <i class="fas fa-plus" style="margin-right: 8px;"></i> New Invoice
-                </button>
-            </a>
-        </div>
-
-        {% with messages = get_flashed_messages() %}
-            {% if messages %}
-                <div class="flash-message flash-success">
-                    <i class="fas fa-check-circle"></i>
-                    <span>{{ messages[0] }}</span>
-                </div>
-            {% endif %}
-        {% endwith %}
-
-        <div class="card">
-            <div class="section-header">
-                <span>All Invoices ({{ invoices|length }})</span>
-                <div class="search-box" style="width: 300px; margin: 0;">
-                    <i class="fas fa-search"></i>
-                    <input type="text" id="searchInvoice" placeholder="Search invoices..." onkeyup="filterInvoices()">
-                </div>
-            </div>
-            <div style="overflow-x: auto;">
-                <table class="dark-table" id="invoicesTable">
-                    <thead>
-                        <tr>
-                            <th>Invoice #</th>
-                            <th>Customer</th>
-                            <th>Date</th>
-                            <th>Total</th>
-                            <th>Paid</th>
-                            <th>Due</th>
-                            <th>Status</th>
-                            <th style="text-align: right;">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for inv in invoices|reverse %}
-                        <tr>
-                            <td style="font-weight: 700;">{{ inv.invoice_no }}</td>
-                            <td>{{ inv.customer_name }}</td>
-                            <td>{{ inv.date }}</td>
-                            <td style="font-weight: 600;">৳{{ "{:,. 0f}".format(inv.total) }}</td>
-                            <td style="color: var(--accent-green);">৳{{ "{:,. 0f}".format(inv.paid) }}</td>
-                            <td style="color: {% if inv.due > 0 %}var(--accent-red){% else %}var(--accent-green){% endif %}; font-weight: 700;">
-                                ৳{{ "{:,.0f}".format(inv. due) }}
-                            </td>
-                            <td>
-                                {% if inv.due == 0 %}
-                                <span class="table-badge" style="background: rgba(16, 185, 129, 0.1); color: var(--accent-green);">Paid</span>
-                                {% elif inv.due < inv.total %}
-                                <span class="table-badge" style="background: rgba(245, 158, 11, 0.1); color: #FBBF24;">Partial</span>
-                                {% else %}
-                                <span class="table-badge" style="background: rgba(239, 68, 68, 0. 1); color: var(--accent-red);">Unpaid</span>
-                                {% endif %}
-                            </td>
-                            <td>
-                                <div class="action-cell">
-                                    <a href="/admin/store/invoices/view/{{ loop.revindex0 }}" class="action-btn btn-view" title="View">
-                                        <i class="fas fa-eye"></i>
-                                    </a>
-                                    <a href="/admin/store/invoices/print/{{ loop.revindex0 }}" target="_blank" class="action-btn btn-print-sm" title="Print" onclick="openPrintWindow(event, this. href)">
-                                        <i class="fas fa-print"></i>
-                                    </a>
-                                    <a href="/admin/store/invoices/edit/{{ loop. revindex0 }}" class="action-btn btn-edit" title="Edit">
-                                        <i class="fas fa-edit"></i>
-                                    </a>
-                                    <form action="/admin/store/invoices/delete/{{ loop.revindex0 }}" method="POST" style="display: inline;" onsubmit="return confirm('Delete this invoice?');">
-                                        <button type="submit" class="action-btn btn-del" title="Delete">
-                                            <i class="fas fa-trash"></i>
-                                        </button>
-                                    </form>
-                                </div>
-                            </td>
-                        </tr>
-                        {% else %}
-                        <tr>
-                            <td colspan="8" class="empty-state">
-                                <i class="fas fa-file-invoice"></i>
-                                <p>No invoices created yet</p>
-                                <a href="/admin/store/invoices/new">
-                                    <button class="btn-primary btn-sm" style="margin-top: 15px;">Create First Invoice</button>
-                                </a>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-
-    <script>
-        function filterInvoices() {
-            const input = document.getElementById('searchInvoice'). value.toLowerCase();
-            const rows = document.querySelectorAll('#invoicesTable tbody tr');
-            
-            rows.forEach(row => {
-                const text = row.textContent.toLowerCase();
-                row.style.display = text.includes(input) ? '' : 'none';
-            });
-        }
-        
-        // FIXED: Print window function
-        function openPrintWindow(event, url) {
-            event.preventDefault();
-            const printWin = window.open(url, '_blank', 'width=900,height=700,scrollbars=yes,resizable=yes');
-            if (printWin) {
-                printWin.focus();
-            } else {
-                window.location.href = url;
-            }
-        }
-    </script>
-</body>
-</html>
-"""
-
-# ==============================================================================
-# STORE INVOICE FORM TEMPLATE (NEW/EDIT)
-# ==============================================================================
-
-STORE_INVOICE_FORM_TEMPLATE = """
-<!doctype html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{{ 'Edit' if invoice else 'New' }} Invoice - Store</title>
-    """ + COMMON_STYLES + """
-    <style>
-        .items-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 20px 0;
-        }
-        .items-table th {
-            background: rgba(255, 255, 255, 0. 05);
-            padding: 12px;
-            text-align: left;
-            font-size: 12px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            color: var(--text-secondary);
-            border-bottom: 1px solid var(--border-color);
-        }
-        .items-table td {
-            padding: 10px;
-            border-bottom: 1px solid var(--border-color);
-        }
-        . items-table input, .items-table select {
-            width: 100%;
-            padding: 10px;
-            font-size: 14px;
-        }
-        .item-row {
-            transition: all 0. 3s;
-        }
-        .item-row:hover {
-            background: rgba(255, 122, 0, 0.03);
-        }
-        .remove-item-btn {
-            background: var(--accent-red);
-            color: white;
-            border: none;
-            width: 35px;
-            height: 35px;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-        .remove-item-btn:hover {
-            transform: scale(1. 1);
-        }
-        .totals-section {
-            background: rgba(255, 255, 255, 0.02);
-            border-radius: 12px;
-            padding: 20px;
-            margin-top: 20px;
-        }
-        .total-row {
-            display: flex;
-            justify-content: space-between;
-            padding: 10px 0;
-            border-bottom: 1px solid var(--border-color);
-        }
-        . total-row:last-child {
-            border-bottom: none;
-            font-size: 20px;
-            font-weight: 800;
-            color: var(--accent-orange);
-        }
-        .total-label {
-            color: var(--text-secondary);
-        }
-        .total-value {
-            font-weight: 600;
-        }
-    </style>
-</head>
-<body>
-    <div class="animated-bg"></div>
-    
-    <div class="mobile-toggle" onclick="document.querySelector('.sidebar').classList. toggle('active')">
-        <i class="fas fa-bars"></i>
-    </div>
-
-    <div class="sidebar">
-        <div class="brand-logo">
-            <i class="fas fa-store"></i> 
-            <span>Store</span>
-        </div>
-        <div class="nav-menu">
-            <a href="/admin/store" class="nav-link">
-                <i class="fas fa-home"></i> Dashboard
-            </a>
-            <a href="/admin/store/products" class="nav-link">
-                <i class="fas fa-box"></i> Products
-            </a>
-            <a href="/admin/store/customers" class="nav-link">
-                <i class="fas fa-users"></i> Customers
-            </a>
-            <a href="/admin/store/invoices" class="nav-link active">
-                <i class="fas fa-file-invoice-dollar"></i> Invoices
-            </a>
-            <a href="/" class="nav-link" style="margin-top: 20px;">
-                <i class="fas fa-arrow-left"></i> Back to Main
-            </a>
-        </div>
-        <div class="sidebar-footer">© 2025 Mehedi Hasan</div>
-    </div>
-
-    <div class="main-content">
-        <div class="header-section">
-            <div>
-                <div class="page-title">{{ 'Edit' if invoice else 'Create New' }} Invoice</div>
-                <div class="page-subtitle">{{ invoice.invoice_no if invoice else 'Fill in the details below' }}</div>
-            </div>
-        </div>
-
-        <form action="{{ '/admin/store/invoices/update/' ~ index if invoice else '/admin/store/invoices/save' }}" method="POST" id="invoiceForm">
-            <div class="dashboard-grid-2">
-                <div class="card">
-                    <div class="section-header">
-                        <span>Invoice Details</span>
-                    </div>
-                    
-                    <div class="grid-2">
-                        <div class="input-group">
-                            <label>Invoice Number</label>
-                            <input type="text" name="invoice_no" value="{{ invoice.invoice_no if invoice else next_invoice_no }}" readonly style="background: rgba(255,255,255,0.02);">
-                        </div>
-                        <div class="input-group">
-                            <label>Date</label>
-                            <input type="date" name="date" value="{{ invoice. date if invoice else today }}" required>
-                        </div>
-                    </div>
-                    
-                    <div class="input-group">
-                        <label>Customer</label>
-                        <select name="customer_index" id="customerSelect" required onchange="updateCustomerInfo()">
-                            <option value="">Select Customer</option>
-                            {% for c in customers %}
-                            <option value="{{ loop.index0 }}" data-name="{{ c.name }}" data-phone="{{ c.phone }}" data-address="{{ c.address }}"
-                                {{ 'selected' if invoice and invoice.customer_index == loop.index0 }}>
-                                {{ c. name }} - {{ c.phone }}
-                            </option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    
-                    <input type="hidden" name="customer_name" id="customerNameInput" value="{{ invoice.customer_name if invoice else '' }}">
-                    
-                    <div class="input-group">
-                        <label>Notes (Optional)</label>
-                        <textarea name="notes" rows="2" placeholder="Additional notes... ">{{ invoice.notes if invoice else '' }}</textarea>
-                    </div>
-                </div>
-
-                <div class="card">
-                    <div class="section-header">
-                        <span>Payment Info</span>
-                    </div>
-                    
-                    <div class="totals-section">
-                        <div class="total-row">
-                            <span class="total-label">Subtotal</span>
-                            <span class="total-value" id="subtotalDisplay">৳0</span>
-                        </div>
-                        <div class="total-row">
-                            <span class="total-label">Discount</span>
-                            <input type="number" name="discount" id="discountInput" value="{{ invoice.discount if invoice else 0 }}" min="0" step="0.01" style="width: 120px; text-align: right;" onchange="calculateTotals()">
-                        </div>
-                        <div class="total-row">
-                            <span class="total-label">Grand Total</span>
-                            <span class="total-value" id="grandTotalDisplay">৳0</span>
-                        </div>
-                        <div class="total-row">
-                            <span class="total-label">Paid Amount</span>
-                            <input type="number" name="paid" id="paidInput" value="{{ invoice.paid if invoice else 0 }}" min="0" step="0. 01" style="width: 120px; text-align: right;" onchange="calculateTotals()">
-                        </div>
-                        <div class="total-row" style="color: var(--accent-red);">
-                            <span class="total-label">Due Amount</span>
-                            <span class="total-value" id="dueDisplay">৳0</span>
-                        </div>
-                    </div>
-                    
-                    <input type="hidden" name="subtotal" id="subtotalInput" value="0">
-                    <input type="hidden" name="total" id="totalInput" value="0">
-                    <input type="hidden" name="due" id="dueInput" value="0">
-                </div>
-            </div>
-
-            <div class="card" style="margin-top: 20px;">
-                <div class="section-header">
-                    <span>Invoice Items</span>
-                    <button type="button" onclick="addItemRow()" class="btn-primary btn-sm" style="width: auto;">
-                        <i class="fas fa-plus" style="margin-right: 5px;"></i> Add Item
-                    </button>
-                </div>
-                
-                <table class="items-table">
-                    <thead>
-                        <tr>
-                            <th style="width: 40%;">Product</th>
-                            <th style="width: 15%;">Qty</th>
-                            <th style="width: 15%;">Price</th>
-                            <th style="width: 20%;">Amount</th>
-                            <th style="width: 10%;"></th>
-                        </tr>
-                    </thead>
-                    <tbody id="itemsTableBody">
-                        {% if invoice and invoice.items %}
-                            {% for item in invoice.items %}
-                            <tr class="item-row">
-                                <td>
-                                    <select name="items[][product_index]" class="product-select" onchange="updateItemPrice(this)">
-                                        <option value="">Select Product</option>
-                                        {% for p in products %}
-                                        <option value="{{ loop.index0 }}" data-price="{{ p.price }}" data-name="{{ p.name }}"
-                                            {{ 'selected' if item.product_index == loop.index0 }}>
-                                            {{ p.code }} - {{ p.name }}
-                                        </option>
-                                        {% endfor %}
-                                    </select>
-                                </td>
-                                <td>
-                                    <input type="number" name="items[][qty]" class="item-qty" value="{{ item.qty }}" min="1" onchange="calculateRowAmount(this)">
-                                </td>
-                                <td>
-                                    <input type="number" name="items[][price]" class="item-price" value="{{ item.price }}" min="0" step="0.01" onchange="calculateRowAmount(this)">
-                                </td>
-                                <td>
-                                    <input type="number" name="items[][amount]" class="item-amount" value="{{ item.amount }}" readonly style="background: rgba(255,255,255,0.02);">
-                                </td>
-                                <td>
-                                    <button type="button" class="remove-item-btn" onclick="removeItemRow(this)">
-                                        <i class="fas fa-times"></i>
-                                    </button>
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        {% else %}
-                            <tr class="item-row">
-                                <td>
-                                    <select name="items[][product_index]" class="product-select" onchange="updateItemPrice(this)">
-                                        <option value="">Select Product</option>
-                                        {% for p in products %}
-                                        <option value="{{ loop.index0 }}" data-price="{{ p.price }}" data-name="{{ p.name }}">
-                                            {{ p.code }} - {{ p.name }}
-                                        </option>
-                                        {% endfor %}
-                                    </select>
-                                </td>
-                                <td>
-                                    <input type="number" name="items[][qty]" class="item-qty" value="1" min="1" onchange="calculateRowAmount(this)">
-                                </td>
-                                <td>
-                                    <input type="number" name="items[][price]" class="item-price" value="0" min="0" step="0.01" onchange="calculateRowAmount(this)">
-                                </td>
-                                <td>
-                                    <input type="number" name="items[][amount]" class="item-amount" value="0" readonly style="background: rgba(255,255,255,0.02);">
-                                </td>
-                                <td>
-                                    <button type="button" class="remove-item-btn" onclick="removeItemRow(this)">
-                                        <i class="fas fa-times"></i>
-                                    </button>
-                                </td>
-                            </tr>
-                        {% endif %}
-                    </tbody>
-                </table>
-            </div>
-
-            <div style="display: flex; gap: 15px; margin-top: 20px;">
-                <button type="submit" class="btn-success" style="flex: 2;">
-                    <i class="fas fa-save" style="margin-right: 8px;"></i> 
-                    {{ 'Update' if invoice else 'Save' }} Invoice
-                </button>
-                <a href="/admin/store/invoices" style="flex: 1; text-decoration: none;">
-                    <button type="button" class="btn-secondary" style="width: 100%;">
-                        Cancel
-                    </button>
-                </a>
-            </div>
-        </form>
-    </div>
-
-    <script>
-        const productsData = {{ products | tojson }};
-        
-        function updateCustomerInfo() {
-            const select = document.getElementById('customerSelect');
-            const option = select.options[select.selectedIndex];
-            document.getElementById('customerNameInput').value = option.dataset.name || '';
-        }
-        
-        function addItemRow() {
-            const tbody = document.getElementById('itemsTableBody');
-            const productOptions = productsData.map((p, i) => 
-                `<option value="${i}" data-price="${p. price}" data-name="${p.name}">${p.code} - ${p.name}</option>`
-            ). join('');
-            
-            const newRow = document.createElement('tr');
-            newRow. className = 'item-row';
-            newRow.innerHTML = `
-                <td>
-                    <select name="items[][product_index]" class="product-select" onchange="updateItemPrice(this)">
-                        <option value="">Select Product</option>
-                        ${productOptions}
-                    </select>
-                </td>
-                <td>
-                    <input type="number" name="items[][qty]" class="item-qty" value="1" min="1" onchange="calculateRowAmount(this)">
-                </td>
-                <td>
-                    <input type="number" name="items[][price]" class="item-price" value="0" min="0" step="0. 01" onchange="calculateRowAmount(this)">
-                </td>
-                <td>
-                    <input type="number" name="items[][amount]" class="item-amount" value="0" readonly style="background: rgba(255,255,255,0.02);">
-                </td>
-                <td>
-                    <button type="button" class="remove-item-btn" onclick="removeItemRow(this)">
-                        <i class="fas fa-times"></i>
-                    </button>
-                </td>
-            `;
-            tbody. appendChild(newRow);
-        }
-        
-        function removeItemRow(btn) {
-            const rows = document.querySelectorAll('.item-row');
-            if (rows.length > 1) {
-                btn.closest('tr'). remove();
-                calculateTotals();
-            }
-        }
-        
-        function updateItemPrice(select) {
-            const row = select.closest('tr');
-            const option = select.options[select.selectedIndex];
-            const price = parseFloat(option.dataset.price) || 0;
-            row.querySelector('.item-price').value = price;
-            calculateRowAmount(select);
-        }
-        
-        function calculateRowAmount(element) {
-            const row = element.closest('tr');
-            const qty = parseFloat(row.querySelector('.item-qty').value) || 0;
-            const price = parseFloat(row.querySelector('.item-price').value) || 0;
-            const amount = qty * price;
-            row.querySelector('.item-amount').value = amount. toFixed(2);
-            calculateTotals();
-        }
-        
-        function calculateTotals() {
-            let subtotal = 0;
-            document.querySelectorAll('.item-amount').forEach(input => {
-                subtotal += parseFloat(input.value) || 0;
-            });
-            
-            const discount = parseFloat(document.getElementById('discountInput').value) || 0;
-            const grandTotal = subtotal - discount;
-            const paid = parseFloat(document.getElementById('paidInput'). value) || 0;
-            const due = grandTotal - paid;
-            
-            document. getElementById('subtotalDisplay').textContent = '৳' + subtotal.toLocaleString();
-            document.getElementById('grandTotalDisplay').textContent = '৳' + grandTotal. toLocaleString();
-            document.getElementById('dueDisplay'). textContent = '৳' + due. toLocaleString();
-            
-            document.getElementById('subtotalInput').value = subtotal;
-            document.getElementById('totalInput').value = grandTotal;
-            document.getElementById('dueInput').value = due;
-        }
-        
-        // Initialize on page load
-        document.addEventListener('DOMContentLoaded', function() {
-            updateCustomerInfo();
-            calculateTotals();
-        });
-    </script>
-</body>
-</html>
-"""
-
-# ==============================================================================
-# STORE INVOICE VIEW TEMPLATE
-# ==============================================================================
-
-STORE_INVOICE_VIEW_TEMPLATE = """
-<!doctype html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Invoice {{ invoice.invoice_no }} - Store</title>
-    """ + COMMON_STYLES + """
-</head>
-<body>
-    <div class="animated-bg"></div>
-    
-    <div class="mobile-toggle" onclick="document.querySelector('.sidebar').classList. toggle('active')">
-        <i class="fas fa-bars"></i>
-    </div>
-
-    <div class="sidebar">
-        <div class="brand-logo">
-            <i class="fas fa-store"></i> 
-            <span>Store</span>
-        </div>
-        <div class="nav-menu">
-            <a href="/admin/store" class="nav-link">
-                <i class="fas fa-home"></i> Dashboard
-            </a>
-            <a href="/admin/store/invoices" class="nav-link active">
-                <i class="fas fa-file-invoice-dollar"></i> Invoices
-            </a>
-            <a href="/" class="nav-link" style="margin-top: 20px;">
-                <i class="fas fa-arrow-left"></i> Back to Main
-            </a>
-        </div>
-        <div class="sidebar-footer">© 2025 Mehedi Hasan</div>
-    </div>
-
-    <div class="main-content">
-        <div class="header-section">
-            <div>
-                <div class="page-title">{{ invoice.invoice_no }}</div>
-                <div class="page-subtitle">Invoice Details</div>
-            </div>
-            <div style="display: flex; gap: 10px;">
-                <a href="/admin/store/invoices/print/{{ index }}" target="_blank" onclick="openPrintWindow(event, this. href)">
-                    <button class="btn-success" style="width: auto; padding: 12px 25px;">
-                        <i class="fas fa-print" style="margin-right: 8px;"></i> Print
-                    </button>
-                </a>
-                <a href="/admin/store/invoices/edit/{{ index }}">
-                    <button class="btn-primary" style="width: auto; padding: 12px 25px;">
-                        <i class="fas fa-edit" style="margin-right: 8px;"></i> Edit
-                    </button>
-                </a>
-            </div>
-        </div>
-
-        <div class="dashboard-grid-2">
-            <div class="card">
-                <div class="section-header">
-                    <span>Customer Details</span>
-                </div>
-                <div style="padding: 10px 0;">
-                    <div style="margin-bottom: 15px;">
-                        <div style="color: var(--text-secondary); font-size: 12px;">CUSTOMER</div>
-                        <div style="font-size: 18px; font-weight: 700;">{{ invoice.customer_name }}</div>
-                    </div>
-                    <div style="margin-bottom: 15px;">
-                        <div style="color: var(--text-secondary); font-size: 12px;">DATE</div>
-                        <div style="font-size: 16px;">{{ invoice. date }}</div>
-                    </div>
-                    {% if invoice.notes %}
-                    <div>
-                        <div style="color: var(--text-secondary); font-size: 12px;">NOTES</div>
-                        <div style="font-size: 14px;">{{ invoice. notes }}</div>
-                    </div>
-                    {% endif %}
-                </div>
-            </div>
-
-            <div class="card">
-                <div class="section-header">
-                    <span>Payment Summary</span>
-                </div>
-                <div style="padding: 10px 0;">
-                    <div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--border-color);">
-                        <span style="color: var(--text-secondary);">Subtotal</span>
-                        <span style="font-weight: 600;">৳{{ "{:,.0f}".format(invoice.subtotal) }}</span>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--border-color);">
-                        <span style="color: var(--text-secondary);">Discount</span>
-                        <span style="font-weight: 600;">৳{{ "{:,.0f}".format(invoice. discount) }}</span>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--border-color);">
-                        <span style="color: var(--text-secondary);">Total</span>
-                        <span style="font-weight: 700; font-size: 18px;">৳{{ "{:,.0f}".format(invoice.total) }}</span>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--border-color);">
-                        <span style="color: var(--text-secondary);">Paid</span>
-                        <span style="font-weight: 600; color: var(--accent-green);">৳{{ "{:,.0f}".format(invoice.paid) }}</span>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; padding: 15px 0;">
-                        <span style="font-weight: 700; font-size: 16px;">Due</span>
-                        <span style="font-weight: 800; font-size: 24px; color: {% if invoice.due > 0 %}var(--accent-red){% else %}var(--accent-green){% endif %};">
-                            ৳{{ "{:,.0f}".format(invoice.due) }}
-                        </span>
-                    </div>
-                </div>
-                {% if invoice.due > 0 %}
-                <a href="/admin/store/payments/new? invoice={{ index }}">
-                    <button class="btn-primary" style="margin-top: 10px;">
-                        <i class="fas fa-money-bill-wave" style="margin-right: 8px;"></i> Receive Payment
-                    </button>
-                </a>
-                {% endif %}
-            </div>
-        </div>
-
-        <div class="card" style="margin-top: 20px;">
-            <div class="section-header">
-                <span>Invoice Items</span>
-            </div>
-            <table class="dark-table">
-                <thead>
-                    <tr>
-                        <th>#</th>
-                        <th>Product</th>
-                        <th>Qty</th>
-                        <th>Price</th>
-                        <th>Amount</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for item in invoice.items %}
-                    <tr>
-                        <td>{{ loop.index }}</td>
-                        <td style="font-weight: 600;">{{ item.product_name }}</td>
-                        <td>{{ item.qty }}</td>
-                        <td>৳{{ "{:,. 0f}".format(item.price) }}</td>
-                        <td style="font-weight: 700;">৳{{ "{:,. 0f}".format(item.amount) }}</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-    </div>
-
-    <script>
-        function openPrintWindow(event, url) {
-            event.preventDefault();
-            const printWin = window.open(url, '_blank', 'width=900,height=700,scrollbars=yes,resizable=yes');
-            if (printWin) {
-                printWin.focus();
-            } else {
-                window.location.href = url;
-            }
-        }
-    </script>
-</body>
-</html>
-"""
-
-# ==============================================================================
-# STORE INVOICE PRINT TEMPLATE - FIXED: PROPER PRINT STYLING
-# ==============================================================================
-
-STORE_INVOICE_PRINT_TEMPLATE = """
+PO_REPORT_TEMPLATE = """
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1. 0">
-    <title>Invoice {{ invoice.invoice_no }}</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { 
-            font-family: 'Poppins', sans-serif; 
-            background: #fff; 
-            padding: 20px; 
-            color: #000; 
-            font-size: 14px;
-        }
-        .container { 
-            max-width: 800px; 
-            margin: 0 auto; 
-            border: 2px solid #000; 
-            padding: 30px; 
-        }
-        .header { 
-            text-align: center; 
-            border-bottom: 2px solid #000; 
-            padding-bottom: 15px; 
-            margin-bottom: 25px; 
-        }
-        .company-name { 
-            font-size: 28px; 
-            font-weight: 800; 
-            text-transform: uppercase; 
-            color: #2c3e50; 
-        }
-        .company-address { 
-            font-size: 12px; 
-            color: #555; 
-            margin-top: 5px; 
-        }
-        .invoice-title { 
-            background: #2c3e50; 
-            color: white; 
-            padding: 8px 30px; 
-            display: inline-block; 
-            font-weight: 700; 
-            font-size: 18px; 
-            margin-top: 15px; 
-            border-radius: 4px;
-        }
-        .info-section {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 25px;
-        }
-        .info-box {
-            flex: 1;
-        }
-        .info-box h4 {
-            font-size: 12px;
-            color: #777;
-            margin-bottom: 8px;
-            text-transform: uppercase;
-        }
-        .info-box p {
-            font-size: 14px;
-            margin-bottom: 5px;
-        }
-        .info-box . highlight {
-            font-size: 16px;
-            font-weight: 700;
-        }
-        .items-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 20px 0;
-        }
-        .items-table th {
-            background: #2c3e50 !important;
-            color: white ! important;
-            padding: 12px;
-            text-align: left;
-            font-size: 12px;
-            text-transform: uppercase;
-            -webkit-print-color-adjust: exact;
-            print-color-adjust: exact;
-        }
-        .items-table td {
-            padding: 12px;
-            border-bottom: 1px solid #ddd;
-        }
-        .items-table tr:nth-child(even) {
-            background: #f9f9f9;
-        }
-        .items-table . amount {
-            text-align: right;
-            font-weight: 600;
-        }
-        .totals-section {
-            margin-top: 20px;
-            margin-left: auto;
-            width: 300px;
-        }
-        .total-row {
-            display: flex;
-            justify-content: space-between;
-            padding: 10px 0;
-            border-bottom: 1px solid #eee;
-        }
-        .total-row. grand {
-            border-top: 2px solid #000;
-            border-bottom: none;
-            font-size: 18px;
-            font-weight: 800;
-            padding-top: 15px;
-        }
-        .total-row.due {
-            color: {% if invoice.due > 0 %}#e74c3c{% else %}#27ae60{% endif %};
-            font-weight: 700;
-        }
-        .footer {
-            margin-top: 50px;
-            display: flex;
-            justify-content: space-between;
-            text-align: center;
-        }
-        .signature-box {
-            width: 200px;
-            border-top: 2px solid #000;
-            padding-top: 10px;
-            font-weight: 600;
-        }
-        . no-print {
-            margin-bottom: 20px;
-            text-align: right;
-        }
-        .btn {
-            padding: 10px 25px;
-            background: #2c3e50;
-            color: white;
-            border: none;
-            cursor: pointer;
-            border-radius: 5px;
-            font-size: 14px;
-            margin-left: 10px;
-            text-decoration: none;
-            display: inline-block;
-        }
-        .btn-print {
-            background: #27ae60;
-        }
-        .notes-section {
-            margin-top: 20px;
-            padding: 15px;
-            background: #f9f9f9;
-            border-radius: 5px;
-        }
-        .notes-section h4 {
-            font-size: 12px;
-            color: #777;
-            margin-bottom: 5px;
-        }
-        
-        @media print {
-            . no-print { display: none ! important; }
-            body { padding: 0; }
-            .container { border: none; padding: 0; max-width: 100%; }
-            .items-table th { 
-                background: #2c3e50 !important; 
-                color: white ! important; 
-                -webkit-print-color-adjust: exact;
-                print-color-adjust: exact;
-            }
-        }
-    </style>
-</head>
-<body>
-    <div class="no-print">
-        <a href="/admin/store/invoices" class="btn">← Back to Invoices</a>
-        <button onclick="window.print()" class="btn btn-print">🖨️ Print Invoice</button>
-    </div>
-    
-    <div class="container">
-        <div class="header">
-            <div class="company-name">COTTON CLOTHING BD LTD</div>
-            <div class="company-address">Kazi Tower, 27 Road, Gazipura, Tongi, Gazipur</div>
-            <div class="invoice-title">INVOICE</div>
-        </div>
-        
-        <div class="info-section">
-            <div class="info-box">
-                <h4>Bill To</h4>
-                <p class="highlight">{{ invoice.customer_name }}</p>
-            </div>
-            <div class="info-box" style="text-align: right;">
-                <h4>Invoice Details</h4>
-                <p><strong>Invoice #:</strong> {{ invoice. invoice_no }}</p>
-                <p><strong>Date:</strong> {{ invoice. date }}</p>
-            </div>
-        </div>
-        
-        <table class="items-table">
-            <thead>
-                <tr>
-                    <th style="width: 10%;">#</th>
-                    <th style="width: 45%;">Description</th>
-                    <th style="width: 15%;">Qty</th>
-                    <th style="width: 15%;">Rate</th>
-                    <th style="width: 15%;">Amount</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for item in invoice.items %}
-                <tr>
-                    <td>{{ loop.index }}</td>
-                    <td>{{ item.product_name }}</td>
-                    <td>{{ item.qty }}</td>
-                    <td>৳{{ "{:,. 0f}".format(item.price) }}</td>
-                    <td class="amount">৳{{ "{:,.0f}".format(item.amount) }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-        
-        <div class="totals-section">
-            <div class="total-row">
-                <span>Subtotal</span>
-                <span>৳{{ "{:,.0f}".format(invoice.subtotal) }}</span>
-            </div>
-            {% if invoice.discount > 0 %}
-            <div class="total-row">
-                <span>Discount</span>
-                <span>-৳{{ "{:,.0f}". format(invoice.discount) }}</span>
-            </div>
-            {% endif %}
-            <div class="total-row grand">
-                <span>Total</span>
-                <span>৳{{ "{:,.0f}". format(invoice.total) }}</span>
-            </div>
-            <div class="total-row">
-                <span>Paid</span>
-                <span>৳{{ "{:,.0f}". format(invoice.paid) }}</span>
-            </div>
-            <div class="total-row due">
-                <span>Due</span>
-                <span>৳{{ "{:,. 0f}".format(invoice.due) }}</span>
-            </div>
-        </div>
-        
-        {% if invoice.notes %}
-        <div class="notes-section">
-            <h4>Notes</h4>
-            <p>{{ invoice. notes }}</p>
-        </div>
-        {% endif %}
-        
-        <div class="footer">
-            <div class="signature-box">Customer Signature</div>
-            <div class="signature-box">Authorized Signature</div>
-        </div>
-    </div>
-    
-    <script>
-        // FIXED: Auto print on page load
-        window.onload = function() {
-            setTimeout(function() {
-                window.print();
-            }, 500);
-        };
-    </script>
-</body>
-</html>
-"""
-
-# ==============================================================================
-# STORE ESTIMATES LIST TEMPLATE
-# ==============================================================================
-
-STORE_ESTIMATES_TEMPLATE = """
-<! doctype html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Estimates - Store</title>
-    """ + COMMON_STYLES + """
-</head>
-<body>
-    <div class="animated-bg"></div>
-    
-    <div class="mobile-toggle" onclick="document.querySelector('.sidebar').classList.toggle('active')">
-        <i class="fas fa-bars"></i>
-    </div>
-
-    <div class="sidebar">
-        <div class="brand-logo">
-            <i class="fas fa-store"></i> 
-            <span>Store</span>
-        </div>
-        <div class="nav-menu">
-            <a href="/admin/store" class="nav-link">
-                <i class="fas fa-home"></i> Dashboard
-            </a>
-            <a href="/admin/store/products" class="nav-link">
-                <i class="fas fa-box"></i> Products
-            </a>
-            <a href="/admin/store/customers" class="nav-link">
-                <i class="fas fa-users"></i> Customers
-            </a>
-            <a href="/admin/store/invoices" class="nav-link">
-                <i class="fas fa-file-invoice-dollar"></i> Invoices
-            </a>
-            <a href="/admin/store/estimates" class="nav-link active">
-                <i class="fas fa-file-alt"></i> Estimates
-            </a>
-            <a href="/admin/store/payments" class="nav-link">
-                <i class="fas fa-money-bill-wave"></i> Payments
-            </a>
-            <a href="/" class="nav-link" style="margin-top: 20px;">
-                <i class="fas fa-arrow-left"></i> Back to Main
-            </a>
-            <a href="/logout" class="nav-link" style="color: var(--accent-red);">
-                <i class="fas fa-sign-out-alt"></i> Sign Out
-            </a>
-        </div>
-        <div class="sidebar-footer">© 2025 Mehedi Hasan</div>
-    </div>
-
-    <div class="main-content">
-        <div class="header-section">
-            <div>
-                <div class="page-title">Estimates</div>
-                <div class="page-subtitle">Manage quotations and estimates</div>
-            </div>
-            <a href="/admin/store/estimates/new">
-                <button class="btn-primary" style="width: auto; padding: 12px 25px; background: linear-gradient(135deg, #8B5CF6 0%, #A78BFA 100%);">
-                    <i class="fas fa-plus" style="margin-right: 8px;"></i> New Estimate
-                </button>
-            </a>
-        </div>
-
-        {% with messages = get_flashed_messages() %}
-            {% if messages %}
-                <div class="flash-message flash-success">
-                    <i class="fas fa-check-circle"></i>
-                    <span>{{ messages[0] }}</span>
-                </div>
-            {% endif %}
-        {% endwith %}
-
-        <div class="card">
-            <div class="section-header">
-                <span>All Estimates ({{ estimates|length }})</span>
-                <div class="search-box" style="width: 300px; margin: 0;">
-                    <i class="fas fa-search"></i>
-                    <input type="text" id="searchEstimate" placeholder="Search estimates..." onkeyup="filterEstimates()">
-                </div>
-            </div>
-            <div style="overflow-x: auto;">
-                <table class="dark-table" id="estimatesTable">
-                    <thead>
-                        <tr>
-                            <th>Estimate #</th>
-                            <th>Customer</th>
-                            <th>Date</th>
-                            <th>Valid Until</th>
-                            <th>Total</th>
-                            <th>Status</th>
-                            <th style="text-align: right;">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for est in estimates|reverse %}
-                        <tr>
-                            <td style="font-weight: 700;">{{ est.estimate_no }}</td>
-                            <td>{{ est.customer_name }}</td>
-                            <td>{{ est.date }}</td>
-                            <td>{{ est.valid_until }}</td>
-                            <td style="font-weight: 600;">৳{{ "{:,.0f}".format(est. total) }}</td>
-                            <td>
-                                {% if est.status == 'converted' %}
-                                <span class="table-badge" style="background: rgba(16, 185, 129, 0.1); color: var(--accent-green);">Converted</span>
-                                {% elif est.status == 'expired' %}
-                                <span class="table-badge" style="background: rgba(239, 68, 68, 0. 1); color: var(--accent-red);">Expired</span>
-                                {% else %}
-                                <span class="table-badge" style="background: rgba(59, 130, 246, 0. 1); color: var(--accent-blue);">Pending</span>
-                                {% endif %}
-                            </td>
-                            <td>
-                                <div class="action-cell">
-                                    <a href="/admin/store/estimates/print/{{ loop.revindex0 }}" target="_blank" class="action-btn btn-print-sm" title="Print" onclick="openPrintWindow(event, this. href)">
-                                        <i class="fas fa-print"></i>
-                                    </a>
-                                    {% if est.status != 'converted' %}
-                                    <a href="/admin/store/estimates/convert/{{ loop.revindex0 }}" class="action-btn btn-view" title="Convert to Invoice" onclick="return confirm('Convert this estimate to invoice?');">
-                                        <i class="fas fa-exchange-alt"></i>
-                                    </a>
-                                    {% endif %}
-                                    <a href="/admin/store/estimates/edit/{{ loop.revindex0 }}" class="action-btn btn-edit" title="Edit">
-                                        <i class="fas fa-edit"></i>
-                                    </a>
-                                    <form action="/admin/store/estimates/delete/{{ loop.revindex0 }}" method="POST" style="display: inline;" onsubmit="return confirm('Delete this estimate?');">
-                                        <button type="submit" class="action-btn btn-del" title="Delete">
-                                            <i class="fas fa-trash"></i>
-                                        </button>
-                                    </form>
-                                </div>
-                            </td>
-                        </tr>
-                        {% else %}
-                        <tr>
-                            <td colspan="7" class="empty-state">
-                                <i class="fas fa-file-alt"></i>
-                                <p>No estimates created yet</p>
-                                <a href="/admin/store/estimates/new">
-                                    <button class="btn-primary btn-sm" style="margin-top: 15px;">Create First Estimate</button>
-                                </a>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-
-    <script>
-        function filterEstimates() {
-            const input = document.getElementById('searchEstimate'). value. toLowerCase();
-            const rows = document.querySelectorAll('#estimatesTable tbody tr');
-            
-            rows.forEach(row => {
-                const text = row.textContent.toLowerCase();
-                row.style.display = text.includes(input) ? '' : 'none';
-            });
-        }
-        
-        function openPrintWindow(event, url) {
-            event.preventDefault();
-            const printWin = window.open(url, '_blank', 'width=900,height=700,scrollbars=yes,resizable=yes');
-            if (printWin) {
-                printWin.focus();
-            } else {
-                window.location. href = url;
-            }
-        }
-    </script>
-</body>
-</html>
-"""
-
-# ==============================================================================
-# STORE ESTIMATE FORM TEMPLATE
-# ==============================================================================
-
-STORE_ESTIMATE_FORM_TEMPLATE = """
-<! doctype html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{{ 'Edit' if estimate else 'New' }} Estimate - Store</title>
-    """ + COMMON_STYLES + """
-    <style>
-        . items-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 20px 0;
-        }
-        .items-table th {
-            background: rgba(255, 255, 255, 0. 05);
-            padding: 12px;
-            text-align: left;
-            font-size: 12px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            color: var(--text-secondary);
-            border-bottom: 1px solid var(--border-color);
-        }
-        .items-table td {
-            padding: 10px;
-            border-bottom: 1px solid var(--border-color);
-        }
-        . items-table input, .items-table select {
-            width: 100%;
-            padding: 10px;
-            font-size: 14px;
-        }
-        .remove-item-btn {
-            background: var(--accent-red);
-            color: white;
-            border: none;
-            width: 35px;
-            height: 35px;
-            border-radius: 8px;
-            cursor: pointer;
-        }
-        .totals-section {
-            background: rgba(255, 255, 255, 0.02);
-            border-radius: 12px;
-            padding: 20px;
-            margin-top: 20px;
-        }
-        .total-row {
-            display: flex;
-            justify-content: space-between;
-            padding: 10px 0;
-            border-bottom: 1px solid var(--border-color);
-        }
-        .total-row:last-child {
-            border-bottom: none;
-            font-size: 20px;
-            font-weight: 800;
-            color: var(--accent-purple);
-        }
-    </style>
-</head>
-<body>
-    <div class="animated-bg"></div>
-    
-    <div class="mobile-toggle" onclick="document.querySelector('.sidebar').classList. toggle('active')">
-        <i class="fas fa-bars"></i>
-    </div>
-
-    <div class="sidebar">
-        <div class="brand-logo">
-            <i class="fas fa-store"></i> 
-            <span>Store</span>
-        </div>
-        <div class="nav-menu">
-            <a href="/admin/store" class="nav-link">
-                <i class="fas fa-home"></i> Dashboard
-            </a>
-            <a href="/admin/store/estimates" class="nav-link active">
-                <i class="fas fa-file-alt"></i> Estimates
-            </a>
-            <a href="/" class="nav-link" style="margin-top: 20px;">
-                <i class="fas fa-arrow-left"></i> Back to Main
-            </a>
-        </div>
-        <div class="sidebar-footer">© 2025 Mehedi Hasan</div>
-    </div>
-
-    <div class="main-content">
-        <div class="header-section">
-            <div>
-                <div class="page-title">{{ 'Edit' if estimate else 'Create New' }} Estimate</div>
-                <div class="page-subtitle">{{ estimate.estimate_no if estimate else 'Fill in the details below' }}</div>
-            </div>
-        </div>
-
-        <form action="{{ '/admin/store/estimates/update/' ~ index if estimate else '/admin/store/estimates/save' }}" method="POST" id="estimateForm">
-            <div class="dashboard-grid-2">
-                <div class="card">
-                    <div class="section-header">
-                        <span>Estimate Details</span>
-                    </div>
-                    
-                    <div class="grid-2">
-                        <div class="input-group">
-                            <label>Estimate Number</label>
-                            <input type="text" name="estimate_no" value="{{ estimate.estimate_no if estimate else next_estimate_no }}" readonly style="background: rgba(255,255,255,0.02);">
-                        </div>
-                        <div class="input-group">
-                            <label>Date</label>
-                            <input type="date" name="date" value="{{ estimate. date if estimate else today }}" required>
-                        </div>
-                    </div>
-                    
-                    <div class="input-group">
-                        <label>Valid Until</label>
-                        <input type="date" name="valid_until" value="{{ estimate.valid_until if estimate else valid_until }}" required>
-                    </div>
-                    
-                    <div class="input-group">
-                        <label>Customer</label>
-                        <select name="customer_index" id="customerSelect" required onchange="updateCustomerInfo()">
-                            <option value="">Select Customer</option>
-                            {% for c in customers %}
-                            <option value="{{ loop.index0 }}" data-name="{{ c.name }}"
-                                {{ 'selected' if estimate and estimate.customer_index == loop.index0 }}>
-                                {{ c.name }} - {{ c.phone }}
-                            </option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    
-                    <input type="hidden" name="customer_name" id="customerNameInput" value="{{ estimate.customer_name if estimate else '' }}">
-                    
-                    <div class="input-group">
-                        <label>Notes (Optional)</label>
-                        <textarea name="notes" rows="2" placeholder="Terms & conditions... ">{{ estimate.notes if estimate else '' }}</textarea>
-                    </div>
-                </div>
-
-                <div class="card">
-                    <div class="section-header">
-                        <span>Summary</span>
-                    </div>
-                    
-                    <div class="totals-section">
-                        <div class="total-row">
-                            <span>Subtotal</span>
-                            <span id="subtotalDisplay">৳0</span>
-                        </div>
-                        <div class="total-row">
-                            <span>Discount</span>
-                            <input type="number" name="discount" id="discountInput" value="{{ estimate.discount if estimate else 0 }}" min="0" style="width: 120px; text-align: right;" onchange="calculateTotals()">
-                        </div>
-                        <div class="total-row">
-                            <span>Total</span>
-                            <span id="grandTotalDisplay">৳0</span>
-                        </div>
-                    </div>
-                    
-                    <input type="hidden" name="subtotal" id="subtotalInput" value="0">
-                    <input type="hidden" name="total" id="totalInput" value="0">
-                </div>
-            </div>
-
-            <div class="card" style="margin-top: 20px;">
-                <div class="section-header">
-                    <span>Estimate Items</span>
-                    <button type="button" onclick="addItemRow()" class="btn-primary btn-sm" style="width: auto;">
-                        <i class="fas fa-plus" style="margin-right: 5px;"></i> Add Item
-                    </button>
-                </div>
-                
-                <table class="items-table">
-                    <thead>
-                        <tr>
-                            <th style="width: 40%;">Product</th>
-                            <th style="width: 15%;">Qty</th>
-                            <th style="width: 15%;">Price</th>
-                            <th style="width: 20%;">Amount</th>
-                            <th style="width: 10%;"></th>
-                        </tr>
-                    </thead>
-                    <tbody id="itemsTableBody">
-                        {% if estimate and estimate.items %}
-                            {% for item in estimate.items %}
-                            <tr class="item-row">
-                                <td>
-                                    <select name="items[][product_index]" class="product-select" onchange="updateItemPrice(this)">
-                                        <option value="">Select Product</option>
-                                        {% for p in products %}
-                                        <option value="{{ loop.index0 }}" data-price="{{ p.price }}" data-name="{{ p.name }}"
-                                            {{ 'selected' if item.product_index == loop.index0 }}>
-                                            {{ p. code }} - {{ p. name }}
-                                        </option>
-                                        {% endfor %}
-                                    </select>
-                                </td>
-                                <td>
-                                    <input type="number" name="items[][qty]" class="item-qty" value="{{ item.qty }}" min="1" onchange="calculateRowAmount(this)">
-                                </td>
-                                <td>
-                                    <input type="number" name="items[][price]" class="item-price" value="{{ item.price }}" min="0" step="0.01" onchange="calculateRowAmount(this)">
-                                </td>
-                                <td>
-                                    <input type="number" name="items[][amount]" class="item-amount" value="{{ item.amount }}" readonly style="background: rgba(255,
-                                    # ==============================================================================
-# STORE ESTIMATE FORM TEMPLATE (CONTINUED)
-# ==============================================================================
-
-STORE_ESTIMATE_FORM_TEMPLATE_CONTINUED = """
-255,255,0. 02);">
-                                </td>
-                                <td>
-                                    <button type="button" class="remove-item-btn" onclick="removeItemRow(this)">
-                                        <i class="fas fa-times"></i>
-                                    </button>
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        {% else %}
-                            <tr class="item-row">
-                                <td>
-                                    <select name="items[][product_index]" class="product-select" onchange="updateItemPrice(this)">
-                                        <option value="">Select Product</option>
-                                        {% for p in products %}
-                                        <option value="{{ loop.index0 }}" data-price="{{ p. price }}" data-name="{{ p.name }}">
-                                            {{ p. code }} - {{ p.name }}
-                                        </option>
-                                        {% endfor %}
-                                    </select>
-                                </td>
-                                <td>
-                                    <input type="number" name="items[][qty]" class="item-qty" value="1" min="1" onchange="calculateRowAmount(this)">
-                                </td>
-                                <td>
-                                    <input type="number" name="items[][price]" class="item-price" value="0" min="0" step="0.01" onchange="calculateRowAmount(this)">
-                                </td>
-                                <td>
-                                    <input type="number" name="items[][amount]" class="item-amount" value="0" readonly style="background: rgba(255,255,255,0.02);">
-                                </td>
-                                <td>
-                                    <button type="button" class="remove-item-btn" onclick="removeItemRow(this)">
-                                        <i class="fas fa-times"></i>
-                                    </button>
-                                </td>
-                            </tr>
-                        {% endif %}
-                    </tbody>
-                </table>
-            </div>
-
-            <div style="display: flex; gap: 15px; margin-top: 20px;">
-                <button type="submit" class="btn-purple" style="flex: 2;">
-                    <i class="fas fa-save" style="margin-right: 8px;"></i> 
-                    {{ 'Update' if estimate else 'Save' }} Estimate
-                </button>
-                <a href="/admin/store/estimates" style="flex: 1; text-decoration: none;">
-                    <button type="button" class="btn-secondary" style="width: 100%;">
-                        Cancel
-                    </button>
-                </a>
-            </div>
-        </form>
-    </div>
-
-    <script>
-        const productsData = {{ products | tojson }};
-        
-        function updateCustomerInfo() {
-            const select = document.getElementById('customerSelect');
-            const option = select.options[select.selectedIndex];
-            document.getElementById('customerNameInput').value = option.dataset.name || '';
-        }
-        
-        function addItemRow() {
-            const tbody = document.getElementById('itemsTableBody');
-            const productOptions = productsData.map((p, i) => 
-                `<option value="${i}" data-price="${p. price}" data-name="${p.name}">${p.code} - ${p.name}</option>`
-            ). join('');
-            
-            const newRow = document.createElement('tr');
-            newRow. className = 'item-row';
-            newRow.innerHTML = `
-                <td>
-                    <select name="items[][product_index]" class="product-select" onchange="updateItemPrice(this)">
-                        <option value="">Select Product</option>
-                        ${productOptions}
-                    </select>
-                </td>
-                <td>
-                    <input type="number" name="items[][qty]" class="item-qty" value="1" min="1" onchange="calculateRowAmount(this)">
-                </td>
-                <td>
-                    <input type="number" name="items[][price]" class="item-price" value="0" min="0" step="0.01" onchange="calculateRowAmount(this)">
-                </td>
-                <td>
-                    <input type="number" name="items[][amount]" class="item-amount" value="0" readonly style="background: rgba(255,255,255,0.02);">
-                </td>
-                <td>
-                    <button type="button" class="remove-item-btn" onclick="removeItemRow(this)">
-                        <i class="fas fa-times"></i>
-                    </button>
-                </td>
-            `;
-            tbody.appendChild(newRow);
-        }
-        
-        function removeItemRow(btn) {
-            const rows = document.querySelectorAll('.item-row');
-            if (rows.length > 1) {
-                btn.closest('tr'). remove();
-                calculateTotals();
-            }
-        }
-        
-        function updateItemPrice(select) {
-            const row = select.closest('tr');
-            const option = select.options[select.selectedIndex];
-            const price = parseFloat(option. dataset.price) || 0;
-            row.querySelector('.item-price').value = price;
-            calculateRowAmount(select);
-        }
-        
-        function calculateRowAmount(element) {
-            const row = element.closest('tr');
-            const qty = parseFloat(row.querySelector('.item-qty').value) || 0;
-            const price = parseFloat(row.querySelector('.item-price').value) || 0;
-            const amount = qty * price;
-            row.querySelector('.item-amount').value = amount.toFixed(2);
-            calculateTotals();
-        }
-        
-        function calculateTotals() {
-            let subtotal = 0;
-            document.querySelectorAll('.item-amount').forEach(input => {
-                subtotal += parseFloat(input.value) || 0;
-            });
-            
-            const discount = parseFloat(document.getElementById('discountInput'). value) || 0;
-            const grandTotal = subtotal - discount;
-            
-            document.getElementById('subtotalDisplay').textContent = '৳' + subtotal.toLocaleString();
-            document.getElementById('grandTotalDisplay').textContent = '৳' + grandTotal. toLocaleString();
-            
-            document.getElementById('subtotalInput').value = subtotal;
-            document.getElementById('totalInput').value = grandTotal;
-        }
-        
-        document.addEventListener('DOMContentLoaded', function() {
-            updateCustomerInfo();
-            calculateTotals();
-        });
-    </script>
-</body>
-</html>
-"""
-
-# Combine estimate form template
-STORE_ESTIMATE_FORM_TEMPLATE = STORE_ESTIMATE_FORM_TEMPLATE + STORE_ESTIMATE_FORM_TEMPLATE_CONTINUED
-
-# ==============================================================================
-# STORE ESTIMATE PRINT TEMPLATE - FIXED
-# ==============================================================================
-
-STORE_ESTIMATE_PRINT_TEMPLATE = """
-<! DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Estimate {{ estimate.estimate_no }}</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <title>PO Report - Cotton Clothing BD</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { 
-            font-family: 'Poppins', sans-serif; 
-            background: #fff; 
-            padding: 20px; 
-            color: #000; 
-            font-size: 14px;
-        }
-        .container { 
-            max-width: 800px; 
-            margin: 0 auto; 
-            border: 2px solid #000; 
-            padding: 30px; 
-        }
-        .header { 
-            text-align: center; 
-            border-bottom: 2px solid #000; 
-            padding-bottom: 15px; 
-            margin-bottom: 25px; 
-        }
-        .company-name { 
-            font-size: 28px; 
-            font-weight: 800; 
-            text-transform: uppercase; 
-            color: #2c3e50; 
-        }
-        .company-address { 
-            font-size: 12px; 
-            color: #555; 
-            margin-top: 5px; 
-        }
-        .estimate-title { 
-            background: #8B5CF6; 
-            color: white; 
-            padding: 8px 30px; 
-            display: inline-block; 
-            font-weight: 700; 
-            font-size: 18px; 
-            margin-top: 15px; 
-            border-radius: 4px;
-            -webkit-print-color-adjust: exact;
-            print-color-adjust: exact;
-        }
-        .info-section {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 25px;
-        }
-        .info-box {
-            flex: 1;
-        }
-        .info-box h4 {
-            font-size: 12px;
-            color: #777;
-            margin-bottom: 8px;
-            text-transform: uppercase;
-        }
-        .info-box p {
-            font-size: 14px;
-            margin-bottom: 5px;
-        }
-        .info-box . highlight {
-            font-size: 16px;
-            font-weight: 700;
-        }
-        .validity-box {
-            background: #fff3cd;
-            border: 1px solid #ffc107;
-            padding: 10px 20px;
-            border-radius: 5px;
-            margin-bottom: 20px;
-            text-align: center;
-            font-weight: 600;
-            -webkit-print-color-adjust: exact;
-            print-color-adjust: exact;
-        }
-        .items-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 20px 0;
-        }
-        .items-table th {
-            background: #8B5CF6 !important;
-            color: white ! important;
-            padding: 12px;
-            text-align: left;
-            font-size: 12px;
-            text-transform: uppercase;
-            -webkit-print-color-adjust: exact;
-            print-color-adjust: exact;
-        }
-        .items-table td {
-            padding: 12px;
-            border-bottom: 1px solid #ddd;
-        }
-        .items-table tr:nth-child(even) {
-            background: #f9f9f9;
-        }
-        .items-table . amount {
-            text-align: right;
-            font-weight: 600;
-        }
-        .totals-section {
-            margin-top: 20px;
-            margin-left: auto;
-            width: 300px;
-        }
-        .total-row {
-            display: flex;
-            justify-content: space-between;
-            padding: 10px 0;
-            border-bottom: 1px solid #eee;
-        }
-        .total-row. grand {
-            border-top: 2px solid #000;
-            border-bottom: none;
-            font-size: 18px;
-            font-weight: 800;
-            padding-top: 15px;
-            color: #8B5CF6;
-        }
-        .footer {
-            margin-top: 50px;
-            display: flex;
-            justify-content: space-between;
-            text-align: center;
-        }
-        .signature-box {
-            width: 200px;
-            border-top: 2px solid #000;
-            padding-top: 10px;
-            font-weight: 600;
-        }
-        . no-print {
-            margin-bottom: 20px;
-            text-align: right;
-        }
-        .btn {
-            padding: 10px 25px;
-            background: #2c3e50;
-            color: white;
-            border: none;
-            cursor: pointer;
-            border-radius: 5px;
-            font-size: 14px;
-            margin-left: 10px;
-            text-decoration: none;
-            display: inline-block;
-        }
-        .btn-print {
-            background: #8B5CF6;
-        }
-        .notes-section {
-            margin-top: 20px;
-            padding: 15px;
-            background: #f9f9f9;
-            border-radius: 5px;
-        }
-        .notes-section h4 {
-            font-size: 12px;
-            color: #777;
-            margin-bottom: 5px;
-        }
-        
+        body { background-color: #f8f9fa; padding: 30px 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .container { max-width: 1200px; }
+        .company-header { text-align: center; margin-bottom: 20px; border-bottom: 2px solid #000; padding-bottom: 10px; }
+        .company-name { font-size: 2.2rem; font-weight: 800; color: #2c3e50; text-transform: uppercase; letter-spacing: 1px; line-height: 1; }
+        .report-title { font-size: 1.1rem; color: #555; font-weight: 600; text-transform: uppercase; margin-top: 5px; }
+        .date-section { font-size: 1.2rem; font-weight: 800; color: #000; margin-top: 5px; }
+        .info-container { display: flex; justify-content: space-between; margin-bottom: 15px; gap: 15px; }
+        .info-box { background: white; border: 1px solid #ddd; border-left: 5px solid #2c3e50; padding: 10px 15px; border-radius: 5px; flex: 2; box-shadow: 0 2px 5px rgba(0,0,0,0.05); display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .total-box { background: #2c3e50; color: white; padding: 10px 15px; border-radius: 5px; width: 240px; text-align: right; display: flex; flex-direction: column; justify-content: center; box-shadow: 0 4px 10px rgba(44, 62, 80, 0.3); }
+        .info-item { margin-bottom: 6px; font-size: 1.3rem; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .info-label { font-weight: 800; color: #444; width: 90px; display: inline-block; }
+        .info-value { font-weight: 800; color: #000; }
+        .total-label { font-size: 1.1rem; opacity: 0.9; text-transform: uppercase; letter-spacing: 1px; font-weight: 700; }
+        .total-value { font-size: 2.5rem; font-weight: 800; line-height: 1.1; }
+        .table-card { background: white; border-radius: 0; margin-bottom: 20px; overflow: hidden; border: 1px solid #dee2e6; }
+        .color-header { background-color: #e9ecef; color: #2c3e50; padding: 10px 12px; font-size: 1.5rem; font-weight: 900; border-bottom: 1px solid #dee2e6; text-transform: uppercase; }
+        .table { margin-bottom: 0; width: 100%; border-collapse: collapse; }
+        .table th { background-color: #2c3e50; color: white; font-weight: 900; font-size: 1.2rem; text-align: center; border: 1px solid #34495e; padding: 8px 4px; vertical-align: middle; }
+        .table th:empty { background-color: white !important; border: none; }
+        .table td { text-align: center; vertical-align: middle; border: 1px solid #dee2e6; padding: 6px 3px; color: #000; font-weight: 800; font-size: 1.15rem; }
+        .table-striped tbody tr:nth-of-type(odd) { background-color: #f8f9fa; }
+        .order-col { font-weight: 900 !important; text-align: center !important; background-color: #fdfdfd; white-space: nowrap; width: 1%; }
+        .total-col { font-weight: 900; background-color: #e8f6f3 !important; color: #16a085; border-left: 2px solid #1abc9c !important; }
+        .total-col-header { background-color: #e8f6f3 !important; color: #000 !important; font-weight: 900 !important; border: 1px solid #34495e !important; }
+        .table-striped tbody tr.summary-row, .table-striped tbody tr.summary-row td { background-color: #d1ecff !important; --bs-table-accent-bg: #d1ecff !important; color: #000 !important; font-weight: 900 !important; border-top: 2px solid #aaa !important; font-size: 1.2rem !important; }
+        .summary-label { text-align: right !important; padding-right: 15px !important; color: #000 !important; }
+        .action-bar { margin-bottom: 20px; display: flex; justify-content: flex-end; gap: 10px; }
+        .btn-print { background-color: #e74c3c; color: white; border-radius: 50px; padding: 8px 30px; font-weight: 600; border: none; }
+        .footer-credit { text-align: center; margin-top: 30px; margin-bottom: 20px; font-size: 0.8rem; color: #2c3e50; padding-top: 10px; border-top: 1px solid #ddd; }
         @media print {
-            .no-print { display: none ! important; }
-            body { padding: 0; }
-            .container { border: none; padding: 0; max-width: 100%; }
-            .estimate-title, .items-table th { 
-                background: #8B5CF6 !important; 
-                color: white ! important; 
-                -webkit-print-color-adjust: exact;
-                print-color-adjust: exact;
-            }
-            .validity-box {
-                background: #fff3cd ! important;
-                -webkit-print-color-adjust: exact;
-                print-color-adjust: exact;
-            }
+            @page { margin: 5mm; size: portrait; }
+            body { background-color: white; padding: 0; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; color-adjust: exact !important; }
+            .container { max-width: 100% !important; width: 100% !important; padding: 0; margin: 0; }
+            .no-print { display: none !important; }
+            .company-header { border-bottom: 2px solid #000; margin-bottom: 5px; padding-bottom: 5px; }
+            .company-name { font-size: 1.8rem; } 
+            .info-container { margin-bottom: 10px; }
+            .info-box { border: 1px solid #000 !important; border-left: 5px solid #000 !important; padding: 5px 10px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+            .total-box { border: 2px solid #000 !important; background: white !important; color: black !important; padding: 5px 10px; }
+            .info-item { font-size: 13pt !important; font-weight: 800 !important; }
+            .table th, .table td { border: 1px solid #000 !important; padding: 2px !important; font-size: 13pt !important; font-weight: 800 !important; }
+            .table th:empty { background-color: white !important; border: none !important; }
+            .table-striped tbody tr.summary-row td { background-color: #d1ecff !important; box-shadow: inset 0 0 0 9999px #d1ecff !important; color: #000 !important; font-weight: 900 !important; }
+            .color-header { background-color: #f1f1f1 !important; border: 1px solid #000 !important; font-size: 1.4rem !important; font-weight: 900; padding: 5px; margin-top: 10px; box-shadow: inset 0 0 0 9999px #f1f1f1 !important; }
+            .total-col-header { background-color: #e8f6f3 !important; box-shadow: inset 0 0 0 9999px #e8f6f3 !important; color: #000 !important; }
+            .table-card { border: none; margin-bottom: 10px; break-inside: avoid; }
+            .footer-credit { display: block !important; color: black; border-top: 1px solid #000; margin-top: 10px; font-size: 8pt !important; }
         }
     </style>
 </head>
 <body>
-    <div class="no-print">
-        <a href="/admin/store/estimates" class="btn">← Back to Estimates</a>
-        <button onclick="window.print()" class="btn btn-print">🖨️ Print Estimate</button>
-    </div>
-    
     <div class="container">
-        <div class="header">
+        <div class="action-bar no-print">
+            <a href="/" class="btn btn-outline-secondary rounded-pill px-4">Back to Dashboard</a>
+            <button onclick="window.print()" class="btn btn-print"><i class="fas fa-file-pdf"></i> Print</button>
+        </div>
+        <div class="company-header">
             <div class="company-name">COTTON CLOTHING BD LTD</div>
-            <div class="company-address">Kazi Tower, 27 Road, Gazipura, Tongi, Gazipur</div>
-            <div class="estimate-title">ESTIMATE / QUOTATION</div>
+            <div class="report-title">Purchase Order Summary</div>
+            <div class="date-section">Date: <span id="date"></span></div>
         </div>
-        
-        <div class="validity-box">
-            ⏰ Valid Until: {{ estimate.valid_until }}
-        </div>
-        
-        <div class="info-section">
-            <div class="info-box">
-                <h4>Prepared For</h4>
-                <p class="highlight">{{ estimate.customer_name }}</p>
-            </div>
-            <div class="info-box" style="text-align: right;">
-                <h4>Estimate Details</h4>
-                <p><strong>Estimate #:</strong> {{ estimate. estimate_no }}</p>
-                <p><strong>Date:</strong> {{ estimate.date }}</p>
-            </div>
-        </div>
-        
-        <table class="items-table">
-            <thead>
-                <tr>
-                    <th style="width: 10%;">#</th>
-                    <th style="width: 45%;">Description</th>
-                    <th style="width: 15%;">Qty</th>
-                    <th style="width: 15%;">Rate</th>
-                    <th style="width: 15%;">Amount</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for item in estimate.items %}
-                <tr>
-                    <td>{{ loop.index }}</td>
-                    <td>{{ item.product_name }}</td>
-                    <td>{{ item.qty }}</td>
-                    <td>৳{{ "{:,.0f}".format(item.price) }}</td>
-                    <td class="amount">৳{{ "{:,. 0f}".format(item.amount) }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-        
-        <div class="totals-section">
-            <div class="total-row">
-                <span>Subtotal</span>
-                <span>৳{{ "{:,.0f}".format(estimate.subtotal) }}</span>
-            </div>
-            {% if estimate.discount > 0 %}
-            <div class="total-row">
-                <span>Discount</span>
-                <span>-৳{{ "{:,.0f}". format(estimate.discount) }}</span>
-            </div>
-            {% endif %}
-            <div class="total-row grand">
-                <span>Total</span>
-                <span>৳{{ "{:,.0f}".format(estimate.total) }}</span>
-            </div>
-        </div>
-        
-        {% if estimate.notes %}
-        <div class="notes-section">
-            <h4>Terms & Conditions</h4>
-            <p>{{ estimate. notes }}</p>
-        </div>
+        {% if message %}
+            <div class="alert alert-warning text-center no-print">{{ message }}</div>
         {% endif %}
-        
-        <div class="footer">
-            <div class="signature-box">Customer Signature</div>
-            <div class="signature-box">Authorized Signature</div>
-        </div>
-    </div>
-    
-    <script>
-        // FIXED: Auto print on page load
-        window. onload = function() {
-            setTimeout(function() {
-                window.print();
-            }, 500);
-        };
-    </script>
-</body>
-</html>
-"""
-
-# ==============================================================================
-# STORE PAYMENTS LIST TEMPLATE
-# ==============================================================================
-
-STORE_PAYMENTS_TEMPLATE = """
-<! doctype html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Payments - Store</title>
-    """ + COMMON_STYLES + """
-</head>
-<body>
-    <div class="animated-bg"></div>
-    
-    <div class="mobile-toggle" onclick="document.querySelector('.sidebar'). classList.toggle('active')">
-        <i class="fas fa-bars"></i>
-    </div>
-
-    <div class="sidebar">
-        <div class="brand-logo">
-            <i class="fas fa-store"></i> 
-            <span>Store</span>
-        </div>
-        <div class="nav-menu">
-            <a href="/admin/store" class="nav-link">
-                <i class="fas fa-home"></i> Dashboard
-            </a>
-            <a href="/admin/store/products" class="nav-link">
-                <i class="fas fa-box"></i> Products
-            </a>
-            <a href="/admin/store/customers" class="nav-link">
-                <i class="fas fa-users"></i> Customers
-            </a>
-            <a href="/admin/store/invoices" class="nav-link">
-                <i class="fas fa-file-invoice-dollar"></i> Invoices
-            </a>
-            <a href="/admin/store/estimates" class="nav-link">
-                <i class="fas fa-file-alt"></i> Estimates
-            </a>
-            <a href="/admin/store/payments" class="nav-link active">
-                <i class="fas fa-money-bill-wave"></i> Payments
-            </a>
-            <a href="/" class="nav-link" style="margin-top: 20px;">
-                <i class="fas fa-arrow-left"></i> Back to Main
-            </a>
-            <a href="/logout" class="nav-link" style="color: var(--accent-red);">
-                <i class="fas fa-sign-out-alt"></i> Sign Out
-            </a>
-        </div>
-        <div class="sidebar-footer">© 2025 Mehedi Hasan</div>
-    </div>
-
-    <div class="main-content">
-        <div class="header-section">
-            <div>
-                <div class="page-title">Payments</div>
-                <div class="page-subtitle">Track all payment transactions</div>
-            </div>
-            <a href="/admin/store/payments/new">
-                <button class="btn-primary" style="width: auto; padding: 12px 25px;">
-                    <i class="fas fa-plus" style="margin-right: 8px;"></i> Receive Payment
-                </button>
-            </a>
-        </div>
-
-        {% with messages = get_flashed_messages() %}
-            {% if messages %}
-                <div class="flash-message flash-success">
-                    <i class="fas fa-check-circle"></i>
-                    <span>{{ messages[0] }}</span>
+        {% if tables %}
+            <div class="info-container">
+                <div class="info-box">
+                    <div>
+                        <div class="info-item"><span class="info-label">Buyer:</span> <span class="info-value">{{ meta.buyer }}</span></div>
+                        <div class="info-item"><span class="info-label">Booking:</span> <span class="info-value">{{ meta.booking }}</span></div>
+                        <div class="info-item"><span class="info-label">Style:</span> <span class="info-value">{{ meta.style }}</span></div>
+                    </div>
+                    <div>
+                        <div class="info-item"><span class="info-label">Season:</span> <span class="info-value">{{ meta.season }}</span></div>
+                        <div class="info-item"><span class="info-label">Dept:</span> <span class="info-value">{{ meta.dept }}</span></div>
+                        <div class="info-item"><span class="info-label">Item:</span> <span class="info-value">{{ meta.item }}</span></div>
+                    </div>
                 </div>
-            {% endif %}
-        {% endwith %}
-
-        <div class="card">
-            <div class="section-header">
-                <span>All Payments ({{ payments|length }})</span>
+                <div class="total-box">
+                    <div class="total-label">Grand Total</div>
+                    <div class="total-value">{{ grand_total }}</div>
+                    <small>Pieces</small>
+                </div>
             </div>
-            <div style="overflow-x: auto;">
-                <table class="dark-table">
-                    <thead>
-                        <tr>
-                            <th>Date</th>
-                            <th>Invoice #</th>
-                            <th>Customer</th>
-                            <th>Method</th>
-                            <th>Amount</th>
-                            <th>Notes</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for p in payments|reverse %}
-                        <tr>
-                            <td>{{ p.date }}</td>
-                            <td style="font-weight: 700;">{{ p.invoice_no }}</td>
-                            <td>{{ p.customer_name }}</td>
-                            <td>
-                                <span class="table-badge" style="
-                                    {% if p.method == 'Cash' %}
-                                    background: rgba(16, 185, 129, 0.1); color: var(--accent-green);
-                                    {% elif p.method == 'Bank' %}
-                                    background: rgba(59, 130, 246, 0. 1); color: var(--accent-blue);
-                                    {% else %}
-                                    background: rgba(139, 92, 246, 0.1); color: var(--accent-purple);
-                                    {% endif %}
-                                ">{{ p.method }}</span>
-                            </td>
-                            <td style="font-weight: 700; color: var(--accent-green);">৳{{ "{:,. 0f}".format(p.amount) }}</td>
-                            <td style="color: var(--text-secondary);">{{ p. notes if p.notes else '-' }}</td>
-                        </tr>
-                        {% else %}
-                        <tr>
-                            <td colspan="6" class="empty-state">
-                                <i class="fas fa-money-bill-wave"></i>
-                                <p>No payments recorded yet</p>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        </div>
+            {% for item in tables %}
+                <div class="table-card">
+                    <div class="color-header">COLOR: {{ item.color }}</div>
+                    <div class="table-responsive">{{ item.table | safe }}</div>
+                </div>
+            {% endfor %}
+            <div class="footer-credit">Report Created By <strong>Mehedi Hasan</strong></div>
+        {% endif %}
     </div>
-</body>
-</html>
-"""
-
-# ==============================================================================
-# STORE PAYMENT FORM TEMPLATE
-# ==============================================================================
-
-STORE_PAYMENT_FORM_TEMPLATE = """
-<! doctype html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Receive Payment - Store</title>
-    """ + COMMON_STYLES + """
-    <style>
-        .form-container {
-            max-width: 550px;
-            margin: 0 auto;
-        }
-        .invoice-info {
-            background: rgba(255, 122, 0, 0.1);
-            border: 1px solid rgba(255, 122, 0, 0.2);
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 25px;
-        }
-        .invoice-info-row {
-            display: flex;
-            justify-content: space-between;
-            padding: 8px 0;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-        }
-        .invoice-info-row:last-child {
-            border-bottom: none;
-            font-weight: 700;
-            font-size: 18px;
-            color: var(--accent-red);
-        }
-    </style>
-</head>
-<body>
-    <div class="animated-bg"></div>
-    
-    <div class="mobile-toggle" onclick="document.querySelector('.sidebar').classList.toggle('active')">
-        <i class="fas fa-bars"></i>
-    </div>
-
-    <div class="sidebar">
-        <div class="brand-logo">
-            <i class="fas fa-store"></i> 
-            <span>Store</span>
-        </div>
-        <div class="nav-menu">
-            <a href="/admin/store" class="nav-link">
-                <i class="fas fa-home"></i> Dashboard
-            </a>
-            <a href="/admin/store/payments" class="nav-link active">
-                <i class="fas fa-money-bill-wave"></i> Payments
-            </a>
-            <a href="/" class="nav-link" style="margin-top: 20px;">
-                <i class="fas fa-arrow-left"></i> Back to Main
-            </a>
-        </div>
-        <div class="sidebar-footer">© 2025 Mehedi Hasan</div>
-    </div>
-
-    <div class="main-content">
-        <div class="header-section">
-            <div>
-                <div class="page-title">Receive Payment</div>
-                <div class="page-subtitle">Record a new payment transaction</div>
-            </div>
-        </div>
-
-        <div class="form-container">
-            <div class="card">
-                <form action="/admin/store/payments/save" method="POST">
-                    <div class="input-group">
-                        <label><i class="fas fa-file-invoice" style="margin-right: 5px;"></i> Invoice</label>
-                        <select name="invoice_index" id="invoiceSelect" required onchange="updateInvoiceInfo()">
-                            <option value="">Select Invoice</option>
-                            {% for inv in invoices %}
-                            {% if inv.due > 0 %}
-                            <option value="{{ loop.index0 }}" 
-                                data-no="{{ inv.invoice_no }}"
-                                data-customer="{{ inv.customer_name }}"
-                                data-total="{{ inv.total }}"
-                                data-paid="{{ inv.paid }}"
-                                data-due="{{ inv. due }}"
-                                {{ 'selected' if selected_invoice == loop. index0 }}>
-                                {{ inv.invoice_no }} - {{ inv.customer_name }} (Due: ৳{{ "{:,.0f}". format(inv.due) }})
-                            </option>
-                            {% endif %}
-                            {% endfor %}
-                        </select>
-                    </div>
-                    
-                    <div class="invoice-info" id="invoiceInfo" style="display: none;">
-                        <div class="invoice-info-row">
-                            <span style="color: var(--text-secondary);">Invoice</span>
-                            <span id="infoInvoiceNo">-</span>
-                        </div>
-                        <div class="invoice-info-row">
-                            <span style="color: var(--text-secondary);">Customer</span>
-                            <span id="infoCustomer">-</span>
-                        </div>
-                        <div class="invoice-info-row">
-                            <span style="color: var(--text-secondary);">Total</span>
-                            <span id="infoTotal">৳0</span>
-                        </div>
-                        <div class="invoice-info-row">
-                            <span style="color: var(--text-secondary);">Already Paid</span>
-                            <span id="infoPaid" style="color: var(--accent-green);">৳0</span>
-                        </div>
-                        <div class="invoice-info-row">
-                            <span>Due Amount</span>
-                            <span id="infoDue">৳0</span>
-                        </div>
-                    </div>
-                    
-                    <input type="hidden" name="invoice_no" id="invoiceNoInput">
-                    <input type="hidden" name="customer_name" id="customerNameInput">
-                    
-                    <div class="input-group">
-                        <label><i class="fas fa-calendar" style="margin-right: 5px;"></i> Payment Date</label>
-                        <input type="date" name="date" value="{{ today }}" required>
-                    </div>
-                    
-                    <div class="grid-2">
-                        <div class="input-group">
-                            <label><i class="fas fa-money-bill" style="margin-right: 5px;"></i> Amount</label>
-                            <input type="number" name="amount" id="amountInput" required placeholder="0" min="1" step="0.01">
-                        </div>
-                        <div class="input-group">
-                            <label><i class="fas fa-credit-card" style="margin-right: 5px;"></i> Method</label>
-                            <select name="method" required>
-                                <option value="Cash">Cash</option>
-                                <option value="Bank">Bank Transfer</option>
-                                <option value="bKash">bKash</option>
-                                <option value="Nagad">Nagad</option>
-                                <option value="Check">Check</option>
-                            </select>
-                        </div>
-                    </div>
-                    
-                    <div class="input-group">
-                        <label><i class="fas fa-sticky-note" style="margin-right: 5px;"></i> Notes (Optional)</label>
-                        <textarea name="notes" rows="2" placeholder="Payment reference, check number, etc... "></textarea>
-                    </div>
-                    
-                    <div style="display: flex; gap: 15px; margin-top: 10px;">
-                        <button type="submit" class="btn-success">
-                            <i class="fas fa-check" style="margin-right: 8px;"></i> Record Payment
-                        </button>
-                        <a href="/admin/store/payments" style="flex: 1; text-decoration: none;">
-                            <button type="button" class="btn-secondary" style="width: 100%;">
-                                Cancel
-                            </button>
-                        </a>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-
     <script>
-        function updateInvoiceInfo() {
-            const select = document.getElementById('invoiceSelect');
-            const option = select.options[select. selectedIndex];
-            const infoDiv = document. getElementById('invoiceInfo');
-            
-            if (option. value) {
-                document.getElementById('infoInvoiceNo'). textContent = option. dataset.no;
-                document.getElementById('infoCustomer').textContent = option.dataset.customer;
-                document.getElementById('infoTotal').textContent = '৳' + parseFloat(option.dataset.total).toLocaleString();
-                document.getElementById('infoPaid').textContent = '৳' + parseFloat(option.dataset.paid). toLocaleString();
-                document.getElementById('infoDue'). textContent = '৳' + parseFloat(option.dataset. due).toLocaleString();
-                
-                document.getElementById('invoiceNoInput').value = option.dataset.no;
-                document. getElementById('customerNameInput').value = option. dataset.customer;
-                document.getElementById('amountInput').max = option.dataset. due;
-                document.getElementById('amountInput').value = option.dataset. due;
-                
-                infoDiv.style.display = 'block';
-            } else {
-                infoDiv.style. display = 'none';
-            }
-        }
-        
-        // Initialize on page load
-        document.addEventListener('DOMContentLoaded', function() {
-            updateInvoiceInfo();
-        });
-    </script>
+        const dateObj = new Date();
+        const day = String(dateObj.getDate()).padStart(2, '0');
+        const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+        const year = dateObj.getFullYear();
+        document.getElementById('date').innerText = `${day}-${month}-${year}`;
+            </script>
 </body>
 </html>
 """
-
 # ==============================================================================
-# STORE USER MANAGEMENT TEMPLATE - FIXED: NEW ROUTE ADDED
+# STORE USERS TEMPLATE
 # ==============================================================================
-
-STORE_USER_MANAGEMENT_TEMPLATE = """
+STORE_USERS_TEMPLATE = """
 <!doctype html>
 <html lang="en">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>User Management - Store</title>
+    <title>Store Users - MEHEDI THAI ALUMINUM AND GLASS</title>
     """ + COMMON_STYLES + """
 </head>
 <body>
     <div class="animated-bg"></div>
-    
-    <div id="loading-overlay">
-        <div class="spinner-container">
-            <div class="spinner"></div>
-            <div class="spinner-inner"></div>
-        </div>
-        <div class="checkmark-container" id="success-anim">
-            <div class="checkmark-circle"></div>
-            <div class="anim-text">Success! </div>
-        </div>
-        <div class="loading-text">Processing...</div>
-    </div>
-
-    <div class="mobile-toggle" onclick="document.querySelector('.sidebar').classList.toggle('active')">
-        <i class="fas fa-bars"></i>
-    </div>
-
+    <div class="mobile-toggle" onclick="document.querySelector('.sidebar').classList.toggle('active')"><i class="fas fa-bars"></i></div>
     <div class="sidebar">
-        <div class="brand-logo">
-            <i class="fas fa-store"></i> 
-            <span>Store</span>
-        </div>
+        <div class="brand-logo"><i class="fas fa-store"></i> Store<span>Panel</span></div>
         <div class="nav-menu">
-            <a href="/admin/store" class="nav-link">
-                <i class="fas fa-home"></i> Dashboard
-            </a>
-            <a href="/admin/store/products" class="nav-link">
-                <i class="fas fa-box"></i> Products
-            </a>
-            <a href="/admin/store/customers" class="nav-link">
-                <i class="fas fa-users"></i> Customers
-            </a>
-            <a href="/admin/store/invoices" class="nav-link">
-                <i class="fas fa-file-invoice-dollar"></i> Invoices
-            </a>
-            <a href="/admin/store/estimates" class="nav-link">
-                <i class="fas fa-file-alt"></i> Estimates
-            </a>
-            <a href="/admin/store/payments" class="nav-link">
-                <i class="fas fa-money-bill-wave"></i> Payments
-            </a>
-            <a href="/admin/store/users" class="nav-link active">
-                <i class="fas fa-users-cog"></i> User Management
-            </a>
-            <a href="/" class="nav-link" style="margin-top: 20px;">
-                <i class="fas fa-arrow-left"></i> Back to Main
-            </a>
-            <a href="/logout" class="nav-link" style="color: var(--accent-red);">
-                <i class="fas fa-sign-out-alt"></i> Sign Out
-            </a>
+            <a href="/admin/store" class="nav-link"><i class="fas fa-th-large"></i> Dashboard</a>
+            <a href="/store/products" class="nav-link"><i class="fas fa-box"></i> Products</a>
+            <a href="/store/customers" class="nav-link"><i class="fas fa-users"></i> Customers</a>
+            <a href="/store/invoices" class="nav-link"><i class="fas fa-file-invoice-dollar"></i> Invoices</a>
+            <div class="nav-link active"><i class="fas fa-user-cog"></i> Store Users</div>
+            <a href="/logout" class="nav-link" style="color: var(--accent-red); margin-top: 20px;"><i class="fas fa-sign-out-alt"></i> Sign Out</a>
         </div>
-        <div class="sidebar-footer">© 2025 Mehedi Hasan</div>
     </div>
-
     <div class="main-content">
         <div class="header-section">
-            <div>
-                <div class="page-title">User Management</div>
-                <div class="page-subtitle">Manage store user accounts</div>
-            </div>
+            <div><div class="page-title">Store User Management</div><div class="page-subtitle">Manage access to store panel</div></div>
         </div>
-
         {% with messages = get_flashed_messages() %}
-            {% if messages %}
-                <div class="flash-message flash-success">
-                    <i class="fas fa-check-circle"></i>
-                    <span>{{ messages[0] }}</span>
-                </div>
-            {% endif %}
+            {% if messages %}<div class="flash-message flash-success"><i class="fas fa-check-circle"></i><span>{{ messages[0] }}</span></div>{% endif %}
         {% endwith %}
-
         <div class="dashboard-grid-2">
             <div class="card">
-                <div class="section-header">
-                    <span>Store Users</span>
-                    <span class="table-badge" style="background: var(--accent-purple); color: white;">{{ users|length }} Users</span>
-                </div>
-                <div style="max-height: 450px; overflow-y: auto;">
-                    <table class="dark-table">
-                        <thead>
-                            <tr>
-                                <th>Username</th>
-                                <th>Role</th>
-                                <th style="text-align: right;">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for username, data in users.items() %}
-                            <tr>
-                                <td style="font-weight: 600;">{{ username }}</td>
-                                <td>
-                                    <span class="table-badge" style="
-                                        {% if data.role == 'store_admin' %}
-                                        background: rgba(255, 122, 0, 0.1); color: var(--accent-orange);
-                                        {% else %}
-                                        background: rgba(139, 92, 246, 0. 1); color: var(--accent-purple);
-                                        {% endif %}
-                                    ">{{ data.role }}</span>
-                                </td>
-                                <td>
-                                    <div class="action-cell">
-                                        {% if data.role != 'store_admin' %}
-                                        <button class="action-btn btn-edit" onclick="editUser('{{ username }}', '{{ data.password }}', '{{ data.permissions|join(',') }}')">
-                                            <i class="fas fa-edit"></i>
-                                        </button>
-                                        <form action="/admin/store/users/delete" method="POST" style="display: inline;" onsubmit="return confirm('Delete this user?');">
-                                            <input type="hidden" name="username" value="{{ username }}">
-                                            <button type="submit" class="action-btn btn-del">
-                                                <i class="fas fa-trash"></i>
-                                            </button>
-                                        </form>
-                                        {% else %}
-                                        <i class="fas fa-shield-alt" style="color: var(--accent-orange); opacity: 0.5;"></i>
-                                        {% endif %}
-                                    </div>
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <div class="card">
-                <div class="section-header">
-                    <span id="formTitle">Create New User</span>
-                    <i class="fas fa-user-plus" style="color: var(--accent-orange);"></i>
-                </div>
-                <form action="/admin/store/users/save" method="POST" id="userForm">
-                    <input type="hidden" name="action_type" id="actionType" value="create">
-                    <input type="hidden" name="original_username" id="originalUsername" value="">
-                    
-                    <div class="input-group">
-                        <label><i class="fas fa-user" style="margin-right: 5px;"></i> USERNAME</label>
-                        <input type="text" name="username" id="usernameInput" required placeholder="Enter username">
-                    </div>
-                    
-                    <div class="input-group">
-                        <label><i class="fas fa-key" style="margin-right: 5px;"></i> PASSWORD</label>
-                        <input type="text" name="password" id="passwordInput" required placeholder="Enter password">
-                    </div>
-                    
-                    <div class="input-group">
-                        <label><i class="fas fa-shield-alt" style="margin-right: 5px;"></i> PERMISSIONS</label>
-                        <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 5px;">
-                            <label class="perm-checkbox">
-                                <input type="checkbox" name="perm_products" id="permProducts" checked>
-                                <span>Products</span>
-                            </label>
-                            <label class="perm-checkbox">
-                                <input type="checkbox" name="perm_customers" id="permCustomers" checked>
-                                <span>Customers</span>
-                            </label>
-                            <label class="perm-checkbox">
-                                <input type="checkbox" name="perm_invoices" id="permInvoices" checked>
-                                <span>Invoices</span>
-                            </label>
-                            <label class="perm-checkbox">
-                                <input type="checkbox" name="perm_estimates" id="permEstimates">
-                                <span>Estimates</span>
-                            </label>
-                            <label class="perm-checkbox">
-                                <input type="checkbox" name="perm_payments" id="permPayments">
-                                <span>Payments</span>
-                            </label>
-                        </div>
-                    </div>
-                    
-                    <button type="submit" id="submitBtn">
-                        <i class="fas fa-save" style="margin-right: 10px;"></i> Save User
-                    </button>
-                    <button type="button" onclick="resetForm()" style="margin-top: 12px; background: rgba(255,255,255,0.05); border: 1px solid var(--border-color);">
-                        <i class="fas fa-undo" style="margin-right: 10px;"></i> Reset Form
-                    </button>
+                <div class="section-header"><span><i class="fas fa-user-plus"></i> Add User</span></div>
+                <form action="/store/users/save" method="post">
+                    <div class="input-group"><label>USERNAME</label><input type="text" name="username" required></div>
+                    <div class="input-group"><label>PASSWORD</label><input type="text" name="password" required></div>
+                    <div class="input-group"><label>ROLE</label><select name="role"><option value="store_admin">Store Admin</option><option value="sales">Sales Staff</option></select></div>
+                    <button type="submit">Save User</button>
                 </form>
+            </div>
+            <div class="card">
+                <div class="section-header"><span>User List</span></div>
+                <table class="dark-table">
+                    <thead><tr><th>Username</th><th>Role</th><th>Action</th></tr></thead>
+                    <tbody>
+                        {% for u, d in users.items() %}
+                        <tr>
+                            <td>{{ u }}</td><td>{{ d.role }}</td>
+                            <td>
+                                {% if u != session.user %}
+                                <form action="/store/users/delete" method="post" style="display:inline;" onsubmit="return confirm('Delete?');">
+                                    <input type="hidden" name="username" value="{{ u }}">
+                                    <button class="action-btn btn-del"><i class="fas fa-trash"></i></button>
+                                </form>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
-
-    <script>
-        function editUser(username, password, permsStr) {
-            document.getElementById('formTitle').textContent = 'Edit User';
-            document.getElementById('actionType').value = 'update';
-            document.getElementById('originalUsername').value = username;
-            document.getElementById('usernameInput').value = username;
-            document.getElementById('usernameInput').readOnly = true;
-            document.getElementById('passwordInput').value = password;
-            document.getElementById('submitBtn').innerHTML = '<i class="fas fa-sync" style="margin-right: 10px;"></i> Update User';
-            
-            const perms = permsStr.split(',');
-            document.getElementById('permProducts').checked = perms.includes('products');
-            document.getElementById('permCustomers'). checked = perms. includes('customers');
-            document.getElementById('permInvoices'). checked = perms. includes('invoices');
-            document.getElementById('permEstimates').checked = perms.includes('estimates');
-            document.getElementById('permPayments'). checked = perms. includes('payments');
-        }
-        
-        function resetForm() {
-            document. getElementById('formTitle').textContent = 'Create New User';
-            document. getElementById('actionType'). value = 'create';
-            document. getElementById('originalUsername'). value = '';
-            document.getElementById('usernameInput').value = '';
-            document.getElementById('usernameInput').readOnly = false;
-            document.getElementById('passwordInput').value = '';
-            document. getElementById('submitBtn').innerHTML = '<i class="fas fa-save" style="margin-right: 10px;"></i> Save User';
-            
-            document. getElementById('permProducts'). checked = true;
-            document. getElementById('permCustomers').checked = true;
-            document.getElementById('permInvoices').checked = true;
-            document.getElementById('permEstimates').checked = false;
-            document. getElementById('permPayments').checked = false;
-        }
-    </script>
 </body>
 </html>
 """
+
 # ==============================================================================
-# FLASK ROUTES: AUTHENTICATION & SESSION MANAGEMENT
+# FLASK ROUTE HANDLERS (MAIN LOGIC)
 # ==============================================================================
 
 @app.route('/')
-def index():
-    if 'user' in session:
-        if session. get('role') == 'admin':
-            return redirect(url_for('admin_dashboard'))
-        else:
-            return redirect(url_for('user_dashboard'))
-    return redirect(url_for('login'))
-
-@app.route('/login', methods=['GET', 'POST'])
-def login():
-    if request.method == 'POST':
-        username = request.form.get('username')
-        password = request.form.get('password')
-        users = load_users()
-        
-        if username in users and users[username]['password'] == password:
-            session. permanent = True
-            session['user'] = username
-            session['role'] = users[username]['role']
-            session['permissions'] = users[username]. get('permissions', [])
-            session['login_time'] = get_bd_time(). isoformat()
-            
-            # Update last login time
-            users[username]['last_login'] = get_bd_time().strftime('%d-%m-%Y %I:%M %p')
-            save_users(users)
-            
-            if users[username]['role'] == 'admin':
-                return redirect(url_for('admin_dashboard'))
-            else:
-                return redirect(url_for('user_dashboard'))
-        else:
-            flash('Invalid username or password!')
-            return redirect(url_for('login'))
+def home():
+    if 'user' not in session:
+        return render_template_string(LOGIN_TEMPLATE)
     
-    return render_template_string(LOGIN_TEMPLATE)
+    # Session timeout check (manually enforced for extra security)
+    if 'last_active' in session:
+        if (datetime.now() - session['last_active']).seconds > 7200: # 2 hours
+            session.clear()
+            return render_template_string(LOGIN_TEMPLATE, messages=["Session expired."])
+    session['last_active'] = datetime.now()
+
+    if session.get('role') == 'admin':
+        return render_template_string(ADMIN_DASHBOARD_TEMPLATE, stats=get_dashboard_summary_v2())
+    else:
+        return render_template_string(USER_DASHBOARD_TEMPLATE)
+
+@app.route('/login', methods=['POST'])
+def login():
+    username = request.form.get('username')
+    password = request.form.get('password')
+    
+    # Check Global Users
+    users = load_users()
+    if username in users and users[username]['password'] == password:
+        session['user'] = username
+        session['role'] = users[username]['role']
+        session['permissions'] = users[username]['permissions']
+        session['last_active'] = datetime.now()
+        
+        # Update last login
+        users[username]['last_login'] = get_bd_time().strftime('%d-%m-%Y %I:%M %p')
+        save_users(users)
+        return redirect(url_for('home'))
+        
+    # Check Store Users
+    store_users = load_store_users()
+    if username in store_users and store_users[username]['password'] == password:
+        session['user'] = username
+        session['role'] = store_users[username]['role']
+        session['permissions'] = store_users[username]['permissions']
+        session['is_store_user'] = True
+        return redirect(url_for('store_dashboard'))
+
+    flash('Invalid Username or Password')
+    return redirect(url_for('home'))
 
 @app.route('/logout')
 def logout():
-    # Calculate session duration
-    if 'login_time' in session and 'user' in session:
-        try:
-            login_time = datetime. fromisoformat(session['login_time'])
-            now = get_bd_time()
-            if login_time. tzinfo is None:
-                login_time = bd_tz.localize(login_time)
-            duration = now - login_time
-            
-            minutes = int(duration.total_seconds() // 60)
-            hours = minutes // 60
-            mins = minutes % 60
-            
-            if hours > 0:
-                duration_str = f"{hours}h {mins}m"
-            else:
-                duration_str = f"{mins} minutes"
-            
-            users = load_users()
-            if session['user'] in users:
-                users[session['user']]['last_duration'] = duration_str
-                save_users(users)
-        except:
-            pass
-    
     session.clear()
-    return redirect(url_for('login'))
+    return redirect(url_for('home'))
 
-# ==============================================================================
-# FLASK ROUTES: ADMIN DASHBOARD
-# ==============================================================================
-
-@app.route('/admin')
-def admin_dashboard():
-    if 'user' not in session or session.get('role') != 'admin':
-        flash('Access Denied!  Admin privileges required.')
-        return redirect(url_for('login'))
-    
-    stats = get_dashboard_summary_v2()
-    return render_template_string(ADMIN_DASHBOARD_TEMPLATE, stats=stats)
-
-@app.route('/dashboard')
-def user_dashboard():
-    if 'user' not in session:
-        return redirect(url_for('login'))
-    
-    return render_template_string(USER_DASHBOARD_TEMPLATE)
-
-# ==============================================================================
-# FLASK ROUTES: USER MANAGEMENT (ADMIN)
-# ==============================================================================
-
-@app.route('/admin/get-users')
-def get_users():
-    if 'user' not in session or session.get('role') != 'admin':
-        return jsonify({"error": "Unauthorized"}), 403
-    
-    users = load_users()
-    return jsonify(users)
-
-@app.route('/admin/save-user', methods=['POST'])
-def save_user():
-    if 'user' not in session or session.get('role') != 'admin':
-        return jsonify({"status": "error", "message": "Unauthorized"}), 403
-    
-    data = request.get_json()
-    username = data.get('username')
-    password = data.get('password')
-    permissions = data.get('permissions', [])
-    action_type = data.get('action_type', 'create')
-    
-    users = load_users()
-    
-    if action_type == 'create':
-        if username in users:
-            return jsonify({"status": "error", "message": "Username already exists!"})
-        
-        users[username] = {
-            "password": password,
-            "role": "user",
-            "permissions": permissions,
-            "created_at": get_bd_date_str(),
-            "last_login": "Never",
-            "last_duration": "N/A"
-        }
-    else:  # update
-        if username in users:
-            users[username]['password'] = password
-            users[username]['permissions'] = permissions
-    
-    save_users(users)
-    return jsonify({"status": "success"})
-
-@app. route('/admin/delete-user', methods=['POST'])
-def delete_user():
-    if 'user' not in session or session.get('role') != 'admin':
-        return jsonify({"status": "error", "message": "Unauthorized"}), 403
-    
-    data = request. get_json()
-    username = data. get('username')
-    
-    users = load_users()
-    
-    if username in users and users[username]. get('role') != 'admin':
-        del users[username]
-        save_users(users)
-        return jsonify({"status": "success"})
-    
-    return jsonify({"status": "error", "message": "Cannot delete admin or user not found"})
-
-# ==============================================================================
-# FLASK ROUTES: CLOSING REPORT GENERATION
-# ==============================================================================
-
-@app. route('/generate-report', methods=['POST'])
+# --- CLOSING REPORT ROUTES ---
+@app.route('/generate-report', methods=['POST'])
 def generate_report():
-    if 'user' not in session:
-        return redirect(url_for('login'))
+    if 'user' not in session: return redirect('/')
     
-    # Check permission
-    if session. get('role') != 'admin' and 'closing' not in session. get('permissions', []):
-        flash('Access Denied!  You do not have permission for Closing Reports.')
-        return redirect(url_for('user_dashboard'))
+    ref_no = request.form.get('ref_no', '').strip().upper()
+    data = fetch_closing_report_data(ref_no)
     
-    ref_no = request.form. get('ref_no', '').strip(). upper()
-    
-    if not ref_no:
-        flash('Please enter a valid reference number!')
-        return redirect(url_for('admin_dashboard') if session.get('role') == 'admin' else url_for('user_dashboard'))
-    
-    # Fetch report data from API
-    report_data = fetch_closing_report_data(ref_no)
-    
-    if not report_data:
-        flash(f'No data found for reference: {ref_no}')
-        return redirect(url_for('admin_dashboard') if session.get('role') == 'admin' else url_for('user_dashboard'))
-    
-    # Create Excel file
-    excel_file = create_formatted_excel_report(report_data, ref_no)
-    
-    if not excel_file:
-        flash('Error generating report!')
-        return redirect(url_for('admin_dashboard') if session.get('role') == 'admin' else url_for('user_dashboard'))
-    
-    # Update statistics
-    update_stats(ref_no, session['user'])
-    
-    # Generate filename
-    filename = f"Closing_Report_{ref_no}_{get_bd_date_str()}. xlsx"
-    
-    return send_file(
-        excel_file,
-        mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-        as_attachment=True,
-        download_name=filename
-    )
+    if data:
+        update_stats(ref_no, session['user'])
+        return render_template_string(CLOSING_REPORT_PREVIEW_TEMPLATE, report_data=data, ref_no=ref_no)
+    else:
+        flash('Data not found for Reference: ' + ref_no)
+        return redirect(url_for('home'))
 
-# ==============================================================================
-# FLASK ROUTES: PO SHEET GENERATION
-# ==============================================================================
+@app.route('/download-closing-excel')
+def download_closing_excel():
+    ref_no = request.args.get('ref_no')
+    data = fetch_closing_report_data(ref_no)
+    if data:
+        excel_file = create_formatted_excel_report(data, ref_no)
+        return send_file(excel_file, download_name=f"Closing_Report_{ref_no}.xlsx", as_attachment=True)
+    return "Error generating file"
 
+# --- PO SHEET ROUTES ---
 @app.route('/generate-po-report', methods=['POST'])
 def generate_po_report():
-    if 'user' not in session:
-        return redirect(url_for('login'))
+    if 'user' not in session: return redirect('/')
     
-    # Check permission
-    if session.get('role') != 'admin' and 'po_sheet' not in session.get('permissions', []):
-        flash('Access Denied!  You do not have permission for PO Sheets.')
-        return redirect(url_for('user_dashboard'))
-    
-    if 'pdf_files' not in request. files:
-        flash('No files uploaded!')
-        return redirect(url_for('admin_dashboard') if session.get('role') == 'admin' else url_for('user_dashboard'))
-    
-    files = request.files. getlist('pdf_files')
-    
+    files = request.files.getlist('pdf_files')
     if not files or files[0].filename == '':
-        flash('No files selected!')
-        return redirect(url_for('admin_dashboard') if session.get('role') == 'admin' else url_for('user_dashboard'))
-    
-    all_data = []
+        flash('No files selected')
+        return redirect(url_for('home'))
+        
+    all_tables = []
     metadata = {}
+    total_qty = 0
     
-    # Process each PDF file
     for file in files:
-        if file and file.filename.endswith('.pdf'):
-            # Save temporarily
-            filepath = os.path. join(app.config['UPLOAD_FOLDER'], file.filename)
-            file. save(filepath)
+        if file.filename.endswith('.pdf'):
+            # Save temp
+            path = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
+            file.save(path)
             
-            try:
-                data, meta = extract_data_dynamic(filepath)
-                if data:
-                    all_data.extend(data)
-                if meta and meta.get('buyer') != 'N/A':
-                    metadata = meta
-            finally:
-                # Clean up temp file
-                if os.path.exists(filepath):
-                    os.remove(filepath)
-    
-    if not all_data:
-        flash('No valid data extracted from PDFs!')
-        return redirect(url_for('admin_dashboard') if session.get('role') == 'admin' else url_for('user_dashboard'))
-    
-    # Create Excel workbook
-    wb = openpyxl. Workbook()
-    ws = wb. active
-    ws.title = "PO Summary"
-    
-    # Styles
-    header_fill = PatternFill(start_color="4472C4", end_color="4472C4", fill_type="solid")
-    header_font = Font(bold=True, color="FFFFFF", size=12)
-    center_align = Alignment(horizontal='center', vertical='center')
-    thin_border = Border(
-        left=Side(style='thin'),
-        right=Side(style='thin'),
-        top=Side(style='thin'),
-        bottom=Side(style='thin')
-    )
-    
-    # Metadata header
-    ws. merge_cells('A1:D1')
-    ws['A1'] = f"PO Summary Report - {get_bd_date_str()}"
-    ws['A1'].font = Font(bold=True, size=16)
-    ws['A1'].alignment = center_align
-    
-    if metadata:
-        ws['A2'] = f"Buyer: {metadata.get('buyer', 'N/A')}"
-        ws['A3'] = f"Booking: {metadata.get('booking', 'N/A')}"
-        ws['A4'] = f"Style: {metadata.get('style', 'N/A')}"
-    
-    # Data headers
-    headers = ['P. O NO', 'Color', 'Size', 'Quantity']
-    header_row = 6
-    
-    for col, header in enumerate(headers, 1):
-        cell = ws.cell(row=header_row, column=col, value=header)
-        cell.fill = header_fill
-        cell.font = header_font
-        cell.alignment = center_align
-        cell.border = thin_border
-    
-    # Data rows
-    for row_idx, item in enumerate(all_data, header_row + 1):
-        ws.cell(row=row_idx, column=1, value=item. get('P.O NO', '')).border = thin_border
-        ws.cell(row=row_idx, column=2, value=item.get('Color', '')). border = thin_border
-        ws.cell(row=row_idx, column=3, value=item. get('Size', '')).border = thin_border
-        qty_cell = ws. cell(row=row_idx, column=4, value=item.get('Quantity', 0))
-        qty_cell.border = thin_border
-        qty_cell.alignment = center_align
-    
-    # Total row
-    total_row = header_row + len(all_data) + 1
-    ws.cell(row=total_row, column=3, value="TOTAL").font = Font(bold=True)
-    ws.cell(row=total_row, column=4, value=f"=SUM(D{header_row+1}:D{total_row-1})").font = Font(bold=True)
-    
-    # Column widths
-    ws. column_dimensions['A'].width = 15
-    ws.column_dimensions['B']. width = 30
-    ws.column_dimensions['C']. width = 12
-    ws.column_dimensions['D']. width = 15
-    
-    # Update statistics
+            # Process
+            data, meta = extract_data_dynamic(path)
+            if meta.get('buyer') != 'N/A': metadata = meta
+            
+            # Group by Color
+            grouped = defaultdict(list)
+            for row in data:
+                grouped[row['Color']].append(row)
+                
+            for color, rows in grouped.items():
+                # Create pivot table logic here (simplified for brevity)
+                df = pd.DataFrame(rows)
+                if not df.empty:
+                    pivot = df.pivot_table(index='P.O NO', columns='Size', values='Quantity', aggfunc='sum', fill_value=0)
+                    # Add total col
+                    pivot['Total'] = pivot.sum(axis=1)
+                    total_qty += pivot['Total'].sum()
+                    
+                    # Convert to HTML
+                    html_table = pivot.to_html(classes='table table-striped table-bordered', border=0)
+                    all_tables.append({'color': color, 'table': html_table})
+            
+            # Cleanup
+            os.remove(path)
+            
     update_po_stats(session['user'], len(files))
-    
-    # Save and send
-    file_stream = BytesIO()
-    wb.save(file_stream)
-    file_stream.seek(0)
-    
-    filename = f"PO_Summary_{get_bd_date_str()}. xlsx"
-    
-    return send_file(
-        file_stream,
-        mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-        as_attachment=True,
-        download_name=filename
-    )
+    return render_template_string(PO_REPORT_TEMPLATE, tables=all_tables, meta=metadata, grand_total=total_qty)
 
-# ==============================================================================
-# FLASK ROUTES: ACCESSORIES MANAGEMENT - FIXED WITH CACHING
-# ==============================================================================
-
-@app. route('/admin/accessories')
+# --- ACCESSORIES ROUTES ---
+@app.route('/admin/accessories')
 def accessories_search():
-    if 'user' not in session:
-        return redirect(url_for('login'))
-    
-    # Check permission
-    if session.get('role') != 'admin' and 'accessories' not in session. get('permissions', []):
-        flash('Access Denied! You do not have permission for Accessories.')
-        return redirect(url_for('user_dashboard'))
-    
+    if 'user' not in session: return redirect('/')
     return render_template_string(ACCESSORIES_SEARCH_TEMPLATE)
 
 @app.route('/admin/accessories/input', methods=['POST'])
 def accessories_input():
-    if 'user' not in session:
-        return redirect(url_for('login'))
-    
+    if 'user' not in session: return redirect('/')
     ref = request.form.get('ref_no', '').strip().upper()
-    
-    if not ref:
-        flash('Please enter a valid reference number!')
-        return redirect(url_for('accessories_search'))
-    
-    # FIXED: Use cached API call
-    api_data = fetch_closing_report_data_with_cache(ref)
-    
-    colors = api_data.get('colors', [])
-    buyer = api_data.get('buyer', 'N/A')
-    style = api_data. get('style', 'N/A')
-    from_cache = api_data. get('from_cache', False)
-    
-    # Load existing challans
-    acc_db = load_accessories_db()
-    challans = acc_db.get(ref, {}).get('challans', [])
-    
-    return render_template_string(
-        ACCESSORIES_INPUT_TEMPLATE,
-        ref=ref,
-        buyer=buyer,
-        style=style,
-        colors=colors,
-        challans=challans,
-        from_cache=from_cache
-    )
+    return redirect(url_for('accessories_input_direct', ref=ref))
 
 @app.route('/admin/accessories/input_direct')
 def accessories_input_direct():
-    """Direct access to accessories input page (for redirects)"""
-    if 'user' not in session:
-        return redirect(url_for('login'))
-    
-    ref = request.args.get('ref', '').strip().upper()
-    
-    if not ref:
-        return redirect(url_for('accessories_search'))
-    
-    # FIXED: Use cached API call
-    api_data = fetch_closing_report_data_with_cache(ref)
-    
-    colors = api_data.get('colors', [])
-    buyer = api_data.get('buyer', 'N/A')
-    style = api_data.get('style', 'N/A')
-    from_cache = api_data.get('from_cache', False)
-    
-    # Load existing challans
+    if 'user' not in session: return redirect('/')
+    ref = request.args.get('ref')
     acc_db = load_accessories_db()
-    challans = acc_db.get(ref, {}).get('challans', [])
     
-    return render_template_string(
-        ACCESSORIES_INPUT_TEMPLATE,
-        ref=ref,
-        buyer=buyer,
-        style=style,
-        colors=colors,
-        challans=challans,
-        from_cache=from_cache
-    )
+    # 24 Hour Logic & Data Fetching
+    last_updated = acc_db.get(ref, {}).get('last_updated')
+    should_fetch = True
+    
+    if last_updated:
+        try:
+            last_time = datetime.fromisoformat(last_updated)
+            if (get_bd_time() - last_time).total_seconds() < 86400: # 24 hours
+                should_fetch = False
+        except: pass
+        
+    buyer, style, colors = "N/A", "N/A", []
+    
+    if should_fetch:
+        report = fetch_closing_report_data(ref)
+        if report:
+            colors = []
+            for b in report:
+                if b['color'] not in colors: colors.append(b['color'])
+                buyer = b.get('buyer', buyer)
+                style = b.get('style', style)
+            
+            if ref not in acc_db: acc_db[ref] = {'challans': []}
+            acc_db[ref]['buyer'] = buyer
+            acc_db[ref]['style'] = style
+            acc_db[ref]['colors'] = colors
+            acc_db[ref]['last_updated'] = get_bd_time().isoformat()
+            save_accessories_db(acc_db)
+    
+    # Load from DB
+    data = acc_db.get(ref, {})
+    return render_template_string(ACCESSORIES_INPUT_TEMPLATE, 
+                                  ref=ref, 
+                                  buyer=data.get('buyer', 'N/A'), 
+                                  style=data.get('style', 'N/A'), 
+                                  colors=data.get('colors', []), 
+                                  challans=data.get('challans', []))
 
 @app.route('/admin/accessories/save', methods=['POST'])
 def accessories_save():
-    if 'user' not in session:
-        return redirect(url_for('login'))
-    
-    ref = request.form. get('ref', '').strip().upper()
-    item_type = request.form.get('item_type', 'Top')
-    color = request.form. get('color', '')
-    line_no = request.form. get('line_no', '')
-    size = request.form. get('size', 'ALL')
-    qty = request.form. get('qty', '0')
-    
-    try:
-        qty = int(qty)
-    except:
-        qty = 0
-    
-    if not ref or not color or not line_no or qty <= 0:
-        flash('Please fill all required fields!')
-        return redirect(url_for('accessories_input_direct', ref=ref))
-    
+    if 'user' not in session: return redirect('/')
+    ref = request.form.get('ref')
     acc_db = load_accessories_db()
     
-    # Initialize if not exists
-    if ref not in acc_db:
-        acc_db[ref] = {
-            "buyer": "N/A",
-            "style": "N/A",
-            "colors": [],
-            "challans": [],
-            "last_api_call": None
-        }
-    
-    # Add new challan
-    new_challan = {
+    new_item = {
         "date": get_bd_date_str(),
-        "item_type": item_type,
-        "color": color,
-        "line": line_no,
-        "size": size,
-        "qty": qty,
-        "added_by": session['user'],
-        "added_at": get_bd_time(). isoformat()
+        "line": request.form.get('line_no'),
+        "color": request.form.get('color'),
+        "size": request.form.get('size'),
+        "qty": request.form.get('qty'),
+        "status": "✔"  # Saved item gets a tick
     }
     
-    acc_db[ref]['challans'].append(new_challan)
-    save_accessories_db(acc_db)
-    
-    flash(f'Challan saved successfully! Line: {line_no}, Qty: {qty}')
-    return redirect(url_for('accessories_input_direct', ref=ref))
+    if ref in acc_db:
+        acc_db[ref]['challans'].append(new_item)
+        save_accessories_db(acc_db)
+        
+    return redirect(url_for('accessories_input_direct', ref=ref, autoprint='true')) # Auto print trigger
 
 @app.route('/admin/accessories/edit')
 def accessories_edit():
-    if 'user' not in session or session.get('role') != 'admin':
-        flash('Access Denied!  Admin privileges required.')
-        return redirect(url_for('login'))
-    
-    ref = request.args.get('ref', '').strip().upper()
-    index = request.args. get('index', type=int)
-    
-    if not ref or index is None:
-        return redirect(url_for('accessories_search'))
-    
+    if 'user' not in session: return redirect('/')
+    ref = request.args.get('ref')
+    idx = int(request.args.get('index'))
     acc_db = load_accessories_db()
     
-    if ref not in acc_db or index >= len(acc_db[ref]. get('challans', [])):
-        flash('Entry not found!')
-        return redirect(url_for('accessories_input_direct', ref=ref))
-    
-    item = acc_db[ref]['challans'][index]
-    
-    return render_template_string(
-        ACCESSORIES_EDIT_TEMPLATE,
-        ref=ref,
-        index=index,
-        item=item
-    )
+    if ref in acc_db and len(acc_db[ref]['challans']) > idx:
+        item = acc_db[ref]['challans'][idx]
+        return render_template_string(ACCESSORIES_EDIT_TEMPLATE, item=item, ref=ref, index=idx)
+    return redirect(url_for('accessories_input_direct', ref=ref))
 
-@app. route('/admin/accessories/update', methods=['POST'])
+@app.route('/admin/accessories/update', methods=['POST'])
 def accessories_update():
-    if 'user' not in session or session.get('role') != 'admin':
-        flash('Access Denied!')
-        return redirect(url_for('login'))
-    
-    ref = request.form.get('ref', '').strip().upper()
-    index = request.form.get('index', type=int)
-    line_no = request. form.get('line_no', '')
-    color = request.form. get('color', '')
-    size = request.form.get('size', 'ALL')
-    qty = request.form.get('qty', '0')
-    
-    try:
-        qty = int(qty)
-    except:
-        qty = 0
+    if 'user' not in session: return redirect('/')
+    ref = request.form.get('ref')
+    idx = int(request.form.get('index'))
     
     acc_db = load_accessories_db()
-    
-    if ref in acc_db and index is not None and index < len(acc_db[ref]. get('challans', [])):
-        acc_db[ref]['challans'][index]['line'] = line_no
-        acc_db[ref]['challans'][index]['color'] = color
-        acc_db[ref]['challans'][index]['size'] = size
-        acc_db[ref]['challans'][index]['qty'] = qty
-        acc_db[ref]['challans'][index]['updated_by'] = session['user']
-        acc_db[ref]['challans'][index]['updated_at'] = get_bd_time().isoformat()
+    if ref in acc_db:
+        acc_db[ref]['challans'][idx]['line'] = request.form.get('line_no')
+        acc_db[ref]['challans'][idx]['color'] = request.form.get('color')
+        acc_db[ref]['challans'][idx]['size'] = request.form.get('size')
+        acc_db[ref]['challans'][idx]['qty'] = request.form.get('qty')
+        save_accessories_db(acc_db)
         
-        save_accessories_db(acc_db)
-        flash('Entry updated successfully!')
-    else:
-        flash('Entry not found!')
-    
     return redirect(url_for('accessories_input_direct', ref=ref))
 
-@app. route('/admin/accessories/delete', methods=['POST'])
+@app.route('/admin/accessories/delete', methods=['POST'])
 def accessories_delete():
-    if 'user' not in session or session.get('role') != 'admin':
-        flash('Access Denied!')
-        return redirect(url_for('login'))
-    
-    ref = request.form.get('ref', ''). strip().upper()
-    index = request. form.get('index', type=int)
+    if 'user' not in session: return redirect('/')
+    ref = request.form.get('ref')
+    idx = int(request.form.get('index'))
     
     acc_db = load_accessories_db()
-    
-    if ref in acc_db and index is not None and index < len(acc_db[ref]. get('challans', [])):
-        deleted_item = acc_db[ref]['challans']. pop(index)
+    if ref in acc_db:
+        acc_db[ref]['challans'].pop(idx)
         save_accessories_db(acc_db)
-        flash(f'Entry deleted: Line {deleted_item. get("line")}, Qty {deleted_item.get("qty")}')
-    else:
-        flash('Entry not found!')
-    
+        
     return redirect(url_for('accessories_input_direct', ref=ref))
-
-# ==============================================================================
-# FLASK ROUTES: ACCESSORIES PRINT REPORT - FIXED
-# ==============================================================================
 
 @app.route('/admin/accessories/print')
 def accessories_print():
-    if 'user' not in session:
-        return redirect(url_for('login'))
-    
-    ref = request.args.get('ref', '').strip().upper()
-    
-    if not ref:
-        return redirect(url_for('accessories_search'))
-    
+    ref = request.args.get('ref')
     acc_db = load_accessories_db()
+    data = acc_db.get(ref, {})
     
-    if ref not in acc_db:
-        flash('No data found for this reference!')
-        return redirect(url_for('accessories_search'))
-    
-    data = acc_db[ref]
     challans = data.get('challans', [])
-    buyer = data.get('buyer', 'N/A')
-    style = data.get('style', 'N/A')
-    
-    # Calculate line-wise summary
     line_summary = {}
-    for challan in challans:
-        line = challan.get('line', 'Unknown')
-        qty = challan.get('qty', 0)
-        if line in line_summary:
-            line_summary[line] += qty
-        else:
-            line_summary[line] = qty
-    
-    # Get item type (use the most common one or first one)
-    item_type = challans[0].get('item_type', 'Top') if challans else 'Top'
-    
-    return render_template_string(
-        ACCESSORIES_REPORT_TEMPLATE,
-        ref=ref,
-        buyer=buyer,
-        style=style,
-        challans=challans,
-        count=len(challans),
-        line_summary=line_summary,
-        item_type=item_type,
-        today=get_bd_date_str()
-    )
-    # ==============================================================================
-# FLASK ROUTES: STORE DASHBOARD
-# ==============================================================================
+    for c in challans:
+        l = c['line']
+        q = 0
+        try: q = int(c['qty'])
+        except: pass
+        line_summary[l] = line_summary.get(l, 0) + q
+        
+    return render_template_string(ACCESSORIES_REPORT_TEMPLATE, 
+                                  ref=ref, 
+                                  buyer=data.get('buyer', 'N/A'), 
+                                  style=data.get('style', 'N/A'), 
+                                  challans=challans,
+                                  line_summary=line_summary,
+                                  count=len(challans),
+                                  today=get_bd_date_str())
+
+# --- STORE ROUTES ---
 
 @app.route('/admin/store')
 def store_dashboard():
-    if 'user' not in session:
-        return redirect(url_for('login'))
+    if 'user' not in session: return redirect('/')
     
-    stats = get_store_dashboard_summary()
-    invoices = load_store_invoices()
+    recent_invoices = sorted(load_store_invoices(), key=lambda x: x.get('invoice_no'), reverse=True)[:5]
+    recent_estimates = sorted(load_store_estimates(), key=lambda x: x.get('estimate_no'), reverse=True)[:5]
+    pending_dues = [i for i in load_store_invoices() if i.get('due', 0) > 0][:5]
     
-    return render_template_string(
-        STORE_DASHBOARD_TEMPLATE,
-        stats=stats,
-        recent_invoices=invoices[-10:] if invoices else []
-    )
+    return render_template_string(STORE_DASHBOARD_TEMPLATE, 
+                                  store_stats=get_store_dashboard_summary(),
+                                  recent_invoices=recent_invoices,
+                                  recent_estimates=recent_estimates,
+                                  pending_dues=pending_dues)
 
-# ==============================================================================
-# FLASK ROUTES: STORE PRODUCTS
-# ==============================================================================
+# Store Products
+@app.route('/store/products')
+def store_products_list():
+    if 'user' not in session: return redirect('/')
+    return render_template_string(STORE_PRODUCTS_TEMPLATE, products=load_store_products())
 
-@app.route('/admin/store/products')
-def store_products():
-    if 'user' not in session:
-        return redirect(url_for('login'))
-    
+@app.route('/store/products/save', methods=['POST'])
+def store_products_save():
+    if 'user' not in session: return redirect('/')
     products = load_store_products()
-    return render_template_string(STORE_PRODUCTS_TEMPLATE, products=products)
-
-@app.route('/admin/store/products/new')
-def store_product_new():
-    if 'user' not in session:
-        return redirect(url_for('login'))
-    
-    return render_template_string(STORE_PRODUCT_FORM_TEMPLATE, product=None, index=None)
-
-@app. route('/admin/store/products/save', methods=['POST'])
-def store_product_save():
-    if 'user' not in session:
-        return redirect(url_for('login'))
-    
-    products = load_store_products()
-    
-    new_product = {
-        "code": request.form. get('code', ''),
-        "name": request.form.get('name', ''),
-        "category": request.form. get('category', ''),
-        "unit": request.form.get('unit', ''),
-        "price": float(request.form.get('price', 0)),
-        "stock": int(request.form.get('stock', 0)),
-        "description": request.form. get('description', ''),
-        "created_at": get_bd_date_str()
-    }
-    
-    products.append(new_product)
+    products.append({
+        "name": request.form.get('name'),
+        "size_feet": request.form.get('size_feet'),
+        "thickness": request.form.get('thickness'),
+        "category": request.form.get('category'),
+        "price": request.form.get('price'),
+        "description": request.form.get('description')
+    })
     save_store_products(products)
-    
-    flash('Product added successfully!')
-    return redirect(url_for('store_products'))
+    flash("Product saved!")
+    return redirect(url_for('store_products_list'))
 
-@app.route('/admin/store/products/edit/<int:index>')
-def store_product_edit(index):
-    if 'user' not in session:
-        return redirect(url_for('login'))
-    
+@app.route('/store/products/delete/<int:index>', methods=['POST'])
+def store_products_delete(index):
+    if 'user' not in session: return redirect('/')
     products = load_store_products()
-    
-    if index >= len(products):
-        flash('Product not found!')
-        return redirect(url_for('store_products'))
-    
-    return render_template_string(STORE_PRODUCT_FORM_TEMPLATE, product=products[index], index=index)
-
-@app.route('/admin/store/products/update/<int:index>', methods=['POST'])
-def store_product_update(index):
-    if 'user' not in session:
-        return redirect(url_for('login'))
-    
-    products = load_store_products()
-    
-    if index >= len(products):
-        flash('Product not found!')
-        return redirect(url_for('store_products'))
-    
-    products[index]['code'] = request. form.get('code', '')
-    products[index]['name'] = request.form.get('name', '')
-    products[index]['category'] = request.form.get('category', '')
-    products[index]['unit'] = request.form.get('unit', '')
-    products[index]['price'] = float(request.form.get('price', 0))
-    products[index]['stock'] = int(request.form.get('stock', 0))
-    products[index]['description'] = request.form.get('description', '')
-    
-    save_store_products(products)
-    
-    flash('Product updated successfully!')
-    return redirect(url_for('store_products'))
-
-@app.route('/admin/store/products/delete/<int:index>', methods=['POST'])
-def store_product_delete(index):
-    if 'user' not in session:
-        return redirect(url_for('login'))
-    
-    products = load_store_products()
-    
-    if index < len(products):
-        deleted = products.pop(index)
+    if 0 <= index < len(products):
+        products.pop(index)
         save_store_products(products)
-        flash(f'Product "{deleted["name"]}" deleted!')
-    
-    return redirect(url_for('store_products'))
+    return redirect(url_for('store_products_list'))
 
-# ==============================================================================
-# FLASK ROUTES: STORE CUSTOMERS
-# ==============================================================================
+# Store Customers
+@app.route('/store/customers')
+def store_customers_list():
+    if 'user' not in session: return redirect('/')
+    return render_template_string(STORE_CUSTOMERS_TEMPLATE, customers=load_store_customers())
 
-@app.route('/admin/store/customers')
-def store_customers():
-    if 'user' not in session:
-        return redirect(url_for('login'))
-    
+@app.route('/store/customers/save', methods=['POST'])
+def store_customers_save():
+    if 'user' not in session: return redirect('/')
     customers = load_store_customers()
-    return render_template_string(STORE_CUSTOMERS_TEMPLATE, customers=customers)
-
-@app.route('/admin/store/customers/new')
-def store_customer_new():
-    if 'user' not in session:
-        return redirect(url_for('login'))
-    
-    return render_template_string(STORE_CUSTOMER_FORM_TEMPLATE, customer=None, index=None)
-
-@app.route('/admin/store/customers/save', methods=['POST'])
-def store_customer_save():
-    if 'user' not in session:
-        return redirect(url_for('login'))
-    
-    customers = load_store_customers()
-    
-    new_customer = {
-        "name": request. form.get('name', ''),
-        "phone": request.form. get('phone', ''),
-        "email": request.form. get('email', ''),
-        "address": request.form. get('address', ''),
-        "notes": request.form. get('notes', ''),
-        "due": 0,
-        "created_at": get_bd_date_str()
-    }
-    
-    customers.append(new_customer)
-    save_store_customers(customers)
-    
-    flash('Customer added successfully!')
-    return redirect(url_for('store_customers'))
-
-@app.route('/admin/store/customers/edit/<int:index>')
-def store_customer_edit(index):
-    if 'user' not in session:
-        return redirect(url_for('login'))
-    
-    customers = load_store_customers()
-    
-    if index >= len(customers):
-        flash('Customer not found!')
-        return redirect(url_for('store_customers'))
-    
-    return render_template_string(STORE_CUSTOMER_FORM_TEMPLATE, customer=customers[index], index=index)
-
-@app.route('/admin/store/customers/update/<int:index>', methods=['POST'])
-def store_customer_update(index):
-    if 'user' not in session:
-        return redirect(url_for('login'))
-    
-    customers = load_store_customers()
-    
-    if index >= len(customers):
-        flash('Customer not found!')
-        return redirect(url_for('store_customers'))
-    
-    customers[index]['name'] = request. form.get('name', '')
-    customers[index]['phone'] = request.form. get('phone', '')
-    customers[index]['email'] = request.form.get('email', '')
-    customers[index]['address'] = request.form.get('address', '')
-    customers[index]['notes'] = request.form.get('notes', '')
-    
-    save_store_customers(customers)
-    
-    flash('Customer updated successfully!')
-    return redirect(url_for('store_customers'))
-
-@app.route('/admin/store/customers/delete/<int:index>', methods=['POST'])
-def store_customer_delete(index):
-    if 'user' not in session:
-        return redirect(url_for('login'))
-    
-    customers = load_store_customers()
-    
-    if index < len(customers):
-        deleted = customers. pop(index)
-        save_store_customers(customers)
-        flash(f'Customer "{deleted["name"]}" deleted!')
-    
-    return redirect(url_for('store_customers'))
-
-@app.route('/admin/store/customers/view/<int:index>')
-def store_customer_view(index):
-    if 'user' not in session:
-        return redirect(url_for('login'))
-    
-    customers = load_store_customers()
-    invoices = load_store_invoices()
-    
-    if index >= len(customers):
-        flash('Customer not found!')
-        return redirect(url_for('store_customers'))
-    
-    customer = customers[index]
-    
-    # Get customer's invoices
-    customer_invoices = [inv for inv in invoices if inv. get('customer_index') == index]
-    
-    return render_template_string(
-        STORE_CUSTOMER_VIEW_TEMPLATE,
-        customer=customer,
-        index=index,
-        customer_invoices=customer_invoices
-    )
-
-# ==============================================================================
-# FLASK ROUTES: STORE INVOICES - FIXED
-# ==============================================================================
-
-@app.route('/admin/store/invoices')
-def store_invoices():
-    if 'user' not in session:
-        return redirect(url_for('login'))
-    
-    invoices = load_store_invoices()
-    return render_template_string(STORE_INVOICES_TEMPLATE, invoices=invoices)
-
-@app. route('/admin/store/invoices/new')
-def store_invoice_new():
-    if 'user' not in session:
-        return redirect(url_for('login'))
-    
-    customers = load_store_customers()
-    products = load_store_products()
-    next_no = generate_invoice_number()
-    today = get_bd_time(). strftime('%Y-%m-%d')
-    
-    return render_template_string(
-        STORE_INVOICE_FORM_TEMPLATE,
-        invoice=None,
-        index=None,
-        customers=customers,
-        products=products,
-        next_invoice_no=next_no,
-        today=today
-    )
-
-@app.route('/admin/store/invoices/save', methods=['POST'])
-def store_invoice_save():
-    if 'user' not in session:
-        return redirect(url_for('login'))
-    
-    invoices = load_store_invoices()
-    customers = load_store_customers()
-    products = load_store_products()
-    
-    customer_index = int(request.form. get('customer_index', 0))
-    customer_name = request.form.get('customer_name', '')
-    
-    # Parse items from form
-    items = []
-    form_data = request.form. to_dict(flat=False)
-    
-    product_indices = form_data.get('items[][product_index]', [])
-    qtys = form_data.get('items[][qty]', [])
-    prices = form_data. get('items[][price]', [])
-    amounts = form_data. get('items[][amount]', [])
-    
-    for i in range(len(product_indices)):
-        if product_indices[i]:
-            prod_idx = int(product_indices[i])
-            item = {
-                "product_index": prod_idx,
-                "product_name": products[prod_idx]['name'] if prod_idx < len(products) else 'Unknown',
-                "qty": int(float(qtys[i])) if i < len(qtys) else 1,
-                "price": float(prices[i]) if i < len(prices) else 0,
-                "amount": float(amounts[i]) if i < len(amounts) else 0
-            }
-            items.append(item)
-    
-    new_invoice = {
-        "invoice_no": request.form.get('invoice_no', generate_invoice_number()),
-        "date": request.form.get('date', get_bd_date_str()),
-        "customer_index": customer_index,
-        "customer_name": customer_name,
-        "items": items,
-        "subtotal": float(request.form.get('subtotal', 0)),
-        "discount": float(request. form.get('discount', 0)),
-        "total": float(request. form.get('total', 0)),
-        "paid": float(request.form. get('paid', 0)),
-        "due": float(request. form.get('due', 0)),
-        "notes": request.form. get('notes', ''),
-        "created_at": get_bd_time(). isoformat(),
-        "created_by": session['user']
-    }
-    
-    invoices.append(new_invoice)
-    save_store_invoices(invoices)
-    
-    # Update customer due
-    if customer_index < len(customers):
-        customers[customer_index]['due'] = customers[customer_index]. get('due', 0) + new_invoice['due']
-        save_store_customers(customers)
-    
-    flash(f'Invoice {new_invoice["invoice_no"]} created successfully!')
-    return redirect(url_for('store_invoices'))
-
-@app. route('/admin/store/invoices/view/<int:index>')
-def store_invoice_view(index):
-    if 'user' not in session:
-        return redirect(url_for('login'))
-    
-    invoices = load_store_invoices()
-    
-    if index >= len(invoices):
-        flash('Invoice not found!')
-        return redirect(url_for('store_invoices'))
-    
-    return render_template_string(STORE_INVOICE_VIEW_TEMPLATE, invoice=invoices[index], index=index)
-
-@app.route('/admin/store/invoices/edit/<int:index>')
-def store_invoice_edit(index):
-    if 'user' not in session:
-        return redirect(url_for('login'))
-    
-    invoices = load_store_invoices()
-    customers = load_store_customers()
-    products = load_store_products()
-    
-    if index >= len(invoices):
-        flash('Invoice not found!')
-        return redirect(url_for('store_invoices'))
-    
-    return render_template_string(
-        STORE_INVOICE_FORM_TEMPLATE,
-        invoice=invoices[index],
-        index=index,
-        customers=customers,
-        products=products,
-        next_invoice_no=invoices[index]['invoice_no'],
-        today=invoices[index]['date']
-    )
-
-@app.route('/admin/store/invoices/update/<int:index>', methods=['POST'])
-def store_invoice_update(index):
-    if 'user' not in session:
-        return redirect(url_for('login'))
-    
-    invoices = load_store_invoices()
-    customers = load_store_customers()
-    products = load_store_products()
-    
-    if index >= len(invoices):
-        flash('Invoice not found!')
-        return redirect(url_for('store_invoices'))
-    
-    old_invoice = invoices[index]
-    old_due = old_invoice. get('due', 0)
-    customer_index = int(request.form. get('customer_index', 0))
-    
-    # Parse items
-    items = []
-    form_data = request.form.to_dict(flat=False)
-    
-    product_indices = form_data.get('items[][product_index]', [])
-    qtys = form_data.get('items[][qty]', [])
-    prices = form_data.get('items[][price]', [])
-    amounts = form_data.get('items[][amount]', [])
-    
-    for i in range(len(product_indices)):
-        if product_indices[i]:
-            prod_idx = int(product_indices[i])
-            item = {
-                "product_index": prod_idx,
-                "product_name": products[prod_idx]['name'] if prod_idx < len(products) else 'Unknown',
-                "qty": int(float(qtys[i])) if i < len(qtys) else 1,
-                "price": float(prices[i]) if i < len(prices) else 0,
-                "amount": float(amounts[i]) if i < len(amounts) else 0
-            }
-            items.append(item)
-    
-    new_due = float(request. form.get('due', 0))
-    
-    invoices[index]. update({
-        "date": request.form.get('date', get_bd_date_str()),
-        "customer_index": customer_index,
-        "customer_name": request.form.get('customer_name', ''),
-        "items": items,
-        "subtotal": float(request.form.get('subtotal', 0)),
-        "discount": float(request.form. get('discount', 0)),
-        "total": float(request.form.get('total', 0)),
-        "paid": float(request.form.get('paid', 0)),
-        "due": new_due,
-        "notes": request.form.get('notes', ''),
-        "updated_at": get_bd_time().isoformat(),
-        "updated_by": session['user']
+    customers.append({
+        "name": request.form.get('name'),
+        "phone": request.form.get('phone'),
+        "address": request.form.get('address')
     })
-    
-    save_store_invoices(invoices)
-    
-    # Update customer due
-    if customer_index < len(customers):
-        due_diff = new_due - old_due
-        customers[customer_index]['due'] = customers[customer_index]. get('due', 0) + due_diff
-        save_store_customers(customers)
-    
-    flash('Invoice updated successfully!')
-    return redirect(url_for('store_invoices'))
+    save_store_customers(customers)
+    flash("Customer added!")
+    return redirect(url_for('store_customers_list'))
 
-@app.route('/admin/store/invoices/delete/<int:index>', methods=['POST'])
-def store_invoice_delete(index):
-    if 'user' not in session:
-        return redirect(url_for('login'))
-    
+# Store Invoices
+@app.route('/store/invoices')
+def store_invoices_list():
+    if 'user' not in session: return redirect('/')
+    search = request.args.get('search', '').lower()
     invoices = load_store_invoices()
-    customers = load_store_customers()
-    
-    if index < len(invoices):
-        deleted = invoices.pop(index)
-        
-        # Update customer due
-        customer_index = deleted.get('customer_index', 0)
-        if customer_index < len(customers):
-            customers[customer_index]['due'] = max(0, customers[customer_index].get('due', 0) - deleted. get('due', 0))
-            save_store_customers(customers)
-        
-        save_store_invoices(invoices)
-        flash(f'Invoice {deleted["invoice_no"]} deleted!')
-    
-    return redirect(url_for('store_invoices'))
+    if search:
+        invoices = [i for i in invoices if search in i['invoice_no'].lower() or search in i['customer_name'].lower()]
+    return render_template_string(STORE_INVOICES_LIST_TEMPLATE, invoices=invoices, search_query=search)
 
-# FIXED: Invoice Print Route
-@app.route('/admin/store/invoices/print/<int:index>')
-def store_invoice_print(index):
-    if 'user' not in session:
-        return redirect(url_for('login'))
-    
-    invoices = load_store_invoices()
-    
-    if index >= len(invoices):
-        flash('Invoice not found!')
-        return redirect(url_for('store_invoices'))
-    
-    return render_template_string(STORE_INVOICE_PRINT_TEMPLATE, invoice=invoices[index], index=index)
+@app.route('/store/invoices/create')
+def store_invoices_create():
+    if 'user' not in session: return redirect('/')
+    return render_template_string(STORE_INVOICE_CREATE_TEMPLATE, 
+                                  invoice_no=generate_invoice_number(), 
+                                  customers=load_store_customers(),
+                                  today=datetime.now().strftime('%Y-%m-%d'))
 
-# ==============================================================================
-# FLASK ROUTES: STORE ESTIMATES - FIXED
-# ==============================================================================
-
-@app.route('/admin/store/estimates')
-def store_estimates():
-    if 'user' not in session:
-        return redirect(url_for('login'))
+@app.route('/store/invoices/save', methods=['POST'])
+def store_invoices_save():
+    if 'user' not in session: return redirect('/')
     
-    estimates = load_store_estimates()
-    return render_template_string(STORE_ESTIMATES_TEMPLATE, estimates=estimates)
-
-@app. route('/admin/store/estimates/new')
-def store_estimate_new():
-    if 'user' not in session:
-        return redirect(url_for('login'))
-    
-    customers = load_store_customers()
-    products = load_store_products()
-    next_no = generate_estimate_number()
-    today = get_bd_time().strftime('%Y-%m-%d')
-    valid_until = (get_bd_time() + timedelta(days=30)).strftime('%Y-%m-%d')
-    
-    return render_template_string(
-        STORE_ESTIMATE_FORM_TEMPLATE,
-        estimate=None,
-        index=None,
-        customers=customers,
-        products=products,
-        next_estimate_no=next_no,
-        today=today,
-        valid_until=valid_until
-    )
-
-@app.route('/admin/store/estimates/save', methods=['POST'])
-def store_estimate_save():
-    if 'user' not in session:
-        return redirect(url_for('login'))
-    
-    estimates = load_store_estimates()
-    products = load_store_products()
-    
-    customer_index = int(request.form.get('customer_index', 0))
-    customer_name = request.form. get('customer_name', '')
-    
-    # Parse items
+    # Process Items
     items = []
-    form_data = request.form.to_dict(flat=False)
-    
-    product_indices = form_data.get('items[][product_index]', [])
-    qtys = form_data.get('items[][qty]', [])
-    prices = form_data.get('items[][price]', [])
-    amounts = form_data.get('items[][amount]', [])
-    
-    for i in range(len(product_indices)):
-        if product_indices[i]:
-            prod_idx = int(product_indices[i])
-            item = {
-                "product_index": prod_idx,
-                "product_name": products[prod_idx]['name'] if prod_idx < len(products) else 'Unknown',
-                "qty": int(float(qtys[i])) if i < len(qtys) else 1,
-                "price": float(prices[i]) if i < len(prices) else 0,
-                "amount": float(amounts[i]) if i < len(amounts) else 0
-            }
-            items.append(item)
-    
-    new_estimate = {
-        "estimate_no": request. form.get('estimate_no', generate_estimate_number()),
-        "date": request.form.get('date', get_bd_date_str()),
-        "valid_until": request. form.get('valid_until', ''),
-        "customer_index": customer_index,
-        "customer_name": customer_name,
+    # Simplified parsing of form list data
+    for key, value in request.form.items():
+        if key.startswith('items[') and key.endswith('][description]'):
+            idx = key.split('[')[1].split(']')[0]
+            items.append({
+                "description": value,
+                "size": request.form.get(f'items[{idx}][size]'),
+                "qty": request.form.get(f'items[{idx}][qty]'),
+                "price": float(request.form.get(f'items[{idx}][price]') or 0),
+                "total": float(request.form.get(f'items[{idx}][total]') or 0)
+            })
+            
+    invoice_data = {
+        "invoice_no": request.form.get('invoice_no'),
+        "date": request.form.get('invoice_date'),
+        "customer_name": request.form.get('customer_name'),
+        "customer_phone": request.form.get('customer_phone'),
+        "customer_address": request.form.get('customer_address'),
         "items": items,
-        "subtotal": float(request.form.get('subtotal', 0)),
-        "discount": float(request.form. get('discount', 0)),
-        "total": float(request.form.get('total', 0)),
-        "notes": request.form. get('notes', ''),
-        "status": "pending",
-        "created_at": get_bd_time().isoformat(),
-        "created_by": session['user']
+        "total": float(request.form.get('total') or 0),
+        "discount": float(request.form.get('discount') or 0),
+        "paid": float(request.form.get('paid') or 0),
+        "due": float(request.form.get('due') or 0),
+        "notes": request.form.get('notes'),
+        "payments": []
     }
     
-    estimates.append(new_estimate)
-    save_store_estimates(estimates)
+    # Initial payment record
+    if invoice_data['paid'] > 0:
+        invoice_data['payments'].append({
+            "date": get_bd_date_str(),
+            "amount": invoice_data['paid'],
+            "notes": "Initial Payment"
+        })
     
-    flash(f'Estimate {new_estimate["estimate_no"]} created successfully!')
-    return redirect(url_for('store_estimates'))
+    invoices = load_store_invoices()
+    invoices.append(invoice_data)
+    save_store_invoices(invoices)
+    
+    if request.form.get('action') == 'save_print':
+        return redirect(url_for('store_invoices_print', invoice_no=invoice_data['invoice_no']))
+    
+    flash('Invoice Saved!')
+    return redirect(url_for('store_invoices_list'))
 
-@app.route('/admin/store/estimates/edit/<int:index>')
-def store_estimate_edit(index):
-    if 'user' not in session:
-        return redirect(url_for('login'))
-    
-    estimates = load_store_estimates()
-    customers = load_store_customers()
-    products = load_store_products()
-    
-    if index >= len(estimates):
-        flash('Estimate not found!')
-        return redirect(url_for('store_estimates'))
-    
-    return render_template_string(
-        STORE_ESTIMATE_FORM_TEMPLATE,
-        estimate=estimates[index],
-        index=index,
-        customers=customers,
-        products=products,
-        next_estimate_no=estimates[index]['estimate_no'],
-        today=estimates[index]['date'],
-        valid_until=estimates[index]. get('valid_until', '')
-    )
+@app.route('/store/invoices/print/<invoice_no>')
+def store_invoices_print(invoice_no):
+    if 'user' not in session: return redirect('/')
+    invoices = load_store_invoices()
+    invoice = next((i for i in invoices if i['invoice_no'] == invoice_no), None)
+    if invoice:
+        return render_template_string(STORE_INVOICE_PRINT_TEMPLATE, invoice=invoice)
+    return "Invoice Not Found"
 
-@app.route('/admin/store/estimates/update/<int:index>', methods=['POST'])
-def store_estimate_update(index):
-    if 'user' not in session:
-        return redirect(url_for('login'))
+# Store Estimates
+@app.route('/store/estimates')
+def store_estimates_list():
+    if 'user' not in session: return redirect('/')
+    return render_template_string(STORE_ESTIMATES_LIST_TEMPLATE, estimates=load_store_estimates())
+
+@app.route('/store/estimates/create')
+def store_estimates_create():
+    if 'user' not in session: return redirect('/')
+    return render_template_string(STORE_ESTIMATE_CREATE_TEMPLATE, 
+                                  estimate_no=generate_estimate_number(),
+                                  today=datetime.now().strftime('%Y-%m-%d'))
+
+@app.route('/store/estimates/save', methods=['POST'])
+def store_estimates_save():
+    if 'user' not in session: return redirect('/')
     
-    estimates = load_store_estimates()
-    products = load_store_products()
-    
-    if index >= len(estimates):
-        flash('Estimate not found!')
-        return redirect(url_for('store_estimates'))
-    
-    # Parse items
     items = []
-    form_data = request.form.to_dict(flat=False)
-    
-    product_indices = form_data.get('items[][product_index]', [])
-    qtys = form_data.get('items[][qty]', [])
-    prices = form_data.get('items[][price]', [])
-    amounts = form_data. get('items[][amount]', [])
-    
-    for i in range(len(product_indices)):
-        if product_indices[i]:
-            prod_idx = int(product_indices[i])
-            item = {
-                "product_index": prod_idx,
-                "product_name": products[prod_idx]['name'] if prod_idx < len(products) else 'Unknown',
-                "qty": int(float(qtys[i])) if i < len(qtys) else 1,
-                "price": float(prices[i]) if i < len(prices) else 0,
-                "amount": float(amounts[i]) if i < len(amounts) else 0
-            }
-            items.append(item)
-    
-    estimates[index].update({
-        "date": request.form.get('date', get_bd_date_str()),
-        "valid_until": request. form.get('valid_until', ''),
-        "customer_index": int(request.form.get('customer_index', 0)),
-        "customer_name": request.form.get('customer_name', ''),
+    for key, value in request.form.items():
+        if key.startswith('items[') and key.endswith('][description]'):
+            idx = key.split('[')[1].split(']')[0]
+            items.append({
+                "description": value,
+                "size": request.form.get(f'items[{idx}][size]'),
+                "qty": request.form.get(f'items[{idx}][qty]'),
+                "price": float(request.form.get(f'items[{idx}][price]') or 0),
+                "total": float(request.form.get(f'items[{idx}][total]') or 0)
+            })
+            
+    estimate_data = {
+        "estimate_no": request.form.get('estimate_no'),
+        "date": request.form.get('estimate_date'),
+        "valid_until": request.form.get('valid_until'),
+        "customer_name": request.form.get('customer_name'),
+        "customer_phone": request.form.get('customer_phone'),
+        "customer_address": request.form.get('customer_address'),
         "items": items,
-        "subtotal": float(request.form. get('subtotal', 0)),
-        "discount": float(request.form.get('discount', 0)),
-        "total": float(request. form.get('total', 0)),
-        "notes": request.form.get('notes', ''),
-        "updated_at": get_bd_time().isoformat(),
-        "updated_by": session['user']
-    })
-    
-    save_store_estimates(estimates)
-    
-    flash('Estimate updated successfully!')
-    return redirect(url_for('store_estimates'))
-
-@app.route('/admin/store/estimates/delete/<int:index>', methods=['POST'])
-def store_estimate_delete(index):
-    if 'user' not in session:
-        return redirect(url_for('login'))
-    
-    estimates = load_store_estimates()
-    
-    if index < len(estimates):
-        deleted = estimates.pop(index)
-        save_store_estimates(estimates)
-        flash(f'Estimate {deleted["estimate_no"]} deleted!')
-    
-    return redirect(url_for('store_estimates'))
-
-# FIXED: Estimate Print Route
-@app.route('/admin/store/estimates/print/<int:index>')
-def store_estimate_print(index):
-    if 'user' not in session:
-        return redirect(url_for('login'))
-    
-    estimates = load_store_estimates()
-    
-    if index >= len(estimates):
-        flash('Estimate not found!')
-        return redirect(url_for('store_estimates'))
-    
-    return render_template_string(STORE_ESTIMATE_PRINT_TEMPLATE, estimate=estimates[index], index=index)
-
-# Convert Estimate to Invoice
-@app.route('/admin/store/estimates/convert/<int:index>')
-def store_estimate_convert(index):
-    if 'user' not in session:
-        return redirect(url_for('login'))
-    
-    estimates = load_store_estimates()
-    invoices = load_store_invoices()
-    customers = load_store_customers()
-    
-    if index >= len(estimates):
-        flash('Estimate not found!')
-        return redirect(url_for('store_estimates'))
-    
-    estimate = estimates[index]
-    
-    # Create new invoice from estimate
-    new_invoice = {
-        "invoice_no": generate_invoice_number(),
-        "date": get_bd_date_str(),
-        "customer_index": estimate. get('customer_index', 0),
-        "customer_name": estimate.get('customer_name', ''),
-        "items": estimate.get('items', []),
-        "subtotal": estimate.get('subtotal', 0),
-        "discount": estimate.get('discount', 0),
-        "total": estimate. get('total', 0),
-        "paid": 0,
-        "due": estimate.get('total', 0),
-        "notes": f"Converted from {estimate. get('estimate_no', '')}",
-        "created_at": get_bd_time().isoformat(),
-        "created_by": session['user']
+        "total": float(request.form.get('total') or 0),
+        "discount": float(request.form.get('discount') or 0),
+        "notes": request.form.get('notes')
     }
     
-    invoices.append(new_invoice)
-    save_store_invoices(invoices)
-    
-    # Update estimate status
-    estimates[index]['status'] = 'converted'
-    estimates[index]['converted_to'] = new_invoice['invoice_no']
+    estimates = load_store_estimates()
+    estimates.append(estimate_data)
     save_store_estimates(estimates)
     
-    # Update customer due
-    customer_index = estimate. get('customer_index', 0)
-    if customer_index < len(customers):
-        customers[customer_index]['due'] = customers[customer_index]. get('due', 0) + new_invoice['due']
-        save_store_customers(customers)
+    if request.form.get('action') == 'save_print':
+        return redirect(url_for('store_estimates_print', estimate_no=estimate_data['estimate_no']))
+        
+    flash("Estimate Saved!")
+    return redirect(url_for('store_estimates_list'))
+
+@app.route('/store/estimates/print/<estimate_no>')
+def store_estimates_print(estimate_no):
+    if 'user' not in session: return redirect('/')
+    estimates = load_store_estimates()
+    est = next((e for e in estimates if e['estimate_no'] == estimate_no), None)
+    if est:
+        return render_template_string(STORE_ESTIMATE_PRINT_TEMPLATE, estimate=est)
+    return "Estimate Not Found"
+
+@app.route('/store/estimates/to-invoice/<estimate_no>')
+def store_estimates_to_invoice(estimate_no):
+    # Logic to convert estimate to invoice (pre-fill create invoice form)
+    # Simplified: Just redirect to create invoice
+    return redirect(url_for('store_invoices_create'))
+
+# Store Dues
+@app.route('/store/dues')
+def store_dues_page():
+    if 'user' not in session: return redirect('/')
+    pending = [i for i in load_store_invoices() if i.get('due', 0) > 0]
+    return render_template_string(STORE_DUE_COLLECTION_TEMPLATE, pending_dues=pending, invoice=None, search_invoice=None, today=datetime.now().strftime('%Y-%m-%d'))
+
+@app.route('/store/dues/search')
+def store_dues_search():
+    if 'user' not in session: return redirect('/')
+    inv_no = request.args.get('invoice_no')
+    invoices = load_store_invoices()
+    invoice = next((i for i in invoices if i['invoice_no'] == inv_no), None)
+    pending = [i for i in invoices if i.get('due', 0) > 0]
     
-    flash(f'Estimate converted to Invoice {new_invoice["invoice_no"]}!')
-    return redirect(url_for('store_invoices'))
+    return render_template_string(STORE_DUE_COLLECTION_TEMPLATE, pending_dues=pending, invoice=invoice, search_invoice=inv_no, today=datetime.now().strftime('%Y-%m-%d'))
 
-# ==============================================================================
-# FLASK ROUTES: STORE PAYMENTS
-# ==============================================================================
-
-@app.route('/admin/store/payments')
-def store_payments():
-    if 'user' not in session:
-        return redirect(url_for('login'))
-    
-    payments = load_store_payments()
-    return render_template_string(STORE_PAYMENTS_TEMPLATE, payments=payments)
-
-@app.route('/admin/store/payments/new')
-def store_payment_new():
-    if 'user' not in session:
-        return redirect(url_for('login'))
+@app.route('/store/dues/collect', methods=['POST'])
+def store_dues_collect():
+    if 'user' not in session: return redirect('/')
+    invoice_no = request.form.get('invoice_no')
+    amount = float(request.form.get('amount', 0) or 0)
+    payment_date = request.form.get('payment_date', '')
+    notes = request.form.get('notes', '')
     
     invoices = load_store_invoices()
-    today = get_bd_time().strftime('%Y-%m-%d')
     
-    # Get pre-selected invoice if passed
-    selected_invoice = request.args.get('invoice', type=int)
+    for inv in invoices:
+        if inv.get('invoice_no') == invoice_no:
+            # Format date
+            formatted_date = payment_date
+            try:
+                dt = datetime.strptime(payment_date, '%Y-%m-%d')
+                formatted_date = dt.strftime('%d-%m-%Y')
+            except:
+                pass
+            
+            # Add payment record
+            if 'payments' not in inv:
+                inv['payments'] = []
+            
+            inv['payments'].append({
+                "date": formatted_date,
+                "amount": amount,
+                "notes": notes
+            })
+            
+            # Update paid and due
+            inv['paid'] = inv.get('paid', 0) + amount
+            inv['due'] = inv.get('total', 0) - inv['paid']
+            if inv['due'] < 0:
+                inv['due'] = 0
+            
+            break
     
-    return render_template_string(
-        STORE_PAYMENT_FORM_TEMPLATE,
-        invoices=invoices,
-        today=today,
-        selected_invoice=selected_invoice
-    )
-
-@app.route('/admin/store/payments/save', methods=['POST'])
-def store_payment_save():
-    if 'user' not in session:
-        return redirect(url_for('login'))
-    
-    payments = load_store_payments()
-    invoices = load_store_invoices()
-    customers = load_store_customers()
-    
-    invoice_index = int(request.form.get('invoice_index', 0))
-    amount = float(request. form.get('amount', 0))
-    
-    if invoice_index >= len(invoices):
-        flash('Invoice not found!')
-        return redirect(url_for('store_payments'))
-    
-    invoice = invoices[invoice_index]
-    
-    # Create payment record
-    new_payment = {
-        "date": request.form. get('date', get_bd_date_str()),
-        "invoice_no": request.form.get('invoice_no', ''),
-        "invoice_index": invoice_index,
-        "customer_name": request.form. get('customer_name', ''),
-        "amount": amount,
-        "method": request.form. get('method', 'Cash'),
-        "notes": request.form. get('notes', ''),
-        "created_at": get_bd_time().isoformat(),
-        "created_by": session['user']
-    }
-    
-    payments.append(new_payment)
-    save_store_payments(payments)
-    
-    # Update invoice
-    invoices[invoice_index]['paid'] = invoice. get('paid', 0) + amount
-    invoices[invoice_index]['due'] = max(0, invoice.get('due', 0) - amount)
     save_store_invoices(invoices)
-    
-    # Update customer due
-    customer_index = invoice.get('customer_index', 0)
-    if customer_index < len(customers):
-        customers[customer_index]['due'] = max(0, customers[customer_index].get('due', 0) - amount)
-        save_store_customers(customers)
-    
     flash(f'Payment of ৳{amount:,.0f} recorded successfully!')
-    return redirect(url_for('store_payments'))
+    
+    return redirect(url_for('store_dues_search', invoice_no=invoice_no))
 
 # ==============================================================================
-# FLASK ROUTES: STORE USER MANAGEMENT - FIXED: NEW ROUTES
+# ADMIN USER MANAGEMENT ROUTES
 # ==============================================================================
 
-@app.route('/admin/store/users')
-def store_users():
-    if 'user' not in session:
-        return redirect(url_for('login'))
-    
-    # Check if user is admin or store_admin
-    if session. get('role') not in ['admin', 'store_admin']:
-        flash('Access Denied!  Admin privileges required.')
-        return redirect(url_for('store_dashboard'))
-    
-    users = load_store_users()
-    return render_template_string(STORE_USER_MANAGEMENT_TEMPLATE, users=users)
+@app.route('/admin/get-users')
+def admin_get_users():
+    if session.get('role') != 'admin': return jsonify({})
+    return jsonify(load_users())
 
-@app. route('/admin/store/users/save', methods=['POST'])
-def store_user_save():
-    if 'user' not in session:
-        return redirect(url_for('login'))
+@app.route('/admin/save-user', methods=['POST'])
+def admin_save_user():
+    if session.get('role') != 'admin': return jsonify({'status': 'error', 'message': 'Unauthorized'})
+    data = request.json
+    users = load_users()
     
-    if session.get('role') not in ['admin', 'store_admin']:
-        flash('Access Denied!')
-        return redirect(url_for('store_dashboard'))
-    
-    users = load_store_users()
-    
-    action_type = request.form.get('action_type', 'create')
-    username = request.form. get('username', ''). strip()
-    password = request.form. get('password', '')
-    original_username = request.form. get('original_username', '')
-    
-    # Collect permissions
-    permissions = []
-    if request.form.get('perm_products'):
-        permissions. append('products')
-    if request.form.get('perm_customers'):
-        permissions.append('customers')
-    if request.form.get('perm_invoices'):
-        permissions.append('invoices')
-    if request.form.get('perm_estimates'):
-        permissions. append('estimates')
-    if request.form.get('perm_payments'):
-        permissions. append('payments')
-    
-    if action_type == 'create':
-        if username in users:
-            flash('Username already exists!')
-            return redirect(url_for('store_users'))
-        
-        users[username] = {
-            "password": password,
-            "role": "store_user",
-            "permissions": permissions,
-            "created_at": get_bd_date_str(),
-            "last_login": "Never"
-        }
-        flash(f'User "{username}" created successfully!')
-    else:  # update
-        if original_username in users:
-            users[original_username]['password'] = password
-            users[original_username]['permissions'] = permissions
-            flash(f'User "{original_username}" updated successfully!')
-        else:
-            flash('User not found!')
-    
-    save_store_users(users)
-    return redirect(url_for('store_users'))
+    # If update, and username changed, handle it (simplified: just overwrite)
+    users[data['username']] = {
+        "password": data['password'],
+        "role": "user",
+        "permissions": data['permissions'],
+        "created_at": get_bd_date_str(),
+        "last_login": "Never"
+    }
+    save_users(users)
+    return jsonify({'status': 'success'})
 
-@app.route('/admin/store/users/delete', methods=['POST'])
-def store_user_delete():
-    if 'user' not in session:
-        return redirect(url_for('login'))
-    
-    if session.get('role') not in ['admin', 'store_admin']:
-        flash('Access Denied!')
-        return redirect(url_for('store_dashboard'))
-    
-    users = load_store_users()
-    username = request.form. get('username', '')
-    
-    if username in users and users[username]. get('role') != 'store_admin':
+@app.route('/admin/delete-user', methods=['POST'])
+def admin_delete_user():
+    if session.get('role') != 'admin': return jsonify({'status': 'error'})
+    username = request.json.get('username')
+    users = load_users()
+    if username in users:
         del users[username]
+        save_users(users)
+    return jsonify({'status': 'success'})
+
+# Store Users Management
+@app.route('/store/users')
+def store_users_page():
+    if 'user' not in session: return redirect('/')
+    return render_template_string(STORE_USERS_TEMPLATE, users=load_store_users())
+
+@app.route('/store/users/save', methods=['POST'])
+def store_users_save():
+    if 'user' not in session: return redirect('/')
+    u = request.form.get('username')
+    p = request.form.get('password')
+    r = request.form.get('role')
+    users = load_store_users()
+    users[u] = {"password": p, "role": r, "permissions": [], "created_at": get_bd_date_str()}
+    save_store_users(users)
+    flash("User Saved!")
+    return redirect(url_for('store_users_page'))
+
+@app.route('/store/users/delete', methods=['POST'])
+def store_users_delete():
+    if 'user' not in session: return redirect('/')
+    u = request.form.get('username')
+    users = load_store_users()
+    if u in users:
+        del users[u]
         save_store_users(users)
-        flash(f'User "{username}" deleted!')
-    else:
-        flash('Cannot delete admin or user not found!')
-    
-    return redirect(url_for('store_users'))
+    flash("User Deleted!")
+    return redirect(url_for('store_users_page'))
 
 # ==============================================================================
-# ERROR HANDLERS
-# ==============================================================================
-
-@app.errorhandler(404)
-def page_not_found(e):
-    return render_template_string("""
-    <! DOCTYPE html>
-    <html>
-    <head>
-        <title>404 - Page Not Found</title>
-        """ + COMMON_STYLES + """
-        <style>
-            body { justify-content: center; align-items: center; min-height: 100vh; }
-            .error-container { text-align: center; padding: 50px; }
-            .error-code { font-size: 120px; font-weight: 900; color: var(--accent-orange); opacity: 0.3; }
-            . error-message { font-size: 24px; color: white; margin: 20px 0; }
-            . error-hint { color: var(--text-secondary); margin-bottom: 30px; }
-        </style>
-    </head>
-    <body>
-        <div class="animated-bg"></div>
-        <div class="error-container">
-            <div class="error-code">404</div>
-            <div class="error-message">Page Not Found</div>
-            <div class="error-hint">The page you're looking for doesn't exist or has been moved.</div>
-            <a href="/">
-                <button class="btn-primary" style="width: auto; padding: 14px 30px;">
-                    <i class="fas fa-home" style="margin-right: 10px;"></i> Go Home
-                </button>
-            </a>
-        </div>
-    </body>
-    </html>
-    """), 404
-
-@app.errorhandler(500)
-def internal_error(e):
-    return render_template_string("""
-    <!DOCTYPE html>
-    <html>
-    <head>
-        <title>500 - Server Error</title>
-        """ + COMMON_STYLES + """
-        <style>
-            body { justify-content: center; align-items: center; min-height: 100vh; }
-            .error-container { text-align: center; padding: 50px; }
-            .error-code { font-size: 120px; font-weight: 900; color: var(--accent-red); opacity: 0.3; }
-            .error-message { font-size: 24px; color: white; margin: 20px 0; }
-            . error-hint { color: var(--text-secondary); margin-bottom: 30px; }
-        </style>
-    </head>
-    <body>
-        <div class="animated-bg"></div>
-        <div class="error-container">
-            <div class="error-code">500</div>
-            <div class="error-message">Internal Server Error</div>
-            <div class="error-hint">Something went wrong.  Please try again later. </div>
-            <a href="/">
-                <button class="btn-primary" style="width: auto; padding: 14px 30px;">
-                    <i class="fas fa-home" style="margin-right: 10px;"></i> Go Home
-                </button>
-            </a>
-        </div>
-    </body>
-    </html>
-    """), 500
-
-# ==============================================================================
-# APPLICATION ENTRY POINT
+# MAIN EXECUTION
 # ==============================================================================
 
 if __name__ == '__main__':
-    print("=" * 60)
-    print("  MNM SOFTWARE - Production Management System")
-    print("  Version: 2.0 (Fixed)")
-    print("  Developer: Mehedi Hasan")
-    print("=" * 60)
-    print("\n  Starting server...")
-    print("  Access URL: http://127.0.0. 1:5000")
-    print("  Admin Login: Admin / @Nijhum@12")
-    print("\n  Press Ctrl+C to stop the server")
-    print("=" * 60)
-    
-    app.run(debug=True, host='0.0. 0.0', port=5000)
+    port = int(os.environ.get('PORT', 5000))
+    app.run(debug=True, host='0.0.0.0', port=port)
