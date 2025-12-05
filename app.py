@@ -22,7 +22,7 @@ from collections import defaultdict
 from flask import Flask, request, render_template_string, send_file, flash, session, redirect, url_for, make_response, jsonify
 
 app = Flask(__name__)
-app. secret_key = 'super-secret-secure-key-bd' 
+app.secret_key = 'super-secret-secure-key-bd' 
 
 # ==============================================================================
 # কনফিগারেশন এবং সেটআপ
@@ -35,7 +35,7 @@ if not os.path.exists(UPLOAD_FOLDER):
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 # সেশন টাইমআউট কনফিগারেশন (2 মিনিট)
-app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=120)
+app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=2) 
 
 # টাইমজোন কনফিগারেশন (বাংলাদেশ)
 bd_tz = pytz.timezone('Asia/Dhaka')
@@ -59,7 +59,7 @@ def add_header(response):
 # ==============================================================================
 # MongoDB কানেকশন সেটআপ
 # ==============================================================================
-MONGO_URI = "mongodb+srv://Mehedi:Mehedi123@office.jxdnuaj.mongodb.net/? appName=Office"
+MONGO_URI = "mongodb+srv://Mehedi:Mehedi123@office.jxdnuaj.mongodb.net/?appName=Office"
 
 try:
     client = MongoClient(MONGO_URI)
@@ -68,6116 +68,5111 @@ try:
     users_col = db['users']
     stats_col = db['stats']
     accessories_col = db['accessories']
-    
-    # Store related collections
-    store_users_col = db['store_users']
-    store_products_col = db['store_products']
-    store_customers_col = db['store_customers']
-    store_invoices_col = db['store_invoices']
-    store_estimates_col = db['store_estimates']
-    store_payments_col = db['store_payments']
-    
     print("MongoDB Connected Successfully!")
 except Exception as e:
     print(f"MongoDB Connection Error: {e}")
-    # ==============================================================================
-# Authentication এবং User Management Functions
+
+
+# ==============================================================================
+# ENHANCED CSS STYLES - PREMIUM MODERN UI WITH ANIMATIONS
+# ==============================================================================
+COMMON_STYLES = """
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
+    <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
+    <style>
+        :root {
+            --bg-body: #0a0a0f;
+            --bg-sidebar: #12121a;
+            --bg-card: #16161f;
+            --bg-card-hover: #1a1a25;
+            --text-primary: #FFFFFF;
+            --text-secondary: #8b8b9e;
+            --accent-orange: #FF7A00;
+            --accent-orange-light: #FF9A40;
+            --accent-orange-dark: #E56D00;
+            --accent-orange-glow: rgba(255, 122, 0, 0.3);
+            --accent-purple: #8B5CF6;
+            --accent-green: #10B981;
+            --accent-red: #EF4444;
+            --accent-blue: #3B82F6;
+            --accent-cyan: #06B6D4;
+            --border-color: rgba(255, 255, 255, 0.08);
+            --border-glow: rgba(255, 122, 0, 0.2);
+            --card-radius: 16px;
+            --transition-smooth: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            --shadow-card: 0 4px 24px rgba(0, 0, 0, 0.4);
+            --shadow-glow: 0 0 40px rgba(255, 122, 0, 0.15);
+            --gradient-orange: linear-gradient(135deg, #FF7A00 0%, #FF9A40 100%);
+            --gradient-dark: linear-gradient(180deg, #12121a 0%, #0a0a0f 100%);
+            --gradient-card: linear-gradient(145deg, rgba(22, 22, 31, 0.9) 0%, rgba(16, 16, 22, 0.95) 100%);
+        }
+
+        * { 
+            margin: 0;
+            padding: 0; 
+            box-sizing: border-box; 
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; 
+        }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: var(--bg-body); }
+        ::-webkit-scrollbar-thumb { background: var(--accent-orange); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--accent-orange-light); }
+        
+        body {
+            background: var(--bg-body);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Particle Background */
+        #particles-js {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        /* Animated Gradient Background */
+        .animated-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(ellipse at 20% 20%, rgba(255, 122, 0, 0.08) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 80%, rgba(139, 92, 246, 0.06) 0%, transparent 50%),
+                radial-gradient(ellipse at 50% 50%, rgba(16, 185, 129, 0.04) 0%, transparent 70%);
+            z-index: 0;
+            animation: bgPulse 15s ease-in-out infinite;
+        }
+
+        @keyframes bgPulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.8; transform: scale(1.05); }
+        }
+
+        /* Glassmorphism Effect */
+        .glass {
+            background: rgba(22, 22, 31, 0.7);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--border-color);
+        }
+
+        /* Enhanced Sidebar Styling */
+        .sidebar {
+            width: 280px;
+            height: 100vh; 
+            background: var(--gradient-dark);
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            display: flex; 
+            flex-direction: column;
+            padding: 30px 20px;
+            border-right: 1px solid var(--border-color); 
+            z-index: 1000;
+            transition: var(--transition-smooth);
+            box-shadow: 4px 0 30px rgba(0, 0, 0, 0.3);
+        }
+        .sidebar::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 1px;
+            height: 100%;
+            background: linear-gradient(180deg, transparent, var(--accent-orange), transparent);
+            opacity: 0.3;
+        }
+
+        .brand-logo { 
+            font-size: 26px;
+            font-weight: 900; 
+            color: white; 
+            margin-bottom: 50px; 
+            display: flex; 
+            align-items: center; 
+            gap: 12px; 
+            padding: 0 10px;
+            position: relative;
+        }
+
+        .brand-logo span { 
+            background: var(--gradient-orange);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .brand-logo i {
+            font-size: 28px;
+            color: var(--accent-orange);
+            filter: drop-shadow(0 0 10px var(--accent-orange-glow));
+            animation: logoFloat 3s ease-in-out infinite;
+        }
+
+        @keyframes logoFloat {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-5px) rotate(5deg); }
+        }
+        
+        .nav-menu { 
+            flex-grow: 1; 
+            display: flex; 
+            flex-direction: column;
+            gap: 8px; 
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center; 
+            padding: 14px 18px; 
+            color: var(--text-secondary);
+            text-decoration: none; 
+            border-radius: 12px; 
+            transition: var(--transition-smooth);
+            cursor: pointer; 
+            font-weight: 500; 
+            font-size: 14px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .nav-link::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 0;
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent-orange-glow), transparent);
+            transition: var(--transition-smooth);
+            z-index: -1;
+        }
+        .nav-link:hover::before, .nav-link.active::before { width: 100%; }
+
+        .nav-link:hover, .nav-link.active { 
+            color: var(--accent-orange); 
+            transform: translateX(5px);
+        }
+
+        .nav-link.active {
+            background: rgba(255, 122, 0, 0.1);
+            border-left: 3px solid var(--accent-orange);
+            box-shadow: 0 0 20px var(--accent-orange-glow);
+        }
+
+        .nav-link i { 
+            width: 24px;
+            margin-right: 12px; 
+            font-size: 18px; 
+            text-align: center;
+            transition: var(--transition-smooth);
+        }
+
+        .nav-link:hover i {
+            transform: scale(1.2);
+            filter: drop-shadow(0 0 8px var(--accent-orange));
+        }
+
+        .nav-link .nav-badge {
+            margin-left: auto;
+            background: var(--accent-orange);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 11px;
+            font-weight: 700;
+            animation: badgePulse 2s ease-in-out infinite;
+        }
+        @keyframes badgePulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        .sidebar-footer {
+            margin-top: auto;
+            padding-top: 20px; 
+            border-top: 1px solid var(--border-color);
+            text-align: center; 
+            font-size: 11px; 
+            color: var(--text-secondary); 
+            font-weight: 500; 
+            opacity: 0.5;
+            letter-spacing: 1px;
+        }
+
+        /* Main Content */
+        .main-content { 
+            margin-left: 280px;
+            width: calc(100% - 280px); 
+            padding: 30px 40px; 
+            position: relative;
+            z-index: 1;
+            min-height: 100vh;
+        }
+
+        .header-section { 
+            display: flex;
+            justify-content: space-between; 
+            align-items: flex-start; 
+            margin-bottom: 35px;
+            animation: fadeInDown 0.6s ease-out;
+        }
+
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .page-title { 
+            font-size: 32px;
+            font-weight: 800; 
+            color: white; 
+            margin-bottom: 8px;
+            letter-spacing: -0.5px;
+            background: linear-gradient(135deg, #fff 0%, #ccc 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .page-subtitle { 
+            color: var(--text-secondary);
+            font-size: 14px;
+            font-weight: 400;
+        }
+
+        .status-badge {
+            background: var(--bg-card);
+            padding: 12px 24px;
+            border-radius: 50px;
+            border: 1px solid var(--border-color);
+            font-size: 13px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: var(--shadow-card);
+            transition: var(--transition-smooth);
+        }
+        /* Enhanced Cards & Grid */
+        .stats-grid { 
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); 
+            gap: 24px; 
+            margin-bottom: 35px;
+        }
+
+        .dashboard-grid-2 { 
+            display: grid;
+            grid-template-columns: 2fr 1fr; 
+            gap: 24px; 
+            margin-bottom: 24px; 
+        }
+
+        .card { 
+            background: var(--gradient-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--card-radius);
+            padding: 28px;
+            backdrop-filter: blur(10px);
+            transition: var(--transition-smooth);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--accent-orange-glow), transparent);
+            opacity: 0;
+            transition: var(--transition-smooth);
+        }
+
+        .card:hover {
+            border-color: var(--border-glow);
+            box-shadow: var(--shadow-glow);
+            transform: translateY(-4px);
+        }
+
+        .card:hover::before { opacity: 1; }
+        
+        .section-header { 
+            display: flex;
+            justify-content: space-between; 
+            align-items: center; 
+            margin-bottom: 24px; 
+            font-weight: 700;
+            font-size: 16px; 
+            color: white;
+            letter-spacing: -0.3px;
+        }
+
+        .section-header i {
+            font-size: 20px;
+            opacity: 0.7;
+            transition: var(--transition-smooth);
+        }
+
+        .card:hover .section-header i {
+            opacity: 1;
+            transform: rotate(10deg) scale(1.1);
+        }
+        /* Stat Cards with Animations */
+        .stat-card { 
+            display: flex;
+            align-items: center; 
+            gap: 24px; 
+            transition: var(--transition-smooth);
+            cursor: pointer;
+        }
+
+        .stat-card:hover { 
+            transform: translateY(-6px) scale(1.02);
+        }
+
+        .stat-icon { 
+            width: 64px;
+            height: 64px; 
+            background: linear-gradient(145deg, rgba(255, 122, 0, 0.15), rgba(255, 122, 0, 0.05));
+            border-radius: 16px; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center;
+            font-size: 26px; 
+            color: var(--accent-orange);
+            position: relative;
+            overflow: hidden;
+            transition: var(--transition-smooth);
+        }
+
+        .stat-icon::after {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: var(--gradient-orange);
+            opacity: 0;
+            transition: var(--transition-smooth);
+        }
+
+        .stat-card:hover .stat-icon {
+            transform: rotate(-10deg) scale(1.1);
+            box-shadow: 0 0 30px var(--accent-orange-glow);
+        }
+
+        .stat-card:hover .stat-icon i {
+            animation: iconBounce 0.5s ease-out;
+        }
+
+        @keyframes iconBounce {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.3); }
+        }
+
+        .stat-info h3 { 
+            font-size: 36px;
+            font-weight: 800; 
+            margin: 0; 
+            color: white;
+            letter-spacing: -1px;
+            line-height: 1;
+            background: linear-gradient(135deg, #fff 0%, var(--accent-orange-light) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .stat-info p { 
+            font-size: 13px;
+            color: var(--text-secondary); 
+            margin: 6px 0 0 0; 
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            font-weight: 600;
+        }
+
+        /* Animated Counter */
+        .count-up {
+            display: inline-block;
+        }
+        /* Progress Bars with Animation */
+        .progress-item { margin-bottom: 24px; }
+
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 14px;
+            color: white;
+            font-weight: 500;
+        }
+
+        .progress-value {
+            color: var(--text-secondary);
+            font-weight: 600;
+        }
+
+        .progress-bar-container {
+            height: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            border-radius: 10px;
+            position: relative;
+            animation: progressFill 1.5s ease-out forwards;
+            transform-origin: left;
+        }
+
+        .progress-bar-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            animation: shimmer 2s infinite;
+        }
+
+        @keyframes progressFill {
+            from { transform: scaleX(0); }
+            to { transform: scaleX(1); }
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        .progress-orange { background: var(--gradient-orange); }
+        .progress-purple { background: linear-gradient(135deg, #8B5CF6 0%, #A78BFA 100%); }
+        .progress-green { background: linear-gradient(135deg, #10B981 0%, #34D399 100%); }
+        /* Enhanced Forms */
+        .input-group { margin-bottom: 20px; }
+
+        .input-group label { 
+            display: block;
+            font-size: 11px; 
+            color: var(--text-secondary); 
+            margin-bottom: 8px; 
+            text-transform: uppercase; 
+            font-weight: 700;
+            letter-spacing: 1.5px;
+        }
+
+        input, select { 
+            width: 100%;
+            padding: 14px 18px; 
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border-color);
+            border-radius: 12px; 
+            color: white; 
+            font-size: 15px; 
+            font-weight: 500;
+            outline: none; 
+            transition: var(--transition-smooth);
+        }
+
+        input::placeholder {
+            color: var(--text-secondary);
+            opacity: 0.5;
+        }
+
+        input:focus, select:focus { 
+            border-color: var(--accent-orange);
+            background: rgba(255, 122, 0, 0.05);
+            box-shadow: 0 0 0 4px var(--accent-orange-glow), 0 0 20px var(--accent-orange-glow);
+        }
+
+        select {
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%23FF7A00' viewBox='0 0 24 24'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            background-size: 24px;
+            background-color: rgba(255, 255, 255, 0.03);
+        }
+        
+        select option {
+            background-color: #1a1a25;
+            color: white;
+            padding: 10px;
+        }
+        
+        button { 
+            width: 100%;
+            padding: 14px 24px; 
+            background: var(--gradient-orange);
+            color: white; 
+            border: none; 
+            border-radius: 12px; 
+            font-weight: 700;
+            font-size: 15px;
+            cursor: pointer; 
+            transition: var(--transition-smooth);
+            position: relative;
+            overflow: hidden;
+            letter-spacing: 0.5px;
+        }
+        button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: 0.5s;
+        }
+
+        button:hover::before { left: 100%; }
+
+        button:hover { 
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px var(--accent-orange-glow);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        /* Enhanced Tables */
+        .dark-table { 
+            width: 100%;
+            border-collapse: collapse; 
+            margin-top: 10px; 
+        }
+
+        .dark-table th { 
+            text-align: left;
+            padding: 14px 16px; 
+            color: var(--text-secondary); 
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            border-bottom: 1px solid var(--border-color);
+            font-weight: 700;
+        }
+
+        .dark-table td { 
+            padding: 16px;
+            color: white; 
+            font-size: 14px; 
+            border-bottom: 1px solid rgba(255,255,255,0.03);
+            vertical-align: middle;
+            transition: var(--transition-smooth);
+        }
+
+        .dark-table tr {
+            transition: var(--transition-smooth);
+        }
+
+        .dark-table tr:hover td { 
+            background: rgba(255, 122, 0, 0.03);
+        }
+
+        .table-badge {
+            background: rgba(255,255,255,0.05);
+            padding: 6px 14px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 600;
+            display: inline-block;
+        }
+        
+        /* Action Buttons */
+        .action-cell { 
+            display: flex;
+            gap: 8px; 
+            justify-content: flex-end; 
+        }
+
+        .action-btn { 
+            padding: 8px 12px;
+            border-radius: 8px; 
+            text-decoration: none; 
+            font-size: 12px; 
+            display: inline-flex; 
+            align-items: center; 
+            justify-content: center; 
+            cursor: pointer; 
+            border: none; 
+            transition: var(--transition-smooth);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-edit { 
+            background: rgba(139, 92, 246, 0.15);
+            color: #A78BFA; 
+        }
+
+        .btn-edit:hover { 
+            background: var(--accent-purple);
+            color: white;
+            transform: scale(1.1);
+            box-shadow: 0 0 20px rgba(139, 92, 246, 0.4);
+        }
+
+        .btn-del { 
+            background: rgba(239, 68, 68, 0.15);
+            color: #F87171; 
+        }
+
+        .btn-del:hover { 
+            background: var(--accent-red);
+            color: white;
+            transform: scale(1.1);
+            box-shadow: 0 0 20px rgba(239, 68, 68, 0.4);
+        }
+        /* Enhanced Loading Overlay */
+        #loading-overlay { 
+            display: none;
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%; 
+            background: rgba(10, 10, 15, 0.95);
+            z-index: 9999; 
+            flex-direction: column;
+            justify-content: center; 
+            align-items: center; 
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+        
+        /* Modern Spinner */
+        .spinner-container {
+            position: relative;
+            width: 80px;
+            height: 80px;
+        }
+
+        .spinner { 
+            width: 80px;
+            height: 80px; 
+            border: 4px solid rgba(255, 122, 0, 0.1);
+            border-top: 4px solid var(--accent-orange);
+            border-right: 4px solid var(--accent-orange-light);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            box-shadow: 0 0 30px var(--accent-orange-glow);
+        }
+
+        .spinner-inner {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 50px;
+            height: 50px;
+            border: 3px solid rgba(139, 92, 246, 0.1);
+            border-bottom: 3px solid var(--accent-purple);
+            border-left: 3px solid var(--accent-purple);
+            border-radius: 50%;
+            animation: spin 1.2s linear infinite reverse;
+        }
+
+        @keyframes spin { 
+            0% { transform: rotate(0deg); } 
+            100% { transform: rotate(360deg); } 
+        }
+
+        /* Success Checkmark Animation */
+        .checkmark-container { 
+            display: none;
+            text-align: center; 
+        }
+
+        .checkmark-circle {
+            width: 100px;
+            height: 100px; 
+            position: relative; 
+            display: inline-block;
+            border-radius: 50%; 
+            border: 3px solid var(--accent-green);
+            margin-bottom: 24px;
+            animation: success-anim 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+            box-shadow: 0 0 40px rgba(16, 185, 129, 0.3);
+        }
+
+        .checkmark-circle::before {
+            content: '';
+            display: block; 
+            width: 30px; 
+            height: 50px;
+            border: solid var(--accent-green); 
+            border-width: 0 4px 4px 0;
+            position: absolute; 
+            top: 15px; 
+            left: 35px;
+            transform: rotate(45deg); 
+            opacity: 0;
+            animation: checkmark-anim 0.4s 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+        /* Fail Cross Animation */
+        .fail-container { 
+            display: none; 
+            text-align: center;
+        }
+
+        .fail-circle {
+            width: 100px;
+            height: 100px; 
+            position: relative; 
+            display: inline-block;
+            border-radius: 50%; 
+            border: 3px solid var(--accent-red);
+            margin-bottom: 24px;
+            animation: fail-anim 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+            box-shadow: 0 0 40px rgba(239, 68, 68, 0.3);
+        }
+
+        .fail-circle::before, .fail-circle::after {
+            content: '';
+            position: absolute; 
+            width: 4px; 
+            height: 50px; 
+            background: var(--accent-red);
+            top: 23px; 
+            left: 46px; 
+            border-radius: 4px;
+            animation: crossAnim 0.3s 0.4s ease-out forwards;
+            opacity: 0;
+        }
+
+        .fail-circle::before { transform: rotate(45deg); }
+        .fail-circle::after { transform: rotate(-45deg); }
+
+        @keyframes success-anim { 
+            0% { transform: scale(0); opacity: 0; } 
+            50% { transform: scale(1.2); } 
+            100% { transform: scale(1); opacity: 1; } 
+        }
+
+        @keyframes checkmark-anim { 
+            0% { opacity: 0; height: 0; width: 0; } 
+            100% { opacity: 1; height: 50px; width: 30px; } 
+        }
+
+        @keyframes fail-anim { 
+            0% { transform: scale(0); opacity: 0; } 
+            50% { transform: scale(1.2); } 
+            100% { transform: scale(1); opacity: 1; } 
+        }
+
+        @keyframes crossAnim {
+            0% { opacity: 0; transform: rotate(45deg) scale(0); }
+            100% { opacity: 1; transform: rotate(45deg) scale(1); }
+        }
+
+        .anim-text { 
+            font-size: 24px; 
+            font-weight: 800; 
+            color: white;
+            margin-top: 10px; 
+            letter-spacing: 1px;
+        }
+
+        .loading-text {
+            color: var(--text-secondary);
+            font-size: 15px;
+            margin-top: 20px;
+            font-weight: 500;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            animation: textPulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes textPulse {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+
+        /* Welcome Popup Modal */
+        .welcome-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(10, 10, 15, 0.9);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            z-index: 10000;
+            justify-content: center;
+            align-items: center;
+            animation: modalFadeIn 0.3s ease-out;
+        }
+
+        @keyframes modalFadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .welcome-content {
+            background: var(--gradient-card);
+            border: 1px solid var(--border-color);
+            border-radius: 24px;
+            padding: 50px 60px;
+            text-align: center;
+            max-width: 500px;
+            width: 90%;
+            animation: welcomeSlideIn 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.5), 0 0 60px var(--accent-orange-glow);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .welcome-content::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, var(--accent-orange-glow) 0%, transparent 60%);
+            animation: welcomeGlow 3s ease-in-out infinite;
+            opacity: 0.3;
+        }
+        @keyframes welcomeSlideIn {
+            from { 
+                opacity: 0;
+                transform: translateY(-50px) scale(0.9);
+            }
+            to { 
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        @keyframes welcomeGlow {
+            0%, 100% { transform: rotate(0deg); }
+            50% { transform: rotate(180deg); }
+        }
+
+        .welcome-icon {
+            font-size: 80px;
+            margin-bottom: 20px;
+            display: inline-block;
+            animation: welcomeIconBounce 1s ease-out;
+        }
+
+        @keyframes welcomeIconBounce {
+            0% { transform: scale(0) rotate(-180deg); }
+            60% { transform: scale(1.2) rotate(10deg); }
+            100% { transform: scale(1) rotate(0deg); }
+        }
+
+        .welcome-greeting {
+            font-size: 16px;
+            color: var(--accent-orange);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            margin-bottom: 10px;
+        }
+
+        .welcome-title {
+            font-size: 36px;
+            font-weight: 900;
+            color: white;
+            margin-bottom: 15px;
+            line-height: 1.2;
+        }
+
+        .welcome-title span {
+            background: var(--gradient-orange);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .welcome-message {
+            color: var(--text-secondary);
+            font-size: 15px;
+            line-height: 1.6;
+            margin-bottom: 30px;
+        }
+
+        .welcome-close {
+            background: var(--gradient-orange);
+            color: white;
+            border: none;
+            padding: 14px 40px;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+            position: relative;
+            z-index: 1;
+        }
+
+        .welcome-close:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px var(--accent-orange-glow);
+        }
+
+        /* Tooltip */
+        .tooltip {
+            position: relative;
+        }
+
+        .tooltip::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: 120%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--bg-card);
+            color: white;
+            padding: 8px 14px;
+            border-radius: 8px;
+            font-size: 12px;
+            white-space: nowrap;
+            opacity: 0;
+            visibility: hidden;
+            transition: var(--transition-smooth);
+            border: 1px solid var(--border-color);
+            z-index: 1000;
+        }
+
+        .tooltip:hover::after {
+            opacity: 1;
+            visibility: visible;
+            bottom: 130%;
+        }
+        /* File Upload Zone */
+        .upload-zone {
+            border: 2px dashed var(--border-color);
+            padding: 50px;
+            text-align: center;
+            border-radius: 16px;
+            transition: var(--transition-smooth);
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .upload-zone::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: var(--gradient-orange);
+            opacity: 0;
+            transition: var(--transition-smooth);
+        }
+
+        .upload-zone:hover {
+            border-color: var(--accent-orange);
+            background: rgba(255, 122, 0, 0.05);
+        }
+
+        .upload-zone:hover::before {
+            opacity: 0.03;
+        }
+
+        .upload-zone.dragover {
+            border-color: var(--accent-orange);
+            background: rgba(255, 122, 0, 0.1);
+            transform: scale(1.02);
+        }
+
+        .upload-icon {
+            font-size: 60px;
+            color: var(--accent-orange);
+            margin-bottom: 20px;
+            display: inline-block;
+            animation: uploadFloat 3s ease-in-out infinite;
+        }
+
+        @keyframes uploadFloat {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .upload-text {
+            color: var(--accent-orange);
+            font-weight: 600;
+            font-size: 16px;
+            margin-bottom: 8px;
+        }
+
+        .upload-hint {
+            color: var(--text-secondary);
+            font-size: 13px;
+        }
+
+        #file-count {
+            margin-top: 20px;
+            font-size: 14px;
+            color: var(--accent-green);
+            font-weight: 600;
+        }
+
+        /* Flash Messages */
+        .flash-message {
+            margin-bottom: 20px;
+            padding: 16px 20px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            animation: flashSlideIn 0.4s ease-out;
+        }
+
+        @keyframes flashSlideIn {
+            from { 
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to { 
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .flash-error {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            color: #F87171;
+        }
+
+        .flash-success {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            color: #34D399;
+        }
+        
+        /* Ripple Effect */
+        .ripple {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .ripple-effect {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(0);
+            animation: rippleAnim 0.6s ease-out;
+            pointer-events: none;
+        }
+
+        @keyframes rippleAnim {
+            to {
+                transform: scale(4);
+                opacity: 0;
+            }
+        }
+        /* Mobile */
+        .mobile-toggle { 
+            display: none; 
+            position: fixed; 
+            top: 20px;
+            right: 20px; 
+            z-index: 2000; 
+            color: white; 
+            background: var(--bg-card);
+            padding: 12px 14px; 
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            cursor: pointer;
+            transition: var(--transition-smooth);
+        }
+
+        .mobile-toggle:hover {
+            background: var(--accent-orange);
+        }
+
+        @media (max-width: 1024px) {
+            .sidebar { 
+                transform: translateX(-100%);
+                width: 280px;
+            } 
+            .sidebar.active { 
+                transform: translateX(0);
+            }
+            .main-content { 
+                margin-left: 0;
+                width: 100%; 
+                padding: 20px; 
+            }
+            .dashboard-grid-2 { 
+                grid-template-columns: 1fr;
+            }
+            .mobile-toggle { 
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+            .header-section {
+                flex-direction: column;
+                gap: 15px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            .page-title {
+                font-size: 24px;
+            }
+            .welcome-content {
+                padding: 40px 30px;
+            }
+            .welcome-title {
+                font-size: 28px;
+            }
+        }
+
+        /* Skeleton Loading */
+        .skeleton {
+            background: linear-gradient(90deg, var(--bg-card) 25%, rgba(255,255,255,0.05) 50%, var(--bg-card) 75%);
+            background-size: 200% 100%;
+            animation: skeletonLoad 1.5s infinite;
+            border-radius: 8px;
+        }
+
+        @keyframes skeletonLoad {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+        /* Notification Dot */
+        .notification-dot {
+            position: absolute;
+            top: -2px;
+            right: -2px;
+            width: 10px;
+            height: 10px;
+            background: var(--accent-red);
+            border-radius: 50%;
+            border: 2px solid var(--bg-sidebar);
+            animation: notifyPulse 2s infinite;
+        }
+
+        @keyframes notifyPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+        }
+
+        /* Chart Container */
+        .chart-container {
+            position: relative;
+            height: 280px;
+            padding: 10px;
+        }
+
+        /* Real-time Indicator */
+        .realtime-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            color: var(--text-secondary);
+            padding: 6px 12px;
+            background: rgba(16, 185, 129, 0.1);
+            border-radius: 20px;
+            border: 1px solid rgba(16, 185, 129, 0.2);
+        }
+
+        .realtime-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--accent-green);
+            border-radius: 50%;
+            animation: realtimePulse 1s infinite;
+        }
+
+        @keyframes realtimePulse {
+            0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+            70% { opacity: 1; box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
+        }
+
+        /* Floating Action Button */
+        .fab {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            background: var(--gradient-orange);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: white;
+            cursor: pointer;
+            box-shadow: 0 8px 30px var(--accent-orange-glow);
+            transition: var(--transition-smooth);
+            z-index: 100;
+        }
+
+        .fab:hover {
+            transform: scale(1.1) rotate(90deg);
+            box-shadow: 0 12px 40px var(--accent-orange-glow);
+        }
+        /* Glow Text */
+        .glow-text {
+            text-shadow: 0 0 20px var(--accent-orange-glow);
+        }
+
+        /* Animated Border */
+        .animated-border {
+            position: relative;
+        }
+
+        .animated-border::after {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(45deg, var(--accent-orange), var(--accent-purple), var(--accent-green), var(--accent-orange));
+            background-size: 400% 400%;
+            border-radius: inherit;
+            z-index: -1;
+            animation: gradientBorder 3s ease infinite;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .animated-border:hover::after {
+            opacity: 1;
+        }
+
+        @keyframes gradientBorder {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        /* Permission Checkbox Styles */
+        .perm-checkbox {
+            background: rgba(255, 255, 255, 0.03);
+            padding: 14px 18px;
+            border-radius: 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            border: 1px solid var(--border-color);
+            transition: var(--transition-smooth);
+            flex: 1;
+            min-width: 100px;
+        }
+
+        .perm-checkbox:hover {
+            border-color: var(--accent-orange);
+            background: rgba(255, 122, 0, 0.05);
+        }
+
+        .perm-checkbox input {
+            width: auto;
+            margin-right: 10px;
+            accent-color: var(--accent-orange);
+        }
+
+        .perm-checkbox span {
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+
+        .perm-checkbox:has(input:checked) {
+            border-color: var(--accent-orange);
+            background: rgba(255, 122, 0, 0.1);
+        }
+
+        .perm-checkbox:has(input:checked) span {
+            color: var(--accent-orange);
+        }
+
+        /* Time Badge */
+        .time-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(255, 255, 255, 0.03);
+            padding: 8px 14px;
+            border-radius: 8px;
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .time-badge i {
+            color: var(--accent-orange);
+        }
+    </style>
+"""
+# ==============================================================================
+# হেল্পার ফাংশন: পরিসংখ্যান ও হিস্ট্রি (MongoDB ব্যবহার করে)
 # ==============================================================================
 
-def init_admin_user():
-    """ডিফল্ট অ্যাডমিন ইউজার তৈরি করে যদি না থাকে"""
+def load_users():
+    record = users_col.find_one({"_id": "global_users"})
+    default_users = {
+        "Admin": {
+            "password": "@Nijhum@12", 
+            "role": "admin", 
+            "permissions": ["closing", "po_sheet", "user_manage", "view_history", "accessories"],
+            "created_at": "N/A",
+            "last_login": "Never",
+            "last_duration": "N/A"
+        }
+    }
+    if record:
+        return record['data']
+    else:
+        users_col.insert_one({"_id": "global_users", "data": default_users})
+        return default_users
+
+def save_users(users_data):
+    users_col.replace_one(
+        {"_id": "global_users"}, 
+        {"_id": "global_users", "data": users_data}, 
+        upsert=True
+    )
+
+def load_stats():
+    record = stats_col.find_one({"_id": "dashboard_stats"})
+    if record:
+        return record['data']
+    else:
+        default_stats = {"downloads": [], "last_booking": "None"}
+        stats_col.insert_one({"_id": "dashboard_stats", "data": default_stats})
+        return default_stats
+
+def save_stats(data):
+    stats_col.replace_one(
+        {"_id": "dashboard_stats"},
+        {"_id": "dashboard_stats", "data": data},
+        upsert=True
+    )
+def update_stats(ref_no, username):
+    data = load_stats()
+    now = get_bd_time() # BD Time
+    new_record = {
+        "ref": ref_no,
+        "user": username,
+        "date": now.strftime('%d-%m-%Y'),
+        "time": now.strftime('%I:%M %p'),
+        "type": "Closing Report",
+        "iso_time": now.isoformat()
+    }
+    data['downloads'].insert(0, new_record)
+    # Analytics এর জন্য ডাটা লিমিট বাড়ানো হয়েছে
+    if len(data['downloads']) > 3000:
+        data['downloads'] = data['downloads'][:3000]
+        
+    data['last_booking'] = ref_no
+    save_stats(data)
+
+def update_po_stats(username, file_count):
+    data = load_stats()
+    now = get_bd_time()
+    new_record = {
+        "user": username,
+        "file_count": file_count,
+        "date": now.strftime('%d-%m-%Y'),
+        "time": now.strftime('%I:%M %p'),
+        "type": "PO Sheet",
+        "iso_time": now.isoformat()
+    }
+    if 'downloads' not in data: data['downloads'] = []
+    data['downloads'].insert(0, new_record)
+    if len(data['downloads']) > 3000:
+        data['downloads'] = data['downloads'][:3000]
+    save_stats(data)
+
+def load_accessories_db():
+    record = accessories_col.find_one({"_id": "accessories_data"})
+    if record:
+        return record['data']
+    else:
+        return {}
+
+def save_accessories_db(data):
+    accessories_col.replace_one(
+        {"_id": "accessories_data"},
+        {"_id": "accessories_data", "data": data},
+        upsert=True
+    )
+
+# --- আপডেটেড: রিয়েল-টাইম ড্যাশবোর্ড সামারি এবং এনালিটিক্স ---
+def get_dashboard_summary_v2():
+    stats_data = load_stats()
+    acc_db = load_accessories_db()
+    users_data = load_users()
+    
+    now = get_bd_time()
+    today_str = now.strftime('%d-%m-%Y')
+    
+    # 1. User Stats
+    user_details = []
+    for u, d in users_data.items():
+        user_details.append({
+            "username": u,
+            "role": d.get('role', 'user'),
+            "created_at": d.get('created_at', 'N/A'),
+            "last_login": d.get('last_login', 'Never'),
+            "last_duration": d.get('last_duration', 'N/A')
+        })
+
+    # 2. Accessories Today & Analytics - LIFETIME COUNT
+    acc_lifetime_count = 0
+    acc_today_list = []
+    
+    # Analytics Container: {'YYYY-MM-DD': {'label': '01-Dec', 'closing': 0, 'po': 0, 'acc': 0}}
+    daily_data = defaultdict(lambda: {'closing': 0, 'po': 0, 'acc': 0})
+
+    for ref, data in acc_db.items():
+        for challan in data.get('challans', []):
+            acc_lifetime_count += 1  # LIFETIME COUNT
+            c_date = challan.get('date')
+            if c_date == today_str:
+                acc_today_list.append({
+                    "ref": ref,
+                    "buyer": data.get('buyer'),
+                    "style": data.get('style'),
+                    "time": "Today", 
+                    "qty": challan.get('qty')
+                })
+            
+            # Analytics Calculation - Daily basis
+            try:
+                dt_obj = datetime.strptime(c_date, '%d-%m-%Y')
+                sort_key = dt_obj.strftime('%Y-%m-%d')
+                daily_data[sort_key]['acc'] += 1
+                daily_data[sort_key]['label'] = dt_obj.strftime('%d-%b')
+            except: pass
+
+    # 3. Closing & PO - LIFETIME COUNT & Analytics
+    closing_lifetime_count = 0
+    po_lifetime_count = 0
+    closing_list = []
+    po_list = []
+    
+    history = stats_data.get('downloads', [])
+    for item in history:
+        item_date = item.get('date', '')
+        if item.get('type') == 'PO Sheet':
+            po_lifetime_count += 1  # LIFETIME COUNT
+            if item_date == today_str:
+                po_list.append(item)
+        else: 
+            closing_lifetime_count += 1  # LIFETIME COUNT
+            if item_date == today_str:
+                closing_list.append(item)
+        
+        # Analytics Calculation - Daily basis
+        try:
+            dt_obj = datetime.strptime(item_date, '%d-%m-%Y')
+            sort_key = dt_obj.strftime('%Y-%m-%d')
+            
+            if item.get('type') == 'PO Sheet':
+                daily_data[sort_key]['po'] += 1
+            else:
+                daily_data[sort_key]['closing'] += 1
+            daily_data[sort_key]['label'] = dt_obj.strftime('%d-%b')
+        except: pass
+    # Get last month's 1st date to today
+    first_of_last_month = (now.replace(day=1) - timedelta(days=1)).replace(day=1)
+    start_date = first_of_last_month.strftime('%Y-%m-%d')
+    end_date = now.strftime('%Y-%m-%d')
+    
+    # Filter and sort data from start_date to end_date
+    sorted_keys = sorted([k for k in daily_data.keys() if start_date <= k <= end_date])
+    
+    chart_labels = []
+    chart_closing = []
+    chart_po = []
+    chart_acc = []
+
+    if not sorted_keys:
+        curr_d = now.strftime('%d-%b')
+        chart_labels = [curr_d]
+        chart_closing = [0]
+        chart_po = [0]
+        chart_acc = [0]
+    else:
+        for k in sorted_keys:
+            d = daily_data[k]
+            chart_labels.append(d.get('label', k))
+            chart_closing.append(d['closing'])
+            chart_po.append(d['po'])
+            chart_acc.append(d['acc'])
+
+    return {
+        "users": { "count": len(users_data), "details": user_details },
+        "accessories": { "count": acc_lifetime_count, "details": acc_today_list },
+        "closing": { "count": closing_lifetime_count, "details": closing_list },
+        "po": { "count": po_lifetime_count, "details": po_list },
+        "chart": {
+            "labels": chart_labels,
+            "closing": chart_closing,
+            "po": chart_po,
+            "acc": chart_acc
+        },
+        "history": history
+    }
+
+# ==============================================================================
+# লজিক পার্ট: PURCHASE ORDER SHEET PARSER (PDF)
+# ==============================================================================
+
+def is_potential_size(header):
+    h = header.strip().upper()
+    if h in ["COLO", "SIZE", "TOTAL", "QUANTITY", "PRICE", "AMOUNT", "CURRENCY", "ORDER NO", "P.O NO"]:
+        return False
+    if re.match(r'^\d+$', h): return True
+    if re.match(r'^\d+[AMYT]$', h): return True
+    if re.match(r'^(XXS|XS|S|M|L|XL|XXL|XXXL|TU|ONE\s*SIZE)$', h): return True
+    if re.match(r'^[A-Z]\d{2,}$', h): return False
+    return False
+
+def sort_sizes(size_list):
+    STANDARD_ORDER = [
+        '0M', '1M', '3M', '6M', '9M', '12M', '18M', '24M', '36M',
+        '2A', '3A', '4A', '5A', '6A', '8A', '10A', '12A', '14A', '16A', '18A',
+        'XXS', 'XS', 'S', 'M', 'L', 'XL', 'XXL', '3XL', '4XL', '5XL',
+        'TU', 'One Size'
+    ]
+    def sort_key(s):
+        s = s.strip()
+        if s in STANDARD_ORDER: return (0, STANDARD_ORDER.index(s))
+        if s.isdigit(): return (1, int(s))
+        match = re.match(r'^(\d+)([A-Z]+)$', s)
+        if match: return (2, int(match.group(1)), match.group(2))
+        return (3, s)
+    return sorted(size_list, key=sort_key)
+
+def extract_metadata(first_page_text):
+    meta = {
+        'buyer': 'N/A', 'booking': 'N/A', 'style': 'N/A', 
+        'season': 'N/A', 'dept': 'N/A', 'item': 'N/A'
+    }
+    if "KIABI" in first_page_text.upper():
+        meta['buyer'] = "KIABI"
+    else:
+        buyer_match = re.search(r"Buyer.*?Name[\s\S]*?([\w\s&]+)(?:\n|$)", first_page_text)
+        if buyer_match: meta['buyer'] = buyer_match.group(1).strip()
+
+    booking_block_match = re.search(r"(?:Internal )?Booking NO\. ?[:\s]*([\s\S]*?)(?:System NO|Control No|Buyer)", first_page_text, re.IGNORECASE)
+    if booking_block_match: 
+        raw_booking = booking_block_match.group(1).strip()
+        clean_booking = raw_booking.replace('\n', '').replace('\r', '').replace(' ', '')
+        if "System" in clean_booking: clean_booking = clean_booking.split("System")[0]
+        meta['booking'] = clean_booking
+
+    style_match = re.search(r"Style Ref\. ?[:\s]*([\w-]+)", first_page_text, re.IGNORECASE)
+    if style_match: meta['style'] = style_match.group(1).strip()
+    else:
+        style_match = re.search(r"Style Des\. ?[\s\S]*?([\w-]+)", first_page_text, re.IGNORECASE)
+        if style_match: meta['style'] = style_match.group(1).strip()
+
+    season_match = re.search(r"Season\s*[:\n\"]*([\w\d-]+)", first_page_text, re.IGNORECASE)
+    if season_match: meta['season'] = season_match.group(1).strip()
+    dept_match = re.search(r"Dept\. ?[\s\n:]*([A-Za-z]+)", first_page_text, re.IGNORECASE)
+    if dept_match: meta['dept'] = dept_match.group(1).strip()
+
+    item_match = re.search(r"Garments?   Item[\s\n:]*([^\n\r]+)", first_page_text, re.IGNORECASE)
+    if item_match: 
+        item_text = item_match.group(1).strip()
+        if "Style" in item_text: item_text = item_text.split("Style")[0].strip()
+        meta['item'] = item_text
+
+    return meta
+
+def extract_data_dynamic(file_path):
+    extracted_data = []
+    metadata = {
+        'buyer': 'N/A', 'booking': 'N/A', 'style': 'N/A', 
+        'season': 'N/A', 'dept': 'N/A', 'item': 'N/A'
+    }
+    order_no = "Unknown"
+    
     try:
-        if users_col.count_documents({}) == 0:
-            users_col.insert_one({
-                'username': 'admin',
-                'password': 'admin123',
-                'role': 'admin',
-                'created_at': get_bd_time()
-            })
-            print("Default admin user created!")
+        reader = pypdf.PdfReader(file_path)
+        first_page_text = reader.pages[0].extract_text()
+        
+        if "Main Fabric Booking" in first_page_text or "Fabric Booking Sheet" in first_page_text:
+            metadata = extract_metadata(first_page_text)
+            return [], metadata 
+
+        order_match = re.search(r"Order no\D*(\d+)", first_page_text, re.IGNORECASE)
+        if order_match: order_no = order_match.group(1)
+        else:
+            alt_match = re.search(r"Order\s*[:\.]?\s*(\d+)", first_page_text, re.IGNORECASE)
+            if alt_match: order_no = alt_match.group(1)
+        
+        order_no = str(order_no).strip()
+        if order_no.endswith("00"): order_no = order_no[:-2]
+
+        for page in reader.pages:
+            text = page.extract_text()
+            lines = text.split('\n')
+            sizes = []
+            capturing_data = False
+            
+            for i, line in enumerate(lines):
+                line = line.strip()
+                if not line: continue
+
+                if ("Colo" in line or "Size" in line) and "Total" in line:
+                    parts = line.split()
+                    try:
+                        total_idx = [idx for idx, x in enumerate(parts) if 'Total' in x][0]
+                        raw_sizes = parts[:total_idx]
+                        temp_sizes = [s for s in raw_sizes if s not in ["Colo", "/", "Size", "Colo/Size", "Colo/", "Size's"]]
+                        
+                        valid_size_count = sum(1 for s in temp_sizes if is_potential_size(s))
+                        if temp_sizes and valid_size_count >= len(temp_sizes) / 2:
+                            sizes = temp_sizes
+                            capturing_data = True
+                        else:
+                            sizes = []
+                            capturing_data = False
+                    except: pass
+                    continue
+                
+                if capturing_data:
+                    if line.startswith("Total Quantity") or line.startswith("Total Amount"):
+                        capturing_data = False
+                        continue
+                    lower_line = line.lower()
+                    if "quantity" in lower_line or "currency" in lower_line or "price" in lower_line or "amount" in lower_line:
+                        continue
+                        
+                    clean_line = line.replace("Spec. price", "").replace("Spec", "").strip()
+                    if not re.search(r'[a-zA-Z]', clean_line): continue
+                    if re.match(r'^[A-Z]\d+$', clean_line) or "Assortment" in clean_line: continue
+
+                    numbers_in_line = re.findall(r'\b\d+\b', line)
+                    quantities = [int(n) for n in numbers_in_line]
+                    color_name = clean_line
+                    final_qtys = []
+
+                    if len(quantities) >= len(sizes):
+                        if len(quantities) == len(sizes) + 1: final_qtys = quantities[:-1] 
+                        else: final_qtys = quantities[:len(sizes)]
+                        color_name = re.sub(r'\s\d+$', '', color_name).strip()
+                    elif len(quantities) < len(sizes): 
+                        vertical_qtys = []
+                        for next_line in lines[i+1:]:
+                            next_line = next_line.strip()
+                            if "Total" in next_line or re.search(r'[a-zA-Z]', next_line.replace("Spec", "").replace("price", "")): break
+                            if re.match(r'^\d+$', next_line): vertical_qtys.append(int(next_line))
+                        
+                        if len(vertical_qtys) >= len(sizes): final_qtys = vertical_qtys[:len(sizes)]
+                    
+                    if final_qtys and color_name:
+                         for idx, size in enumerate(sizes):
+                            extracted_data.append({
+                                'P.O NO': order_no,
+                                'Color': color_name,
+                                'Size': size,
+                                'Quantity': final_qtys[idx]
+                            })
+    except Exception as e: print(f"Error processing file: {e}")
+    return extracted_data, metadata
+# ==============================================================================
+# লজিক পার্ট: CLOSING REPORT API & EXCEL GENERATION
+# ==============================================================================
+def get_authenticated_session(username, password):
+    login_url = 'http://180.92.235.190:8022/erp/login.php'
+    login_payload = {'txt_userid': username, 'txt_password': password, 'submit': 'Login'}
+    session_req = requests.Session()
+    session_req.headers.update({
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+    })
+    try:
+        response = session_req.post(login_url, data=login_payload, timeout=300)
+        if "dashboard.php" in response.url or "Invalid" not in response.text:
+            return session_req
+        else:
+            return None
+    except requests.exceptions.RequestException as e:
+        print(f"Connection Error: {e}")
+        return None
+
+def fetch_closing_report_data(internal_ref_no):
+    active_session = get_authenticated_session("input2.clothing-cutting", "123456")
+    if not active_session: return None
+
+    report_url = 'http://180.92.235.190:8022/erp/prod_planning/reports/requires/cutting_lay_production_report_controller.php'
+    payload_template = {'action': 'report_generate', 'cbo_wo_company_name': '2', 'cbo_location_name': '2', 'cbo_floor_id': '0', 'cbo_buyer_name': '0', 'txt_internal_ref_no': internal_ref_no, 'reportType': '3'}
+    found_data = None
+   
+    for year in ['2025', '2024']:
+        for company_id in range(1, 6):
+            payload = payload_template.copy()
+            payload['cbo_year_selection'] = year
+            payload['cbo_company_name'] = str(company_id)
+            try:
+                response = active_session.post(report_url, data=payload, timeout=300)
+                if response.status_code == 200 and "Data not Found" not in response.text:
+                    found_data = response.text
+                    break
+            except: continue
+        if found_data: break
+    
+    if found_data:
+        return parse_report_data(found_data)
+    return None
+
+def parse_report_data(html_content):
+    all_report_data = []
+    try:
+        soup = BeautifulSoup(html_content, 'lxml')
+        header_row = soup.select_one('thead tr:nth-of-type(2)')
+        if not header_row: return None
+        all_th = header_row.find_all('th')
+        headers = [th.get_text(strip=True) for th in all_th if 'total' not in th.get_text(strip=True).lower()]
+        data_rows = soup.select('div#scroll_body table tbody tr')
+        item_blocks = []
+        current_block = []
+        for row in data_rows:
+            if row.get('bgcolor') == '#cddcdc':
+                if current_block: item_blocks.append(current_block)
+                current_block = []
+            else:
+                current_block.append(row)
+        if current_block: item_blocks.append(current_block)
+        
+        for block in item_blocks:
+            style, color, buyer_name, gmts_qty_data, sewing_input_data, cutting_qc_data = "N/A", "N/A", "N/A", None, None, None
+            for row in block:
+                cells = row.find_all('td')
+                if len(cells) > 2:
+                    criteria_main = cells[0].get_text(strip=True)
+                    criteria_sub = cells[2].get_text(strip=True)
+                    main_lower, sub_lower = criteria_main.lower(), criteria_sub.lower()
+                    
+                    if main_lower == "style": style = cells[1].get_text(strip=True)
+                    elif main_lower == "color & gmts. item": color = cells[1].get_text(strip=True)
+                    elif "buyer" in main_lower: buyer_name = cells[1].get_text(strip=True)
+                    
+                    if sub_lower == "gmts. color /country qty": gmts_qty_data = [cell.get_text(strip=True) for cell in cells[3:len(headers)+3]]
+                    
+                    if "sewing input" in main_lower: sewing_input_data = [cell.get_text(strip=True) for cell in cells[1:len(headers)+1]]
+                    elif "sewing input" in sub_lower: sewing_input_data = [cell.get_text(strip=True) for cell in cells[3:len(headers)+3]]
+    
+                    if "cutting qc" in main_lower and "balance" not in main_lower:
+                        cutting_qc_data = [cell.get_text(strip=True) for cell in cells[1:len(headers)+1]]
+                    elif "cutting qc" in sub_lower and "balance" not in sub_lower:
+                        cutting_qc_data = [cell.get_text(strip=True) for cell in cells[3:len(headers)+3]]
+            if gmts_qty_data:
+                plus_3_percent_data = []
+                for value in gmts_qty_data:
+                    try:
+                        new_qty = round(int(value.replace(',', '')) * 1.03)
+                        plus_3_percent_data.append(str(new_qty))
+                    except (ValueError, TypeError):
+                        plus_3_percent_data.append(value)
+                all_report_data.append({
+                    'style': style, 'buyer': buyer_name, 'color': color, 
+                    'headers': headers, 'gmts_qty': gmts_qty_data, 
+                    'plus_3_percent': plus_3_percent_data, 
+                    'sewing_input': sewing_input_data if sewing_input_data else [], 
+                    'cutting_qc': cutting_qc_data if cutting_qc_data else []
+                })
+        return all_report_data
     except Exception as e:
-        print(f"Error creating admin user: {e}")
+        return None
 
-# অ্যাপ্লিকেশন স্টার্টে অ্যাডমিন ইউজার তৈরি
-init_admin_user()
+def create_formatted_excel_report(report_data, internal_ref_no=""):
+    if not report_data: return None
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.title = "Closing Report"
+    # Styles
+    bold_font = Font(bold=True)
+    title_font = Font(size=32, bold=True, color="7B261A") 
+    white_bold_font = Font(size=16.5, bold=True, color="FFFFFF")
+    center_align = Alignment(horizontal='center', vertical='center')
+    left_align = Alignment(horizontal='left', vertical='center')
+    color_align = Alignment(horizontal='center', vertical='center', wrap_text=True)
+    thin_border = Border(left=Side(style='thin'), right=Side(style='thin'), top=Side(style='thin'), bottom=Side(style='thin'))
+    medium_border = Border(left=Side(style='medium'), right=Side(style='medium'), top=Side(style='medium'), bottom=Side(style='medium'))
+    
+    ir_ib_fill = PatternFill(start_color="7B261A", end_color="7B261A", fill_type="solid") 
+    header_row_fill = PatternFill(start_color="DE7465", end_color="DE7465", fill_type="solid") 
+    light_brown_fill = PatternFill(start_color="DE7465", end_color="DE7465", fill_type="solid") 
+    light_blue_fill = PatternFill(start_color="B9C2DF", end_color="B9C2DF", fill_type="solid") 
+    light_green_fill = PatternFill(start_color="C4D09D", end_color="C4D09D", fill_type="solid") 
+    dark_green_fill = PatternFill(start_color="f1f2e8", end_color="f1f2e8", fill_type="solid") 
 
-def login_required(f):
-    """ডেকোরেটর: লগইন চেক করে"""
-    from functools import wraps
-    @wraps(f)
-    def decorated_function(*args, **kwargs):
-        if 'username' not in session:
-            flash('Please login first! ', 'warning')
-            return redirect(url_for('login'))
-        return f(*args, **kwargs)
-    return decorated_function
+    NUM_COLUMNS, TABLE_START_ROW = 9, 8
+    ws.merge_cells(start_row=1, start_column=1, end_row=1, end_column=NUM_COLUMNS)
+    # UPDATED BRANDING
+    ws['A1'].value = "COTTON CLOTHING BD LTD"
+    ws['A1'].font = title_font 
+    ws['A1'].alignment = center_align
 
-def admin_required(f):
-    """ডেকোরেটর: অ্যাডমিন চেক করে"""
-    from functools import wraps
-    @wraps(f)
-    def decorated_function(*args, **kwargs):
-        if 'username' not in session:
-            flash('Please login first! ', 'warning')
-            return redirect(url_for('login'))
-        if session. get('role') != 'admin':
-            flash('Admin access required!', 'danger')
-            return redirect(url_for('dashboard'))
-        return f(*args, **kwargs)
-    return decorated_function
+    ws.merge_cells(start_row=2, start_column=1, end_row=2, end_column=NUM_COLUMNS)
+    ws['A2'].value = "CLOSING REPORT [ INPUT SECTION ]"
+    ws['A2'].font = Font(size=15, bold=True) 
+    ws['A2'].alignment = center_align
+    ws.row_dimensions[3].height = 6
 
-def store_login_required(f):
-    """ডেকোরেটর: স্টোর লগইন চেক করে"""
-    from functools import wraps
-    @wraps(f)
-    def decorated_function(*args, **kwargs):
-        if 'store_user' not in session:
-            flash('Please login to store first!', 'warning')
-            return redirect(url_for('store_login'))
-        return f(*args, **kwargs)
-    return decorated_function
+    formatted_ref_no = internal_ref_no.upper()
+    current_date = get_bd_time().strftime("%d/%m/%Y")
+    
+    left_sub_headers = {
+        'A4': 'BUYER', 'B4': report_data[0].get('buyer', ''), 
+        'A5': 'IR/IB NO', 'B5': formatted_ref_no, 
+        'A6': 'STYLE NO', 'B6': report_data[0].get('style', '')
+    }
+    
+    for cell_ref, value in left_sub_headers.items():
+        cell = ws[cell_ref]
+        cell.value = value
+        cell.font = bold_font
+        cell.alignment = left_align
+        cell.border = thin_border
+        if cell_ref == 'B5':
+            cell.fill = ir_ib_fill 
+            cell.font = white_bold_font 
+        else:
+            cell.fill = dark_green_fill 
+
+    ws.merge_cells('B4:G4'); ws.merge_cells('B5:G5'); ws.merge_cells('B6:G6')
+    
+    right_sub_headers = {'H4': 'CLOSING DATE', 'I4': current_date, 'H5': 'SHIPMENT', 'I5': 'ALL', 'H6': 'PO NO', 'I6': 'ALL'}
+    for cell_ref, value in right_sub_headers.items():
+        cell = ws[cell_ref]
+        cell.value = value
+        cell.font = bold_font
+        cell.alignment = left_align
+        cell.border = thin_border
+        cell.fill = dark_green_fill 
+
+    for row in range(4, 7):
+        for col in range(3, 8): 
+            cell = ws.cell(row=row, column=col)
+            cell.border = thin_border
+       
+    current_row = TABLE_START_ROW
+    for block in report_data:
+        table_headers = ["COLOUR NAME", "SIZE", "ORDER QTY 3%", "ACTUAL QTY", "CUTTING QC", "INPUT QTY", "BALANCE", "SHORT/PLUS QTY", "Percentage %"]
+        for col_idx, header in enumerate(table_headers, 1):
+            cell = ws.cell(row=current_row, column=col_idx, value=header)
+            cell.font = bold_font
+            cell.alignment = center_align
+            cell.border = medium_border
+            cell.fill = header_row_fill 
+
+        current_row += 1
+        start_merge_row = current_row
+        full_color_name = block.get('color', 'N/A')
+
+        for i, size in enumerate(block['headers']):
+            color_to_write = full_color_name if i == 0 else ""
+            actual_qty = int(block['gmts_qty'][i].replace(',', '') or 0)
+            input_qty = int(block['sewing_input'][i].replace(',', '') or 0) if i < len(block['sewing_input']) else 0
+            cutting_qc_val = int(block.get('cutting_qc', [])[i].replace(',', '') or 0) if i < len(block.get('cutting_qc', [])) else 0
+            
+            ws.cell(row=current_row, column=1, value=color_to_write)
+            ws.cell(row=current_row, column=2, value=size)
+            ws.cell(row=current_row, column=4, value=actual_qty)
+            ws.cell(row=current_row, column=5, value=cutting_qc_val)
+            ws.cell(row=current_row, column=6, value=input_qty)
+            
+            ws.cell(row=current_row, column=3, value=f"=ROUND(D{current_row}*1.03, 0)")      
+            ws.cell(row=current_row, column=7, value=f"=E{current_row}-F{current_row}")      
+            ws.cell(row=current_row, column=8, value=f"=F{current_row}-C{current_row}")      
+            ws.cell(row=current_row, column=9, value=f'=IF(C{current_row}<>0, H{current_row}/C{current_row}, 0)') 
+            
+            for col_idx in range(1, NUM_COLUMNS + 1):
+                cell = ws.cell(row=current_row, column=col_idx)
+                cell.border = medium_border if col_idx == 2 else thin_border
+                cell.alignment = center_align
+    
+                if col_idx in [1, 2, 3, 6, 9]: cell.font = bold_font
+                
+                if col_idx == 3: cell.fill = light_blue_fill      
+                elif col_idx == 6: cell.fill = light_green_fill   
+                else: cell.fill = dark_green_fill 
+
+                if col_idx == 9:
+                    cell.number_format = '0.00%' 
+            current_row += 1
+            
+        end_merge_row = current_row - 1
+        if start_merge_row <= end_merge_row:
+            ws.merge_cells(start_row=start_merge_row, start_column=1, end_row=end_merge_row, end_column=1)
+            merged_cell = ws.cell(row=start_merge_row, column=1)
+            merged_cell.alignment = color_align
+            if not merged_cell.font.bold: merged_cell.font = bold_font
+        
+        total_row_str = str(current_row)
+        ws.merge_cells(start_row=current_row, start_column=1, end_row=current_row, end_column=2)
+        
+        totals_formulas = {
+            "A": "TOTAL",
+            "C": f"=SUM(C{start_merge_row}:C{end_merge_row})",
+            "D": f"=SUM(D{start_merge_row}:D{end_merge_row})",
+            "E": f"=SUM(E{start_merge_row}:E{end_merge_row})",
+            "F": f"=SUM(F{start_merge_row}:F{end_merge_row})",
+            "G": f"=SUM(G{start_merge_row}:G{end_merge_row})",
+            "H": f"=SUM(H{start_merge_row}:H{end_merge_row})",
+            "I": f"=IF(C{total_row_str}<>0, H{total_row_str}/C{total_row_str}, 0)"
+        }
+        
+        for col_letter, value_or_formula in totals_formulas.items():
+            cell = ws[f"{col_letter}{current_row}"]
+            cell.value = value_or_formula
+            cell.font = bold_font
+            cell.border = medium_border
+            cell.alignment = center_align
+            cell.fill = light_brown_fill 
+            if col_letter == 'I':
+                cell.number_format = '0.00%'
+        
+        for col_idx in range(2, NUM_COLUMNS + 1):
+            cell = ws.cell(row=current_row, column=col_idx)
+            if not cell.value: 
+                cell.fill = dark_green_fill 
+                cell.border = medium_border
+        current_row += 2
+    image_row = current_row + 1
+   
+    try:
+        direct_image_url = 'https://i.ibb.co/v6bp0jQW/rockybilly-regular.webp'
+        image_response = requests.get(direct_image_url)
+        image_response.raise_for_status()
+        original_img = PILImage.open(BytesIO(image_response.content))
+        padded_img = PILImage.new('RGBA', (original_img.width + 400, original_img.height), (0, 0, 0, 0))
+        padded_img.paste(original_img, (400, 0))
+        padded_image_io = BytesIO()
+        padded_img.save(padded_image_io, format='PNG')
+        img = Image(padded_image_io)
+        aspect_ratio = padded_img.height / padded_img.width
+        img.width = 95
+        img.height = int(img.width * aspect_ratio)
+        ws.row_dimensions[image_row].height = img.height * 0.90
+        ws.add_image(img, f'A{image_row}')
+    except Exception:
+        pass
+
+    signature_row = image_row + 1
+    ws.merge_cells(start_row=signature_row, start_column=1, end_row=signature_row, end_column=NUM_COLUMNS)
+    titles = ["Prepared By", "Input Incharge", "Cutting Incharge", "IE & Planning", "Sewing Manager", "Cutting Manager"]
+    signature_cell = ws.cell(row=signature_row, column=1)
+    signature_cell.value = "                 ".join(titles)
+    signature_cell.font = Font(bold=True, size=15)
+    signature_cell.alignment = Alignment(horizontal='center', vertical='center')
+
+    last_data_row = current_row - 2
+    for row in ws.iter_rows(min_row=4, max_row=last_data_row):
+        for cell in row:
+            if cell.coordinate == 'B5': continue
+            if cell.font:
+                existing_font = cell.font
+                if cell.row != 1: 
+                    new_font = Font(name=existing_font.name, size=16.5, bold=existing_font.bold, italic=existing_font.italic, vertAlign=existing_font.vertAlign, underline=existing_font.underline, strike=existing_font.strike, color=existing_font.color)
+                    cell.font = new_font
+    ws.column_dimensions['A'].width = 23
+    ws.column_dimensions['B'].width = 8.5
+    ws.column_dimensions['C'].width = 20
+    ws.column_dimensions['D'].width = 17
+    ws.column_dimensions['E'].width = 17
+    ws.column_dimensions['F'].width = 15
+    ws.column_dimensions['G'].width = 13.5
+    ws.column_dimensions['H'].width = 23
+    ws.column_dimensions['I'].width = 18
+   
+    ws.page_setup.orientation = ws.ORIENTATION_PORTRAIT
+    ws.page_setup.fitToPage = True
+    ws.page_setup.fitToWidth = 1
+    ws.page_setup.fitToHeight = 1 
+    ws.page_setup.horizontalCentered = True
+    ws.page_setup.verticalCentered = False 
+    ws.page_setup.left = 0.25
+    ws.page_setup.right = 0.25
+    ws.page_setup.top = 0.45
+    ws.page_setup.bottom = 0.45
+    ws.page_setup.header = 0
+    ws.page_setup.footer = 0
+   
+    file_stream = BytesIO()
+    wb.save(file_stream)
+    file_stream.seek(0)
+    return file_stream
 
 # ==============================================================================
-# Main Authentication Routes
+# HTML TEMPLATES: LOGIN PAGE - FIXED RESPONSIVE & CENTERED
+# ==============================================================================
+
+LOGIN_TEMPLATE = f"""
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Login - MNM Software</title>
+    {COMMON_STYLES}
+    <style>
+        html, body {{
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+        }}
+        
+        body {{
+            background: var(--bg-body);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            overflow-y: auto;
+        }}
+        
+        /* Animated Background Orbs */
+        .bg-orb {{
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.4;
+            animation: orbFloat 20s ease-in-out infinite;
+            pointer-events: none;
+        }}
+        
+        .orb-1 {{
+            width: 300px;
+            height: 300px;
+            background: var(--accent-orange);
+            top: -100px;
+            left: -100px;
+            animation-delay: 0s;
+        }}
+        
+        .orb-2 {{
+            width: 250px;
+            height: 250px;
+            background: var(--accent-purple);
+            bottom: -50px;
+            right: -50px;
+            animation-delay: -5s;
+        }}
+        
+        .orb-3 {{
+            width: 150px;
+            height: 150px;
+            background: var(--accent-green);
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            animation-delay: -10s;
+        }}
+        
+        @keyframes orbFloat {{
+            0%, 100% {{ transform: translate(0, 0) scale(1); }}
+            25% {{ transform: translate(30px, -30px) scale(1.05); }}
+            50% {{ transform: translate(-20px, 20px) scale(0.95); }}
+            75% {{ transform: translate(15px, 30px) scale(1.02); }}
+        }}
+        
+        .login-container {{
+            position: relative;
+            z-index: 10;
+            width: 100%;
+            max-width: 420px;
+            padding: 20px;
+            margin: auto;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            min-height: 100vh;
+        }}
+        
+        .login-card {{
+            background: var(--gradient-card);
+            border: 1px solid var(--border-color);
+            border-radius: 24px;
+            padding: 40px 35px;
+            backdrop-filter: blur(20px);
+            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.5), 0 0 60px var(--accent-orange-glow);
+            animation: loginCardAppear 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }}
+        @keyframes loginCardAppear {{
+            from {{
+                opacity: 0;
+                transform: translateY(30px) scale(0.95);
+            }}
+            to {{
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }}
+        }}
+        
+        .brand-section {{
+            text-align: center;
+            margin-bottom: 35px;
+        }}
+        
+        .brand-icon {{
+            width: 70px;
+            height: 70px;
+            background: var(--gradient-orange);
+            border-radius: 18px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            color: white;
+            margin-bottom: 18px;
+            box-shadow: 0 15px 40px var(--accent-orange-glow);
+            animation: brandIconPulse 3s ease-in-out infinite;
+        }}
+        
+        @keyframes brandIconPulse {{
+            0%, 100% {{ transform: scale(1) rotate(0deg); box-shadow: 0 15px 40px var(--accent-orange-glow); }}
+            50% {{ transform: scale(1.05) rotate(5deg); box-shadow: 0 20px 50px var(--accent-orange-glow); }}
+        }}
+        
+        .brand-name {{
+            font-size: 28px;
+            font-weight: 900;
+            color: white;
+            letter-spacing: -1px;
+        }}
+        
+        .brand-name span {{
+            background: var(--gradient-orange);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }}
+        
+        .brand-tagline {{
+            color: var(--text-secondary);
+            font-size: 11px;
+            letter-spacing: 2px;
+            margin-top: 6px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }}
+        
+        .login-form .input-group {{
+            margin-bottom: 20px;
+        }}
+        
+        .login-form .input-group label {{
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+        }}
+        
+        .login-form .input-group label i {{
+            color: var(--accent-orange);
+            font-size: 13px;
+        }}
+        
+        .login-form input {{
+            padding: 14px 18px;
+            font-size: 14px;
+            border-radius: 12px;
+        }}
+        
+        .login-btn {{
+            margin-top: 8px;
+            padding: 14px 24px;
+            font-size: 15px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }}
+        
+        .login-btn i {{
+            transition: transform 0.3s;
+        }}
+        
+        .login-btn:hover i {{
+            transform: translateX(5px);
+        }}
+        
+        .error-box {{
+            margin-top: 20px;
+            padding: 14px 18px;
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            border-radius: 10px;
+            color: #F87171;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            animation: errorShake 0.5s ease-out;
+        }}
+        
+        @keyframes errorShake {{
+            0%, 100% {{ transform: translateX(0); }}
+            20%, 60% {{ transform: translateX(-5px); }}
+            40%, 80% {{ transform: translateX(5px); }}
+        }}
+        
+        .footer-credit {{
+            text-align: center;
+            margin-top: 25px;
+            color: var(--text-secondary);
+            font-size: 11px;
+            opacity: 0.5;
+            font-weight: 500;
+        }}
+        
+        .footer-credit a {{
+            color: var(--accent-orange);
+            text-decoration: none;
+        }}
+        
+        /* Responsive Fixes */
+        @media (max-width: 480px) {{
+            .login-container {{
+                padding: 15px;
+            }}
+            
+            .login-card {{
+                padding: 30px 25px;
+                border-radius: 20px;
+            }}
+            
+            .brand-icon {{
+                width: 60px;
+                height: 60px;
+                font-size: 28px;
+            }}
+            
+            .brand-name {{
+                font-size: 24px;
+            }}
+            
+            .brand-tagline {{
+                font-size: 10px;
+            }}
+            
+            .login-form input {{
+                padding: 12px 16px;
+                font-size: 14px;
+            }}
+            
+            .login-btn {{
+                padding: 12px 20px;
+                font-size: 14px;
+            }}
+        }}
+        
+        @media (max-height: 700px) {{
+            .login-container {{
+                min-height: auto;
+                padding-top: 30px;
+                padding-bottom: 30px;
+            }}
+            
+            .brand-section {{
+                margin-bottom: 25px;
+            }}
+            
+            .brand-icon {{
+                width: 60px;
+                height: 60px;
+                font-size: 26px;
+                margin-bottom: 12px;
+            }}
+        }}
+    </style>
+</head>
+<body>
+    <div class="bg-orb orb-1"></div>
+    <div class="bg-orb orb-2"></div>
+    <div class="bg-orb orb-3"></div>
+    
+    <div class="login-container">
+        <div class="login-card">
+            <div class="brand-section">
+                <div class="brand-icon">
+                    <i class="fas fa-layer-group"></i>
+                </div>
+                <div class="brand-name">MNM<span>Software</span></div>
+                <div class="brand-tagline">Secure Access Portal</div>
+            </div>
+            
+            <form action="/login" method="post" class="login-form">
+                <div class="input-group">
+                    <label><i class="fas fa-user"></i> USERNAME</label>
+                    <input type="text" name="username" required placeholder="Enter your ID" autocomplete="off">
+                </div>
+                <div class="input-group">
+                    <label><i class="fas fa-lock"></i> PASSWORD</label>
+                    <input type="password" name="password" required placeholder="Enter your Password">
+                </div>
+                <button type="submit" class="login-btn">
+                    Sign In <i class="fas fa-arrow-right"></i>
+                </button>
+            </form>
+            
+            {{% with messages = get_flashed_messages() %}}
+                {{% if messages %}}
+                    <div class="error-box">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <span>{{{{ messages[0] }}}}</span>
+                    </div>
+                {{% endif %}}
+            {{% endwith %}}
+            
+            <div class="footer-credit">
+                © 2025 <a href="#">Mehedi Hasan</a> • All Rights Reserved
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Add ripple effect to button
+        document.querySelector('.login-btn').addEventListener('click', function(e) {{
+            const ripple = document.createElement('span');
+            ripple.classList.add('ripple-effect');
+            const rect = this.getBoundingClientRect();
+            ripple.style.left = (e.clientX - rect.left) + 'px';
+            ripple.style.top = (e.clientY - rect.top) + 'px';
+            this.appendChild(ripple);
+            setTimeout(() => ripple.remove(), 600);
+        }});
+    </script>
+</body>
+</html>
+"""
+
+# ==============================================================================
+# ADMIN DASHBOARD TEMPLATE - MODERN UI WITH DEW STYLE CHART
+# ==============================================================================
+
+ADMIN_DASHBOARD_TEMPLATE = f"""
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Admin Dashboard - MNM Software</title>
+    {COMMON_STYLES}
+</head>
+<body>
+    <div class="animated-bg"></div>
+    <div id="particles-js"></div>
+
+    <div class="welcome-modal" id="welcomeModal">
+        <div class="welcome-content">
+            <div class="welcome-icon" id="welcomeIcon"><i class="fas fa-hand-sparkles"></i></div>
+            <div class="welcome-greeting" id="greetingText">Good Morning</div>
+            <div class="welcome-title">Welcome Back, <span>{{{{ session.user }}}}</span>!</div>
+            <div class="welcome-message">
+                You're now logged into the MNM Software Dashboard.
+                All systems are operational and ready for your commands.
+            </div>
+            <button class="welcome-close" onclick="closeWelcome()">
+                <i class="fas fa-rocket" style="margin-right: 8px;"></i> Let's Go!
+            </button>
+        </div>
+    </div>
+
+    <div id="loading-overlay">
+        <div class="spinner-container">
+            <div class="spinner" id="spinner-anim"></div>
+            <div class="spinner-inner"></div>
+        </div>
+        
+        <div class="checkmark-container" id="success-anim">
+            <div class="checkmark-circle"></div>
+            <div class="anim-text">Successful!</div>
+        </div>
+
+        <div class="fail-container" id="fail-anim">
+            <div class="fail-circle"></div>
+            <div class="anim-text">Action Failed!</div>
+            <div style="font-size:13px; color:#F87171; margin-top:8px;">Please check server or inputs</div>
+        </div>
+        
+        <div class="loading-text" id="loading-text">Processing Request...</div>
+    </div>
+
+    <div class="mobile-toggle" onclick="document.querySelector('.sidebar').classList.toggle('active')">
+        <i class="fas fa-bars"></i>
+    </div>
+
+    <div class="sidebar">
+        <div class="brand-logo">
+            <i class="fas fa-layer-group"></i> 
+            MNM<span>Software</span>
+        </div>
+        <div class="nav-menu">
+            <div class="nav-link active" onclick="showSection('dashboard', this)">
+                <i class="fas fa-home"></i> Dashboard
+                <span class="nav-badge">Live</span>
+            </div>
+            <div class="nav-link" onclick="showSection('analytics', this)">
+                <i class="fas fa-chart-pie"></i> Closing Report
+            </div>
+            <a href="/admin/accessories" class="nav-link">
+                <i class="fas fa-database"></i> Accessories Challan
+            </a>
+            <div class="nav-link" onclick="showSection('help', this)">
+                <i class="fas fa-file-invoice"></i> PO Generator
+            </div>
+            <div class="nav-link" onclick="showSection('settings', this)">
+                <i class="fas fa-users-cog"></i> User Manage
+            </div>
+            <a href="/admin/store" class="nav-link">
+                <i class="fas fa-store"></i> Store
+            </a>
+            <a href="/logout" class="nav-link" style="color: var(--accent-red); margin-top: 20px;">
+                <i class="fas fa-sign-out-alt"></i> Sign Out
+            </a>
+        </div>
+        <div class="sidebar-footer">
+            <i class="fas fa-code" style="margin-right: 5px;"></i> Powered by Mehedi Hasan
+        </div>
+    </div>
+
+    <div class="main-content">
+        
+        <div id="section-dashboard">
+            <div class="header-section">
+                <div>
+                    <div class="page-title">Main Dashboard</div>
+                    <div class="page-subtitle">Lifetime Overview & Analytics</div>
+                </div>
+                <div class="status-badge">
+                    <div class="status-dot"></div>
+                    <span>System Online</span>
+                </div>
+            </div>
+            
+            {{% with messages = get_flashed_messages() %}}
+                {{% if messages %}}
+                    <div class="flash-message flash-error">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <span>{{{{ messages[0] }}}}</span>
+                    </div>
+                {{% endif %}}
+            {{% endwith %}}
+
+            <div class="stats-grid">
+                <div class="card stat-card" style="animation-delay: 0.1s;">
+                    <div class="stat-icon"><i class="fas fa-file-export"></i></div>
+                    <div class="stat-info">
+                        <h3 class="count-up" data-target="{{{{ stats.closing.count }}}}">0</h3>
+                        <p>Lifetime Closing</p>
+                    </div>
+                </div>
+                <div class="card stat-card" style="animation-delay: 0.2s;">
+                    <div class="stat-icon" style="background: linear-gradient(145deg, rgba(139, 92, 246, 0.15), rgba(139, 92, 246, 0.05));">
+                        <i class="fas fa-boxes" style="color: var(--accent-purple);"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 class="count-up" data-target="{{{{ stats.accessories.count }}}}">0</h3>
+                        <p>Lifetime Accessories</p>
+                    </div>
+                </div>
+                <div class="card stat-card" style="animation-delay: 0.3s;">
+                    <div class="stat-icon" style="background: linear-gradient(145deg, rgba(16, 185, 129, 0.15), rgba(16, 185, 129, 0.05));">
+                        <i class="fas fa-file-pdf" style="color: var(--accent-green);"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 class="count-up" data-target="{{{{ stats.po.count }}}}">0</h3>
+                        <p>Lifetime PO Sheets</p>
+                    </div>
+                </div>
+                <div class="card stat-card" style="animation-delay: 0.4s;">
+                    <div class="stat-icon" style="background: linear-gradient(145deg, rgba(59, 130, 246, 0.15), rgba(59, 130, 246, 0.05));">
+                        <i class="fas fa-users" style="color: var(--accent-blue);"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 class="count-up" data-target="{{{{ stats.users.count }}}}">0</h3>
+                        <p>Total Users</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="dashboard-grid-2">
+                <div class="card">
+                    <div class="section-header">
+                        <span>Daily Activity Chart</span>
+                        <div class="realtime-indicator">
+                            <div class="realtime-dot"></div>
+                            <span>Real-time</span>
+                        </div>
+                    </div>
+                    <div class="chart-container" style="height: 320px;">
+                        <canvas id="mainChart"></canvas>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="section-header">
+                        <span>Module Usage</span>
+                        <i class="fas fa-chart-bar" style="color: var(--accent-orange);"></i>
+                    </div>
+                    
+                    <div class="progress-item">
+                        <div class="progress-header">
+                            <span>Closing Report</span>
+                            <span class="progress-value">{{{{ stats.closing.count }}}} Lifetime</span>
+                        </div>
+                        <div class="progress-bar-container">
+                            <div class="progress-bar-fill progress-orange" style="width: 85%;"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="progress-item">
+                        <div class="progress-header">
+                            <span>Accessories</span>
+                            <span class="progress-value">{{{{ stats.accessories.count }}}} Challans</span>
+                        </div>
+                        <div class="progress-bar-container">
+                            <div class="progress-bar-fill progress-purple" style="width: 65%;"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="progress-item">
+                        <div class="progress-header">
+                            <span>PO Generator</span>
+                            <span class="progress-value">{{{{ stats.po.count }}}} Files</span>
+                        </div>
+                        <div class="progress-bar-container">
+                            <div class="progress-bar-fill progress-green" style="width: 45%;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="section-header">
+                    <span>Recent Activity Log</span>
+                    <i class="fas fa-history" style="color: var(--text-secondary);"></i>
+                </div>
+                <div style="overflow-x: auto;">
+                    <table class="dark-table">
+                        <thead>
+                            <tr>
+                                <th>Time</th>
+                                <th>User</th>
+                                <th>Action</th>
+                                <th>Reference</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {{% for log in stats.history[:10] %}}
+                            <tr style="animation: fadeInUp 0.5s ease-out {{{{ loop.index * 0.05 }}}}s backwards;">
+                                <td>
+                                    <div class="time-badge">
+                                        <i class="far fa-clock"></i>
+                                        {{{{ log.time }}}}
+                                    </div>
+                                </td>
+                                <td style="font-weight: 600; color: white;">{{{{ log.user }}}}</td>
+                                <td>
+                                    <span class="table-badge" style="
+                                        {{% if log.type == 'Closing Report' %}}
+                                        background: rgba(255, 122, 0, 0.1); color: var(--accent-orange);
+                                        {{% elif log.type == 'PO Sheet' %}}
+                                        background: rgba(16, 185, 129, 0.1); color: var(--accent-green);
+                                        {{% else %}}
+                                        background: rgba(139, 92, 246, 0.1); color: var(--accent-purple);
+                                        {{% endif %}}
+                                    ">{{{{ log.type }}}}</span>
+                                </td>
+                                <td style="color: var(--text-secondary);">{{{{ log.ref if log.ref else '-' }}}}</td>
+                            </tr>
+                            {{% else %}}
+                            <tr>
+                                <td colspan="4" style="text-align: center; padding: 40px; color: var(--text-secondary);">
+                                    <i class="fas fa-inbox" style="font-size: 40px; opacity: 0.3; margin-bottom: 15px; display: block;"></i>
+                                    No activity recorded yet. 
+                                </td>
+                            </tr>
+                            {{% endfor %}}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div id="section-analytics" style="display:none;">
+            <div class="header-section">
+                <div>
+                    <div class="page-title">Closing Report</div>
+                    <div class="page-subtitle">Generate production closing reports</div>
+                </div>
+            </div>
+            <div class="card" style="max-width: 550px; margin: 0 auto; margin-top: 30px;">
+                <div class="section-header">
+                    <span><i class="fas fa-magic" style="margin-right: 10px; color: var(--accent-orange);"></i>Generate Report</span>
+                </div>
+                <form action="/generate-report" method="post" onsubmit="return showLoading()">
+                    <div class="input-group">
+                        <label><i class="fas fa-bookmark" style="margin-right: 5px;"></i> INTERNAL REF NO</label>
+                        <input type="text" name="ref_no" placeholder="e.g. IB-12345 or Booking-123" required>
+                    </div>
+                    <button type="submit">
+                        <i class="fas fa-bolt" style="margin-right: 10px;"></i> Generate Report
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <div id="section-help" style="display:none;">
+            <div class="header-section">
+                <div>
+                    <div class="page-title">PO Sheet Generator</div>
+                    <div class="page-subtitle">Process and generate PO summary sheets</div>
+                </div>
+            </div>
+            <div class="card" style="max-width: 650px; margin: 0 auto; margin-top: 30px;">
+                <div class="section-header">
+                    <span><i class="fas fa-file-pdf" style="margin-right: 10px; color: var(--accent-green);"></i>Upload PDF Files</span>
+                </div>
+                <form action="/generate-po-report" method="post" enctype="multipart/form-data" onsubmit="return showLoading()">
+                    <div class="upload-zone" id="uploadZone" onclick="document.getElementById('file-upload').click()">
+                        <input type="file" name="pdf_files" multiple accept=".pdf" required style="display: none;" id="file-upload">
+                        <div class="upload-icon">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                        </div>
+                        <div class="upload-text">Click or Drag to Upload PDF Files</div>
+                        <div class="upload-hint">Supports multiple PDF files</div>
+                        <div id="file-count">No files selected</div>
+                    </div>
+                    <button type="submit" style="margin-top: 25px; background: linear-gradient(135deg, #10B981 0%, #34D399 100%);">
+                        <i class="fas fa-cogs" style="margin-right: 10px;"></i> Process Files
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <div id="section-settings" style="display:none;">
+            <div class="header-section">
+                <div>
+                    <div class="page-title">User Management</div>
+                    <div class="page-subtitle">Manage user accounts and permissions</div>
+                </div>
+            </div>
+            <div class="dashboard-grid-2">
+                <div class="card">
+                    <div class="section-header">
+                        <span>User Directory</span>
+                        <span class="table-badge" style="background: var(--accent-orange); color: white;">{{{{ stats.users.count }}}} Users</span>
+                    </div>
+                    <div id="userTableContainer" style="max-height: 450px; overflow-y: auto;">
+                        <div class="skeleton" style="height: 50px; margin-bottom: 10px;"></div>
+                        <div class="skeleton" style="height: 50px; margin-bottom: 10px;"></div>
+                        <div class="skeleton" style="height: 50px;"></div>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="section-header">
+                        <span>Create / Edit User</span>
+                        <i class="fas fa-user-plus" style="color: var(--accent-orange);"></i>
+                    </div>
+                    <form id="userForm">
+                        <input type="hidden" id="action_type" value="create">
+                        <div class="input-group">
+                            <label><i class="fas fa-user" style="margin-right: 5px;"></i> USERNAME</label>
+                            <input type="text" id="new_username" required placeholder="Enter username">
+                        </div>
+                        <div class="input-group">
+                            <label><i class="fas fa-key" style="margin-right: 5px;"></i> PASSWORD</label>
+                            <input type="text" id="new_password" required placeholder="Enter password">
+                        </div>
+                        <div class="input-group">
+                            <label><i class="fas fa-shield-alt" style="margin-right: 5px;"></i> PERMISSIONS</label>
+                            <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 5px;">
+                                <label class="perm-checkbox">
+                                    <input type="checkbox" id="perm_closing" checked>
+                                    <span>Closing</span>
+                                </label>
+                                <label class="perm-checkbox">
+                                    <input type="checkbox" id="perm_po">
+                                    <span>PO Sheet</span>
+                                </label>
+                                <label class="perm-checkbox">
+                                    <input type="checkbox" id="perm_acc">
+                                    <span>Accessories</span>
+                                </label>
+                            </div>
+                        </div>
+                        <button type="button" onclick="handleUserSubmit()" id="saveUserBtn">
+                            <i class="fas fa-save" style="margin-right: 10px;"></i> Save User
+                        </button>
+                        <button type="button" onclick="resetForm()" style="margin-top: 12px; background: rgba(255,255,255,0.05); border: 1px solid var(--border-color);">
+                            <i class="fas fa-undo" style="margin-right: 10px;"></i> Reset Form
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        // ===== WELCOME POPUP WITH TIME-BASED GREETING =====
+        function showWelcomePopup() {{
+            const hour = new Date().getHours();
+            let greeting, icon;
+            
+            if (hour >= 5 && hour < 12) {{
+                greeting = "Good Morning";
+                icon = '<i class="fas fa-sun"></i>';
+            }} else if (hour >= 12 && hour < 17) {{
+                greeting = "Good Afternoon";
+                icon = '<i class="fas fa-sun"></i>';
+            }} else if (hour >= 17 && hour < 21) {{
+                greeting = "Good Evening";
+                icon = '<i class="fas fa-city"></i>';
+            }} else {{
+                greeting = "Good Night";
+                icon = '<i class="fas fa-moon"></i>';
+            }}
+            
+            document.getElementById('greetingText').textContent = greeting;
+            document.getElementById('welcomeIcon').innerHTML = icon;
+            document.getElementById('welcomeModal').style.display = 'flex';
+        }}
+        
+        function closeWelcome() {{
+            const modal = document.getElementById('welcomeModal');
+            modal.style.animation = 'modalFadeOut 0.3s ease-out forwards';
+            setTimeout(() => {{
+                modal.style.display = 'none';
+                sessionStorage.setItem('welcomeShown', 'true');
+            }}, 300);
+        }}
+        
+        if (!sessionStorage.getItem('welcomeShown')) {{
+            setTimeout(showWelcomePopup, 500);
+        }}
+        
+        // ===== SECTION NAVIGATION =====
+        function showSection(id, element) {{
+            ['dashboard', 'analytics', 'help', 'settings'].forEach(sid => {{
+                document.getElementById('section-' + sid).style.display = 'none';
+            }});
+            document.getElementById('section-' + id).style.display = 'block';
+            
+            if (element) {{
+                document.querySelectorAll('.nav-link').forEach(el => el.classList.remove('active'));
+                element.classList.add('active');
+            }}
+            
+            if (id === 'settings') loadUsers();
+            if (window.innerWidth < 1024) document.querySelector('.sidebar').classList.remove('active');
+        }}
+        
+        // ===== FILE UPLOAD HANDLER =====
+        const fileUpload = document.getElementById('file-upload');
+        const uploadZone = document.getElementById('uploadZone');
+        
+        if (fileUpload) {{
+            fileUpload.addEventListener('change', function() {{
+                const count = this.files.length;
+                document.getElementById('file-count').innerHTML = count > 0 
+                    ? `<i class="fas fa-check-circle" style="margin-right: 5px;"></i>${{count}} file(s) selected`
+                    : 'No files selected';
+            }});
+            uploadZone.addEventListener('dragover', (e) => {{
+                e.preventDefault();
+                uploadZone.classList.add('dragover');
+            }});
+            uploadZone.addEventListener('dragleave', () => {{
+                uploadZone.classList.remove('dragover');
+            }});
+            uploadZone.addEventListener('drop', (e) => {{
+                e.preventDefault();
+                uploadZone.classList.remove('dragover');
+                fileUpload.files = e.dataTransfer.files;
+                fileUpload.dispatchEvent(new Event('change'));
+            }});
+        }}
+        
+        // ===== DEW STYLE DAILY CHART =====
+        const ctx = document.getElementById('mainChart').getContext('2d');
+        const gradientOrange = ctx.createLinearGradient(0, 0, 0, 300);
+        gradientOrange.addColorStop(0, 'rgba(255, 122, 0, 0.5)');
+        gradientOrange.addColorStop(1, 'rgba(255, 122, 0, 0.0)');
+        const gradientPurple = ctx.createLinearGradient(0, 0, 0, 300);
+        gradientPurple.addColorStop(0, 'rgba(139, 92, 246, 0.5)');
+        gradientPurple.addColorStop(1, 'rgba(139, 92, 246, 0.0)');
+        const gradientGreen = ctx.createLinearGradient(0, 0, 0, 300);
+        gradientGreen.addColorStop(0, 'rgba(16, 185, 129, 0.5)');
+        gradientGreen.addColorStop(1, 'rgba(16, 185, 129, 0.0)');
+        new Chart(ctx, {{
+            type: 'line',
+            data: {{
+                labels: {{{{ stats.chart.labels | tojson }}}},
+                datasets: [
+                    {{
+                        label: 'Closing',
+                        data: {{{{ stats.chart.closing | tojson }}}},
+                        borderColor: '#FF7A00',
+                        backgroundColor: gradientOrange,
+                        tension: 0.4,
+                        fill: true,
+                        pointBackgroundColor: '#FF7A00',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2,
+                        pointRadius: 4,
+                        pointHoverRadius: 7,
+                        borderWidth: 3
+                    }},
+                    {{
+                        label: 'Accessories',
+                        data: {{{{ stats.chart.acc | tojson }}}},
+                        borderColor: '#8B5CF6',
+                        backgroundColor: gradientPurple,
+                        tension: 0.4,
+                        fill: true,
+                        pointBackgroundColor: '#8B5CF6',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2,
+                        pointRadius: 4,
+                        pointHoverRadius: 7,
+                        borderWidth: 3
+                    }},
+                    {{
+                        label: 'PO Sheets',
+                        data: {{{{ stats.chart.po | tojson }}}},
+                        borderColor: '#10B981',
+                        backgroundColor: gradientGreen,
+                        tension: 0.4,
+                        fill: true,
+                        pointBackgroundColor: '#10B981',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2,
+                        pointRadius: 4,
+                        pointHoverRadius: 7,
+                        borderWidth: 3
+                    }}
+                ]
+            }},
+            options: {{
+                plugins: {{
+                    legend: {{
+                        display: true,
+                        position: 'top',
+                        labels: {{
+                            color: '#8b8b9e',
+                            font: {{ size: 11, weight: 500 }},
+                            usePointStyle: true,
+                            padding: 15,
+                            boxWidth: 8
+                        }}
+                    }},
+                    tooltip: {{
+                        mode: 'index',
+                        intersect: false,
+                        backgroundColor: 'rgba(22, 22, 31, 0.95)',
+                        titleColor: '#fff',
+                        bodyColor: '#8b8b9e',
+                        borderColor: 'rgba(255, 122, 0, 0.3)',
+                        borderWidth: 1,
+                        padding: 12,
+                        cornerRadius: 10,
+                        displayColors: true
+                    }}
+                }},
+                scales: {{
+                    x: {{
+                        grid: {{ 
+                            display: false 
+                        }},
+                        ticks: {{ 
+                            color: '#8b8b9e', 
+                            font: {{ size: 10 }},
+                            maxRotation: 45,
+                            minRotation: 45
+                        }}
+                    }},
+                    y: {{
+                        grid: {{ 
+                            color: 'rgba(255,255,255,0.03)',
+                            drawBorder: false
+                        }},
+                        ticks: {{ 
+                            color: '#8b8b9e', 
+                            font: {{ size: 10 }},
+                            stepSize: 1
+                        }},
+                        beginAtZero: true
+                    }}
+                }},
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: {{
+                    intersect: false,
+                    mode: 'index'
+                }},
+                animation: {{
+                    duration: 2000,
+                    easing: 'easeOutQuart'
+                }}
+            }}
+        }});
+
+        // ===== COUNT UP ANIMATION =====
+        function animateCountUp() {{
+            document.querySelectorAll('.count-up').forEach(counter => {{
+                const target = parseInt(counter.getAttribute('data-target'));
+                const duration = 2000;
+                const step = target / (duration / 16);
+                let current = 0;
+                
+                const updateCounter = () => {{
+                    current += step;
+                    if (current < target) {{
+                        counter.textContent = Math.floor(current);
+                        requestAnimationFrame(updateCounter);
+                    }} else {{
+                        counter.textContent = target;
+                    }}
+                }};
+                
+                updateCounter();
+            }});
+        }}
+        
+        setTimeout(animateCountUp, 500);
+
+        // ===== LOADING ANIMATION =====
+        function showLoading() {{
+            const overlay = document.getElementById('loading-overlay');
+            const spinner = document.getElementById('spinner-anim').parentElement;
+            const success = document.getElementById('success-anim');
+            const fail = document.getElementById('fail-anim');
+            const text = document.getElementById('loading-text');
+            
+            overlay.style.display = 'flex';
+            spinner.style.display = 'block';
+            success.style.display = 'none';
+            fail.style.display = 'none';
+            text.style.display = 'block';
+            text.textContent = 'Processing Request...';
+            
+            return true;
+        }}
+
+        function showSuccess() {{
+            const overlay = document.getElementById('loading-overlay');
+            const spinner = document.getElementById('spinner-anim').parentElement;
+            const success = document.getElementById('success-anim');
+            const text = document.getElementById('loading-text');
+            
+            spinner.style.display = 'none';
+            success.style.display = 'block';
+            text.style.display = 'none';
+            
+            setTimeout(() => {{ overlay.style.display = 'none'; }}, 1500);
+        }}
+
+        // ===== USER MANAGEMENT =====
+        function loadUsers() {{
+            fetch('/admin/get-users')
+                .then(res => res.json())
+                .then(data => {{
+                    let html = '<table class="dark-table"><thead><tr><th>User</th><th>Role</th><th style="text-align:right;">Actions</th></tr></thead><tbody>';
+                    
+                    for (const [u, d] of Object.entries(data)) {{
+                        const roleClass = d.role === 'admin' ? 'background: rgba(255, 122, 0, 0.1); color: var(--accent-orange);' : 'background: rgba(139, 92, 246, 0.1); color: var(--accent-purple);';
+                        
+                        html += `<tr>
+                            <td style="font-weight: 600;">${{u}}</td>
+                            <td><span class="table-badge" style="${{roleClass}}">${{d.role}}</span></td>
+                            <td style="text-align:right;">
+                                ${{d.role !== 'admin' ? `
+                                    <div class="action-cell">
+                                        <button class="action-btn btn-edit" onclick="editUser('${{u}}', '${{d.password}}', '${{d.permissions.join(',')}}')">
+                                            <i class="fas fa-edit"></i>
+                                        </button> 
+                                        <button class="action-btn btn-del" onclick="deleteUser('${{u}}')">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                ` : '<i class="fas fa-shield-alt" style="color: var(--accent-orange); opacity: 0.5;"></i>'}}
+                            </td>
+                        </tr>`;
+                    }}
+                    
+                    document.getElementById('userTableContainer').innerHTML = html + '</tbody></table>';
+                }});
+        }}
+        
+        function handleUserSubmit() {{
+            const u = document.getElementById('new_username').value;
+            const p = document.getElementById('new_password').value;
+            const a = document.getElementById('action_type').value;
+            
+            let perms = [];
+            if (document.getElementById('perm_closing').checked) perms.push('closing');
+            if (document.getElementById('perm_po').checked) perms.push('po_sheet');
+            if (document.getElementById('perm_acc').checked) perms.push('accessories');
+            
+            showLoading();
+            
+            fetch('/admin/save-user', {{
+                method: 'POST',
+                headers: {{'Content-Type': 'application/json'}},
+                body: JSON.stringify({{ username: u, password: p, permissions: perms, action_type: a }})
+            }})
+            .then(r => r.json())
+            .then(d => {{
+                if (d.status === 'success') {{
+                    showSuccess();
+                    loadUsers();
+                    resetForm();
+                }} else {{
+                    alert(d.message);
+                    document.getElementById('loading-overlay').style.display = 'none';
+                }}
+            }});
+        }}
+        
+        function editUser(u, p, permsStr) {{
+            document.getElementById('new_username').value = u;
+            document.getElementById('new_username').readOnly = true;
+            document.getElementById('new_password').value = p;
+            document.getElementById('action_type').value = 'update';
+            document.getElementById('saveUserBtn').innerHTML = '<i class="fas fa-sync" style="margin-right: 10px;"></i> Update User';
+            const pArr = permsStr.split(',');
+            document.getElementById('perm_closing').checked = pArr.includes('closing');
+            document.getElementById('perm_po').checked = pArr.includes('po_sheet');
+            document.getElementById('perm_acc').checked = pArr.includes('accessories');
+        }}
+        
+        function resetForm() {{
+            document.getElementById('userForm').reset();
+            document.getElementById('action_type').value = 'create';
+            document.getElementById('saveUserBtn').innerHTML = '<i class="fas fa-save" style="margin-right: 10px;"></i> Save User';
+            document.getElementById('new_username').readOnly = false;
+            document.getElementById('perm_closing').checked = true;
+        }}
+        
+        function deleteUser(u) {{
+            if (confirm('Are you sure you want to delete "' + u + '"?')) {{
+                fetch('/admin/delete-user', {{
+                    method: 'POST',
+                    headers: {{'Content-Type': 'application/json'}},
+                    body: JSON.stringify({{ username: u }})
+                }}).then(() => loadUsers());
+            }}
+        }}
+        
+        // ===== PARTICLES.JS INITIALIZATION =====
+        if (typeof particlesJS !== 'undefined') {{
+            particlesJS('particles-js', {{
+                particles: {{
+                    number: {{ value: 50, density: {{ enable: true, value_area: 800 }} }},
+                    color: {{ value: '#FF7A00' }},
+                    shape: {{ type: 'circle' }},
+                    opacity: {{ value: 0.3, random: true }},
+                    size: {{ value: 3, random: true }},
+                    line_linked: {{ enable: true, distance: 150, color: '#FF7A00', opacity: 0.1, width: 1 }},
+                    move: {{ enable: true, speed: 1, direction: 'none', random: true, out_mode: 'out' }}
+                }},
+                interactivity: {{
+                    events: {{ onhover: {{ enable: true, mode: 'grab' }} }},
+                    modes: {{ grab: {{ distance: 140, line_linked: {{ opacity: 0.3 }} }} }}
+                }}
+            }});
+        }}
+        
+        // Add CSS for fadeInUp animation
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes fadeInUp {{
+                from {{ opacity: 0; transform: translateY(20px); }}
+                to {{ opacity: 1; transform: translateY(0); }}
+            }}
+            @keyframes modalFadeOut {{
+                to {{ opacity: 0; }}
+            }}
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>
+"""
+# ==============================================================================
+# USER DASHBOARD TEMPLATE - MODERN UI
+# ==============================================================================
+
+USER_DASHBOARD_TEMPLATE = f"""
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Dashboard - MNM Software</title>
+    {COMMON_STYLES}
+</head>
+<body>
+    <div class="animated-bg"></div>
+    
+    <div class="welcome-modal" id="welcomeModal">
+        <div class="welcome-content">
+            <div class="welcome-icon" id="welcomeIcon"><i class="fas fa-hand-sparkles"></i></div>
+            <div class="welcome-greeting" id="greetingText">Good Morning</div>
+            <div class="welcome-title">Welcome, <span>{{{{ session.user }}}}</span>!</div>
+            <div class="welcome-message">
+                Your workspace is ready.
+                Access your assigned modules below.
+            </div>
+            <button class="welcome-close" onclick="closeWelcome()">
+                <i class="fas fa-rocket" style="margin-right: 8px;"></i> Get Started
+            </button>
+        </div>
+    </div>
+    
+    <div id="loading-overlay">
+        <div class="spinner-container">
+            <div class="spinner"></div>
+            <div class="spinner-inner"></div>
+        </div>
+        <div class="loading-text">Processing...</div>
+    </div>
+    
+    <div class="sidebar">
+        <div class="brand-logo">
+            <i class="fas fa-layer-group"></i> 
+            MNM<span>Software</span>
+        </div>
+        <div class="nav-menu">
+            <div class="nav-link active">
+                <i class="fas fa-home"></i> Home
+            </div>
+            <a href="/logout" class="nav-link" style="color: var(--accent-red); margin-top: auto;">
+                <i class="fas fa-sign-out-alt"></i> Sign Out
+            </a>
+        </div>
+        <div class="sidebar-footer">
+            <i class="fas fa-code" style="margin-right: 5px;"></i> Powered by Mehedi Hasan
+        </div>
+    </div>
+    
+    <div class="main-content">
+        <div class="header-section">
+            <div>
+                <div class="page-title">Welcome, {{{{ session.user }}}}!</div>
+                <div class="page-subtitle">Your assigned production modules</div>
+            </div>
+            <div class="status-badge">
+                <div class="status-dot"></div>
+                <span>Online</span>
+            </div>
+        </div>
+
+        {{% with messages = get_flashed_messages() %}}
+            {{% if messages %}}
+                <div class="flash-message flash-error">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <span>{{{{ messages[0] }}}}</span>
+                </div>
+            {{% endif %}}
+        {{% endwith %}}
+
+        <div class="stats-grid">
+            {{% if 'closing' in session.permissions %}}
+            <div class="card" style="animation: fadeInUp 0.5s ease-out 0.1s backwards;">
+                <div class="section-header">
+                    <span><i class="fas fa-file-export" style="margin-right: 10px; color: var(--accent-orange);"></i>Closing Report</span>
+                </div>
+                <p style="color: var(--text-secondary); margin-bottom: 20px; font-size: 14px; line-height: 1.6;">
+                    Generate production closing reports with real-time data.  
+                </p>
+                <form action="/generate-report" method="post" onsubmit="showLoading()">
+                    <div class="input-group">
+                        <label>BOOKING REF NO</label>
+                        <input type="text" name="ref_no" required placeholder="Enter Booking Reference">
+                    </div>
+                    <button type="submit">
+                        <i class="fas fa-magic" style="margin-right: 8px;"></i> Generate
+                    </button>
+                </form>
+            </div>
+            {{% endif %}}
+            
+            {{% if 'po_sheet' in session.permissions %}}
+            <div class="card" style="animation: fadeInUp 0.5s ease-out 0.2s backwards;">
+                <div class="section-header">
+                    <span><i class="fas fa-file-pdf" style="margin-right: 10px; color: var(--accent-green);"></i>PO Sheet</span>
+                </div>
+                <p style="color: var(--text-secondary); margin-bottom: 20px; font-size: 14px; line-height: 1.6;">
+                    Process PDF files and generate PO summary reports.
+                </p>
+                <form action="/generate-po-report" method="post" enctype="multipart/form-data" onsubmit="showLoading()">
+                    <div class="input-group">
+                        <label>PDF FILES</label>
+                        <input type="file" name="pdf_files" multiple accept=".pdf" required style="padding: 12px;">
+                    </div>
+                    <button type="submit" style="background: linear-gradient(135deg, #10B981 0%, #34D399 100%);">
+                        <i class="fas fa-cogs" style="margin-right: 8px;"></i> Process Files
+                    </button>
+                </form>
+            </div>
+            {{% endif %}}
+            
+            {{% if 'accessories' in session.permissions %}}
+            <div class="card" style="animation: fadeInUp 0.5s ease-out 0.3s backwards;">
+                <div class="section-header">
+                    <span><i class="fas fa-boxes" style="margin-right: 10px; color: var(--accent-purple);"></i>Accessories</span>
+                </div>
+                <p style="color: var(--text-secondary); margin-bottom: 20px; font-size: 14px; line-height: 1.6;">
+                    Manage challans, entries and delivery history for accessories.
+                </p>
+                <a href="/admin/accessories">
+                    <button style="background: linear-gradient(135deg, #8B5CF6 0%, #A78BFA 100%);">
+                        <i class="fas fa-external-link-alt" style="margin-right: 8px;"></i> Open Dashboard
+                    </button>
+                </a>
+            </div>
+            {{% endif %}}
+        </div>
+    </div>
+    
+    <script>
+        // Welcome Popup
+        function showWelcomePopup() {{
+            const hour = new Date().getHours();
+            let greeting, icon;
+            
+            if (hour >= 5 && hour < 12) {{
+                greeting = "Good Morning";
+                icon = '<i class="fas fa-sun"></i>';
+            }} else if (hour >= 12 && hour < 17) {{
+                greeting = "Good Afternoon";
+                icon = '<i class="fas fa-sun"></i>';
+            }} else if (hour >= 17 && hour < 21) {{
+                greeting = "Good Evening";
+                icon = '<i class="fas fa-city"></i>';
+            }} else {{
+                greeting = "Good Night";
+                icon = '<i class="fas fa-moon"></i>';
+            }}
+            
+            document.getElementById('greetingText').textContent = greeting;
+            document.getElementById('welcomeIcon').innerHTML = icon;
+            document.getElementById('welcomeModal').style.display = 'flex';
+        }}
+        
+        function closeWelcome() {{
+            const modal = document.getElementById('welcomeModal');
+            modal.style.opacity = '0';
+            setTimeout(() => {{
+                modal.style.display = 'none';
+                sessionStorage.setItem('welcomeShown', 'true');
+            }}, 300);
+        }}
+        
+        if (!sessionStorage.getItem('welcomeShown')) {{
+            setTimeout(showWelcomePopup, 500);
+        }}
+        
+        function showLoading() {{
+            document.getElementById('loading-overlay').style.display = 'flex';
+            return true;
+        }}
+        
+        // Add fadeInUp animation
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes fadeInUp {{
+                from {{ opacity: 0; transform: translateY(20px); }}
+                to {{ opacity: 1; transform: translateY(0); }}
+            }}
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>
+"""
+
+ACCESSORIES_SEARCH_TEMPLATE = f"""
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Accessories Search - MNM Software</title>
+    {COMMON_STYLES}
+    <style>
+        body {{
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }}
+        
+        .search-container {{
+            position: relative;
+            z-index: 10;
+            width: 100%;
+            max-width: 480px;
+            padding: 20px;
+        }}
+        
+        .search-card {{
+            background: var(--gradient-card);
+            border: 1px solid var(--border-color);
+            border-radius: 24px;
+            padding: 50px 45px;
+            backdrop-filter: blur(20px);
+            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.5), 0 0 60px var(--accent-orange-glow);
+            animation: cardAppear 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }}
+        
+        @keyframes cardAppear {{
+            from {{ opacity: 0; transform: translateY(20px) scale(0.95); }}
+            to {{ opacity: 1; transform: translateY(0) scale(1); }}
+        }}
+        
+        .search-header {{
+            text-align: center;
+            margin-bottom: 40px;
+        }}
+        
+        .search-icon {{
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(145deg, rgba(139, 92, 246, 0.2), rgba(139, 92, 246, 0.05));
+            border-radius: 20px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
+            color: var(--accent-purple);
+            margin-bottom: 20px;
+            animation: iconFloat 3s ease-in-out infinite;
+        }}
+        
+        @keyframes iconFloat {{
+            0%, 100% {{ transform: translateY(0); }}
+            50% {{ transform: translateY(-10px); }}
+        }}
+        
+        .search-title {{
+            font-size: 28px;
+            font-weight: 800;
+            color: white;
+            margin-bottom: 8px;
+        }}
+        
+        .search-subtitle {{
+            color: var(--text-secondary);
+            font-size: 14px;
+        }}
+        
+        .nav-links {{
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border-color);
+        }}
+        
+        .nav-links a {{
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: var(--transition-smooth);
+        }}
+        
+        .nav-links a:hover {{
+            color: var(--accent-orange);
+        }}
+        
+        .nav-links a.logout {{
+            color: var(--accent-red);
+        }}
+        
+        .nav-links a.logout:hover {{
+            color: #ff6b6b;
+        }}
+    </style>
+</head>
+<body>
+    <div class="animated-bg"></div>
+    
+    <div class="search-container">
+        <div class="search-card">
+            <div class="search-header">
+                <div class="search-icon">
+                    <i class="fas fa-boxes"></i>
+                </div>
+                <div class="search-title">Accessories Challan</div>
+                <div class="search-subtitle">Enter booking reference to continue</div>
+            </div>
+            
+            <form action="/admin/accessories/input" method="post">
+                <div class="input-group">
+                    <label><i class="fas fa-search" style="margin-right: 5px;"></i> BOOKING REFERENCE</label>
+                    <input type="text" name="ref_no" required placeholder="e.g. IB-12345" autocomplete="off">
+                </div>
+                <button type="submit" style="background: linear-gradient(135deg, #8B5CF6 0%, #A78BFA 100%);">
+                    Proceed to Entry <i class="fas fa-arrow-right" style="margin-left: 10px;"></i>
+                </button>
+            </form>
+            
+            {{% with messages = get_flashed_messages() %}}
+                {{% if messages %}}
+                    <div class="flash-message flash-error" style="margin-top: 20px;">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <span>{{{{ messages[0] }}}}</span>
+                    </div>
+                {{% endif %}}
+            {{% endwith %}}
+            
+            <div class="nav-links">
+                <a href="/"><i class="fas fa-arrow-left"></i> Back to Dashboard</a>
+                <a href="/logout" class="logout">Sign Out <i class="fas fa-sign-out-alt"></i></a>
+            </div>
+        </div>
+        
+        <div style="text-align: center; margin-top: 25px; color: var(--text-secondary); font-size: 11px; opacity: 0.4;">
+            © 2025 Mehedi Hasan
+        </div>
+    </div>
+</body>
+</html>
+"""
+
+ACCESSORIES_INPUT_TEMPLATE = f"""
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Accessories Entry - MNM Software</title>
+    {COMMON_STYLES}
+    <style>
+        .ref-badge {{
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(255, 122, 0, 0.1);
+            border: 1px solid rgba(255, 122, 0, 0.2);
+            padding: 10px 20px;
+            border-radius: 12px;
+            margin-top: 10px;
+        }}
+        
+        .ref-badge .ref-no {{
+            font-size: 18px;
+            font-weight: 800;
+            color: var(--accent-orange);
+        }}
+        
+        .ref-badge .ref-info {{
+            color: var(--text-secondary);
+            font-size: 13px;
+            font-weight: 500;
+        }}
+        
+        .history-scroll {{
+            max-height: 500px;
+            overflow-y: auto;
+            padding-right: 5px;
+        }}
+        
+        .challan-row {{
+            display: grid;
+            grid-template-columns: 60px 1fr 80px 60px 80px;
+            gap: 10px;
+            padding: 14px;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 10px;
+            margin-bottom: 8px;
+            align-items: center;
+            transition: var(--transition-smooth);
+            border: 1px solid transparent;
+        }}
+        
+        .challan-row:hover {{
+            background: rgba(255, 122, 0, 0.05);
+            border-color: var(--border-glow);
+        }}
+        
+        .line-badge {{
+            background: var(--gradient-orange);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 13px;
+            text-align: center;
+        }}
+        
+        .qty-value {{
+            font-size: 18px;
+            font-weight: 800;
+            color: var(--accent-green);
+        }}
+        
+        .status-check {{
+            color: var(--accent-green);
+            font-size: 20px;
+        }}
+        
+        .print-btn {{
+            background: linear-gradient(135deg, #10B981 0%, #34D399 100%) !important;
+        }}
+        
+        .empty-state {{
+            text-align: center;
+            padding: 50px 20px;
+            color: var(--text-secondary);
+        }}
+        
+        .empty-state i {{
+            font-size: 50px;
+            opacity: 0.2;
+            margin-bottom: 15px;
+        }}
+        
+        .grid-2-cols {{
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }}
+        
+        .count-badge {{
+            background: var(--accent-purple);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+            margin-left: 10px;
+        }}
+        
+        /* Fixed Select Styling */
+        select {{
+            background-color: #1a1a25 !important;
+            color: white !important;
+        }}
+        
+        select option {{
+            background-color: #1a1a25 !important;
+            color: white !important;
+            padding: 10px;
+        }}
+    </style>
+</head>
+<body>
+    <div class="animated-bg"></div>
+    
+    <div id="loading-overlay">
+        <div class="spinner-container">
+            <div class="spinner" id="spinner-anim"></div>
+            <div class="spinner-inner"></div>
+        </div>
+        <div class="checkmark-container" id="success-anim">
+            <div class="checkmark-circle"></div>
+            <div class="anim-text">Saved!</div>
+        </div>
+        <div class="loading-text" id="loading-text">Saving Entry...</div>
+    </div>
+
+    <div class="sidebar">
+        <div class="brand-logo">
+            <i class="fas fa-boxes"></i> 
+            Accessories
+        </div>
+        <div class="nav-menu">
+            <a href="/" class="nav-link"><i class="fas fa-home"></i> Dashboard</a>
+            <a href="/admin/accessories" class="nav-link active"><i class="fas fa-search"></i> Search</a>
+            <a href="/logout" class="nav-link" style="color: var(--accent-red); margin-top: 20px;">
+                <i class="fas fa-sign-out-alt"></i> Sign Out
+            </a>
+        </div>
+        <div class="sidebar-footer">© 2025 Mehedi Hasan</div>
+    </div>
+    
+    <div class="main-content">
+        <div class="header-section">
+            <div>
+                <div class="page-title">Accessories Entry</div>
+                <div class="ref-badge">
+                    <span class="ref-no">{{{{ ref }}}}</span>
+                    <span class="ref-info">{{{{ buyer }}}} • {{{{ style }}}}</span>
+                </div>
+            </div>
+            <a href="/admin/accessories/print?ref={{{{ ref }}}}" target="_blank">
+                <button class="print-btn" style="width: auto; padding: 14px 30px;">
+                    <i class="fas fa-print" style="margin-right: 10px;"></i> Print Report
+                </button>
+            </a>
+        </div>
+
+        <div class="dashboard-grid-2">
+            <div class="card">
+                <div class="section-header">
+                    <span><i class="fas fa-plus-circle" style="margin-right: 10px; color: var(--accent-orange);"></i>New Challan Entry</span>
+                </div>
+                <form action="/admin/accessories/save" method="post" onsubmit="return showLoading()">
+                    <input type="hidden" name="ref" value="{{{{ ref }}}}">
+                    
+                    <div class="grid-2-cols">
+                        <div class="input-group">
+                            <label><i class="fas fa-tag" style="margin-right: 5px;"></i> TYPE</label>
+                            <select name="item_type">
+                                <option value="Top">Top</option>
+                                <option value="Bottom">Bottom</option>
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <label><i class="fas fa-palette" style="margin-right: 5px;"></i> COLOR</label>
+                            <select name="color" required>
+                                <option value="" disabled selected>Select Color</option>
+                                {{% for c in colors %}}
+                                <option value="{{{{ c }}}}">{{{{ c }}}}</option>
+                                {{% endfor %}}
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="grid-2-cols">
+                        <div class="input-group">
+                            <label><i class="fas fa-industry" style="margin-right: 5px;"></i> LINE NO</label>
+                            <input type="text" name="line_no" required placeholder="e.g. L-01">
+                        </div>
+                        <div class="input-group">
+                            <label><i class="fas fa-ruler" style="margin-right: 5px;"></i> SIZE</label>
+                            <input type="text" name="size" value="ALL" placeholder="Size">
+                        </div>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label><i class="fas fa-sort-numeric-up" style="margin-right: 5px;"></i> QUANTITY</label>
+                        <input type="number" name="qty" required placeholder="Enter Quantity" min="1">
+                    </div>
+                    
+                    <button type="submit">
+                        <i class="fas fa-save" style="margin-right: 10px;"></i> Save Entry
+                    </button>
+                </form>
+            </div>
+
+            <div class="card">
+                <div class="section-header">
+                    <span>Recent History</span>
+                    <span class="count-badge">{{{{ challans|length }}}}</span>
+                </div>
+                <div class="history-scroll">
+                    {{% if challans %}}
+                        {{% for item in challans|reverse %}}
+                        <div class="challan-row" style="animation: fadeInUp 0.3s ease-out {{{{ loop.index * 0.05 }}}}s backwards;">
+                            <div class="line-badge">{{{{ item.line }}}}</div>
+                            <div style="color: white; font-weight: 500; font-size: 13px;">{{{{ item.color }}}}</div>
+                            <div class="qty-value">{{{{ item.qty }}}}</div>
+                            <div class="status-check">{{{{ item.status if item.status else '●' }}}}</div>
+                            <div class="action-cell">
+                                {{% if session.role == 'admin' %}}
+                                <a href="/admin/accessories/edit?ref={{{{ ref }}}}&index={{{{ (challans|length) - loop.index }}}}" class="action-btn btn-edit">
+                                    <i class="fas fa-pen"></i>
+                                </a>
+                                <form action="/admin/accessories/delete" method="POST" style="display: inline;" onsubmit="return confirm('Delete this entry?');">
+                                    <input type="hidden" name="ref" value="{{{{ ref }}}}">
+                                    <input type="hidden" name="index" value="{{{{ (challans|length) - loop.index }}}}">
+                                    <button type="submit" class="action-btn btn-del"><i class="fas fa-trash"></i></button>
+                                </form>
+                                {{% else %}}
+                                <span style="font-size: 10px; color: var(--text-secondary); opacity: 0.5;">🔒</span>
+                                {{% endif %}}
+                            </div>
+                        </div>
+                        {{% endfor %}}
+                    {{% else %}}
+                        <div class="empty-state">
+                            <i class="fas fa-inbox"></i>
+                            <div>No challans added yet</div>
+                            <div style="font-size: 12px; margin-top: 5px;">Add your first entry using the form</div>
+                        </div>
+                    {{% endif %}}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function showLoading() {{
+            const overlay = document.getElementById('loading-overlay');
+            const spinner = document.getElementById('spinner-anim').parentElement;
+            const success = document.getElementById('success-anim');
+            const text = document.getElementById('loading-text');
+            
+            overlay.style.display = 'flex';
+            spinner.style.display = 'block';
+            success.style.display = 'none';
+            text.style.display = 'block';
+            text.textContent = 'Saving Entry...';
+            
+            return true;
+        }}
+        
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes fadeInUp {{
+                from {{ opacity: 0; transform: translateY(10px); }}
+                to {{ opacity: 1; transform: translateY(0); }}
+            }}
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>
+"""
+
+ACCESSORIES_EDIT_TEMPLATE = f"""
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Edit Entry - MNM Software</title>
+    {COMMON_STYLES}
+    <style>
+        body {{
+            justify-content: center;
+            align-items: center;
+        }}
+        
+        .edit-container {{
+            position: relative;
+            z-index: 10;
+            width: 100%;
+            max-width: 450px;
+            padding: 20px;
+        }}
+        
+        .edit-card {{
+            background: var(--gradient-card);
+            border: 1px solid var(--border-color);
+            border-radius: 24px;
+            padding: 45px;
+            backdrop-filter: blur(20px);
+            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.5);
+            animation: cardAppear 0.5s ease-out;
+        }}
+        
+        @keyframes cardAppear {{
+            from {{ opacity: 0; transform: scale(0.95); }}
+            to {{ opacity: 1; transform: scale(1); }}
+        }}
+        
+        .edit-header {{
+            text-align: center;
+            margin-bottom: 35px;
+        }}
+        
+        .edit-icon {{
+            width: 70px;
+            height: 70px;
+            background: linear-gradient(145deg, rgba(139, 92, 246, 0.2), rgba(139, 92, 246, 0.05));
+            border-radius: 16px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            color: var(--accent-purple);
+            margin-bottom: 15px;
+        }}
+        
+        .edit-title {{
+            font-size: 24px;
+            font-weight: 800;
+            color: white;
+        }}
+        
+        .cancel-link {{
+            display: block;
+            text-align: center;
+            margin-top: 20px;
+            color: var(--text-secondary);
+            font-size: 13px;
+            text-decoration: none;
+            transition: var(--transition-smooth);
+        }}
+        
+        .cancel-link:hover {{
+            color: var(--accent-orange);
+        }}
+    </style>
+</head>
+<body>
+    <div class="animated-bg"></div>
+    
+    <div class="edit-container">
+        <div class="edit-card">
+            <div class="edit-header">
+                <div class="edit-icon">
+                    <i class="fas fa-edit"></i>
+                </div>
+                <div class="edit-title">Edit Entry</div>
+            </div>
+            
+            <form action="/admin/accessories/update" method="post">
+                <input type="hidden" name="ref" value="{{{{ ref }}}}">
+                <input type="hidden" name="index" value="{{{{ index }}}}">
+                
+                <div class="input-group">
+                    <label><i class="fas fa-industry" style="margin-right: 5px;"></i> LINE NO</label>
+                    <input type="text" name="line_no" value="{{{{ item.line }}}}" required>
+                </div>
+                
+                <div class="input-group">
+                    <label><i class="fas fa-palette" style="margin-right: 5px;"></i> COLOR</label>
+                    <input type="text" name="color" value="{{{{ item.color }}}}" required>
+                </div>
+                
+                <div class="input-group">
+                    <label><i class="fas fa-ruler" style="margin-right: 5px;"></i> SIZE</label>
+                    <input type="text" name="size" value="{{{{ item.size }}}}" required>
+                </div>
+                
+                <div class="input-group">
+                    <label><i class="fas fa-sort-numeric-up" style="margin-right: 5px;"></i> QUANTITY</label>
+                    <input type="number" name="qty" value="{{{{ item.qty }}}}" required>
+                </div>
+                
+                <button type="submit" style="background: linear-gradient(135deg, #8B5CF6 0%, #A78BFA 100%);">
+                    <i class="fas fa-sync-alt" style="margin-right: 10px;"></i> Update Entry
+                </button>
+            </form>
+            
+            <a href="/admin/accessories/input_direct?ref={{{{ ref }}}}" class="cancel-link">
+                <i class="fas fa-times" style="margin-right: 5px;"></i> Cancel
+            </a>
+        </div>
+    </div>
+</body>
+</html>
+"""
+
+# ==============================================================================
+# STORE DASHBOARD TEMPLATE - NEW (ALUMINUM SHOP)
+# ==============================================================================
+
+STORE_DASHBOARD_TEMPLATE = f"""
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Store Dashboard - MNM Software</title>
+    {COMMON_STYLES}
+    <style>
+        .store-card {{
+            background: var(--gradient-card);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 30px;
+            transition: var(--transition-smooth);
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }}
+        
+        .store-card::before {{
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--gradient-orange);
+            opacity: 0;
+            transition: var(--transition-smooth);
+        }}
+        
+        .store-card:hover {{
+            transform: translateY(-8px);
+            border-color: var(--accent-orange);
+            box-shadow: 0 20px 40px rgba(255, 122, 0, 0.15);
+        }}
+        
+        .store-card:hover::before {{
+            opacity: 1;
+        }}
+        
+        .store-card-icon {{
+            width: 70px;
+            height: 70px;
+            border-radius: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            margin-bottom: 20px;
+            transition: var(--transition-smooth);
+        }}
+        
+        .store-card:hover .store-card-icon {{
+            transform: scale(1.1) rotate(-5deg);
+        }}
+        
+        .icon-orange {{
+            background: linear-gradient(145deg, rgba(255, 122, 0, 0.2), rgba(255, 122, 0, 0.05));
+            color: var(--accent-orange);
+        }}
+        
+        .icon-purple {{
+            background: linear-gradient(145deg, rgba(139, 92, 246, 0.2), rgba(139, 92, 246, 0.05));
+            color: var(--accent-purple);
+        }}
+        
+        .icon-green {{
+            background: linear-gradient(145deg, rgba(16, 185, 129, 0.2), rgba(16, 185, 129, 0.05));
+            color: var(--accent-green);
+        }}
+        
+        .icon-blue {{
+            background: linear-gradient(145deg, rgba(59, 130, 246, 0.2), rgba(59, 130, 246, 0.05));
+            color: var(--accent-blue);
+        }}
+        
+        .icon-cyan {{
+            background: linear-gradient(145deg, rgba(6, 182, 212, 0.2), rgba(6, 182, 212, 0.05));
+            color: var(--accent-cyan);
+        }}
+        
+        .icon-red {{
+            background: linear-gradient(145deg, rgba(239, 68, 68, 0.2), rgba(239, 68, 68, 0.05));
+            color: var(--accent-red);
+        }}
+        
+        .store-card-title {{
+            font-size: 20px;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 8px;
+        }}
+        
+        .store-card-desc {{
+            font-size: 13px;
+            color: var(--text-secondary);
+            line-height: 1.5;
+            margin-bottom: 20px;
+        }}
+        
+        .store-card-stat {{
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-top: 15px;
+            border-top: 1px solid var(--border-color);
+        }}
+        
+        .stat-number {{
+            font-size: 28px;
+            font-weight: 800;
+            color: white;
+        }}
+        
+        .stat-label {{
+            font-size: 11px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }}
+        
+        .store-grid {{
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+            margin-top: 30px;
+        }}
+        
+        .coming-soon-badge {{
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: rgba(255, 122, 0, 0.2);
+            color: var(--accent-orange);
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }}
+        
+        .quick-action {{
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 12px;
+            color: var(--text-secondary);
+            transition: var(--transition-smooth);
+        }}
+        
+        .quick-action:hover {{
+            background: var(--accent-orange);
+            color: white;
+        }}
+    </style>
+</head>
+<body>
+    <div class="animated-bg"></div>
+
+    <div class="mobile-toggle" onclick="document.querySelector('.sidebar').classList.toggle('active')">
+        <i class="fas fa-bars"></i>
+    </div>
+
+    <div class="sidebar">
+        <div class="brand-logo">
+            <i class="fas fa-store"></i> 
+            Store<span>Panel</span>
+        </div>
+        <div class="nav-menu">
+            <a href="/" class="nav-link">
+                <i class="fas fa-arrow-left"></i> Back to Main
+            </a>
+            <div class="nav-link active">
+                <i class="fas fa-th-large"></i> Store Dashboard
+            </div>
+            <div class="nav-link" style="opacity: 0.5; cursor: not-allowed;">
+                <i class="fas fa-box"></i> Products
+                <span class="nav-badge" style="background: var(--accent-purple);">Soon</span>
+            </div>
+            <div class="nav-link" style="opacity: 0.5; cursor: not-allowed;">
+                <i class="fas fa-users"></i> Customers
+                <span class="nav-badge" style="background: var(--accent-purple);">Soon</span>
+            </div>
+            <div class="nav-link" style="opacity: 0.5; cursor: not-allowed;">
+                <i class="fas fa-file-invoice-dollar"></i> Invoices
+                <span class="nav-badge" style="background: var(--accent-purple);">Soon</span>
+            </div>
+            <a href="/logout" class="nav-link" style="color: var(--accent-red); margin-top: 20px;">
+                <i class="fas fa-sign-out-alt"></i> Sign Out
+            </a>
+        </div>
+        <div class="sidebar-footer">
+            <i class="fas fa-code" style="margin-right: 5px;"></i> Powered by Mehedi Hasan
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="header-section">
+            <div>
+                <div class="page-title">Store Dashboard</div>
+                <div class="page-subtitle">Aluminum Shop Management System</div>
+            </div>
+            <div class="status-badge">
+                <div class="status-dot"></div>
+                <span>Store Active</span>
+            </div>
+        </div>
+
+        <div class="store-grid">
+            <div class="store-card">
+                <span class="coming-soon-badge">Coming Soon</span>
+                <div class="store-card-icon icon-orange">
+                    <i class="fas fa-boxes"></i>
+                </div>
+                <div class="store-card-title">Product Inventory</div>
+                <div class="store-card-desc">
+                    Manage aluminum products, profiles, sheets, and accessories. Track stock levels and reorder points.
+                </div>
+                <div class="store-card-stat">
+                    <div>
+                        <div class="stat-number">0</div>
+                        <div class="stat-label">Total Products</div>
+                    </div>
+                    <div class="quick-action">
+                        <i class="fas fa-plus"></i> Add Product
+                    </div>
+                </div>
+            </div>
+
+            <div class="store-card">
+                <span class="coming-soon-badge">Coming Soon</span>
+                <div class="store-card-icon icon-green">
+                    <i class="fas fa-shopping-cart"></i>
+                </div>
+                <div class="store-card-title">Sales & Orders</div>
+                <div class="store-card-desc">
+                    Create new sales orders, manage pending orders, and track delivery status.
+                </div>
+                <div class="store-card-stat">
+                    <div>
+                        <div class="stat-number">0</div>
+                        <div class="stat-label">Today's Sales</div>
+                    </div>
+                    <div class="quick-action">
+                        <i class="fas fa-receipt"></i> New Sale
+                    </div>
+                </div>
+            </div>
+
+            <div class="store-card">
+                <span class="coming-soon-badge">Coming Soon</span>
+                <div class="store-card-icon icon-purple">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div class="store-card-title">Customer Management</div>
+                <div class="store-card-desc">
+                    Maintain customer database, track purchase history, and manage credit accounts.
+                </div>
+                <div class="store-card-stat">
+                    <div>
+                        <div class="stat-number">0</div>
+                        <div class="stat-label">Total Customers</div>
+                    </div>
+                    <div class="quick-action">
+                        <i class="fas fa-user-plus"></i> Add Customer
+                    </div>
+                </div>
+            </div>
+
+            <div class="store-card">
+                <span class="coming-soon-badge">Coming Soon</span>
+                <div class="store-card-icon icon-blue">
+                    <i class="fas fa-file-invoice-dollar"></i>
+                </div>
+                <div class="store-card-title">Invoices & Billing</div>
+                <div class="store-card-desc">
+                    Generate professional invoices, track payments, and manage outstanding dues.
+                </div>
+                <div class="store-card-stat">
+                    <div>
+                        <div class="stat-number">৳0</div>
+                        <div class="stat-label">This Month</div>
+                    </div>
+                    <div class="quick-action">
+                        <i class="fas fa-file-alt"></i> Create Invoice
+                    </div>
+                </div>
+            </div>
+
+            <div class="store-card">
+                <span class="coming-soon-badge">Coming Soon</span>
+                <div class="store-card-icon icon-red">
+                    <i class="fas fa-wallet"></i>
+                </div>
+                <div class="store-card-title">Expense Tracker</div>
+                <div class="store-card-desc">
+                    Record daily expenses, categorize costs, and monitor profit margins.
+                </div>
+                <div class="store-card-stat">
+                    <div>
+                        <div class="stat-number">৳0</div>
+                        <div class="stat-label">Total Expense</div>
+                    </div>
+                    <div class="quick-action">
+                        <i class="fas fa-plus"></i> Add Expense
+                    </div>
+                </div>
+            </div>
+
+            <div class="store-card">
+                <span class="coming-soon-badge">Coming Soon</span>
+                <div class="store-card-icon icon-cyan">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <div class="store-card-title">Reports & Analytics</div>
+                <div class="store-card-desc">
+                    View sales reports, profit analysis, stock movement, and business insights.
+                </div>
+                <div class="store-card-stat">
+                    <div>
+                        <div class="stat-number">0</div>
+                        <div class="stat-label">Reports Generated</div>
+                    </div>
+                    <div class="quick-action">
+                        <i class="fas fa-download"></i> Export Report
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card" style="margin-top: 30px;">
+            <div class="section-header">
+                <span><i class="fas fa-info-circle" style="margin-right: 10px; color: var(--accent-orange);"></i>About Store Module</span>
+            </div>
+            <p style="color: var(--text-secondary); line-height: 1.8; font-size: 14px;">
+                এই Store মডিউলটি একটি এলুমিনিয়াম দোকানের জন্য ডিজাইন করা হয়েছে। এখানে আপনি প্রোডাক্ট ইনভেন্টরি, 
+                সেলস অর্ডার, কাস্টমার ম্যানেজমেন্ট, ইনভয়েস জেনারেশন, খরচ ট্র্যাকিং এবং বিজনেস রিপোর্ট তৈরি করতে পারবেন।
+                <br><br>
+                <strong style="color: var(--accent-orange);">Coming Soon:</strong> সকল ফিচার শীঘ্রই অ্যাক্টিভ করা হবে।
+            </p>
+        </div>
+    </div>
+</body>
+</html>
+"""
+# ==============================================================================
+# REPORT TEMPLATES (ORIGINAL WHITE DESIGN - PRINT FRIENDLY)
+# ==============================================================================
+
+CLOSING_REPORT_PREVIEW_TEMPLATE = """
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Closing Report Preview</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { background-color: #f8f9fa; padding: 30px 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; font-size: 1.1rem; }
+        .container { max-width: 1400px; }
+        .company-header { text-align: center; margin-bottom: 20px; border-bottom: 2px solid #000; padding-bottom: 10px; }
+        .company-name { font-size: 2.2rem; font-weight: 800; color: #2c3e50; text-transform: uppercase; letter-spacing: 1px; line-height: 1; }
+        .report-title { font-size: 1.1rem; color: #555; font-weight: 600; text-transform: uppercase; margin-top: 5px; }
+        .date-section { font-size: 1.2rem; font-weight: 800; color: #000; margin-top: 5px; }
+        .info-container { margin-bottom: 15px; background: white; padding: 15px; display: flex; justify-content: space-between; align-items: flex-end;}
+        .info-row { display: flex; flex-direction: column; gap: 5px; }
+        .info-item { font-size: 1.2rem; font-weight: 600; color: #444; }
+        .info-label { font-weight: 800; color: #444; width: 90px; display: inline-block; }
+        .info-value { font-weight: 800; color: #000; }
+        .booking-box { background: #2c3e50; color: white; padding: 10px 20px; border-radius: 5px; text-align: right; box-shadow: 0 4px 10px rgba(44, 62, 80, 0.3); display: flex; flex-direction: column; justify-content: center; min-width: 200px; }
+        .booking-label { font-size: 1.1rem; opacity: 0.9; text-transform: uppercase; letter-spacing: 1px; font-weight: 700; }
+        .booking-value { font-size: 1.8rem; font-weight: 800; line-height: 1.1; }
+        .table-card { background: white; border-radius: 0; margin-bottom: 30px; border: none; }
+        .color-header { background-color: #2c3e50 !important; color: white; padding: 10px 15px; font-size: 1.4rem; font-weight: 800; text-transform: uppercase; border: 1px solid #000;}
+        .table { margin-bottom: 0; width: 100%; border-collapse: collapse; font-size: 1rem; }
+        .table th { background-color: #fff !important; color: #000 !important; text-align: center; border: 1px solid #000; padding: 8px; vertical-align: middle; font-weight: 900; font-size: 1.2rem; }
+        .table td { text-align: center; vertical-align: middle; border: 1px solid #000; padding: 6px; color: #000; font-weight: 600; font-size: 1.1rem; }
+        .col-3pct { background-color: #B9C2DF !important; font-weight: 700; }
+        .col-input { background-color: #C4D09D !important; font-weight: 700; }
+        .col-balance { font-weight: 700; color: #c0392b; }
+        .total-row td { background-color: #fff !important; color: #000 !important; font-weight: 900; font-size: 1.2rem; border-top: 2px solid #000; }
+        .action-bar { margin-bottom: 20px; display: flex; justify-content: flex-end; gap: 15px; position: sticky; top: 0; z-index: 1000; background: #f8f9fa; padding: 10px 0; }
+        .btn-print { background-color: #2c3e50; color: white; border-radius: 50px; padding: 10px 30px; font-weight: 600; border: none; }
+        .btn-excel { background-color: #27ae60; color: white; border-radius: 50px; padding: 10px 30px; font-weight: 600; text-decoration: none; display: inline-block; }
+        .btn-excel:hover { color: white; background-color: #219150; }
+        .footer-credit { text-align: center; margin-top: 40px; margin-bottom: 20px; font-size: 1rem; color: #2c3e50; padding-top: 10px; border-top: 1px solid #000; font-weight: 600;}
+        @media print {
+            @page { margin: 5mm; size: portrait; } 
+            body { background-color: white; padding: 0; }
+            .container { max-width: 100% !important; width: 100%; }
+            .no-print { display: none !important; }
+            .action-bar { display: none; }
+            .table th, .table td { border: 1px solid #000 !important; }
+            .color-header { background-color: #2c3e50 !important; -webkit-print-color-adjust: exact; color: white !important;}
+            .col-3pct { background-color: #B9C2DF !important; -webkit-print-color-adjust: exact; }
+            .col-input { background-color: #C4D09D !important; -webkit-print-color-adjust: exact; }
+            .booking-box { background-color: #2c3e50 !important; -webkit-print-color-adjust: exact; color: white !important; border: 1px solid #000;}
+            .total-row td { font-weight: 900 !important; color: #000 !important; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="action-bar no-print">
+            <a href="/" class="btn btn-outline-secondary rounded-pill px-4">Back to Dashboard</a>
+            <button onclick="window.print()" class="btn btn-print"><i class="fas fa-print"></i> Print Report</button>
+            <a href="/download-closing-excel?ref_no={{ ref_no }}" class="btn btn-excel"><i class="fas fa-file-excel"></i> Download Excel</a>
+        </div>
+        <div class="company-header">
+            <div class="company-name">COTTON CLOTHING BD LTD</div>
+            <div class="report-title">CLOSING REPORT [ INPUT SECTION ]</div>
+            <div class="date-section">Date: <span id="date"></span></div>
+        </div>
+        {% if report_data %}
+        <div class="info-container">
+            <div class="info-row">
+                <div class="info-item"><span class="info-label">Buyer:</span> <span class="info-value">{{ report_data[0].buyer }}</span></div>
+                <div class="info-item"><span class="info-label">Style:</span> <span class="info-value">{{ report_data[0].style }}</span></div>
+            </div>
+            <div class="booking-box">
+                <div class="booking-label">IR/IB NO</div>
+                <div class="booking-value">{{ ref_no }}</div>
+            </div>
+        </div>
+        {% for block in report_data %}
+        <div class="table-card">
+            <div class="color-header">COLOR: {{ block.color }}</div>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>SIZE</th>
+                        <th>ORDER QTY 3%</th>
+                        <th>ACTUAL QTY</th>
+                        <th>CUTTING QC</th>
+                        <th>INPUT QTY</th>
+                        <th>BALANCE</th>
+                        <th>SHORT/PLUS</th>
+                        <th>PERCENTAGE %</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% set ns = namespace(tot_3=0, tot_act=0, tot_cut=0, tot_inp=0, tot_bal=0, tot_sp=0) %}
+                    {% for i in range(block.headers|length) %}
+                        {% set actual = block.gmts_qty[i]|replace(',', '')|int %}
+                        {% set qty_3 = (actual * 1.03)|round|int %}
+                        {% set cut_qc = 0 %}
+                        {% if i < block.cutting_qc|length %}
+                            {% set cut_qc = block.cutting_qc[i]|replace(',', '')|int %}
+                        {% endif %}
+                        {% set inp_qty = 0 %}
+                        {% if i < block.sewing_input|length %}
+                            {% set inp_qty = block.sewing_input[i]|replace(',', '')|int %}
+                        {% endif %}
+                        {% set balance = cut_qc - inp_qty %}
+                        {% set short_plus = inp_qty - qty_3 %}
+                        {% set percentage = 0 %}
+                        {% if qty_3 > 0 %}
+                            {% set percentage = (short_plus / qty_3) * 100 %}
+                        {% endif %}
+                        {% set ns.tot_3 = ns.tot_3 + qty_3 %}
+                        {% set ns.tot_act = ns.tot_act + actual %}
+                        {% set ns.tot_cut = ns.tot_cut + cut_qc %}
+                        {% set ns.tot_inp = ns.tot_inp + inp_qty %}
+                        {% set ns.tot_bal = ns.tot_bal + balance %}
+                        {% set ns.tot_sp = ns.tot_sp + short_plus %}
+                        <tr>
+                            <td>{{ block.headers[i] }}</td>
+                            <td class="col-3pct">{{ qty_3 }}</td>
+                            <td>{{ actual }}</td>
+                            <td>{{ cut_qc }}</td>
+                            <td class="col-input">{{ inp_qty }}</td>
+                            <td class="col-balance">{{ balance }}</td>
+                            <td style="color: {{ 'green' if short_plus >= 0 else 'red' }}">{{ short_plus }}</td>
+                            <td>{{ "%.2f"|format(percentage) }}%</td>
+                        </tr>
+                    {% endfor %}
+                    <tr class="total-row">
+                        <td>TOTAL</td>
+                        <td>{{ ns.tot_3 }}</td>
+                        <td>{{ ns.tot_act }}</td>
+                        <td>{{ ns.tot_cut }}</td>
+                        <td>{{ ns.tot_inp }}</td>
+                        <td>{{ ns.tot_bal }}</td>
+                        <td>{{ ns.tot_sp }}</td>
+                        <td>
+                            {% if ns.tot_3 > 0 %}
+                                {{ "%.2f"|format((ns.tot_sp / ns.tot_3) * 100) }}%
+                            {% else %}
+                                0.00%
+                            {% endif %}
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        {% endfor %}
+        <div class="footer-credit">Report Generated By <span style="color: #000; font-weight: 900;">Mehedi Hasan</span></div>
+        {% endif %}
+    </div>
+    <script>
+        const dateObj = new Date();
+        document.getElementById('date').innerText = dateObj.toLocaleDateString('en-GB');
+    </script>
+</body>
+</html>
+"""
+
+ACCESSORIES_REPORT_TEMPLATE = """
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Accessories Delivery Report</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body { font-family: 'Poppins', sans-serif; background: #fff; padding: 20px; color: #000; }
+        .container { max-width: 1000px; margin: 0 auto; border: 2px solid #000; padding: 20px; min-height: 90vh; position: relative; }
+        .header { text-align: center; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 20px; position: relative; }
+        .company-name { font-size: 28px; font-weight: 800; text-transform: uppercase; color: #2c3e50; line-height: 1; }
+        .company-address { font-size: 12px; font-weight: 600; color: #444; margin-top: 5px; margin-bottom: 10px; }
+        .report-title { background: #2c3e50; color: white; padding: 5px 25px; display: inline-block; font-weight: bold; font-size: 18px; border-radius: 4px; }
+        .info-grid { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; }
+        .info-left { flex: 2; border: 1px dashed #555; padding: 15px; margin-right: 15px; }
+        .info-row { display: flex; margin-bottom: 5px; font-size: 14px; align-items: center; }
+        .info-label { font-weight: 800; width: 80px; color: #444; }
+        .info-val { font-weight: 700; font-size: 15px; color: #000; }
+        .booking-border { border: 2px solid #000; padding: 2px 8px; display: inline-block; font-weight: 900; }
+        .info-right { flex: 1; display: flex; flex-direction: column; justify-content: space-between; height: 100%; border-left: 1px solid #ddd; padding-left: 15px; }
+        .right-item { font-size: 14px; margin-bottom: 8px; font-weight: 700; }
+        .right-label { color: #555; }
+        .summary-container { margin-bottom: 20px; border: 2px solid #000; padding: 10px; background: #f9f9f9; }
+        .summary-header { font-weight: 900; text-align: center; border-bottom: 1px solid #000; margin-bottom: 5px; text-transform: uppercase; }
+        .summary-table { width: 100%; font-size: 13px; font-weight: 700; }
+        .summary-table td { padding: 2px 5px; }
+        .main-table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 14px; }
+        .main-table th { background: #2c3e50 !important; color: white !important; padding: 10px; border: 1px solid #000; font-size: 14px; text-transform: uppercase; -webkit-print-color-adjust: exact; }
+        .main-table td { border: 1px solid #000; padding: 6px; text-align: center; vertical-align: middle; color: #000; font-weight: 600; }
+        .line-card { display: inline-block; padding: 4px 10px; border: 2px solid #000; font-size: 16px; font-weight: 900; border-radius: 4px; box-shadow: 2px 2px 0 #000; background: #fff; }
+        .line-text-bold { font-size: 14px; font-weight: 800; opacity: 0.7; }
+        .status-cell { font-size: 20px; color: green; font-weight: 900; }
+        .qty-cell { font-size: 16px; font-weight: 800; }
+        .action-btn { color: white; padding: 4px 8px; border-radius: 4px; text-decoration: none; font-size: 12px; margin: 0 2px; display: inline-block; }
+        .btn-edit-row { background-color: #f39c12; }
+        .btn-del-row { background-color: #e74c3c; }
+        .footer-total { margin-top: 20px; display: flex; justify-content: flex-end; }
+        .total-box { border: 3px solid #000; padding: 8px 30px; font-size: 20px; font-weight: 900; background: #ddd; -webkit-print-color-adjust: exact; }
+        .no-print { margin-bottom: 20px; text-align: right; }
+        .btn { padding: 8px 20px; background: #2c3e50; color: white; border: none; cursor: pointer; text-decoration: none; display: inline-block; border-radius: 4px; font-size: 14px; }
+        .btn-add { background: #27ae60; }
+        .generator-sig { text-align: right; font-size: 10px; margin-top: 5px; color: #555; }
+        @media print {
+            .no-print { display: none; }
+            .action-col { display: none; }
+            .container { border: none; padding: 0; margin: 0; max-width: 100%; }
+            body { padding: 0; }
+        }
+    </style>
+</head>
+<body>
+<div class="no-print">
+    <a href="/admin/accessories/input_direct?ref={{ ref }}" class="btn">Back</a>
+    <button onclick="window.print()" class="btn">🖨️ Print</button>
+</div>
+<div class="container">
+    <div class="header">
+        <div class="company-name">COTTON CLOTHING BD LTD</div>
+        <div class="company-address">Kazi Tower, 27 Road, Gazipura, Tongi, Gazipur.</div>
+        <div class="report-title">ACCESSORIES DELIVERY CHALLAN</div>
+    </div>
+    <div class="info-grid">
+        <div class="info-left">
+            <div class="info-row"><span class="info-label">Booking:</span> <span class="booking-border">{{ ref }}</span></div>
+            <div class="info-row"><span class="info-label">Buyer:</span> <span class="info-val">{{ buyer }}</span></div>
+            <div class="info-row"><span class="info-label">Style:</span> <span class="info-val">{{ style }}</span></div>
+            <div class="info-row"><span class="info-label">Date:</span> <span class="info-val">{{ today }}</span></div>
+        </div>
+        <div class="info-right">
+            <div class="right-item"><span class="right-label">Store:</span> Clothing General Store</div>
+            <div class="right-item"><span class="right-label">Send:</span> Cutting</div>
+            <div class="right-item"><span class="right-label">Item:</span> <span style="border: 1px solid #000; padding: 0 5px;">{{ item_type if item_type else 'Top/Btm' }}</span></div>
+        </div>
+    </div>
+    <div class="summary-container">
+        <div class="summary-header">Line-wise Summary</div>
+        <table class="summary-table">
+            <tr>
+            {% for line, qty in line_summary.items() %}
+                <td>{{ line }}: {{ qty }} pcs</td>
+                {% if loop.index % 4 == 0 %}</tr><tr>{% endif %}
+            {% endfor %}
+            </tr>
+        </table>
+        <div style="text-align: right; margin-top: 5px; font-weight: 800; border-top: 1px solid #ccc;">Total Deliveries: {{ count }}</div>
+    </div>
+    <table class="main-table">
+        <thead>
+            <tr>
+                <th width="15%">DATE</th>
+                <th width="15%">LINE NO</th>
+                <th width="20%">COLOR</th>
+                <th width="10%">SIZE</th>
+                <th width="10%">STATUS</th>
+                <th width="15%">QTY</th>
+                {% if session.role == 'admin' %}
+                <th width="15%" class="action-col">ACTION</th>
+                {% endif %}
+            </tr>
+        </thead>
+        <tbody>
+            {% set ns = namespace(grand_total=0) %}
+            {% for item in challans %}
+                {% set ns.grand_total = ns.grand_total + item.qty|int %}
+                <tr>
+                    <td>{{ item.date }}</td>
+                    <td>
+                        {% if loop.index == count %}
+                            <div class="line-card">{{ item.line }}</div>
+                        {% else %}
+                            <span class="line-text-bold">{{ item.line }}</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ item.color }}</td>
+                    <td>{{ item.size }}</td>
+                    <td class="status-cell">{{ item.status }}</td>
+                    <td class="qty-cell">{{ item.qty }}</td>
+                    {% if session.role == 'admin' %}
+                    <td class="action-col">
+                        <a href="/admin/accessories/edit?ref={{ ref }}&index={{ loop.index0 }}" class="action-btn btn-edit-row"><i class="fas fa-pencil-alt"></i></a>
+                        <form action="/admin/accessories/delete" method="POST" style="display:inline;" onsubmit="return confirm('Delete this challan?');">
+                            <input type="hidden" name="ref" value="{{ ref }}">
+                            <input type="hidden" name="index" value="{{ loop.index0 }}">
+                            <button type="submit" class="action-btn btn-del-row" style="border:none; cursor:pointer;"><i class="fas fa-trash"></i></button>
+                        </form>
+                    </td>
+                    {% endif %}
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <div class="footer-total">
+        <div class="total-box">
+            TOTAL QTY: {{ ns.grand_total }}
+        </div>
+    </div>
+    <div class="generator-sig">Report Generated By Mehedi Hasan</div>
+    <div style="margin-top: 60px; display: flex; justify-content: space-between; text-align: center; font-weight: bold; padding: 0 50px;">
+        <div style="border-top: 2px solid #000; width: 180px; padding-top: 5px;">Received By</div>
+        <div style="border-top: 2px solid #000; width: 180px; padding-top: 5px;">Input Incharge</div>
+        <div style="border-top: 2px solid #000; width: 180px; padding-top: 5px;">Store</div>
+    </div>
+</div>
+</body>
+</html>
+"""
+
+PO_REPORT_TEMPLATE = """
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PO Report - Cotton Clothing BD</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { background-color: #f8f9fa; padding: 30px 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .container { max-width: 1200px; }
+        .company-header { text-align: center; margin-bottom: 20px; border-bottom: 2px solid #000; padding-bottom: 10px; }
+        .company-name { font-size: 2.2rem; font-weight: 800; color: #2c3e50; text-transform: uppercase; letter-spacing: 1px; line-height: 1; }
+        .report-title { font-size: 1.1rem; color: #555; font-weight: 600; text-transform: uppercase; margin-top: 5px; }
+        .date-section { font-size: 1.2rem; font-weight: 800; color: #000; margin-top: 5px; }
+        .info-container { display: flex; justify-content: space-between; margin-bottom: 15px; gap: 15px; }
+        .info-box { background: white; border: 1px solid #ddd; border-left: 5px solid #2c3e50; padding: 10px 15px; border-radius: 5px; flex: 2; box-shadow: 0 2px 5px rgba(0,0,0,0.05); display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .total-box { background: #2c3e50; color: white; padding: 10px 15px; border-radius: 5px; width: 240px; text-align: right; display: flex; flex-direction: column; justify-content: center; box-shadow: 0 4px 10px rgba(44, 62, 80, 0.3); }
+        .info-item { margin-bottom: 6px; font-size: 1.3rem; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .info-label { font-weight: 800; color: #444; width: 90px; display: inline-block; }
+        .info-value { font-weight: 800; color: #000; }
+        .total-label { font-size: 1.1rem; opacity: 0.9; text-transform: uppercase; letter-spacing: 1px; font-weight: 700; }
+        .total-value { font-size: 2.5rem; font-weight: 800; line-height: 1.1; }
+        .table-card { background: white; border-radius: 0; margin-bottom: 20px; overflow: hidden; border: 1px solid #dee2e6; }
+        .color-header { background-color: #e9ecef; color: #2c3e50; padding: 10px 12px; font-size: 1.5rem; font-weight: 900; border-bottom: 1px solid #dee2e6; text-transform: uppercase; }
+        .table { margin-bottom: 0; width: 100%; border-collapse: collapse; }
+        .table th { background-color: #2c3e50; color: white; font-weight: 900; font-size: 1.2rem; text-align: center; border: 1px solid #34495e; padding: 8px 4px; vertical-align: middle; }
+        .table th:empty { background-color: white !important; border: none; }
+        .table td { text-align: center; vertical-align: middle; border: 1px solid #dee2e6; padding: 6px 3px; color: #000; font-weight: 800; font-size: 1.15rem; }
+        .table-striped tbody tr:nth-of-type(odd) { background-color: #f8f9fa; }
+        .order-col { font-weight: 900 !important; text-align: center !important; background-color: #fdfdfd; white-space: nowrap; width: 1%; }
+        .total-col { font-weight: 900; background-color: #e8f6f3 !important; color: #16a085; border-left: 2px solid #1abc9c !important; }
+        .total-col-header { background-color: #e8f6f3 !important; color: #000 !important; font-weight: 900 !important; border: 1px solid #34495e !important; }
+        .table-striped tbody tr.summary-row, .table-striped tbody tr.summary-row td { background-color: #d1ecff !important; --bs-table-accent-bg: #d1ecff !important; color: #000 !important; font-weight: 900 !important; border-top: 2px solid #aaa !important; font-size: 1.2rem !important; }
+        .summary-label { text-align: right !important; padding-right: 15px !important; color: #000 !important; }
+        .action-bar { margin-bottom: 20px; display: flex; justify-content: flex-end; gap: 10px; }
+        .btn-print { background-color: #e74c3c; color: white; border-radius: 50px; padding: 8px 30px; font-weight: 600; border: none; }
+        .footer-credit { text-align: center; margin-top: 30px; margin-bottom: 20px; font-size: 0.8rem; color: #2c3e50; padding-top: 10px; border-top: 1px solid #ddd; }
+        @media print {
+            @page { margin: 5mm; size: portrait; }
+            body { background-color: white; padding: 0; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; color-adjust: exact !important; }
+            .container { max-width: 100% !important; width: 100% !important; padding: 0; margin: 0; }
+            .no-print { display: none !important; }
+            .company-header { border-bottom: 2px solid #000; margin-bottom: 5px; padding-bottom: 5px; }
+            .company-name { font-size: 1.8rem; } 
+            .info-container { margin-bottom: 10px; }
+            .info-box { border: 1px solid #000 !important; border-left: 5px solid #000 !important; padding: 5px 10px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+            .total-box { border: 2px solid #000 !important; background: white !important; color: black !important; padding: 5px 10px; }
+            .info-item { font-size: 13pt !important; font-weight: 800 !important; }
+            .table th, .table td { border: 1px solid #000 !important; padding: 2px !important; font-size: 13pt !important; font-weight: 800 !important; }
+            .table th:empty { background-color: white !important; border: none !important; }
+            .table-striped tbody tr.summary-row td { background-color: #d1ecff !important; box-shadow: inset 0 0 0 9999px #d1ecff !important; color: #000 !important; font-weight: 900 !important; }
+            .color-header { background-color: #f1f1f1 !important; border: 1px solid #000 !important; font-size: 1.4rem !important; font-weight: 900; padding: 5px; margin-top: 10px; box-shadow: inset 0 0 0 9999px #f1f1f1 !important; }
+            .total-col-header { background-color: #e8f6f3 !important; box-shadow: inset 0 0 0 9999px #e8f6f3 !important; color: #000 !important; }
+            .table-card { border: none; margin-bottom: 10px; break-inside: avoid; }
+            .footer-credit { display: block !important; color: black; border-top: 1px solid #000; margin-top: 10px; font-size: 8pt !important; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="action-bar no-print">
+            <a href="/" class="btn btn-outline-secondary rounded-pill px-4">Back to Dashboard</a>
+            <button onclick="window.print()" class="btn btn-print"><i class="fas fa-file-pdf"></i> Print</button>
+        </div>
+        <div class="company-header">
+            <div class="company-name">COTTON CLOTHING BD LTD</div>
+            <div class="report-title">Purchase Order Summary</div>
+            <div class="date-section">Date: <span id="date"></span></div>
+        </div>
+        {% if message %}
+            <div class="alert alert-warning text-center no-print">{{ message }}</div>
+        {% endif %}
+        {% if tables %}
+            <div class="info-container">
+                <div class="info-box">
+                    <div>
+                        <div class="info-item"><span class="info-label">Buyer:</span> <span class="info-value">{{ meta.buyer }}</span></div>
+                        <div class="info-item"><span class="info-label">Booking:</span> <span class="info-value">{{ meta.booking }}</span></div>
+                        <div class="info-item"><span class="info-label">Style:</span> <span class="info-value">{{ meta.style }}</span></div>
+                    </div>
+                    <div>
+                        <div class="info-item"><span class="info-label">Season:</span> <span class="info-value">{{ meta.season }}</span></div>
+                        <div class="info-item"><span class="info-label">Dept:</span> <span class="info-value">{{ meta.dept }}</span></div>
+                        <div class="info-item"><span class="info-label">Item:</span> <span class="info-value">{{ meta.item }}</span></div>
+                    </div>
+                </div>
+                <div class="total-box">
+                    <div class="total-label">Grand Total</div>
+                    <div class="total-value">{{ grand_total }}</div>
+                    <small>Pieces</small>
+                </div>
+            </div>
+            {% for item in tables %}
+                <div class="table-card">
+                    <div class="color-header">COLOR: {{ item.color }}</div>
+                    <div class="table-responsive">{{ item.table | safe }}</div>
+                </div>
+            {% endfor %}
+            <div class="footer-credit">Report Created By <strong>Mehedi Hasan</strong></div>
+        {% endif %}
+    </div>
+    <script>
+        const dateObj = new Date();
+        const day = String(dateObj.getDate()).padStart(2, '0');
+        const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+        const year = dateObj.getFullYear();
+        document.getElementById('date').innerText = `${day}-${month}-${year}`;
+    </script>
+</body>
+</html>
+"""
+# ==============================================================================
+# FLASK ROUTES (CONTROLLER LOGIC)
 # ==============================================================================
 
 @app.route('/')
 def index():
-    """মূল পেজ - লগইন থাকলে ড্যাশবোর্ডে পাঠায়"""
-    if 'username' in session:
-        return redirect(url_for('dashboard'))
-    return redirect(url_for('login'))
-
-@app.route('/login', methods=['GET', 'POST'])
-def login():
-    """লগইন পেজ"""
-    if 'username' in session:
-        return redirect(url_for('dashboard'))
-    
-    if request. method == 'POST':
-        username = request.form.get('username', '').strip()
-        password = request.form.get('password', '').strip()
-        
-        if not username or not password:
-            flash('Username and password required!', 'danger')
-            return redirect(url_for('login'))
-        
-        # Database থেকে ইউজার খুঁজুন
-        user = users_col.find_one({'username': username, 'password': password})
-        
-        if user:
-            session. permanent = True
-            session['username'] = username
-            session['role'] = user. get('role', 'user')
-            session['login_time'] = get_bd_time(). isoformat()
-            flash(f'Welcome {username}! ', 'success')
-            return redirect(url_for('dashboard'))
+    load_users()
+    if not session.get('logged_in'):
+        return render_template_string(LOGIN_TEMPLATE)
+    else:
+        if session.get('role') == 'admin':
+            stats = get_dashboard_summary_v2()
+            return render_template_string(ADMIN_DASHBOARD_TEMPLATE, stats=stats)
         else:
-            flash('Invalid username or password!', 'danger')
-            return redirect(url_for('login'))
-    
-    # GET request - লগইন ফর্ম দেখান
-    login_html = '''
-    <! DOCTYPE html>
-    <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1. 0">
-        <title>Login - Office System</title>
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-        <style>
-            body {
-                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                min-height: 100vh;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-            }
-            .login-container {
-                background: white;
-                padding: 40px;
-                border-radius: 15px;
-                box-shadow: 0 10px 40px rgba(0,0,0,0.2);
-                max-width: 400px;
-                width: 100%;
-            }
-            .login-title {
-                color: #667eea;
-                font-weight: bold;
-                margin-bottom: 30px;
-                text-align: center;
-            }
-            .btn-login {
-                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                border: none;
-                padding: 12px;
-                font-weight: bold;
-            }
-            .btn-login:hover {
-                transform: translateY(-2px);
-                box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
-            }
-        </style>
-    </head>
-    <body>
-        <div class="login-container">
-            <h2 class="login-title">🔐 Office Login</h2>
-            
-            {% with messages = get_flashed_messages(with_categories=true) %}
-                {% if messages %}
-                    {% for category, message in messages %}
-                        <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
-                            {{ message }}
-                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                        </div>
-                    {% endfor %}
-                {% endif %}
-            {% endwith %}
-            
-            <form method="POST" action="{{ url_for('login') }}">
-                <div class="mb-3">
-                    <label class="form-label">Username</label>
-                    <input type="text" name="username" class="form-control" required autofocus>
-                </div>
-                <div class="mb-3">
-                    <label class="form-label">Password</label>
-                    <input type="password" name="password" class="form-control" required>
-                </div>
-                <button type="submit" class="btn btn-primary btn-login w-100">Login</button>
-            </form>
-            
-            <div class="text-center mt-3">
-                <a href="{{ url_for('store_login') }}" class="text-decoration-none">Store Login →</a>
-            </div>
-        </div>
+            perms = session.get('permissions', [])
+            if len(perms) == 1 and 'accessories' in perms:
+                return redirect(url_for('accessories_search_page'))
+            else:
+                return render_template_string(USER_DASHBOARD_TEMPLATE)
+
+@app.route('/login', methods=['POST'])
+def login():
+    username = request.form.get('username')
+    password = request.form.get('password')
+
+    users_db = load_users()
+
+    if username in users_db and users_db[username]['password'] == password:
+        session.permanent = True
+        session['logged_in'] = True
+        session['user'] = username
+        session['role'] = users_db[username]['role']
+        session['permissions'] = users_db[username].get('permissions', [])
         
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle. min.js"></script>
-    </body>
-    </html>
-    '''
-    return render_template_string(login_html)
+        now = get_bd_time()
+        session['login_start'] = now.isoformat()
+        
+        users_db[username]['last_login'] = now.strftime('%I:%M %p, %d %b')
+        save_users(users_db)
+        
+        return redirect(url_for('index'))
+    else:
+        flash('Invalid Username or Password.')
+        return redirect(url_for('index'))
 
 @app.route('/logout')
 def logout():
-    """লগআউট"""
+    if session.get('logged_in') and 'login_start' in session:
+        try:
+            start_time = datetime.fromisoformat(session['login_start'])
+            end_time = get_bd_time()
+            duration = end_time - start_time
+            minutes = int(duration.total_seconds() / 60)
+            dur_str = f"{minutes} mins" if minutes < 60 else f"{minutes // 60}h {minutes % 60}m"
+
+            username = session.get('user')
+            users_db = load_users()
+            if username in users_db:
+                users_db[username]['last_duration'] = dur_str
+                save_users(users_db)
+        except: pass
+
     session.clear()
-    flash('Logged out successfully!', 'success')
-    return redirect(url_for('login'))
-
-# ==============================================================================
-# Store Authentication Routes
-# ==============================================================================
-
-@app.route('/store/login', methods=['GET', 'POST'])
-def store_login():
-    """স্টোর লগইন পেজ"""
-    if 'store_user' in session:
-        return redirect(url_for('store_panel'))
-    
-    if request. method == 'POST':
-        username = request.form.get('username', '').strip()
-        password = request.form.get('password', '').strip()
-        
-        if not username or not password:
-            flash('Username and password required!', 'danger')
-            return redirect(url_for('store_login'))
-        
-        # Database থেকে স্টোর ইউজার খুঁজুন
-        user = store_users_col.find_one({'username': username, 'password': password, 'status': 'active'})
-        
-        if user:
-            session.permanent = True
-            session['store_user'] = username
-            session['store_role'] = user.get('role', 'staff')
-            session['store_login_time'] = get_bd_time().isoformat()
-            flash(f'Welcome to Store, {username}!', 'success')
-            return redirect(url_for('store_panel'))
-        else:
-            flash('Invalid credentials or inactive account!', 'danger')
-            return redirect(url_for('store_login'))
-    
-    # GET request - স্টোর লগইন ফর্ম
-    store_login_html = '''
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Store Login</title>
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-        <style>
-            body {
-                background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
-                min-height: 100vh;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-            }
-            .login-container {
-                background: white;
-                padding: 40px;
-                border-radius: 15px;
-                box-shadow: 0 10px 40px rgba(0,0,0,0.2);
-                max-width: 400px;
-                width: 100%;
-            }
-            .login-title {
-                color: #11998e;
-                font-weight: bold;
-                margin-bottom: 30px;
-                text-align: center;
-            }
-            .btn-login {
-                background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
-                border: none;
-                padding: 12px;
-                font-weight: bold;
-            }
-        </style>
-    </head>
-    <body>
-        <div class="login-container">
-            <h2 class="login-title">🏪 Store Login</h2>
-            
-            {% with messages = get_flashed_messages(with_categories=true) %}
-                {% if messages %}
-                    {% for category, message in messages %}
-                        <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
-                            {{ message }}
-                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                        </div>
-                    {% endfor %}
-                {% endif %}
-            {% endwith %}
-            
-            <form method="POST">
-                <div class="mb-3">
-                    <label class="form-label">Username</label>
-                    <input type="text" name="username" class="form-control" required autofocus>
-                </div>
-                <div class="mb-3">
-                    <label class="form-label">Password</label>
-                    <input type="password" name="password" class="form-control" required>
-                </div>
-                <button type="submit" class="btn btn-primary btn-login w-100">Login to Store</button>
-            </form>
-            
-            <div class="text-center mt-3">
-                <a href="{{ url_for('login') }}" class="text-decoration-none">← Back to Main Login</a>
-            </div>
-        </div>
-        
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
-    </body>
-    </html>
-    '''
-    return render_template_string(store_login_html)
-
-@app.route('/store/logout')
-def store_logout():
-    """স্টোর লগআউট"""
-    session.pop('store_user', None)
-    session.pop('store_role', None)
-    session.pop('store_login_time', None)
-    flash('Logged out from store! ', 'success')
-    return redirect(url_for('store_login'))
-    # ==============================================================================
-# Dashboard এবং Main Routes
-# ==============================================================================
-
-@app.route('/dashboard')
-@login_required
-def dashboard():
-    """মূল ড্যাশবোর্ড পেজ"""
-    username = session.get('username')
-    role = session.get('role', 'user')
-    
-    # স্ট্যাটিস্টিক্স সংগ্রহ
-    total_users = users_col.count_documents({})
-    total_accessories = accessories_col.count_documents({})
-    total_store_products = store_products_col.count_documents({})
-    total_store_invoices = store_invoices_col.count_documents({})
-    
-    dashboard_html = '''
-    <! DOCTYPE html>
-    <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1. 0">
-        <title>Dashboard - Office System</title>
-        <link href="https://cdn. jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0. 0/css/all.min. css">
-        <style>
-            body {
-                background: #f8f9fa;
-            }
-            .navbar {
-                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            }
-            .navbar-brand {
-                font-weight: bold;
-                font-size: 1.5rem;
-            }
-            .card {
-                border: none;
-                border-radius: 15px;
-                box-shadow: 0 5px 20px rgba(0,0,0,0.1);
-                transition: transform 0. 3s;
-            }
-            .card:hover {
-                transform: translateY(-5px);
-            }
-            .card-icon {
-                font-size: 3rem;
-                margin-bottom: 20px;
-            }
-            .stat-card {
-                background: white;
-                padding: 20px;
-                border-radius: 10px;
-                margin-bottom: 20px;
-            }
-            .stat-number {
-                font-size: 2rem;
-                font-weight: bold;
-                color: #667eea;
-            }
-            . menu-card {
-                cursor: pointer;
-                height: 100%;
-                padding: 30px;
-            }
-            .menu-card-primary { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
-            .menu-card-success { background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); color: white; }
-            .menu-card-warning { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; }
-            .menu-card-info { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white; }
-            .menu-card-danger { background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); color: white; }
-        </style>
-    </head>
-    <body>
-        <!-- Navbar -->
-        <nav class="navbar navbar-expand-lg navbar-dark">
-            <div class="container-fluid">
-                <a class="navbar-brand" href="{{ url_for('dashboard') }}">
-                    <i class="fas fa-building"></i> Office System
-                </a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="collapse navbar-collapse" id="navbarNav">
-                    <ul class="navbar-nav ms-auto">
-                        <li class="nav-item">
-                            <span class="nav-link">👤 {{ username }} ({{ role }})</span>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ url_for('logout') }}">
-                                <i class="fas fa-sign-out-alt"></i> Logout
-                            </a>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-        </nav>
-
-        <!-- Main Content -->
-        <div class="container mt-4">
-            <!-- Flash Messages -->
-            {% with messages = get_flashed_messages(with_categories=true) %}
-                {% if messages %}
-                    {% for category, message in messages %}
-                        <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
-                            {{ message }}
-                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                        </div>
-                    {% endfor %}
-                {% endif %}
-            {% endwith %}
-
-            <!-- Statistics -->
-            <div class="row mb-4">
-                <div class="col-md-3">
-                    <div class="stat-card text-center">
-                        <i class="fas fa-users" style="font-size: 2rem; color: #667eea;"></i>
-                        <div class="stat-number">{{ total_users }}</div>
-                        <div class="text-muted">Total Users</div>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="stat-card text-center">
-                        <i class="fas fa-box" style="font-size: 2rem; color: #11998e;"></i>
-                        <div class="stat-number">{{ total_accessories }}</div>
-                        <div class="text-muted">Accessories</div>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="stat-card text-center">
-                        <i class="fas fa-shopping-cart" style="font-size: 2rem; color: #f5576c;"></i>
-                        <div class="stat-number">{{ total_store_products }}</div>
-                        <div class="text-muted">Store Products</div>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="stat-card text-center">
-                        <i class="fas fa-file-invoice" style="font-size: 2rem; color: #4facfe;"></i>
-                        <div class="stat-number">{{ total_store_invoices }}</div>
-                        <div class="text-muted">Invoices</div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Menu Cards -->
-            <h3 class="mb-4">Main Menu</h3>
-            <div class="row">
-                <!-- Closing Report -->
-                <div class="col-md-4 mb-4">
-                    <div class="card menu-card menu-card-primary" onclick="location.href='{{ url_for('form') }}'">
-                        <div class="text-center">
-                            <i class="fas fa-file-alt card-icon"></i>
-                            <h4>Closing Report</h4>
-                            <p>Generate daily closing reports</p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- PO Sheet -->
-                <div class="col-md-4 mb-4">
-                    <div class="card menu-card menu-card-success" onclick="location.href='{{ url_for('po_form') }}'">
-                        <div class="text-center">
-                            <i class="fas fa-file-invoice card-icon"></i>
-                            <h4>PO Sheet</h4>
-                            <p>Upload and process PO files</p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Store Management -->
-                <div class="col-md-4 mb-4">
-                    <div class="card menu-card menu-card-info" onclick="location.href='{{ url_for('store_panel') }}'">
-                        <div class="text-center">
-                            <i class="fas fa-store card-icon"></i>
-                            <h4>Store Panel</h4>
-                            <p>Manage store operations</p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Accessories -->
-                <div class="col-md-4 mb-4">
-                    <div class="card menu-card menu-card-warning" onclick="location.href='{{ url_for('accessories_page') }}'">
-                        <div class="text-center">
-                            <i class="fas fa-toolbox card-icon"></i>
-                            <h4>Accessories</h4>
-                            <p>Manage accessories inventory</p>
-                        </div>
-                    </div>
-                </div>
-
-                {% if role == 'admin' %}
-                <!-- User Management (Admin Only) -->
-                <div class="col-md-4 mb-4">
-                    <div class="card menu-card menu-card-danger" onclick="location.href='{{ url_for('user_management') }}'">
-                        <div class="text-center">
-                            <i class="fas fa-users-cog card-icon"></i>
-                            <h4>User Management</h4>
-                            <p>Manage system users</p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Store User Management (Admin Only) -->
-                <div class="col-md-4 mb-4">
-                    <div class="card menu-card menu-card-primary" onclick="location.href='{{ url_for('store_user_management') }}'">
-                        <div class="text-center">
-                            <i class="fas fa-user-tie card-icon"></i>
-                            <h4>Store Users</h4>
-                            <p>Manage store users</p>
-                        </div>
-                    </div>
-                </div>
-                {% endif %}
-            </div>
-        </div>
-
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle. min.js"></script>
-    </body>
-    </html>
-    '''
-    
-    return render_template_string(dashboard_html, 
-                                 username=username, 
-                                 role=role,
-                                 total_users=total_users,
-                                 total_accessories=total_accessories,
-                                 total_store_products=total_store_products,
-                                 total_store_invoices=total_store_invoices)
-
-# ==============================================================================
-# User Management (Admin Only)
-# ==============================================================================
-
-@app.route('/user-management', methods=['GET', 'POST'])
-@admin_required
-def user_management():
-    """ইউজার ম্যানেজমেন্ট পেজ (শুধুমাত্র অ্যাডমিন)"""
-    
-    if request.method == 'POST':
-        action = request.form.get('action')
-        
-        if action == 'add':
-            username = request.form. get('username', '').strip()
-            password = request.form.get('password', '').strip()
-            role = request.form.get('role', 'user')
-            
-            if not username or not password:
-                flash('Username and password required!', 'danger')
-                return redirect(url_for('user_management'))
-            
-            # চেক করুন ইউজার আছে কিনা
-            if users_col.find_one({'username': username}):
-                flash('Username already exists! ', 'danger')
-                return redirect(url_for('user_management'))
-            
-            users_col.insert_one({
-                'username': username,
-                'password': password,
-                'role': role,
-                'created_at': get_bd_time(),
-                'created_by': session.get('username')
-            })
-            flash(f'User {username} added successfully!', 'success')
-            return redirect(url_for('user_management'))
-        
-        elif action == 'delete':
-            username = request.form.get('username')
-            if username == 'admin':
-                flash('Cannot delete admin user!', 'danger')
-                return redirect(url_for('user_management'))
-            
-            users_col.delete_one({'username': username})
-            flash(f'User {username} deleted! ', 'success')
-            return redirect(url_for('user_management'))
-    
-    # সব ইউজার লিস্ট
-    users = list(users_col.find())
-    
-    user_mgmt_html = '''
-    <! DOCTYPE html>
-    <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1. 0">
-        <title>User Management</title>
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-        <link rel="stylesheet" href="https://cdnjs.cloudflare. com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-        <style>
-            body { background: #f8f9fa; }
-            .navbar { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
-            .card { border: none; border-radius: 15px; box-shadow: 0 5px 20px rgba(0,0,0,0.1); }
-        </style>
-    </head>
-    <body>
-        <nav class="navbar navbar-dark">
-            <div class="container-fluid">
-                <a class="navbar-brand" href="{{ url_for('dashboard') }}">
-                    <i class="fas fa-arrow-left"></i> Back to Dashboard
-                </a>
-            </div>
-        </nav>
-
-        <div class="container mt-4">
-            <h2 class="mb-4"><i class="fas fa-users-cog"></i> User Management</h2>
-            
-            {% with messages = get_flashed_messages(with_categories=true) %}
-                {% if messages %}
-                    {% for category, message in messages %}
-                        <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
-                            {{ message }}
-                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                        </div>
-                    {% endfor %}
-                {% endif %}
-            {% endwith %}
-
-            <!-- Add User Form -->
-            <div class="card mb-4">
-                <div class="card-body">
-                    <h5 class="card-title">Add New User</h5>
-                    <form method="POST">
-                        <input type="hidden" name="action" value="add">
-                        <div class="row">
-                            <div class="col-md-4">
-                                <input type="text" name="username" class="form-control" placeholder="Username" required>
-                            </div>
-                            <div class="col-md-3">
-                                <input type="text" name="password" class="form-control" placeholder="Password" required>
-                            </div>
-                            <div class="col-md-3">
-                                <select name="role" class="form-select">
-                                    <option value="user">User</option>
-                                    <option value="admin">Admin</option>
-                                </select>
-                            </div>
-                            <div class="col-md-2">
-                                <button type="submit" class="btn btn-primary w-100">Add User</button>
-                            </div>
-                        </div>
-                    </form>
-                </div>
-            </div>
-
-            <!-- Users List -->
-            <div class="card">
-                <div class="card-body">
-                    <h5 class="card-title">All Users</h5>
-                    <div class="table-responsive">
-                        <table class="table table-hover">
-                            <thead>
-                                <tr>
-                                    <th>Username</th>
-                                    <th>Role</th>
-                                    <th>Created At</th>
-                                    <th>Action</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for user in users %}
-                                <tr>
-                                    <td>{{ user.username }}</td>
-                                    <td>
-                                        {% if user.role == 'admin' %}
-                                            <span class="badge bg-danger">Admin</span>
-                                        {% else %}
-                                            <span class="badge bg-primary">User</span>
-                                        {% endif %}
-                                    </td>
-                                    <td>{{ user.created_at.strftime('%d-%m-%Y %H:%M') if user.created_at else 'N/A' }}</td>
-                                    <td>
-                                        {% if user.username != 'admin' %}
-                                        <form method="POST" style="display:inline;" onsubmit="return confirm('Delete this user?');">
-                                            <input type="hidden" name="action" value="delete">
-                                            <input type="hidden" name="username" value="{{ user.username }}">
-                                            <button type="submit" class="btn btn-sm btn-danger">Delete</button>
-                                        </form>
-                                        {% else %}
-                                        <span class="text-muted">Protected</span>
-                                        {% endif %}
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle. min.js"></script>
-    </body>
-    </html>
-    '''
-    
-    return render_template_string(user_mgmt_html, users=users)
-    # ==============================================================================
-# Closing Report Functions
-# ==============================================================================
-
-def fetch_data_from_url(url):
-    """URL থেকে ডেটা ফেচ করে"""
-    try:
-        response = requests.get(url, timeout=30)
-        response.raise_for_status()
-        return response. text
-    except requests.exceptions.RequestException as e:
-        print(f"Error fetching data: {e}")
-        return None
-
-def parse_html_data(html_content):
-    """HTML কন্টেন্ট পার্স করে ডেটা বের করে"""
-    soup = BeautifulSoup(html_content, 'html.parser')
-    data = []
-    
-    try:
-        table = soup.find('table')
-        if not table:
-            return data
-        
-        rows = table.find_all('tr')[1:]  # হেডার স্কিপ করুন
-        
-        for row in rows:
-            cols = row.find_all('td')
-            if len(cols) >= 8:
-                data.append({
-                    'date': cols[0].text. strip(),
-                    'order_id': cols[1].text.strip(),
-                    'customer_name': cols[2].text.strip(),
-                    'customer_phone': cols[3].text.strip(),
-                    'product': cols[4].text.strip(),
-                    'quantity': cols[5].text.strip(),
-                    'price': cols[6]. text.strip(),
-                    'status': cols[7].text.strip()
-                })
-    except Exception as e:
-        print(f"Error parsing HTML: {e}")
-    
-    return data
-
-def create_closing_report_excel(data, logo_path=None):
-    """Closing Report এর জন্য Excel তৈরি করে"""
-    wb = openpyxl.Workbook()
-    ws = wb.active
-    ws.title = "Closing Report"
-    
-    # স্টাইল ডিফাইন করুন
-    header_font = Font(bold=True, size=12, color="FFFFFF")
-    header_fill = PatternFill(start_color="4472C4", end_color="4472C4", fill_type="solid")
-    header_alignment = Alignment(horizontal="center", vertical="center", wrap_text=True)
-    
-    thin_border = Border(
-        left=Side(style='thin'),
-        right=Side(style='thin'),
-        top=Side(style='thin'),
-        bottom=Side(style='thin')
-    )
-    
-    # লোগো যোগ করুন (যদি থাকে)
-    row_start = 1
-    if logo_path and os.path.exists(logo_path):
-        try:
-            img = Image(logo_path)
-            img.width = 100
-            img.height = 50
-            ws.add_image(img, 'A1')
-            row_start = 4
-        except:
-            pass
-    
-    # শিরোনাম
-    ws.merge_cells(f'A{row_start}:H{row_start}')
-    title_cell = ws[f'A{row_start}']
-    title_cell.value = "Daily Closing Report"
-    title_cell.font = Font(bold=True, size=16, color="4472C4")
-    title_cell.alignment = Alignment(horizontal="center", vertical="center")
-    
-    # তারিখ
-    row_start += 1
-    ws.merge_cells(f'A{row_start}:H{row_start}')
-    date_cell = ws[f'A{row_start}']
-    date_cell.value = f"Date: {get_bd_date_str()}"
-    date_cell. font = Font(size=11)
-    date_cell.alignment = Alignment(horizontal="center")
-    
-    # হেডার রো
-    row_start += 2
-    headers = ['Date', 'Order ID', 'Customer Name', 'Phone', 'Product', 'Qty', 'Price', 'Status']
-    
-    for col_num, header in enumerate(headers, 1):
-        cell = ws. cell(row=row_start, column=col_num)
-        cell.value = header
-        cell.font = header_font
-        cell.fill = header_fill
-        cell. alignment = header_alignment
-        cell.border = thin_border
-    
-    # ডেটা রো
-    for row_num, item in enumerate(data, row_start + 1):
-        ws.cell(row=row_num, column=1, value=item. get('date', '')).border = thin_border
-        ws. cell(row=row_num, column=2, value=item. get('order_id', '')). border = thin_border
-        ws.cell(row=row_num, column=3, value=item.get('customer_name', '')).border = thin_border
-        ws.cell(row=row_num, column=4, value=item.get('customer_phone', '')).border = thin_border
-        ws.cell(row=row_num, column=5, value=item.get('product', '')).border = thin_border
-        ws.cell(row=row_num, column=6, value=item.get('quantity', '')). border = thin_border
-        
-        price_cell = ws.cell(row=row_num, column=7, value=item.get('price', ''))
-        price_cell. border = thin_border
-        price_cell.alignment = Alignment(horizontal="right")
-        
-        ws.cell(row=row_num, column=8, value=item.get('status', '')).border = thin_border
-    
-    # কলাম প্রস্থ সেট করুন
-    ws.column_dimensions['A'].width = 12
-    ws.column_dimensions['B'].width = 15
-    ws.column_dimensions['C'].width = 20
-    ws.column_dimensions['D']. width = 15
-    ws. column_dimensions['E'].width = 25
-    ws.column_dimensions['F'].width = 8
-    ws.column_dimensions['G'].width = 12
-    ws.column_dimensions['H'].width = 12
-    
-    # সামারি যোগ করুন
-    summary_row = len(data) + row_start + 2
-    ws.merge_cells(f'A{summary_row}:F{summary_row}')
-    summary_cell = ws[f'A{summary_row}']
-    summary_cell.value = "Total Records:"
-    summary_cell.font = Font(bold=True)
-    summary_cell.alignment = Alignment(horizontal="right")
-    
-    total_cell = ws. cell(row=summary_row, column=7)
-    total_cell.value = len(data)
-    total_cell.font = Font(bold=True)
-    total_cell.border = thin_border
-    
-    return wb
-
-# ==============================================================================
-# Closing Report Routes
-# ==============================================================================
-
-@app.route('/closing-report')
-@login_required
-def form():
-    """Closing Report ফর্ম পেজ"""
-    form_html = '''
-    <! DOCTYPE html>
-    <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1. 0">
-        <title>Closing Report</title>
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-        <link rel="stylesheet" href="https://cdnjs.cloudflare. com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-        <style>
-            body { background: #f8f9fa; }
-            .navbar { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
-            .card {
-                border: none;
-                border-radius: 15px;
-                box-shadow: 0 5px 20px rgba(0,0,0,0. 1);
-                margin-top: 30px;
-            }
-            . card-header {
-                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                color: white;
-                border-radius: 15px 15px 0 0 !important;
-                padding: 20px;
-            }
-            .btn-generate {
-                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                border: none;
-                padding: 12px 30px;
-                font-weight: bold;
-            }
-            .btn-generate:hover {
-                transform: translateY(-2px);
-                box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
-            }
-        </style>
-    </head>
-    <body>
-        <nav class="navbar navbar-dark">
-            <div class="container-fluid">
-                <a class="navbar-brand" href="{{ url_for('dashboard') }}">
-                    <i class="fas fa-arrow-left"></i> Back to Dashboard
-                </a>
-                <span class="navbar-text text-white">
-                    <i class="fas fa-user"></i> {{ session.get('username') }}
-                </span>
-            </div>
-        </nav>
-
-        <div class="container">
-            <div class="row justify-content-center">
-                <div class="col-md-8">
-                    <div class="card">
-                        <div class="card-header">
-                            <h4 class="mb-0"><i class="fas fa-file-alt"></i> Generate Closing Report</h4>
-                        </div>
-                        <div class="card-body p-4">
-                            {% with messages = get_flashed_messages(with_categories=true) %}
-                                {% if messages %}
-                                    {% for category, message in messages %}
-                                        <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
-                                            {{ message }}
-                                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                                        </div>
-                                    {% endfor %}
-                                {% endif %}
-                            {% endwith %}
-
-                            <form action="{{ url_for('preview_closing_report') }}" method="POST" enctype="multipart/form-data">
-                                <div class="mb-3">
-                                    <label class="form-label">
-                                        <i class="fas fa-link"></i> Data Source URL (Optional)
-                                    </label>
-                                    <input type="url" name="url" class="form-control" 
-                                           placeholder="https://example.com/data">
-                                    <small class="text-muted">Leave empty if uploading file</small>
-                                </div>
-
-                                <div class="mb-3">
-                                    <label class="form-label">
-                                        <i class="fas fa-upload"></i> Upload Data File (Optional)
-                                    </label>
-                                    <input type="file" name="datafile" class="form-control" accept=".xlsx,.xls,. csv">
-                                    <small class="text-muted">Excel or CSV format</small>
-                                </div>
-
-                                <div class="mb-4">
-                                    <label class="form-label">
-                                        <i class="fas fa-image"></i> Company Logo (Optional)
-                                    </label>
-                                    <input type="file" name="logo" class="form-control" accept="image/*">
-                                    <small class="text-muted">PNG, JPG, or JPEG format</small>
-                                </div>
-
-                                <div class="d-grid">
-                                    <button type="submit" class="btn btn-primary btn-generate">
-                                        <i class="fas fa-eye"></i> Preview Report
-                                    </button>
-                                </div>
-                            </form>
-
-                            <div class="alert alert-info mt-4">
-                                <i class="fas fa-info-circle"></i> 
-                                <strong>Note:</strong> You can provide a URL or upload a file.  The report will be previewed before download.
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle. min.js"></script>
-    </body>
-    </html>
-    '''
-    return render_template_string(form_html)
-
-@app.route('/preview-closing-report', methods=['POST'])
-@login_required
-def preview_closing_report():
-    """Closing Report প্রিভিউ পেজ"""
-    data = []
-    logo_path = None
-    
-    # URL থেকে ডেটা ফেচ
-    url = request.form.get('url', '').strip()
-    if url:
-        html_content = fetch_data_from_url(url)
-        if html_content:
-            data = parse_html_data(html_content)
-    
-    # ফাইল থেকে ডেটা পড়ুন
-    if 'datafile' in request.files:
-        file = request.files['datafile']
-        if file and file.filename:
-            try:
-                if file. filename.endswith('.csv'):
-                    df = pd. read_csv(file)
-                else:
-                    df = pd. read_excel(file)
-                
-                data = df.to_dict('records')
-            except Exception as e:
-                flash(f'Error reading file: {str(e)}', 'danger')
-                return redirect(url_for('form'))
-    
-    # লোগো প্রসেস করুন
-    if 'logo' in request.files:
-        logo = request.files['logo']
-        if logo and logo.filename:
-            logo_path = os.path.join(app.config['UPLOAD_FOLDER'], 'logo_' + logo.filename)
-            logo.save(logo_path)
-    
-    if not data:
-        flash('No data found!  Please provide URL or file.', 'warning')
-        return redirect(url_for('form'))
-    
-    # সেশনে ডেটা সেভ করুন
-    session['closing_report_data'] = data
-    session['closing_report_logo'] = logo_path
-    
-    preview_html = '''
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Preview Closing Report</title>
-        <link href="https://cdn. jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-        <style>
-            body { background: #f8f9fa; }
-            .navbar { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
-            .preview-card {
-                background: white;
-                border-radius: 15px;
-                box-shadow: 0 5px 20px rgba(0,0,0,0.1);
-                padding: 30px;
-                margin-top: 20px;
-            }
-            . table-responsive {
-                max-height: 500px;
-                overflow-y: auto;
-            }
-            . btn-download {
-                background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
-                border: none;
-                padding: 12px 30px;
-                font-weight: bold;
-                color: white;
-            }
-        </style>
-    </head>
-    <body>
-        <nav class="navbar navbar-dark">
-            <div class="container-fluid">
-                <a class="navbar-brand" href="{{ url_for('form') }}">
-                    <i class="fas fa-arrow-left"></i> Back
-                </a>
-                <span class="navbar-text text-white">
-                    Preview Mode
-                </span>
-            </div>
-        </nav>
-
-        <div class="container">
-            <div class="preview-card">
-                <div class="d-flex justify-content-between align-items-center mb-4">
-                    <h3><i class="fas fa-file-alt"></i> Closing Report Preview</h3>
-                    <form action="{{ url_for('download_closing_report') }}" method="POST" style="display:inline;">
-                        <button type="submit" class="btn btn-download">
-                            <i class="fas fa-download"></i> Download Excel
-                        </button>
-                    </form>
-                </div>
-
-                <div class="alert alert-info">
-                    <i class="fas fa-info-circle"></i> 
-                    Total Records: <strong>{{ data|length }}</strong> | 
-                    Date: <strong>{{ current_date }}</strong>
-                </div>
-
-                <div class="table-responsive">
-                    <table class="table table-striped table-hover">
-                        <thead class="table-primary">
-                            <tr>
-                                <th>Date</th>
-                                <th>Order ID</th>
-                                <th>Customer</th>
-                                <th>Phone</th>
-                                <th>Product</th>
-                                <th>Qty</th>
-                                <th>Price</th>
-                                <th>Status</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for item in data %}
-                            <tr>
-                                <td>{{ item.get('date', 'N/A') }}</td>
-                                <td>{{ item.get('order_id', 'N/A') }}</td>
-                                <td>{{ item.get('customer_name', 'N/A') }}</td>
-                                <td>{{ item.get('customer_phone', 'N/A') }}</td>
-                                <td>{{ item.get('product', 'N/A') }}</td>
-                                <td>{{ item.get('quantity', 'N/A') }}</td>
-                                <td>{{ item.get('price', 'N/A') }}</td>
-                                <td>
-                                    {% if item.get('status') == 'Completed' %}
-                                        <span class="badge bg-success">{{ item.get('status') }}</span>
-                                    {% else %}
-                                        <span class="badge bg-warning">{{ item.get('status', 'N/A') }}</span>
-                                    {% endif %}
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-
-        <script src="https://cdn. jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
-    </body>
-    </html>
-    '''
-    
-    return render_template_string(preview_html, data=data, current_date=get_bd_date_str())
-
-@app.route('/download-closing-report', methods=['POST'])
-@login_required
-def download_closing_report():
-    """Closing Report ডাউনলোড করুন"""
-    data = session.get('closing_report_data', [])
-    logo_path = session. get('closing_report_logo')
-    
-    if not data:
-        flash('No data to download! ', 'danger')
-        return redirect(url_for('form'))
-    
-    # Excel তৈরি করুন
-    wb = create_closing_report_excel(data, logo_path)
-    
-    # Memory buffer এ সেভ করুন
-    output = BytesIO()
-    wb.save(output)
-    output.seek(0)
-    
-    # সেশন ক্লিয়ার করুন
-    session. pop('closing_report_data', None)
-    session.pop('closing_report_logo', None)
-    
-    filename = f"Closing_Report_{get_bd_date_str()}. xlsx"
-    
-    return send_file(
-        output,
-        mimetype='application/vnd.openxmlformats-officedocument. spreadsheetml.sheet',
-        as_attachment=True,# ==============================================================================
-# PO Sheet Functions
-# ==============================================================================
-
-def process_po_file(file_path):
-    """PO ফাইল প্রসেস করে ডেটা বের করে"""
-    try:
-        df = pd.read_excel(file_path)
-        
-        # প্রয়োজনীয় কলাম চেক করুন
-        required_cols = ['PO Number', 'Item', 'Quantity', 'Unit Price', 'Total']
-        
-        # কলাম নাম নরমালাইজ করুন
-        df.columns = df.columns.str.strip()
-        
-        data = []
-        for _, row in df.iterrows():
-            item_data = {}
-            for col in df.columns:
-                item_data[col] = str(row[col]) if pd.notna(row[col]) else ''
-            data. append(item_data)
-        
-        return data, list(df.columns)
-    except Exception as e:
-        print(f"Error processing PO file: {e}")
-        return [], []
-
-def create_po_sheet_excel(data, columns, logo_path=None):
-    """PO Sheet এর জন্য Excel তৈরি করে"""
-    wb = openpyxl.Workbook()
-    ws = wb.active
-    ws.title = "PO Sheet"
-    
-    # স্টাইল ডিফাইন
-    header_font = Font(bold=True, size=12, color="FFFFFF")
-    header_fill = PatternFill(start_color="2E75B6", end_color="2E75B6", fill_type="solid")
-    header_alignment = Alignment(horizontal="center", vertical="center", wrap_text=True)
-    
-    thin_border = Border(
-        left=Side(style='thin'),
-        right=Side(style='thin'),
-        top=Side(style='thin'),
-        bottom=Side(style='thin')
-    )
-    
-    # লোগো যোগ করুন
-    row_start = 1
-    if logo_path and os.path.exists(logo_path):
-        try:
-            img = Image(logo_path)
-            img.width = 120
-            img.height = 60
-            ws.add_image(img, 'A1')
-            row_start = 5
-        except:
-            pass
-    
-    # শিরোনাম
-    col_count = len(columns)
-    ws.merge_cells(f'A{row_start}:{openpyxl.utils.get_column_letter(col_count)}{row_start}')
-    title_cell = ws[f'A{row_start}']
-    title_cell.value = "Purchase Order Sheet"
-    title_cell.font = Font(bold=True, size=16, color="2E75B6")
-    title_cell.alignment = Alignment(horizontal="center", vertical="center")
-    
-    # তারিখ
-    row_start += 1
-    ws.merge_cells(f'A{row_start}:{openpyxl.utils.get_column_letter(col_count)}{row_start}')
-    date_cell = ws[f'A{row_start}']
-    date_cell.value = f"Generated: {get_bd_time(). strftime('%d-%m-%Y %H:%M')}"
-    date_cell.font = Font(size=11)
-    date_cell.alignment = Alignment(horizontal="center")
-    
-    # হেডার রো
-    row_start += 2
-    for col_num, header in enumerate(columns, 1):
-        cell = ws. cell(row=row_start, column=col_num)
-        cell.value = header
-        cell.font = header_font
-        cell.fill = header_fill
-        cell. alignment = header_alignment
-        cell.border = thin_border
-    
-    # ডেটা রো
-    for row_num, item in enumerate(data, row_start + 1):
-        for col_num, col_name in enumerate(columns, 1):
-            cell = ws.cell(row=row_num, column=col_num)
-            cell. value = item.get(col_name, '')
-            cell.border = thin_border
-            
-            # সংখ্যা ফরম্যাটিং
-            if 'price' in col_name.lower() or 'total' in col_name.lower() or 'amount' in col_name.lower():
-                cell.alignment = Alignment(horizontal="right")
-                try:
-                    cell.value = float(cell.value)
-                    cell.number_format = '#,##0.00'
-                except:
-                    pass
-    
-    # কলাম প্রস্থ অটো-এডজাস্ট
-    for col_num, col_name in enumerate(columns, 1):
-        col_letter = openpyxl.utils.get_column_letter(col_num)
-        max_length = len(col_name)
-        
-        for row in ws.iter_rows(min_row=row_start, max_row=len(data)+row_start, min_col=col_num, max_col=col_num):
-            for cell in row:
-                try:
-                    if len(str(cell.value)) > max_length:
-                        max_length = len(str(cell.value))
-                except:
-                    pass
-        
-        adjusted_width = min(max_length + 2, 50)
-        ws.column_dimensions[col_letter].width = adjusted_width
-    
-    # সামারি
-    summary_row = len(data) + row_start + 2
-    ws.merge_cells(f'A{summary_row}:{openpyxl.utils.get_column_letter(col_count-1)}{summary_row}')
-    summary_cell = ws[f'A{summary_row}']
-    summary_cell.value = "Total Items:"
-    summary_cell.font = Font(bold=True)
-    summary_cell.alignment = Alignment(horizontal="right")
-    
-    total_cell = ws.cell(row=summary_row, column=col_count)
-    total_cell.value = len(data)
-    total_cell.font = Font(bold=True)
-    total_cell.border = thin_border
-    total_cell.fill = PatternFill(start_color="E7E6E6", end_color="E7E6E6", fill_type="solid")
-    
-    return wb
-
-# ==============================================================================
-# PO Sheet Routes
-# ==============================================================================
-
-@app.route('/po-sheet')
-@login_required
-def po_form():
-    """PO Sheet ফর্ম পেজ"""
-    po_form_html = '''
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1. 0">
-        <title>PO Sheet Generator</title>
-        <link href="https://cdn.jsdelivr. net/npm/bootstrap@5. 1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-        <style>
-            body { background: #f8f9fa; }
-            .navbar { background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); }
-            .card {
-                border: none;
-                border-radius: 15px;
-                box-shadow: 0 5px 20px rgba(0,0,0,0.1);
-                margin-top: 30px;
-            }
-            . card-header {
-                background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
-                color: white;
-                border-radius: 15px 15px 0 0 !important;
-                padding: 20px;
-            }
-            .btn-generate {
-                background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
-                border: none;
-                padding: 12px 30px;
-                font-weight: bold;
-            }
-            .btn-generate:hover {
-                transform: translateY(-2px);
-                box-shadow: 0 5px 20px rgba(17, 153, 142, 0.4);
-            }
-            .upload-area {
-                border: 2px dashed #11998e;
-                border-radius: 10px;
-                padding: 40px;
-                text-align: center;
-                background: #f8f9fa;
-                margin-bottom: 20px;
-            }
-            . upload-icon {
-                font-size: 3rem;
-                color: #11998e;
-                margin-bottom: 15px;
-            }
-        </style>
-    </head>
-    <body>
-        <nav class="navbar navbar-dark">
-            <div class="container-fluid">
-                <a class="navbar-brand" href="{{ url_for('dashboard') }}">
-                    <i class="fas fa-arrow-left"></i> Back to Dashboard
-                </a>
-                <span class="navbar-text text-white">
-                    <i class="fas fa-user"></i> {{ session.get('username') }}
-                </span>
-            </div>
-        </nav>
-
-        <div class="container">
-            <div class="row justify-content-center">
-                <div class="col-md-8">
-                    <div class="card">
-                        <div class="card-header">
-                            <h4 class="mb-0"><i class="fas fa-file-invoice"></i> PO Sheet Generator</h4>
-                        </div>
-                        <div class="card-body p-4">
-                            {% with messages = get_flashed_messages(with_categories=true) %}
-                                {% if messages %}
-                                    {% for category, message in messages %}
-                                        <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
-                                            {{ message }}
-                                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                                        </div>
-                                    {% endfor %}
-                                {% endif %}
-                            {% endwith %}
-
-                            <form action="{{ url_for('preview_po_sheet') }}" method="POST" enctype="multipart/form-data">
-                                <div class="upload-area">
-                                    <div class="upload-icon">
-                                        <i class="fas fa-cloud-upload-alt"></i>
-                                    </div>
-                                    <h5>Upload PO File</h5>
-                                    <p class="text-muted">Drag and drop or click to browse</p>
-                                    <input type="file" name="pofile" class="form-control" accept=". xlsx,.xls" required>
-                                </div>
-
-                                <div class="mb-4">
-                                    <label class="form-label">
-                                        <i class="fas fa-image"></i> Company Logo (Optional)
-                                    </label>
-                                    <input type="file" name="logo" class="form-control" accept="image/*">
-                                    <small class="text-muted">PNG, JPG, or JPEG format</small>
-                                </div>
-
-                                <div class="d-grid">
-                                    <button type="submit" class="btn btn-primary btn-generate">
-                                        <i class="fas fa-eye"></i> Preview PO Sheet
-                                    </button>
-                                </div>
-                            </form>
-
-                            <div class="alert alert-info mt-4">
-                                <i class="fas fa-info-circle"></i> 
-                                <strong>Supported Format:</strong> Excel files (.xlsx, .xls) with columns like PO Number, Item, Quantity, Unit Price, Total.
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle. min.js"></script>
-    </body>
-    </html>
-    '''
-    return render_template_string(po_form_html)
-
-@app.route('/preview-po-sheet', methods=['POST'])
-@login_required
-def preview_po_sheet():
-    """PO Sheet প্রিভিউ পেজ"""
-    if 'pofile' not in request. files:
-        flash('No file uploaded! ', 'danger')
-        return redirect(url_for('po_form'))
-    
-    po_file = request.files['pofile']
-    
-    if not po_file or not po_file.filename:
-        flash('Please select a file! ', 'danger')
-        return redirect(url_for('po_form'))
-    
-    # ফাইল সেভ করুন
-    filename = 'po_' + get_bd_time().strftime('%Y%m%d_%H%M%S') + '_' + po_file.filename
-    file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-    po_file.save(file_path)
-    
-    # লোগো প্রসেস করুন
-    logo_path = None
-    if 'logo' in request.files:
-        logo = request.files['logo']
-        if logo and logo.filename:
-            logo_filename = 'logo_' + logo.filename
-            logo_path = os.path.join(app. config['UPLOAD_FOLDER'], logo_filename)
-            logo. save(logo_path)
-    
-    # ফাইল প্রসেস করুন
-    data, columns = process_po_file(file_path)
-    
-    if not data:
-        flash('Error processing file!  Please check the format. ', 'danger')
-        return redirect(url_for('po_form'))
-    
-    # সেশনে ডেটা সেভ করুন
-    session['po_data'] = data
-    session['po_columns'] = columns
-    session['po_logo'] = logo_path
-    session['po_file_path'] = file_path
-    
-    preview_html = '''
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Preview PO Sheet</title>
-        <link href="https://cdn. jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-        <style>
-            body { background: #f8f9fa; }
-            .navbar { background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); }
-            .preview-card {
-                background: white;
-                border-radius: 15px;
-                box-shadow: 0 5px 20px rgba(0,0,0,0.1);
-                padding: 30px;
-                margin-top: 20px;
-            }
-            .table-responsive {
-                max-height: 500px;
-                overflow: auto;
-            }
-            . btn-download {
-                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                border: none;
-                padding: 12px 30px;
-                font-weight: bold;
-                color: white;
-            }
-            .table {
-                font-size: 0.9rem;
-            }
-            .table thead th {
-                position: sticky;
-                top: 0;
-                background: #2E75B6;
-                color: white;
-                z-index: 10;
-            }
-        </style>
-    </head>
-    <body>
-        <nav class="navbar navbar-dark">
-            <div class="container-fluid">
-                <a class="navbar-brand" href="{{ url_for('po_form') }}">
-                    <i class="fas fa-arrow-left"></i> Back
-                </a>
-                <span class="navbar-text text-white">
-                    Preview Mode
-                </span>
-            </div>
-        </nav>
-
-        <div class="container-fluid px-4">
-            <div class="preview-card">
-                <div class="d-flex justify-content-between align-items-center mb-4">
-                    <h3><i class="fas fa-file-invoice"></i> PO Sheet Preview</h3>
-                    <form action="{{ url_for('download_po_sheet') }}" method="POST" style="display:inline;">
-                        <button type="submit" class="btn btn-download">
-                            <i class="fas fa-download"></i> Download Excel
-                        </button>
-                    </form>
-                </div>
-
-                <div class="alert alert-info">
-                    <i class="fas fa-info-circle"></i> 
-                    Total Items: <strong>{{ data|length }}</strong> | 
-                    Columns: <strong>{{ columns|length }}</strong> |
-                    Generated: <strong>{{ current_time }}</strong>
-                </div>
-
-                <div class="table-responsive">
-                    <table class="table table-striped table-hover table-bordered">
-                        <thead>
-                            <tr>
-                                {% for col in columns %}
-                                <th>{{ col }}</th>
-                                {% endfor %}
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for item in data %}
-                            <tr>
-                                {% for col in columns %}
-                                <td>{{ item.get(col, '') }}</td>
-                                {% endfor %}
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
-    </body>
-    </html>
-    '''
-    
-    return render_template_string(preview_html, 
-                                 data=data, 
-                                 columns=columns,
-                                 current_time=get_bd_time(). strftime('%d-%m-%Y %H:%M'))
-
-@app.route('/download-po-sheet', methods=['POST'])
-@login_required
-def download_po_sheet():
-    """PO Sheet ডাউনলোড করুন"""
-    data = session.get('po_data', [])
-    columns = session.get('po_columns', [])
-    logo_path = session.get('po_logo')
-    file_path = session. get('po_file_path')
-    
-    if not data:
-        flash('No data to download!', 'danger')
-        return redirect(url_for('po_form'))
-    
-    # Excel তৈরি করুন
-    wb = create_po_sheet_excel(data, columns, logo_path)
-    
-    # Memory buffer এ সেভ করুন
-    output = BytesIO()
-    wb.save(output)
-    output.seek(0)
-    
-    # আপলোড করা ফাইল ডিলিট করুন
-    try:
-        if file_path and os.path.exists(file_path):
-            os.remove(file_path)
-        if logo_path and os.path. exists(logo_path):
-            os.remove(logo_path)
-    except:
-        pass
-    
-    # সেশন ক্লিয়ার করুন
-    session.pop('po_data', None)
-    session.pop('po_columns', None)
-    session.pop('po_logo', None)
-    session.pop('po_file_path', None)
-    
-    filename = f"PO_Sheet_{get_bd_date_str()}.xlsx"
-    
-    return send_file(
-        output,
-        mimetype='application/vnd.openxmlformats-officedocument. spreadsheetml.sheet',
-        as_attachment=True,
-        download_name=filename
-    )
-    # ==============================================================================
-# Store User Management (Admin Only)
-# ==============================================================================
-
-@app.route('/store-user-management', methods=['GET', 'POST'])
-@admin_required
-def store_user_management():
-    """স্টোর ইউজার ম্যানেজমেন্ট (Admin Only)"""
-    
-    if request.method == 'POST':
-        action = request.form.get('action')
-        
-        if action == 'add':
-            username = request.form.get('username', '').strip()
-            password = request.form.get('password', '').strip()
-            role = request.form.get('role', 'staff')
-            
-            if not username or not password:
-                flash('Username and password required!', 'danger')
-                return redirect(url_for('store_user_management'))
-            
-            # চেক করুন ইউজার আছে কিনা
-            if store_users_col. find_one({'username': username}):
-                flash('Username already exists!', 'danger')
-                return redirect(url_for('store_user_management'))
-            
-            store_users_col.insert_one({
-                'username': username,
-                'password': password,
-                'role': role,
-                'status': 'active',
-                'created_at': get_bd_time(),
-                'created_by': session. get('username')
-            })
-            flash(f'Store user {username} added successfully!', 'success')
-            return redirect(url_for('store_user_management'))
-        
-        elif action == 'toggle_status':
-            username = request.form.get('username')
-            user = store_users_col.find_one({'username': username})
-            if user:
-                new_status = 'inactive' if user. get('status') == 'active' else 'active'
-                store_users_col.update_one(
-                    {'username': username},
-                    {'$set': {'status': new_status}}
-                )
-                flash(f'User {username} status changed to {new_status}!', 'success')
-            return redirect(url_for('store_user_management'))
-        
-        elif action == 'delete':
-            username = request.form.get('username')
-            store_users_col.delete_one({'username': username})
-            flash(f'User {username} deleted! ', 'success')
-            return redirect(url_for('store_user_management'))
-    
-    # সব স্টোর ইউজার লিস্ট
-    store_users = list(store_users_col.find())
-    
-    store_user_mgmt_html = '''
-    <! DOCTYPE html>
-    <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1. 0">
-        <title>Store User Management</title>
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-        <link rel="stylesheet" href="https://cdnjs.cloudflare. com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-        <style>
-            body { background: #f8f9fa; }
-            .navbar { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
-            .card { border: none; border-radius: 15px; box-shadow: 0 5px 20px rgba(0,0,0,0.1); }
-        </style>
-    </head>
-    <body>
-        <nav class="navbar navbar-dark">
-            <div class="container-fluid">
-                <a class="navbar-brand" href="{{ url_for('dashboard') }}">
-                    <i class="fas fa-arrow-left"></i> Back to Dashboard
-                </a>
-            </div>
-        </nav>
-
-        <div class="container mt-4">
-            <h2 class="mb-4"><i class="fas fa-user-tie"></i> Store User Management</h2>
-            
-            {% with messages = get_flashed_messages(with_categories=true) %}
-                {% if messages %}
-                    {% for category, message in messages %}
-                        <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
-                            {{ message }}
-                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                        </div>
-                    {% endfor %}
-                {% endif %}
-            {% endwith %}
-
-            <!-- Add User Form -->
-            <div class="card mb-4">
-                <div class="card-body">
-                    <h5 class="card-title">Add New Store User</h5>
-                    <form method="POST">
-                        <input type="hidden" name="action" value="add">
-                        <div class="row">
-                            <div class="col-md-3">
-                                <input type="text" name="username" class="form-control" placeholder="Username" required>
-                            </div>
-                            <div class="col-md-3">
-                                <input type="text" name="password" class="form-control" placeholder="Password" required>
-                            </div>
-                            <div class="col-md-3">
-                                <select name="role" class="form-select">
-                                    <option value="staff">Staff</option>
-                                    <option value="manager">Manager</option>
-                                </select>
-                            </div>
-                            <div class="col-md-3">
-                                <button type="submit" class="btn btn-primary w-100">Add User</button>
-                            </div>
-                        </div>
-                    </form>
-                </div>
-            </div>
-
-            <!-- Users List -->
-            <div class="card">
-                <div class="card-body">
-                    <h5 class="card-title">All Store Users</h5>
-                    <div class="table-responsive">
-                        <table class="table table-hover">
-                            <thead>
-                                <tr>
-                                    <th>Username</th>
-                                    <th>Role</th>
-                                    <th>Status</th>
-                                    <th>Created At</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for user in store_users %}
-                                <tr>
-                                    <td>{{ user. username }}</td>
-                                    <td>
-                                        {% if user.role == 'manager' %}
-                                            <span class="badge bg-warning">Manager</span>
-                                        {% else %}
-                                            <span class="badge bg-info">Staff</span>
-                                        {% endif %}
-                                    </td>
-                                    <td>
-                                        {% if user.status == 'active' %}
-                                            <span class="badge bg-success">Active</span>
-                                        {% else %}
-                                            <span class="badge bg-danger">Inactive</span>
-                                        {% endif %}
-                                    </td>
-                                    <td>{{ user.created_at.strftime('%d-%m-%Y %H:%M') if user.created_at else 'N/A' }}</td>
-                                    <td>
-                                        <form method="POST" style="display:inline;">
-                                            <input type="hidden" name="action" value="toggle_status">
-                                            <input type="hidden" name="username" value="{{ user.username }}">
-                                            <button type="submit" class="btn btn-sm btn-warning">Toggle Status</button>
-                                        </form>
-                                        <form method="POST" style="display:inline;" onsubmit="return confirm('Delete this user?');">
-                                            <input type="hidden" name="action" value="delete">
-                                            <input type="hidden" name="username" value="{{ user.username }}">
-                                            <button type="submit" class="btn btn-sm btn-danger">Delete</button>
-                                        </form>
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
-    </body>
-    </html>
-    '''
-    
-    return render_template_string(store_user_mgmt_html, store_users=store_users)
-
-# ==============================================================================
-# Store Panel (১ম কোডের ডিজাইন অনুযায়ী)
-# ==============================================================================
-
-@app.route('/store')
-@store_login_required
-def store_panel():
-    """স্টোর প্যানেল - ১ম কোডের ডিজাইন"""
-    username = session.get('store_user')
-    role = session.get('store_role', 'staff')
-    
-    # Statistics
-    total_products = store_products_col.count_documents({})
-    total_customers = store_customers_col.count_documents({})
-    total_invoices = store_invoices_col.count_documents({})
-    total_estimates = store_estimates_col.count_documents({})
-    
-    # Recent invoices
-    recent_invoices = list(store_invoices_col. find(). sort('created_at', -1).limit(5))
-    
-    store_panel_html = '''
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Store Management Panel</title>
-        <link href="https://cdn.jsdelivr. net/npm/bootstrap@5. 1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-        <style>
-            body {
-                background: #f4f6f9;
-                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            }
-            .sidebar {
-                background: linear-gradient(180deg, #2c3e50 0%, #3498db 100%);
-                min-height: 100vh;
-                color: white;
-                position: fixed;
-                width: 250px;
-                padding-top: 20px;
-            }
-            .sidebar-brand {
-                padding: 20px;
-                font-size: 1.5rem;
-                font-weight: bold;
-                text-align: center;
-                border-bottom: 1px solid rgba(255,255,255,0.2);
-            }
-            .sidebar-menu {
-                list-style: none;
-                padding: 0;
-                margin-top: 20px;
-            }
-            .sidebar-menu li {
-                padding: 0;
-            }
-            .sidebar-menu a {
-                display: block;
-                padding: 15px 25px;
-                color: white;
-                text-decoration: none;
-                transition: all 0.3s;
-            }
-            .sidebar-menu a:hover {
-                background: rgba(255,255,255,0.1);
-                padding-left: 30px;
-            }
-            .sidebar-menu a.active {
-                background: rgba(255,255,255,0.2);
-                border-left: 4px solid #3498db;
-            }
-            .main-content {
-                margin-left: 250px;
-                padding: 20px;
-            }
-            .top-bar {
-                background: white;
-                padding: 15px 30px;
-                border-radius: 10px;
-                box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-                margin-bottom: 30px;
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-            }
-            .stat-card {
-                background: white;
-                border-radius: 10px;
-                padding: 25px;
-                box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-                transition: transform 0.3s;
-            }
-            .stat-card:hover {
-                transform: translateY(-5px);
-            }
-            .stat-icon {
-                width: 60px;
-                height: 60px;
-                border-radius: 10px;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                font-size: 1.5rem;
-                color: white;
-                float: left;
-                margin-right: 15px;
-            }
-            .stat-icon-blue { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
-            .stat-icon-green { background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); }
-            .stat-icon-orange { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
-            .stat-icon-purple { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); }
-            
-            .stat-number {
-                font-size: 2rem;
-                font-weight: bold;
-                color: #2c3e50;
-            }
-            .stat-label {
-                color: #7f8c8d;
-                font-size: 0.9rem;
-            }
-            .recent-card {
-                background: white;
-                border-radius: 10px;
-                padding: 25px;
-                box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-                margin-top: 20px;
-            }
-            .quick-action-btn {
-                padding: 15px;
-                border-radius: 10px;
-                border: none;
-                font-weight: bold;
-                width: 100%;
-                margin-bottom: 10px;
-                transition: all 0.3s;
-            }
-            .quick-action-btn:hover {
-                transform: translateY(-2px);
-                box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-            }
-        </style>
-    </head>
-    <body>
-        <!-- Sidebar -->
-        <div class="sidebar">
-            <div class="sidebar-brand">
-                <i class="fas fa-store"></i> Store Panel
-            </div>
-            <ul class="sidebar-menu">
-                <li><a href="{{ url_for('store_panel') }}" class="active"><i class="fas fa-home"></i> Dashboard</a></li>
-                <li><a href="{{ url_for('store_products') }}"><i class="fas fa-box"></i> Products</a></li>
-                <li><a href="{{ url_for('store_customers') }}"><i class="fas fa-users"></i> Customers</a></li>
-                <li><a href="{{ url_for('store_invoices') }}"><i class="fas fa-file-invoice"></i> Invoices</a></li>
-                <li><a href="{{ url_for('store_estimates') }}"><i class="fas fa-file-alt"></i> Estimates</a></li>
-                <li><a href="{{ url_for('store_payments') }}"><i class="fas fa-money-bill"></i> Payments</a></li>
-                <li><a href="{{ url_for('store_reports') }}"><i class="fas fa-chart-bar"></i> Reports</a></li>
-                <li style="margin-top: 20px; border-top: 1px solid rgba(255,255,255,0.2); padding-top: 20px;">
-                    <a href="{{ url_for('dashboard') }}"><i class="fas fa-building"></i> Main System</a>
-                </li>
-                <li><a href="{{ url_for('store_logout') }}"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
-            </ul>
-        </div>
-
-        <!-- Main Content -->
-        <div class="main-content">
-            <!-- Top Bar -->
-            <div class="top-bar">
-                <div>
-                    <h4 class="mb-0">Welcome, {{ username }}!</h4>
-                    <small class="text-muted">Store Management System</small>
-                </div>
-                <div>
-                    <span class="badge bg-primary">{{ role }}</span>
-                    <span class="text-muted ms-2">{{ current_date }}</span>
-                </div>
-            </div>
-
-            <!-- Flash Messages -->
-            {% with messages = get_flashed_messages(with_categories=true) %}
-                {% if messages %}
-                    {% for category, message in messages %}
-                        <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
-                            {{ message }}
-                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                        </div>
-                    {% endfor %}
-                {% endif %}
-            {% endwith %}
-
-            <!-- Statistics Cards -->
-            <div class="row">
-                <div class="col-md-3 mb-4">
-                    <div class="stat-card">
-                        <div class="stat-icon stat-icon-blue">
-                            <i class="fas fa-box"></i>
-                        </div>
-                        <div>
-                            <div class="stat-number">{{ total_products }}</div>
-                            <div class="stat-label">Total Products</div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-3 mb-4">
-                    <div class="stat-card">
-                        <div class="stat-icon stat-icon-green">
-                            <i class="fas fa-users"></i>
-                        </div>
-                        <div>
-                            <div class="stat-number">{{ total_customers }}</div>
-                            <div class="stat-label">Customers</div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-3 mb-4">
-                    <div class="stat-card">
-                        <div class="stat-icon stat-icon-orange">
-                            <i class="fas fa-file-invoice"></i>
-                        </div>
-                        <div>
-                            <div class="stat-number">{{ total_invoices }}</div>
-                            <div class="stat-label">Invoices</div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-3 mb-4">
-                    <div class="stat-card">
-                        <div class="stat-icon stat-icon-purple">
-                            <i class="fas fa-file-alt"></i>
-                        </div>
-                        <div>
-                            <div class="stat-number">{{ total_estimates }}</div>
-                            <div class="stat-label">Estimates</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Quick Actions and Recent Invoices -->
-            <div class="row">
-                <div class="col-md-4">
-                    <div class="recent-card">
-                        <h5 class="mb-3"><i class="fas fa-bolt"></i> Quick Actions</h5>
-                        <button class="quick-action-btn btn btn-primary" onclick="location.href='{{ url_for('add_invoice') }}'">
-                            <i class="fas fa-plus"></i> New Invoice
-                        </button>
-                        <button class="quick-action-btn btn btn-success" onclick="location. href='{{ url_for('add_estimate') }}'">
-                            <i class="fas fa-plus"></i> New Estimate
-                        </button>
-                        <button class="quick-action-btn btn btn-info" onclick="location.href='{{ url_for('add_customer') }}'">
-                            <i class="fas fa-user-plus"></i> Add Customer
-                        </button>
-                        <button class="quick-action-btn btn btn-warning" onclick="location.href='{{ url_for('add_product') }}'">
-                            <i class="fas fa-box"></i> Add Product
-                        </button>
-                    </div>
-                </div>
-
-                <div class="col-md-8">
-                    <div class="recent-card">
-                        <h5 class="mb-3"><i class="fas fa-clock"></i> Recent Invoices</h5>
-                        <div class="table-responsive">
-                            <table class="table table-hover">
-                                <thead>
-                                    <tr>
-                                        <th>Invoice #</th>
-                                        <th>Customer</th>
-                                        <th>Amount</th>
-                                        <th>Date</th>
-                                        <th>Action</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% if recent_invoices %}
-                                        {% for invoice in recent_invoices %}
-                                        <tr>
-                                            <td><strong>{{ invoice.invoice_number }}</strong></td>
-                                            <td>{{ invoice.customer_name }}</td>
-                                            <td>৳{{ invoice.total_amount }}</td>
-                                            <td>{{ invoice.created_at. strftime('%d-%m-%Y') if invoice.created_at else 'N/A' }}</td>
-                                            <td>
-                                                <a href="{{ url_for('view_invoice', invoice_id=invoice._id) }}" class="btn btn-sm btn-primary">View</a>
-                                            </td>
-                                        </tr>
-                                        {% endfor %}
-                                    {% else %}
-                                        <tr>
-                                            <td colspan="5" class="text-center text-muted">No invoices yet</td>
-                                        </tr>
-                                    {% endif %}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min. js"></script>
-    </body>
-    </html>
-    '''
-    
-    return render_template_string(store_panel_html,
-                                 username=username,
-                                 role=role,
-                                 current_date=get_bd_date_str(),
-                                 total_products=total_products,
-                                 total_customers=total_customers,
-                                 total_invoices=total_invoices,
-                                 total_estimates=total_estimates,
-                                 recent_invoices=recent_invoices)
-    # ==============================================================================
-# Store Products Management
-# ==============================================================================
-
-@app. route('/store/products')
-@store_login_required
-def store_products():
-    """স্টোর প্রোডাক্ট লিস্ট"""
-    products = list(store_products_col.find(). sort('created_at', -1))
-    
-    products_html = '''
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Products - Store Panel</title>
-        <link href="https://cdn.jsdelivr. net/npm/bootstrap@5. 1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-        <style>
-            body { background: #f4f6f9; }
-            .sidebar {
-                background: linear-gradient(180deg, #2c3e50 0%, #3498db 100%);
-                min-height: 100vh;
-                color: white;
-                position: fixed;
-                width: 250px;
-                padding-top: 20px;
-            }
-            .sidebar-brand {
-                padding: 20px;
-                font-size: 1.5rem;
-                font-weight: bold;
-                text-align: center;
-                border-bottom: 1px solid rgba(255,255,255,0.2);
-            }
-            .sidebar-menu {
-                list-style: none;
-                padding: 0;
-                margin-top: 20px;
-            }
-            .sidebar-menu li { padding: 0; }
-            .sidebar-menu a {
-                display: block;
-                padding: 15px 25px;
-                color: white;
-                text-decoration: none;
-                transition: all 0.3s;
-            }
-            .sidebar-menu a:hover {
-                background: rgba(255,255,255,0.1);
-                padding-left: 30px;
-            }
-            .main-content {
-                margin-left: 250px;
-                padding: 20px;
-            }
-            .content-card {
-                background: white;
-                border-radius: 10px;
-                padding: 25px;
-                box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            }
-            .product-card {
-                border: 1px solid #e0e0e0;
-                border-radius: 10px;
-                padding: 15px;
-                margin-bottom: 15px;
-                transition: all 0.3s;
-            }
-            .product-card:hover {
-                box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-                transform: translateY(-2px);
-            }
-        </style>
-    </head>
-    <body>
-        <!-- Sidebar -->
-        <div class="sidebar">
-            <div class="sidebar-brand">
-                <i class="fas fa-store"></i> Store Panel
-            </div>
-            <ul class="sidebar-menu">
-                <li><a href="{{ url_for('store_panel') }}"><i class="fas fa-home"></i> Dashboard</a></li>
-                <li><a href="{{ url_for('store_products') }}" class="active"><i class="fas fa-box"></i> Products</a></li>
-                <li><a href="{{ url_for('store_customers') }}"><i class="fas fa-users"></i> Customers</a></li>
-                <li><a href="{{ url_for('store_invoices') }}"><i class="fas fa-file-invoice"></i> Invoices</a></li>
-                <li><a href="{{ url_for('store_estimates') }}"><i class="fas fa-file-alt"></i> Estimates</a></li>
-                <li><a href="{{ url_for('store_payments') }}"><i class="fas fa-money-bill"></i> Payments</a></li>
-                <li><a href="{{ url_for('store_reports') }}"><i class="fas fa-chart-bar"></i> Reports</a></li>
-                <li style="margin-top: 20px; border-top: 1px solid rgba(255,255,255,0.2); padding-top: 20px;">
-                    <a href="{{ url_for('dashboard') }}"><i class="fas fa-building"></i> Main System</a>
-                </li>
-                <li><a href="{{ url_for('store_logout') }}"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
-            </ul>
-        </div>
-
-        <!-- Main Content -->
-        <div class="main-content">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h3><i class="fas fa-box"></i> Products Management</h3>
-                <a href="{{ url_for('add_product') }}" class="btn btn-primary">
-                    <i class="fas fa-plus"></i> Add New Product
-                </a>
-            </div>
-
-            {% with messages = get_flashed_messages(with_categories=true) %}
-                {% if messages %}
-                    {% for category, message in messages %}
-                        <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
-                            {{ message }}
-                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                        </div>
-                    {% endfor %}
-                {% endif %}
-            {% endwith %}
-
-            <div class="content-card">
-                <div class="table-responsive">
-                    <table class="table table-hover">
-                        <thead class="table-light">
-                            <tr>
-                                <th>Product Name</th>
-                                <th>Category</th>
-                                <th>Price</th>
-                                <th>Stock</th>
-                                <th>Unit</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% if products %}
-                                {% for product in products %}
-                                <tr>
-                                    <td><strong>{{ product.name }}</strong></td>
-                                    <td><span class="badge bg-info">{{ product.category }}</span></td>
-                                    <td>৳{{ product.price }}</td>
-                                    <td>
-                                        {% if product.stock > 10 %}
-                                            <span class="badge bg-success">{{ product.stock }}</span>
-                                        {% elif product.stock > 0 %}
-                                            <span class="badge bg-warning">{{ product.stock }}</span>
-                                        {% else %}
-                                            <span class="badge bg-danger">Out of Stock</span>
-                                        {% endif %}
-                                    </td>
-                                    <td>{{ product.unit }}</td>
-                                    <td>
-                                        <a href="{{ url_for('edit_product', product_id=product._id) }}" class="btn btn-sm btn-warning">
-                                            <i class="fas fa-edit"></i>
-                                        </a>
-                                        <form method="POST" action="{{ url_for('delete_product', product_id=product._id) }}" 
-                                              style="display:inline;" onsubmit="return confirm('Delete this product?');">
-                                            <button type="submit" class="btn btn-sm btn-danger">
-                                                <i class="fas fa-trash"></i>
-                                            </button>
-                                        </form>
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            {% else %}
-                                <tr>
-                                    <td colspan="6" class="text-center text-muted">No products found.  Add your first product!</td>
-                                </tr>
-                            {% endif %}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-
-        <script src="https://cdn. jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
-    </body>
-    </html>
-    '''
-    
-    return render_template_string(products_html, products=products)
-
-@app.route('/store/products/add', methods=['GET', 'POST'])
-@store_login_required
-def add_product():
-    """নতুন প্রোডাক্ট যোগ করুন"""
-    if request.method == 'POST':
-        name = request.form. get('name', '').strip()
-        category = request.form.get('category', '').strip()
-        price = request.form.get('price', '0')
-        stock = request.form. get('stock', '0')
-        unit = request. form.get('unit', 'pcs')
-        description = request.form.get('description', '').strip()
-        
-        if not name or not category:
-            flash('Product name and category are required! ', 'danger')
-            return redirect(url_for('add_product'))
-        
-        try:
-            price = float(price)
-            stock = int(stock)
-        except:
-            flash('Invalid price or stock value!', 'danger')
-            return redirect(url_for('add_product'))
-        
-        store_products_col.insert_one({
-            'name': name,
-            'category': category,
-            'price': price,
-            'stock': stock,
-            'unit': unit,
-            'description': description,
-            'created_at': get_bd_time(),
-            'created_by': session.get('store_user')
-        })
-        
-        flash(f'Product "{name}" added successfully!', 'success')
-        return redirect(url_for('store_products'))
-    
-    add_product_html = '''
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Add Product</title>
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-        <style>
-            body { background: #f4f6f9; }
-            .sidebar {
-                background: linear-gradient(180deg, #2c3e50 0%, #3498db 100%);
-                min-height: 100vh;
-                color: white;
-                position: fixed;
-                width: 250px;
-                padding-top: 20px;
-            }
-            . sidebar-brand {
-                padding: 20px;
-                font-size: 1.5rem;
-                font-weight: bold;
-                text-align: center;
-                border-bottom: 1px solid rgba(255,255,255,0.2);
-            }
-            .sidebar-menu {
-                list-style: none;
-                padding: 0;
-                margin-top: 20px;
-            }
-            .sidebar-menu li { padding: 0; }
-            .sidebar-menu a {
-                display: block;
-                padding: 15px 25px;
-                color: white;
-                text-decoration: none;
-                transition: all 0.3s;
-            }
-            .sidebar-menu a:hover {
-                background: rgba(255,255,255,0.1);
-                padding-left: 30px;
-            }
-            .main-content {
-                margin-left: 250px;
-                padding: 20px;
-            }
-            .form-card {
-                background: white;
-                border-radius: 10px;
-                padding: 30px;
-                box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-                max-width: 600px;
-                margin: 0 auto;
-            }
-        </style>
-    </head>
-    <body>
-        <!-- Sidebar -->
-        <div class="sidebar">
-            <div class="sidebar-brand">
-                <i class="fas fa-store"></i> Store Panel
-            </div>
-            <ul class="sidebar-menu">
-                <li><a href="{{ url_for('store_panel') }}"><i class="fas fa-home"></i> Dashboard</a></li>
-                <li><a href="{{ url_for('store_products') }}" class="active"><i class="fas fa-box"></i> Products</a></li>
-                <li><a href="{{ url_for('store_customers') }}"><i class="fas fa-users"></i> Customers</a></li>
-                <li><a href="{{ url_for('store_invoices') }}"><i class="fas fa-file-invoice"></i> Invoices</a></li>
-                <li><a href="{{ url_for('store_estimates') }}"><i class="fas fa-file-alt"></i> Estimates</a></li>
-                <li><a href="{{ url_for('store_payments') }}"><i class="fas fa-money-bill"></i> Payments</a></li>
-                <li><a href="{{ url_for('store_reports') }}"><i class="fas fa-chart-bar"></i> Reports</a></li>
-                <li style="margin-top: 20px; border-top: 1px solid rgba(255,255,255,0.2); padding-top: 20px;">
-                    <a href="{{ url_for('dashboard') }}"><i class="fas fa-building"></i> Main System</a>
-                </li>
-                <li><a href="{{ url_for('store_logout') }}"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
-            </ul>
-        </div>
-
-        <!-- Main Content -->
-        <div class="main-content">
-            <div class="mb-3">
-                <a href="{{ url_for('store_products') }}" class="btn btn-secondary">
-                    <i class="fas fa-arrow-left"></i> Back to Products
-                </a>
-            </div>
-
-            <div class="form-card">
-                <h4 class="mb-4"><i class="fas fa-plus-circle"></i> Add New Product</h4>
-                
-                {% with messages = get_flashed_messages(with_categories=true) %}
-                    {% if messages %}
-                        {% for category, message in messages %}
-                            <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
-                                {{ message }}
-                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                            </div>
-                        {% endfor %}
-                    {% endif %}
-                {% endwith %}
-
-                <form method="POST">
-                    <div class="mb-3">
-                        <label class="form-label">Product Name *</label>
-                        <input type="text" name="name" class="form-control" required>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label class="form-label">Category *</label>
-                        <input type="text" name="category" class="form-control" 
-                               placeholder="e.g., Electronics, Clothing, Food" required>
-                    </div>
-                    
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Price (৳) *</label>
-                            <input type="number" name="price" class="form-control" step="0.01" min="0" required>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Stock Quantity *</label>
-                            <input type="number" name="stock" class="form-control" min="0" required>
-                        </div>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label class="form-label">Unit</label>
-                        <select name="unit" class="form-select">
-                            <option value="pcs">Pieces (pcs)</option>
-                            <option value="kg">Kilogram (kg)</option>
-                            <option value="ltr">Liter (ltr)</option>
-                            <option value="box">Box</option>
-                            <option value="pack">Pack</option>
-                            <option value="meter">Meter</option>
-                        </select>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label class="form-label">Description</label>
-                        <textarea name="description" class="form-control" rows="3"></textarea>
-                    </div>
-                    
-                    <div class="d-grid">
-                        <button type="submit" class="btn btn-primary btn-lg">
-                            <i class="fas fa-save"></i> Add Product
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
-
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
-    </body>
-    </html>
-    '''
-    
-    return render_template_string(add_product_html)
-
-@app.route('/store/products/edit/<product_id>', methods=['GET', 'POST'])
-@store_login_required
-def edit_product(product_id):
-    """প্রোডাক্ট এডিট করুন"""
-    from bson import ObjectId
-    
-    try:
-        product = store_products_col.find_one({'_id': ObjectId(product_id)})
-    except:
-        flash('Invalid product ID!', 'danger')
-        return redirect(url_for('store_products'))
-    
-    if not product:
-        flash('Product not found!', 'danger')
-        return redirect(url_for('store_products'))
-    
-    if request.method == 'POST':
-        name = request.form.get('name', '').strip()
-        category = request.form.get('category', '').strip()
-        price = request.form.get('price', '0')
-        stock = request.form. get('stock', '0')
-        unit = request.form.get('unit', 'pcs')
-        description = request.form. get('description', '').strip()
-        
-        if not name or not category:
-            flash('Product name and category are required!', 'danger')
-            return redirect(url_for('edit_product', product_id=product_id))
-        
-        try:
-            price = float(price)
-            stock = int(stock)
-        except:
-            flash('Invalid price or stock value!', 'danger')
-            return redirect(url_for('edit_product', product_id=product_id))
-        
-        store_products_col. update_one(
-            {'_id': ObjectId(product_id)},
-            {'$set': {
-                'name': name,
-                'category': category,
-                'price': price,
-                'stock': stock,
-                'unit': unit,
-                'description': description,
-                'updated_at': get_bd_time(),
-                'updated_by': session.get('store_user')
-            }}
-        )
-        
-        flash(f'Product "{name}" updated successfully!', 'success')
-        return redirect(url_for('store_products'))
-    
-    edit_product_html = '''
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Edit Product</title>
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-        <style>
-            body { background: #f4f6f9; }
-            .sidebar {
-                background: linear-gradient(180deg, #2c3e50 0%, #3498db 100%);
-                min-height: 100vh;
-                color: white;
-                position: fixed;
-                width: 250px;
-                padding-top: 20px;
-            }
-            .sidebar-brand {
-                padding: 20px;
-                font-size: 1.5rem;
-                font-weight: bold;
-                text-align: center;
-                border-bottom: 1px solid rgba(255,255,255,0.2);
-            }
-            .sidebar-menu {
-                list-style: none;
-                padding: 0;
-                margin-top: 20px;
-            }
-            .sidebar-menu li { padding: 0; }
-            .sidebar-menu a {
-                display: block;
-                padding: 15px 25px;
-                color: white;
-                text-decoration: none;
-                transition: all 0.3s;
-            }
-            . sidebar-menu a:hover {
-                background: rgba(255,255,255,0.1);
-                padding-left: 30px;
-            }
-            .main-content {
-                margin-left: 250px;
-                padding: 20px;
-            }
-            .form-card {
-                background: white;
-                border-radius: 10px;
-                padding: 30px;
-                box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-                max-width: 600px;
-                margin: 0 auto;
-            }
-        </style>
-    </head>
-    <body>
-        <!-- Sidebar -->
-        <div class="sidebar">
-            <div class="sidebar-brand">
-                <i class="fas fa-store"></i> Store Panel
-            </div>
-            <ul class="sidebar-menu">
-                <li><a href="{{ url_for('store_panel') }}"><i class="fas fa-home"></i> Dashboard</a></li>
-                <li><a href="{{ url_for('store_products') }}" class="active"><i class="fas fa-box"></i> Products</a></li>
-                <li><a href="{{ url_for('store_customers') }}"><i class="fas fa-users"></i> Customers</a></li>
-                <li><a href="{{ url_for('store_invoices') }}"><i class="fas fa-file-invoice"></i> Invoices</a></li>
-                <li><a href="{{ url_for('store_estimates') }}"><i class="fas fa-file-alt"></i> Estimates</a></li>
-                <li><a href="{{ url_for('store_payments') }}"><i class="fas fa-money-bill"></i> Payments</a></li>
-                <li><a href="{{ url_for('store_reports') }}"><i class="fas fa-chart-bar"></i> Reports</a></li>
-                <li style="margin-top: 20px; border-top: 1px solid rgba(255,255,255,0.2); padding-top: 20px;">
-                    <a href="{{ url_for('dashboard') }}"><i class="fas fa-building"></i> Main System</a>
-                </li>
-                <li><a href="{{ url_for('store_logout') }}"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
-            </ul>
-        </div>
-
-        <!-- Main Content -->
-        <div class="main-content">
-            <div class="mb-3">
-                <a href="{{ url_for('store_products') }}" class="btn btn-secondary">
-                    <i class="fas fa-arrow-left"></i> Back to Products
-                </a>
-            </div>
-
-            <div class="form-card">
-                <h4 class="mb-4"><i class="fas fa-edit"></i> Edit Product</h4>
-                
-                {% with messages = get_flashed_messages(with_categories=true) %}
-                    {% if messages %}
-                        {% for category, message in messages %}
-                            <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
-                                {{ message }}
-                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                            </div>
-                        {% endfor %}
-                    {% endif %}
-                {% endwith %}
-
-                <form method="POST">
-                    <div class="mb-3">
-                        <label class="form-label">Product Name *</label>
-                        <input type="text" name="name" class="form-control" value="{{ product.name }}" required>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label class="form-label">Category *</label>
-                        <input type="text" name="category" class="form-control" value="{{ product.category }}" required>
-                    </div>
-                    
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Price (৳) *</label>
-                            <input type="number" name="price" class="form-control" step="0.01" min="0" 
-                                   value="{{ product. price }}" required>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Stock Quantity *</label>
-                            <input type="number" name="stock" class="form-control" min="0" 
-                                   value="{{ product.stock }}" required>
-                        </div>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label class="form-label">Unit</label>
-                        <select name="unit" class="form-select">
-                            <option value="pcs" {% if product.unit == 'pcs' %}selected{% endif %}>Pieces (pcs)</option>
-                            <option value="kg" {% if product.unit == 'kg' %}selected{% endif %}>Kilogram (kg)</option>
-                            <option value="ltr" {% if product.unit == 'ltr' %}selected{% endif %}>Liter (ltr)</option>
-                            <option value="box" {% if product. unit == 'box' %}selected{% endif %}>Box</option>
-                            <option value="pack" {% if product.unit == 'pack' %}selected{% endif %}>Pack</option>
-                            <option value="meter" {% if product.unit == 'meter' %}selected{% endif %}>Meter</option>
-                        </select>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label class="form-label">Description</label>
-                        <textarea name="description" class="form-control" rows="3">{{ product.description }}</textarea>
-                    </div>
-                    
-                    <div class="d-grid">
-                        <button type="submit" class="btn btn-warning btn-lg">
-                            <i class="fas fa-save"></i> Update Product
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
-
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle. min.js"></script>
-    </body>
-    </html>
-    '''
-    
-    return render_template_string(edit_product_html, product=product)
-
-@app. route('/store/products/delete/<product_id>', methods=['POST'])
-@store_login_required
-def delete_product(product_id):
-    """প্রোডাক্ট ডিলিট করুন"""
-    from bson import ObjectId
-    
-    try:
-        store_products_col.delete_one({'_id': ObjectId(product_id)})
-        flash('Product deleted successfully!', 'success')
-    except:
-        flash('Error deleting product!', 'danger')
-    
-    return redirect(url_for('store_products'))
-    # ==============================================================================
-# Store Customers Management
-# ==============================================================================
-
-@app.route('/store/customers')
-@store_login_required
-def store_customers():
-    """স্টোর কাস্টমার লিস্ট"""
-    customers = list(store_customers_col.find(). sort('created_at', -1))
-    
-    customers_html = '''
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Customers - Store Panel</title>
-        <link href="https://cdn.jsdelivr. net/npm/bootstrap@5. 1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-        <style>
-            body { background: #f4f6f9; }
-            .sidebar {
-                background: linear-gradient(180deg, #2c3e50 0%, #3498db 100%);
-                min-height: 100vh;
-                color: white;
-                position: fixed;
-                width: 250px;
-                padding-top: 20px;
-            }
-            .sidebar-brand {
-                padding: 20px;
-                font-size: 1.5rem;
-                font-weight: bold;
-                text-align: center;
-                border-bottom: 1px solid rgba(255,255,255,0.2);
-            }
-            .sidebar-menu {
-                list-style: none;
-                padding: 0;
-                margin-top: 20px;
-            }
-            . sidebar-menu li { padding: 0; }
-            .sidebar-menu a {
-                display: block;
-                padding: 15px 25px;
-                color: white;
-                text-decoration: none;
-                transition: all 0.3s;
-            }
-            . sidebar-menu a:hover {
-                background: rgba(255,255,255,0.1);
-                padding-left: 30px;
-            }
-            .main-content {
-                margin-left: 250px;
-                padding: 20px;
-            }
-            .content-card {
-                background: white;
-                border-radius: 10px;
-                padding: 25px;
-                box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            }
-            .search-box {
-                margin-bottom: 20px;
-            }
-        </style>
-    </head>
-    <body>
-        <!-- Sidebar -->
-        <div class="sidebar">
-            <div class="sidebar-brand">
-                <i class="fas fa-store"></i> Store Panel
-            </div>
-            <ul class="sidebar-menu">
-                <li><a href="{{ url_for('store_panel') }}"><i class="fas fa-home"></i> Dashboard</a></li>
-                <li><a href="{{ url_for('store_products') }}"><i class="fas fa-box"></i> Products</a></li>
-                <li><a href="{{ url_for('store_customers') }}" class="active"><i class="fas fa-users"></i> Customers</a></li>
-                <li><a href="{{ url_for('store_invoices') }}"><i class="fas fa-file-invoice"></i> Invoices</a></li>
-                <li><a href="{{ url_for('store_estimates') }}"><i class="fas fa-file-alt"></i> Estimates</a></li>
-                <li><a href="{{ url_for('store_payments') }}"><i class="fas fa-money-bill"></i> Payments</a></li>
-                <li><a href="{{ url_for('store_reports') }}"><i class="fas fa-chart-bar"></i> Reports</a></li>
-                <li style="margin-top: 20px; border-top: 1px solid rgba(255,255,255,0.2); padding-top: 20px;">
-                    <a href="{{ url_for('dashboard') }}"><i class="fas fa-building"></i> Main System</a>
-                </li>
-                <li><a href="{{ url_for('store_logout') }}"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
-            </ul>
-        </div>
-
-        <!-- Main Content -->
-        <div class="main-content">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h3><i class="fas fa-users"></i> Customers Management</h3>
-                <a href="{{ url_for('add_customer') }}" class="btn btn-primary">
-                    <i class="fas fa-user-plus"></i> Add New Customer
-                </a>
-            </div>
-
-            {% with messages = get_flashed_messages(with_categories=true) %}
-                {% if messages %}
-                    {% for category, message in messages %}
-                        <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
-                            {{ message }}
-                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                        </div>
-                    {% endfor %}
-                {% endif %}
-            {% endwith %}
-
-            <div class="content-card">
-                <!-- Search Box -->
-                <div class="search-box">
-                    <input type="text" id="searchInput" class="form-control" placeholder="Search customers by name, phone, email...">
-                </div>
-
-                <div class="table-responsive">
-                    <table class="table table-hover" id="customersTable">
-                        <thead class="table-light">
-                            <tr>
-                                <th>Name</th>
-                                <th>Phone</th>
-                                <th>Email</th>
-                                <th>Address</th>
-                                <th>Created</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% if customers %}
-                                {% for customer in customers %}
-                                <tr>
-                                    <td><strong>{{ customer.name }}</strong></td>
-                                    <td>{{ customer.phone }}</td>
-                                    <td>{{ customer.email if customer.email else 'N/A' }}</td>
-                                    <td>{{ customer.address[:30] + '...' if customer.address and customer.address|length > 30 else customer.address }}</td>
-                                    <td>{{ customer.created_at.strftime('%d-%m-%Y') if customer.created_at else 'N/A' }}</td>
-                                    <td>
-                                        <a href="{{ url_for('edit_customer', customer_id=customer._id) }}" class="btn btn-sm btn-warning">
-                                            <i class="fas fa-edit"></i>
-                                        </a>
-                                        <form method="POST" action="{{ url_for('delete_customer', customer_id=customer._id) }}" 
-                                              style="display:inline;" onsubmit="return confirm('Delete this customer?');">
-                                            <button type="submit" class="btn btn-sm btn-danger">
-                                                <i class="fas fa-trash"></i>
-                                            </button>
-                                        </form>
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            {% else %}
-                                <tr>
-                                    <td colspan="6" class="text-center text-muted">No customers found.  Add your first customer!</td>
-                                </tr>
-                            {% endif %}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle. min.js"></script>
-        <script>
-            // Search functionality
-            document.getElementById('searchInput').addEventListener('keyup', function() {
-                const searchValue = this.value.toLowerCase();
-                const table = document.getElementById('customersTable');
-                const rows = table. getElementsByTagName('tr');
-                
-                for (let i = 1; i < rows.length; i++) {
-                    const row = rows[i];
-                    const text = row.textContent. toLowerCase();
-                    
-                    if (text.includes(searchValue)) {
-                        row.style.display = '';
-                    } else {
-                        row.style.display = 'none';
-                    }
-                }
-            });
-        </script>
-    </body>
-    </html>
-    '''
-    
-    return render_template_string(customers_html, customers=customers)
-
-@app. route('/store/customers/add', methods=['GET', 'POST'])
-@store_login_required
-def add_customer():
-    """নতুন কাস্টমার যোগ করুন"""
-    if request.method == 'POST':
-        name = request.form. get('name', '').strip()
-        phone = request.form.get('phone', '').strip()
-        email = request.form.get('email', '').strip()
-        address = request.form.get('address', '').strip()
-        company = request.form.get('company', '').strip()
-        
-        if not name or not phone:
-            flash('Customer name and phone are required!', 'danger')
-            return redirect(url_for('add_customer'))
-        
-        # চেক করুন ফোন নাম্বার আগে থেকে আছে কিনা
-        existing = store_customers_col.find_one({'phone': phone})
-        if existing:
-            flash('Customer with this phone number already exists!', 'warning')
-            return redirect(url_for('add_customer'))
-        
-        store_customers_col.insert_one({
-            'name': name,
-            'phone': phone,
-            'email': email,
-            'address': address,
-            'company': company,
-            'created_at': get_bd_time(),
-            'created_by': session.get('store_user')
-        })
-        
-        flash(f'Customer "{name}" added successfully!', 'success')
-        return redirect(url_for('store_customers'))
-    
-    add_customer_html = '''
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Add Customer</title>
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-        <style>
-            body { background: #f4f6f9; }
-            .sidebar {
-                background: linear-gradient(180deg, #2c3e50 0%, #3498db 100%);
-                min-height: 100vh;
-                color: white;
-                position: fixed;
-                width: 250px;
-                padding-top: 20px;
-            }
-            . sidebar-brand {
-                padding: 20px;
-                font-size: 1.5rem;
-                font-weight: bold;
-                text-align: center;
-                border-bottom: 1px solid rgba(255,255,255,0.2);
-            }
-            .sidebar-menu {
-                list-style: none;
-                padding: 0;
-                margin-top: 20px;
-            }
-            .sidebar-menu li { padding: 0; }
-            .sidebar-menu a {
-                display: block;
-                padding: 15px 25px;
-                color: white;
-                text-decoration: none;
-                transition: all 0.3s;
-            }
-            .sidebar-menu a:hover {
-                background: rgba(255,255,255,0.1);
-                padding-left: 30px;
-            }
-            .main-content {
-                margin-left: 250px;
-                padding: 20px;
-            }
-            .form-card {
-                background: white;
-                border-radius: 10px;
-                padding: 30px;
-                box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-                max-width: 600px;
-                margin: 0 auto;
-            }
-        </style>
-    </head>
-    <body>
-        <!-- Sidebar -->
-        <div class="sidebar">
-            <div class="sidebar-brand">
-                <i class="fas fa-store"></i> Store Panel
-            </div>
-            <ul class="sidebar-menu">
-                <li><a href="{{ url_for('store_panel') }}"><i class="fas fa-home"></i> Dashboard</a></li>
-                <li><a href="{{ url_for('store_products') }}"><i class="fas fa-box"></i> Products</a></li>
-                <li><a href="{{ url_for('store_customers') }}" class="active"><i class="fas fa-users"></i> Customers</a></li>
-                <li><a href="{{ url_for('store_invoices') }}"><i class="fas fa-file-invoice"></i> Invoices</a></li>
-                <li><a href="{{ url_for('store_estimates') }}"><i class="fas fa-file-alt"></i> Estimates</a></li>
-                <li><a href="{{ url_for('store_payments') }}"><i class="fas fa-money-bill"></i> Payments</a></li>
-                <li><a href="{{ url_for('store_reports') }}"><i class="fas fa-chart-bar"></i> Reports</a></li>
-                <li style="margin-top: 20px; border-top: 1px solid rgba(255,255,255,0.2); padding-top: 20px;">
-                    <a href="{{ url_for('dashboard') }}"><i class="fas fa-building"></i> Main System</a>
-                </li>
-                <li><a href="{{ url_for('store_logout') }}"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
-            </ul>
-        </div>
-
-        <!-- Main Content -->
-        <div class="main-content">
-            <div class="mb-3">
-                <a href="{{ url_for('store_customers') }}" class="btn btn-secondary">
-                    <i class="fas fa-arrow-left"></i> Back to Customers
-                </a>
-            </div>
-
-            <div class="form-card">
-                <h4 class="mb-4"><i class="fas fa-user-plus"></i> Add New Customer</h4>
-                
-                {% with messages = get_flashed_messages(with_categories=true) %}
-                    {% if messages %}
-                        {% for category, message in messages %}
-                            <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
-                                {{ message }}
-                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                            </div>
-                        {% endfor %}
-                    {% endif %}
-                {% endwith %}
-
-                <form method="POST">
-                    <div class="mb-3">
-                        <label class="form-label">Customer Name *</label>
-                        <input type="text" name="name" class="form-control" required>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label class="form-label">Phone Number *</label>
-                        <input type="tel" name="phone" class="form-control" placeholder="01XXXXXXXXX" required>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label class="form-label">Email (Optional)</label>
-                        <input type="email" name="email" class="form-control" placeholder="customer@example.com">
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label class="form-label">Company (Optional)</label>
-                        <input type="text" name="company" class="form-control">
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label class="form-label">Address</label>
-                        <textarea name="address" class="form-control" rows="3"></textarea>
-                    </div>
-                    
-                    <div class="d-grid">
-                        <button type="submit" class="btn btn-primary btn-lg">
-                            <i class="fas fa-save"></i> Add Customer
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
-
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle. min.js"></script>
-    </body>
-    </html>
-    '''
-    
-    return render_template_string(add_customer_html)
-
-@app.route('/store/customers/edit/<customer_id>', methods=['GET', 'POST'])
-@store_login_required
-def edit_customer(customer_id):
-    """কাস্টমার এডিট করুন"""
-    from bson import ObjectId
-    
-    try:
-        customer = store_customers_col.find_one({'_id': ObjectId(customer_id)})
-    except:
-        flash('Invalid customer ID!', 'danger')
-        return redirect(url_for('store_customers'))
-    
-    if not customer:
-        flash('Customer not found!', 'danger')
-        return redirect(url_for('store_customers'))
-    
-    if request.method == 'POST':
-        name = request.form.get('name', '').strip()
-        phone = request.form.get('phone', '').strip()
-        email = request.form.get('email', '').strip()
-        address = request.form.get('address', '').strip()
-        company = request.form.get('company', '').strip()
-        
-        if not name or not phone:
-            flash('Customer name and phone are required!', 'danger')
-            return redirect(url_for('edit_customer', customer_id=customer_id))
-        
-        store_customers_col.update_one(
-            {'_id': ObjectId(customer_id)},
-            {'$set': {
-                'name': name,
-                'phone': phone,
-                'email': email,
-                'address': address,
-                'company': company,
-                'updated_at': get_bd_time(),
-                'updated_by': session.get('store_user')
-            }}
-        )
-        
-        flash(f'Customer "{name}" updated successfully!', 'success')
-        return redirect(url_for('store_customers'))
-    
-    edit_customer_html = '''
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Edit Customer</title>
-        <link href="https://cdn. jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-        <style>
-            body { background: #f4f6f9; }
-            . sidebar {
-                background: linear-gradient(180deg, #2c3e50 0%, #3498db 100%);
-                min-height: 100vh;
-                color: white;
-                position: fixed;
-                width: 250px;
-                padding-top: 20px;
-            }
-            .sidebar-brand {
-                padding: 20px;
-                font-size: 1.5rem;
-                font-weight: bold;
-                text-align: center;
-                border-bottom: 1px solid rgba(255,255,255,0. 2);
-            }
-            . sidebar-menu {
-                list-style: none;
-                padding: 0;
-                margin-top: 20px;
-            }
-            .sidebar-menu li { padding: 0; }
-            .sidebar-menu a {
-                display: block;
-                padding: 15px 25px;
-                color: white;
-                text-decoration: none;
-                transition: all 0.3s;
-            }
-            .sidebar-menu a:hover {
-                background: rgba(255,255,255,0.1);
-                padding-left: 30px;
-            }
-            .main-content {
-                margin-left: 250px;
-                padding: 20px;
-            }
-            .form-card {
-                background: white;
-                border-radius: 10px;
-                padding: 30px;
-                box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-                max-width: 600px;
-                margin: 0 auto;
-            }
-        </style>
-    </head>
-    <body>
-        <!-- Sidebar -->
-        <div class="sidebar">
-            <div class="sidebar-brand">
-                <i class="fas fa-store"></i> Store Panel
-            </div>
-            <ul class="sidebar-menu">
-                <li><a href="{{ url_for('store_panel') }}"><i class="fas fa-home"></i> Dashboard</a></li>
-                <li><a href="{{ url_for('store_products') }}"><i class="fas fa-box"></i> Products</a></li>
-                <li><a href="{{ url_for('store_customers') }}" class="active"><i class="fas fa-users"></i> Customers</a></li>
-                <li><a href="{{ url_for('store_invoices') }}"><i class="fas fa-file-invoice"></i> Invoices</a></li>
-                <li><a href="{{ url_for('store_estimates') }}"><i class="fas fa-file-alt"></i> Estimates</a></li>
-                <li><a href="{{ url_for('store_payments') }}"><i class="fas fa-money-bill"></i> Payments</a></li>
-                <li><a href="{{ url_for('store_reports') }}"><i class="fas fa-chart-bar"></i> Reports</a></li>
-                <li style="margin-top: 20px; border-top: 1px solid rgba(255,255,255,0.2); padding-top: 20px;">
-                    <a href="{{ url_for('dashboard') }}"><i class="fas fa-building"></i> Main System</a>
-                </li>
-                <li><a href="{{ url_for('store_logout') }}"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
-            </ul>
-        </div>
-
-        <!-- Main Content -->
-        <div class="main-content">
-            <div class="mb-3">
-                <a href="{{ url_for('store_customers') }}" class="btn btn-secondary">
-                    <i class="fas fa-arrow-left"></i> Back to Customers
-                </a>
-            </div>
-
-            <div class="form-card">
-                <h4 class="mb-4"><i class="fas fa-edit"></i> Edit Customer</h4>
-                
-                {% with messages = get_flashed_messages(with_categories=true) %}
-                    {% if messages %}
-                        {% for category, message in messages %}
-                            <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
-                                {{ message }}
-                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                            </div>
-                        {% endfor %}
-                    {% endif %}
-                {% endwith %}
-
-                <form method="POST">
-                    <div class="mb-3">
-                        <label class="form-label">Customer Name *</label>
-                        <input type="text" name="name" class="form-control" value="{{ customer.name }}" required>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label class="form-label">Phone Number *</label>
-                        <input type="tel" name="phone" class="form-control" value="{{ customer.phone }}" required>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label class="form-label">Email (Optional)</label>
-                        <input type="email" name="email" class="form-control" value="{{ customer.email if customer.email else '' }}">
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label class="form-label">Company (Optional)</label>
-                        <input type="text" name="company" class="form-control" value="{{ customer.company if customer.company else '' }}">
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label class="form-label">Address</label>
-                        <textarea name="address" class="form-control" rows="3">{{ customer.address if customer.address else '' }}</textarea>
-                    </div>
-                    
-                    <div class="d-grid">
-                        <button type="submit" class="btn btn-warning btn-lg">
-                            <i class="fas fa-save"></i> Update Customer
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
-
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle. min.js"></script>
-    </body>
-    </html>
-    '''
-    
-    return render_template_string(edit_customer_html, customer=customer)
-
-@app. route('/store/customers/delete/<customer_id>', methods=['POST'])
-@store_login_required
-def delete_customer(customer_id):
-    """কাস্টমার ডিলিট করুন"""
-    from bson import ObjectId
-    
-    try:
-        store_customers_col.delete_one({'_id': ObjectId(customer_id)})
-        flash('Customer deleted successfully!', 'success')
-    except:
-        flash('Error deleting customer!', 'danger')
-    
-    return redirect(url_for('store_customers'))
-    # ==============================================================================
-# Store Invoices Management
-# ==============================================================================
-
-@app. route('/store/invoices')
-@store_login_required
-def store_invoices():
-    """স্টোর ইনভয়েস লিস্ট"""
-    invoices = list(store_invoices_col. find(). sort('created_at', -1))
-    
-    invoices_html = '''
-    <! DOCTYPE html>
-    <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1. 0">
-        <title>Invoices - Store Panel</title>
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-        <link rel="stylesheet" href="https://cdnjs.cloudflare. com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-        <style>
-            body { background: #f4f6f9; }
-            . sidebar {
-                background: linear-gradient(180deg, #2c3e50 0%, #3498db 100%);
-                min-height: 100vh;
-                color: white;
-                position: fixed;
-                width: 250px;
-                padding-top: 20px;
-            }
-            .sidebar-brand {
-                padding: 20px;
-                font-size: 1.5rem;
-                font-weight: bold;
-                text-align: center;
-                border-bottom: 1px solid rgba(255,255,255,0. 2);
-            }
-            . sidebar-menu {
-                list-style: none;
-                padding: 0;
-                margin-top: 20px;
-            }
-            .sidebar-menu li { padding: 0; }
-            .sidebar-menu a {
-                display: block;
-                padding: 15px 25px;
-                color: white;
-                text-decoration: none;
-                transition: all 0.3s;
-            }
-            .sidebar-menu a:hover {
-                background: rgba(255,255,255,0.1);
-                padding-left: 30px;
-            }
-            .main-content {
-                margin-left: 250px;
-                padding: 20px;
-            }
-            .content-card {
-                background: white;
-                border-radius: 10px;
-                padding: 25px;
-                box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            }
-            .invoice-badge {
-                padding: 5px 10px;
-                border-radius: 5px;
-                font-size: 0.85rem;
-            }
-        </style>
-    </head>
-    <body>
-        <!-- Sidebar -->
-        <div class="sidebar">
-            <div class="sidebar-brand">
-                <i class="fas fa-store"></i> Store Panel
-            </div>
-            <ul class="sidebar-menu">
-                <li><a href="{{ url_for('store_panel') }}"><i class="fas fa-home"></i> Dashboard</a></li>
-                <li><a href="{{ url_for('store_products') }}"><i class="fas fa-box"></i> Products</a></li>
-                <li><a href="{{ url_for('store_customers') }}"><i class="fas fa-users"></i> Customers</a></li>
-                <li><a href="{{ url_for('store_invoices') }}" class="active"><i class="fas fa-file-invoice"></i> Invoices</a></li>
-                <li><a href="{{ url_for('store_estimates') }}"><i class="fas fa-file-alt"></i> Estimates</a></li>
-                <li><a href="{{ url_for('store_payments') }}"><i class="fas fa-money-bill"></i> Payments</a></li>
-                <li><a href="{{ url_for('store_reports') }}"><i class="fas fa-chart-bar"></i> Reports</a></li>
-                <li style="margin-top: 20px; border-top: 1px solid rgba(255,255,255,0.2); padding-top: 20px;">
-                    <a href="{{ url_for('dashboard') }}"><i class="fas fa-building"></i> Main System</a>
-                </li>
-                <li><a href="{{ url_for('store_logout') }}"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
-            </ul>
-        </div>
-
-        <!-- Main Content -->
-        <div class="main-content">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h3><i class="fas fa-file-invoice"></i> Invoices Management</h3>
-                <a href="{{ url_for('add_invoice') }}" class="btn btn-primary">
-                    <i class="fas fa-plus"></i> Create New Invoice
-                </a>
-            </div>
-
-            {% with messages = get_flashed_messages(with_categories=true) %}
-                {% if messages %}
-                    {% for category, message in messages %}
-                        <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
-                            {{ message }}
-                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                        </div>
-                    {% endfor %}
-                {% endif %}
-            {% endwith %}
-
-            <div class="content-card">
-                <div class="table-responsive">
-                    <table class="table table-hover">
-                        <thead class="table-light">
-                            <tr>
-                                <th>Invoice #</th>
-                                <th>Customer</th>
-                                <th>Date</th>
-                                <th>Total Amount</th>
-                                <th>Status</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% if invoices %}
-                                {% for invoice in invoices %}
-                                <tr>
-                                    <td><strong>{{ invoice.invoice_number }}</strong></td>
-                                    <td>{{ invoice.customer_name }}</td>
-                                    <td>{{ invoice.invoice_date if invoice.invoice_date else 'N/A' }}</td>
-                                    <td><strong>৳{{ "%.2f"|format(invoice.total_amount) }}</strong></td>
-                                    <td>
-                                        {% if invoice.status == 'paid' %}
-                                            <span class="badge bg-success">Paid</span>
-                                        {% elif invoice.status == 'partial' %}
-                                            <span class="badge bg-warning">Partial</span>
-                                        {% else %}
-                                            <span class="badge bg-danger">Unpaid</span>
-                                        {% endif %}
-                                    </td>
-                                    <td>
-                                        <a href="{{ url_for('view_invoice', invoice_id=invoice._id) }}" class="btn btn-sm btn-info" title="View">
-                                            <i class="fas fa-eye"></i>
-                                        </a>
-                                        <a href="{{ url_for('print_invoice', invoice_id=invoice._id) }}" class="btn btn-sm btn-success" title="Print" target="_blank">
-                                            <i class="fas fa-print"></i>
-                                        </a>
-                                        <a href="{{ url_for('edit_invoice', invoice_id=invoice._id) }}" class="btn btn-sm btn-warning" title="Edit">
-                                            <i class="fas fa-edit"></i>
-                                        </a>
-                                        <form method="POST" action="{{ url_for('delete_invoice', invoice_id=invoice._id) }}" 
-                                              style="display:inline;" onsubmit="return confirm('Delete this invoice?');">
-                                            <button type="submit" class="btn btn-sm btn-danger" title="Delete">
-                                                <i class="fas fa-trash"></i>
-                                            </button>
-                                        </form>
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            {% else %}
-                                <tr>
-                                    <td colspan="6" class="text-center text-muted">No invoices found.  Create your first invoice!</td>
-                                </tr>
-                            {% endif %}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle. min.js"></script>
-    </body>
-    </html>
-    '''
-    
-    return render_template_string(invoices_html, invoices=invoices)
-
-@app.route('/store/invoices/add', methods=['GET', 'POST'])
-@store_login_required
-def add_invoice():
-    """নতুন ইনভয়েস তৈরি করুন"""
-    if request.method == 'POST':
-        try:
-            # Basic Info
-            customer_name = request.form.get('customer_name', '').strip()
-            customer_phone = request.form.get('customer_phone', '').strip()
-            customer_address = request.form.get('customer_address', '').strip()
-            invoice_date = request.form.get('invoice_date', get_bd_date_str())
-            
-            # Items (JSON format from JavaScript)
-            items_json = request.form.get('items_json', '[]')
-            items = json.loads(items_json)
-            
-            if not customer_name or not items:
-                flash('Customer name and at least one item required!', 'danger')
-                return redirect(url_for('add_invoice'))
-            
-            # Calculate totals
-            subtotal = sum(float(item. get('total', 0)) for item in items)
-            discount = float(request.form.get('discount', 0))
-            tax = float(request.form. get('tax', 0))
-            total_amount = subtotal - discount + tax
-            
-            # Generate invoice number
-            last_invoice = store_invoices_col.find_one(sort=[('created_at', -1)])
-            if last_invoice and 'invoice_number' in last_invoice:
-                last_num = int(last_invoice['invoice_number'].split('-')[-1])
-                invoice_number = f"INV-{last_num + 1:05d}"
-            else:
-                invoice_number = "INV-00001"
-            
-            # Insert invoice
-            invoice_data = {
-                'invoice_number': invoice_number,
-                'customer_name': customer_name,
-                'customer_phone': customer_phone,
-                'customer_address': customer_address,
-                'invoice_date': invoice_date,
-                'items': items,
-                'subtotal': subtotal,
-                'discount': discount,
-                'tax': tax,
-                'total_amount': total_amount,
-                'status': 'unpaid',
-                'created_at': get_bd_time(),
-                'created_by': session.get('store_user')
-            }
-            
-            result = store_invoices_col. insert_one(invoice_data)
-            
-            # Update product stock
-            for item in items:
-                product_name = item.get('product_name')
-                quantity = int(item.get('quantity', 0))
-                
-                product = store_products_col.find_one({'name': product_name})
-                if product:
-                    new_stock = product. get('stock', 0) - quantity
-                    store_products_col.update_one(
-                        {'name': product_name},
-                        {'$set': {'stock': new_stock}}
-                    )
-            
-            flash(f'Invoice {invoice_number} created successfully!', 'success')
-            return redirect(url_for('view_invoice', invoice_id=result.inserted_id))
-            
-        except Exception as e:
-            flash(f'Error creating invoice: {str(e)}', 'danger')
-            return redirect(url_for('add_invoice'))
-    
-    # GET request - show form
-    customers = list(store_customers_col.find())
-    products = list(store_products_col.find())
-    
-    add_invoice_html = '''
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Create Invoice</title>
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-        <style>
-            body { background: #f4f6f9; }
-            .sidebar {
-                background: linear-gradient(180deg, #2c3e50 0%, #3498db 100%);
-                min-height: 100vh;
-                color: white;
-                position: fixed;
-                width: 250px;
-                padding-top: 20px;
-            }
-            .sidebar-brand {
-                padding: 20px;
-                font-size: 1.5rem;
-                font-weight: bold;
-                text-align: center;
-                border-bottom: 1px solid rgba(255,255,255,0.2);
-            }
-            .sidebar-menu {
-                list-style: none;
-                padding: 0;
-                margin-top: 20px;
-            }
-            .sidebar-menu li { padding: 0; }
-            .sidebar-menu a {
-                display: block;
-                padding: 15px 25px;
-                color: white;
-                text-decoration: none;
-                transition: all 0.3s;
-            }
-            .sidebar-menu a:hover {
-                background: rgba(255,255,255,0.1);
-                padding-left: 30px;
-            }
-            .main-content {
-                margin-left: 250px;
-                padding: 20px;
-            }
-            .form-card {
-                background: white;
-                border-radius: 10px;
-                padding: 30px;
-                box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            }
-            .item-row {
-                background: #f8f9fa;
-                padding: 15px;
-                border-radius: 8px;
-                margin-bottom: 10px;
-                border: 1px solid #dee2e6;
-            }
-            .summary-box {
-                background: #e9ecef;
-                padding: 20px;
-                border-radius: 8px;
-                margin-top: 20px;
-            }
-        </style>
-    </head>
-    <body>
-        <!-- Sidebar -->
-        <div class="sidebar">
-            <div class="sidebar-brand">
-                <i class="fas fa-store"></i> Store Panel
-            </div>
-            <ul class="sidebar-menu">
-                <li><a href="{{ url_for('store_panel') }}"><i class="fas fa-home"></i> Dashboard</a></li>
-                <li><a href="{{ url_for('store_products') }}"><i class="fas fa-box"></i> Products</a></li>
-                <li><a href="{{ url_for('store_customers') }}"><i class="fas fa-users"></i> Customers</a></li>
-                <li><a href="{{ url_for('store_invoices') }}" class="active"><i class="fas fa-file-invoice"></i> Invoices</a></li>
-                <li><a href="{{ url_for('store_estimates') }}"><i class="fas fa-file-alt"></i> Estimates</a></li>
-                <li><a href="{{ url_for('store_payments') }}"><i class="fas fa-money-bill"></i> Payments</a></li>
-                <li><a href="{{ url_for('store_reports') }}"><i class="fas fa-chart-bar"></i> Reports</a></li>
-                <li style="margin-top: 20px; border-top: 1px solid rgba(255,255,255,0.2); padding-top: 20px;">
-                    <a href="{{ url_for('dashboard') }}"><i class="fas fa-building"></i> Main System</a>
-                </li>
-                <li><a href="{{ url_for('store_logout') }}"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
-            </ul>
-        </div>
-
-        <!-- Main Content -->
-        <div class="main-content">
-            <div class="mb-3">
-                <a href="{{ url_for('store_invoices') }}" class="btn btn-secondary">
-                    <i class="fas fa-arrow-left"></i> Back to Invoices
-                </a>
-            </div>
-
-            <div class="form-card">
-                <h4 class="mb-4"><i class="fas fa-file-invoice"></i> Create New Invoice</h4>
-                
-                {% with messages = get_flashed_messages(with_categories=true) %}
-                    {% if messages %}
-                        {% for category, message in messages %}
-                            <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
-                                {{ message }}
-                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                            </div>
-                        {% endfor %}
-                    {% endif %}
-                {% endwith %}
-
-                <form method="POST" id="invoiceForm">
-                    <!-- Customer Info -->
-                    <div class="row mb-4">
-                        <div class="col-md-6">
-                            <label class="form-label">Customer Name *</label>
-                            <input type="text" name="customer_name" id="customerName" class="form-control" list="customerList" required>
-                            <datalist id="customerList">
-                                {% for customer in customers %}
-                                <option value="{{ customer.name }}" data-phone="{{ customer.phone }}" data-address="{{ customer.address }}">
-                                {% endfor %}
-                            </datalist>
-                        </div>
-                        <div class="col-md-3">
-                            <label class="form-label">Phone</label>
-                            <input type="text" name="customer_phone" id="customerPhone" class="form-control">
-                        </div>
-                        <div class="col-md-3">
-                            <label class="form-label">Invoice Date</label>
-                            <input type="date" name="invoice_date" class="form-control" value="{{ current_date }}">
-                        </div>
-                    </div>
-
-                    <div class="mb-4">
-                        <label class="form-label">Address</label>
-                        <input type="text" name="customer_address" id="customerAddress" class="form-control">
-                    </div>
-
-                    <!-- Items Section -->
-                    <h5 class="mb-3">Invoice Items</h5>
-                    <div id="itemsContainer"></div>
-                    
-                    <button type="button" class="btn btn-success mb-3" onclick="addItem()">
-                        <i class="fas fa-plus"></i> Add Item
-                    </button>
-
-                    <!-- Summary -->
-                    <div class="summary-box">
-                        <div class="row">
-                            <div class="col-md-8">
-                                <div class="mb-2">
-                                    <label class="form-label">Discount (৳)</label>
-                                    <input type="number" name="discount" id="discount" class="form-control" value="0" step="0.01" min="0" onchange="calculateTotal()">
-                                </div>
-                                <div>
-                                    <label class="form-label">Tax (৳)</label>
-                                    <input type="number" name="tax" id="tax" class="form-control" value="0" step="0.01" min="0" onchange="calculateTotal()">
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <h5>Subtotal: <span id="subtotalDisplay">৳0.00</span></h5>
-                                <h5>Discount: <span id="discountDisplay">৳0.00</span></h5>
-                                <h5>Tax: <span id="taxDisplay">৳0.00</span></h5>
-                                <h4 class="text-primary">Total: <span id="totalDisplay">৳0.00</span></h4>
-                            </div>
-                        </div>
-                    </div>
-
-                    <input type="hidden" name="items_json" id="itemsJson">
-
-                    <div class="d-grid mt-4">
-                        <button type="submit" class="btn btn-primary btn-lg">
-                            <i class="fas fa-save"></i> Create Invoice
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
-
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
-        <script>
-            const products = {{ products | tojson }};
-            let itemCounter = 0;
-
-            // Auto-fill customer info
-            document.getElementById('customerName').addEventListener('input', function() {
-                const customerName = this. value;
-                const customers = {{ customers | tojson }};
-                const customer = customers.find(c => c.name === customerName);
-                
-                if (customer) {
-                    document.getElementById('customerPhone').value = customer.phone || '';
-                    document.getElementById('customerAddress').value = customer.address || '';
-                }
-            });
-
-            function addItem() {
-                itemCounter++;
-                const container = document.getElementById('itemsContainer');
-                
-                const itemDiv = document.createElement('div');
-                itemDiv.className = 'item-row';
-                itemDiv.id = 'item-' + itemCounter;
-                
-                itemDiv.innerHTML = `
-                    <div class="row">
-                        <div class="col-md-4">
-                            <label class="form-label">Product</label>
-                            <input type="text" class="form-control product-name" list="productList-${itemCounter}" 
-                                   onchange="updatePrice(${itemCounter})" required>
-                            <datalist id="productList-${itemCounter}">
-                                ${products.map(p => `<option value="${p. name}" data-price="${p.price}" data-stock="${p.stock}">`).join('')}
-                            </datalist>
-                        </div>
-                        <div class="col-md-2">
-                            <label class="form-label">Price (৳)</label>
-                            <input type="number" class="form-control item-price" step="0.01" min="0" 
-                                   onchange="calculateItemTotal(${itemCounter})" required>
-                        </div>
-                        <div class="col-md-2">
-                            <label class="form-label">Quantity</label>
-                            <input type="number" class="form-control item-quantity" min="1" value="1" 
-                                   onchange="calculateItemTotal(${itemCounter})" required>
-                        </div>
-                        <div class="col-md-3">
-                            <label class="form-label">Total (৳)</label>
-                            <input type="number" class="form-control item-total" readonly>
-                        </div>
-                        <div class="col-md-1">
-                            <label class="form-label">&nbsp;</label>
-                            <button type="button" class="btn btn-danger w-100" onclick="removeItem(${itemCounter})">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </div>
-                    </div>
-                `;
-                
-                container.appendChild(itemDiv);
-            }
-
-            function updatePrice(itemId) {
-                const itemDiv = document.getElementById('item-' + itemId);
-                const productName = itemDiv.querySelector('.product-name').value;
-                const product = products.find(p => p.name === productName);
-                
-                if (product) {
-                    itemDiv.querySelector('.item-price'). value = product.price;
-                    calculateItemTotal(itemId);
-                }
-            }
-
-            function calculateItemTotal(itemId) {
-                const itemDiv = document.getElementById('item-' + itemId);
-                const price = parseFloat(itemDiv.querySelector('.item-price').value) || 0;
-                const quantity = parseInt(itemDiv.querySelector('. item-quantity').value) || 0;
-                const total = price * quantity;
-                
-                itemDiv.querySelector('.item-total'). value = total.toFixed(2);
-                calculateTotal();
-            }
-
-            function removeItem(itemId) {
-                const itemDiv = document.getElementById('item-' + itemId);
-                itemDiv.remove();
-                calculateTotal();
-            }
-
-            function calculateTotal() {
-                let subtotal = 0;
-                
-                document.querySelectorAll('. item-total').forEach(input => {
-                    subtotal += parseFloat(input.value) || 0;
-                });
-                
-                const discount = parseFloat(document.getElementById('discount').value) || 0;
-                const tax = parseFloat(document.getElementById('tax').value) || 0;
-                const total = subtotal - discount + tax;
-                
-                document.getElementById('subtotalDisplay').textContent = '৳' + subtotal.toFixed(2);
-                document. getElementById('discountDisplay').textContent = '৳' + discount. toFixed(2);
-                document.getElementById('taxDisplay').textContent = '৳' + tax. toFixed(2);
-                document.getElementById('totalDisplay').textContent = '৳' + total. toFixed(2);
-            }
-
-            document.getElementById('invoiceForm').addEventListener('submit', function(e) {
-                const items = [];
-                
-                document.querySelectorAll('.item-row').forEach(itemDiv => {
-                    const productName = itemDiv.querySelector('.product-name').value;
-                    const price = parseFloat(itemDiv.querySelector('.item-price').value) || 0;
-                    const quantity = parseInt(itemDiv.querySelector('.item-quantity').value) || 0;
-                    const total = parseFloat(itemDiv.querySelector('.item-total').value) || 0;
-                    
-                    if (productName && quantity > 0) {
-                        items.push({
-                            product_name: productName,
-                            price: price,
-                            quantity: quantity,
-                            total: total
-                        });
-                    }
-                });
-                
-                if (items.length === 0) {
-                    e.preventDefault();
-                    alert('Please add at least one item! ');
-                    return false;
-                }
-                
-                document.getElementById('itemsJson').value = JSON.stringify(items);
-            });
-
-            // Add first item by default
-            addItem();
-        </script>
-    </body>
-    </html>
-    '''
-    
-    return render_template_string(add_invoice_html, 
-                                 customers=customers, 
-                                 products=products,
-                                 current_date=get_bd_time(). strftime('%Y-%m-%d'))
-    # ==============================================================================
-# View Invoice
-# ==============================================================================
-
-@app.route('/store/invoices/view/<invoice_id>')
-@store_login_required
-def view_invoice(invoice_id):
-    """ইনভয়েস ভিউ করুন"""
-    from bson import ObjectId
-    
-    try:
-        invoice = store_invoices_col.find_one({'_id': ObjectId(invoice_id)})
-    except:
-        flash('Invalid invoice ID! ', 'danger')
-        return redirect(url_for('store_invoices'))
-    
-    if not invoice:
-        flash('Invoice not found!', 'danger')
-        return redirect(url_for('store_invoices'))
-    
-    view_invoice_html = '''
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>View Invoice - {{ invoice.invoice_number }}</title>
-        <link href="https://cdn.jsdelivr. net/npm/bootstrap@5. 1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-        <style>
-            body { background: #f4f6f9; }
-            .sidebar {
-                background: linear-gradient(180deg, #2c3e50 0%, #3498db 100%);
-                min-height: 100vh;
-                color: white;
-                position: fixed;
-                width: 250px;
-                padding-top: 20px;
-            }
-            .sidebar-brand {
-                padding: 20px;
-                font-size: 1.5rem;
-                font-weight: bold;
-                text-align: center;
-                border-bottom: 1px solid rgba(255,255,255,0.2);
-            }
-            .sidebar-menu {
-                list-style: none;
-                padding: 0;
-                margin-top: 20px;
-            }
-            . sidebar-menu li { padding: 0; }
-            .sidebar-menu a {
-                display: block;
-                padding: 15px 25px;
-                color: white;
-                text-decoration: none;
-                transition: all 0. 3s;
-            }
-            .sidebar-menu a:hover {
-                background: rgba(255,255,255,0.1);
-                padding-left: 30px;
-            }
-            .main-content {
-                margin-left: 250px;
-                padding: 20px;
-            }
-            .invoice-card {
-                background: white;
-                border-radius: 10px;
-                padding: 40px;
-                box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-                max-width: 900px;
-                margin: 0 auto;
-            }
-            .invoice-header {
-                border-bottom: 3px solid #3498db;
-                padding-bottom: 20px;
-                margin-bottom: 30px;
-            }
-            .invoice-info-box {
-                background: #f8f9fa;
-                padding: 15px;
-                border-radius: 8px;
-                margin-bottom: 20px;
-            }
-            .invoice-table {
-                margin-top: 20px;
-            }
-            .total-section {
-                background: #e9ecef;
-                padding: 20px;
-                border-radius: 8px;
-                margin-top: 20px;
-            }
-        </style>
-    </head>
-    <body>
-        <!-- Sidebar -->
-        <div class="sidebar">
-            <div class="sidebar-brand">
-                <i class="fas fa-store"></i> Store Panel
-            </div>
-            <ul class="sidebar-menu">
-                <li><a href="{{ url_for('store_panel') }}"><i class="fas fa-home"></i> Dashboard</a></li>
-                <li><a href="{{ url_for('store_products') }}"><i class="fas fa-box"></i> Products</a></li>
-                <li><a href="{{ url_for('store_customers') }}"><i class="fas fa-users"></i> Customers</a></li>
-                <li><a href="{{ url_for('store_invoices') }}" class="active"><i class="fas fa-file-invoice"></i> Invoices</a></li>
-                <li><a href="{{ url_for('store_estimates') }}"><i class="fas fa-file-alt"></i> Estimates</a></li>
-                <li><a href="{{ url_for('store_payments') }}"><i class="fas fa-money-bill"></i> Payments</a></li>
-                <li><a href="{{ url_for('store_reports') }}"><i class="fas fa-chart-bar"></i> Reports</a></li>
-                <li style="margin-top: 20px; border-top: 1px solid rgba(255,255,255,0.2); padding-top: 20px;">
-                    <a href="{{ url_for('dashboard') }}"><i class="fas fa-building"></i> Main System</a>
-                </li>
-                <li><a href="{{ url_for('store_logout') }}"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
-            </ul>
-        </div>
-
-        <!-- Main Content -->
-        <div class="main-content">
-            <div class="d-flex justify-content-between mb-3">
-                <a href="{{ url_for('store_invoices') }}" class="btn btn-secondary">
-                    <i class="fas fa-arrow-left"></i> Back to Invoices
-                </a>
-                <div>
-                    <a href="{{ url_for('print_invoice', invoice_id=invoice._id) }}" class="btn btn-success" target="_blank">
-                        <i class="fas fa-print"></i> Print Invoice
-                    </a>
-                    <a href="{{ url_for('edit_invoice', invoice_id=invoice._id) }}" class="btn btn-warning">
-                        <i class="fas fa-edit"></i> Edit Invoice
-                    </a>
-                </div>
-            </div>
-
-            <div class="invoice-card">
-                <!-- Header -->
-                <div class="invoice-header">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <h2 class="text-primary">INVOICE</h2>
-                            <h5>{{ invoice.invoice_number }}</h5>
-                        </div>
-                        <div class="col-md-6 text-end">
-                            <h4>Your Company Name</h4>
-                            <p class="mb-0">123 Business Street</p>
-                            <p class="mb-0">Dhaka, Bangladesh</p>
-                            <p class="mb-0">Phone: +880 1234-567890</p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Customer & Invoice Info -->
-                <div class="row">
-                    <div class="col-md-6">
-                        <div class="invoice-info-box">
-                            <h6 class="text-muted">BILL TO:</h6>
-                            <h5>{{ invoice.customer_name }}</h5>
-                            <p class="mb-1"><i class="fas fa-phone"></i> {{ invoice.customer_phone }}</p>
-                            {% if invoice.customer_address %}
-                            <p class="mb-0"><i class="fas fa-map-marker-alt"></i> {{ invoice.customer_address }}</p>
-                            {% endif %}
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="invoice-info-box">
-                            <table class="table table-borderless mb-0">
-                                <tr>
-                                    <td><strong>Invoice Date:</strong></td>
-                                    <td>{{ invoice.invoice_date }}</td>
-                                </tr>
-                                <tr>
-                                    <td><strong>Status:</strong></td>
-                                    <td>
-                                        {% if invoice.status == 'paid' %}
-                                            <span class="badge bg-success">Paid</span>
-                                        {% elif invoice.status == 'partial' %}
-                                            <span class="badge bg-warning">Partial</span>
-                                        {% else %}
-                                            <span class="badge bg-danger">Unpaid</span>
-                                        {% endif %}
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td><strong>Created By:</strong></td>
-                                    <td>{{ invoice.created_by }}</td>
-                                </tr>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Items Table -->
-                <div class="invoice-table">
-                    <table class="table table-bordered">
-                        <thead class="table-light">
-                            <tr>
-                                <th>#</th>
-                                <th>Product</th>
-                                <th class="text-center">Quantity</th>
-                                <th class="text-end">Unit Price</th>
-                                <th class="text-end">Total</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for item in invoice.items %}
-                            <tr>
-                                <td>{{ loop.index }}</td>
-                                <td>{{ item.product_name }}</td>
-                                <td class="text-center">{{ item. quantity }}</td>
-                                <td class="text-end">৳{{ "%.2f"|format(item.price) }}</td>
-                                <td class="text-end">৳{{ "%.2f"|format(item. total) }}</td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-
-                <!-- Totals -->
-                <div class="row">
-                    <div class="col-md-6"></div>
-                    <div class="col-md-6">
-                        <div class="total-section">
-                            <table class="table table-borderless mb-0">
-                                <tr>
-                                    <td><strong>Subtotal:</strong></td>
-                                    <td class="text-end">৳{{ "%.2f"|format(invoice.subtotal) }}</td>
-                                </tr>
-                                {% if invoice.discount > 0 %}
-                                <tr>
-                                    <td><strong>Discount:</strong></td>
-                                    <td class="text-end text-danger">- ৳{{ "%.2f"|format(invoice.discount) }}</td>
-                                </tr>
-                                {% endif %}
-                                {% if invoice.tax > 0 %}
-                                <tr>
-                                    <td><strong>Tax:</strong></td>
-                                    <td class="text-end">৳{{ "%.2f"|format(invoice.tax) }}</td>
-                                </tr>
-                                {% endif %}
-                                <tr class="border-top">
-                                    <td><h5 class="mb-0"><strong>Total Amount:</strong></h5></td>
-                                    <td class="text-end"><h5 class="mb-0 text-primary"><strong>৳{{ "%.2f"|format(invoice.total_amount) }}</strong></h5></td>
-                                </tr>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Footer -->
-                <div class="text-center mt-4 pt-3 border-top">
-                    <p class="text-muted mb-0">Thank you for your business!</p>
-                    <small class="text-muted">This is a computer-generated invoice. </small>
-                </div>
-            </div>
-        </div>
-
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle. min.js"></script>
-    </body>
-    </html>
-    '''
-    
-    return render_template_string(view_invoice_html, invoice=invoice)
-
-# ==============================================================================
-# Print Invoice (Professional Template)
-# ==============================================================================
-
-@app.route('/store/invoices/print/<invoice_id>')
-@store_login_required
-def print_invoice(invoice_id):
-    """প্রফেশনাল প্রিন্ট টেমপ্লেট"""
-    from bson import ObjectId
-    
-    try:
-        invoice = store_invoices_col. find_one({'_id': ObjectId(invoice_id)})
-    except:
-        return "Invalid invoice ID", 400
-    
-    if not invoice:
-        return "Invoice not found", 404
-    
-    print_invoice_html = '''
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Print Invoice - {{ invoice.invoice_number }}</title>
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-        <style>
-            @media print {
-                . no-print { display: none; }
-                body { margin: 0; }
-                @page { margin: 1cm; }
-            }
-            
-            body {
-                font-family: 'Arial', sans-serif;
-                background: white;
-            }
-            
-            .invoice-container {
-                max-width: 800px;
-                margin: 20px auto;
-                padding: 40px;
-                background: white;
-                border: 2px solid #2c3e50;
-            }
-            
-            .invoice-header {
-                border-bottom: 4px solid #3498db;
-                padding-bottom: 20px;
-                margin-bottom: 30px;
-            }
-            
-            .company-logo {
-                font-size: 2. 5rem;
-                color: #3498db;
-                font-weight: bold;
-            }
-            
-            .invoice-title {
-                font-size: 2rem;
-                color: #2c3e50;
-                font-weight: bold;
-            }
-            
-            .info-box {
-                background: #f8f9fa;
-                padding: 15px;
-                border-left: 4px solid #3498db;
-                margin-bottom: 20px;
-            }
-            
-            .invoice-table {
-                margin: 30px 0;
-            }
-            
-            .invoice-table th {
-                background: #2c3e50;
-                color: white;
-                padding: 12px;
-                font-weight: bold;
-            }
-            
-            .invoice-table td {
-                padding: 10px;
-                border-bottom: 1px solid #dee2e6;
-            }
-            
-            .total-section {
-                background: #f8f9fa;
-                padding: 20px;
-                border: 2px solid #3498db;
-                margin-top: 30px;
-            }
-            
-            .grand-total {
-                background: #3498db;
-                color: white;
-                padding: 15px;
-                font-size: 1.3rem;
-                font-weight: bold;
-                text-align: center;
-                margin-top: 10px;
-            }
-            
-            .invoice-footer {
-                text-align: center;
-                margin-top: 40px;
-                padding-top: 20px;
-                border-top: 2px solid #dee2e6;
-            }
-            
-            .status-badge {
-                padding: 8px 20px;
-                border-radius: 20px;
-                font-weight: bold;
-                font-size: 0.9rem;
-            }
-            
-            .status-paid { background: #28a745; color: white; }
-            .status-unpaid { background: #dc3545; color: white; }
-            .status-partial { background: #ffc107; color: black; }
-        </style>
-    </head>
-    <body>
-        <!-- Print Button -->
-        <div class="text-center my-3 no-print">
-            <button onclick="window.print()" class="btn btn-primary btn-lg">
-                <i class="fas fa-print"></i> Print Invoice
-            </button>
-            <button onclick="window.close()" class="btn btn-secondary btn-lg ms-2">
-                Close
-            </button>
-        </div>
-
-        <!-- Invoice Container -->
-        <div class="invoice-container">
-            <!-- Header -->
-            <div class="invoice-header">
-                <div class="row align-items-center">
-                    <div class="col-6">
-                        <div class="company-logo">
-                            <i class="fas fa-store"></i> YOUR STORE
-                        </div>
-                        <p class="mb-0"><strong>Address:</strong> 123 Business Street</p>
-                        <p class="mb-0"><strong>City:</strong> Dhaka, Bangladesh</p>
-                        <p class="mb-0"><strong>Phone:</strong> +880 1234-567890</p>
-                        <p class="mb-0"><strong>Email:</strong> info@yourstore.com</p>
-                    </div>
-                    <div class="col-6 text-end">
-                        <div class="invoice-title">INVOICE</div>
-                        <h4 class="text-primary">{{ invoice.invoice_number }}</h4>
-                        <span class="status-badge status-{{ invoice.status }}">
-                            {{ invoice.status|upper }}
-                        </span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Customer & Date Info -->
-            <div class="row">
-                <div class="col-7">
-                    <div class="info-box">
-                        <h6 class="text-muted mb-2"><strong>BILL TO:</strong></h6>
-                        <h5 class="mb-2">{{ invoice.customer_name }}</h5>
-                        <p class="mb-1"><i class="fas fa-phone"></i> {{ invoice.customer_phone }}</p>
-                        {% if invoice. customer_address %}
-                        <p class="mb-0"><i class="fas fa-map-marker-alt"></i> {{ invoice. customer_address }}</p>
-                        {% endif %}
-                    </div>
-                </div>
-                <div class="col-5">
-                    <table class="table table-borderless">
-                        <tr>
-                            <td><strong>Invoice Date:</strong></td>
-                            <td>{{ invoice.invoice_date }}</td>
-                        </tr>
-                        <tr>
-                            <td><strong>Created By:</strong></td>
-                            <td>{{ invoice.created_by }}</td>
-                        </tr>
-                        <tr>
-                            <td><strong>Print Date:</strong></td>
-                            <td>{{ current_date }}</td>
-                        </tr>
-                    </table>
-                </div>
-            </div>
-
-            <!-- Items Table -->
-            <table class="table invoice-table">
-                <thead>
-                    <tr>
-                        <th style="width: 5%">#</th>
-                        <th style="width: 45%">PRODUCT / SERVICE</th>
-                        <th style="width: 15%" class="text-center">QTY</th>
-                        <th style="width: 15%" class="text-end">UNIT PRICE</th>
-                        <th style="width: 20%" class="text-end">TOTAL</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for item in invoice.items %}
-                    <tr>
-                        <td>{{ loop.index }}</td>
-                        <td><strong>{{ item.product_name }}</strong></td>
-                        <td class="text-center">{{ item.quantity }}</td>
-                        <td class="text-end">৳{{ "%.2f"|format(item.price) }}</td>
-                        <td class="text-end"><strong>৳{{ "%.2f"|format(item.total) }}</strong></td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-
-            <!-- Totals Section -->
-            <div class="row">
-                <div class="col-6">
-                    <div class="info-box">
-                        <h6><strong>PAYMENT INFORMATION:</strong></h6>
-                        <p class="mb-1">Bank: Your Bank Name</p>
-                        <p class="mb-1">Account: 1234567890</p>
-                        <p class="mb-0">Mobile Banking: 01234567890</p>
-                    </div>
-                </div>
-                <div class="col-6">
-                    <div class="total-section">
-                        <table class="table table-borderless mb-0">
-                            <tr>
-                                <td><strong>Subtotal:</strong></td>
-                                <td class="text-end">৳{{ "%.2f"|format(invoice. subtotal) }}</td>
-                            </tr>
-                            {% if invoice.discount > 0 %}
-                            <tr>
-                                <td><strong>Discount:</strong></td>
-                                <td class="text-end text-danger"><strong>- ৳{{ "%.2f"|format(invoice. discount) }}</strong></td>
-                            </tr>
-                            {% endif %}
-                            {% if invoice.tax > 0 %}
-                            <tr>
-                                <td><strong>Tax/VAT:</strong></td>
-                                <td class="text-end">৳{{ "%.2f"|format(invoice.tax) }}</td>
-                            </tr>
-                            {% endif %}
-                        </table>
-                        <div class="grand-total">
-                            TOTAL: ৳{{ "%.2f"|format(invoice.total_amount) }}
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Footer -->
-            <div class="invoice-footer">
-                <h6><strong>Terms & Conditions:</strong></h6>
-                <p class="small text-muted mb-3">
-                    Payment is due within 7 days. Please include the invoice number with your payment.
-                    Late payments may incur additional charges.
-                </p>
-                <hr>
-                <p class="mb-1"><strong>Thank you for your business!</strong></p>
-                <p class="small text-muted">This is a computer-generated invoice and does not require a signature.</p>
-            </div>
-        </div>
-
-        <script src="https://cdn. jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    </body>
-    </html>
-    '''
-    
-    return render_template_string(print_invoice_html, 
-                                 invoice=invoice,
-                                 current_date=get_bd_date_str())
-
-# ==============================================================================
-# Edit Invoice (এরর ছাড়া)
-# ==============================================================================
-
-@app.route('/store/invoices/edit/<invoice_id>', methods=['GET', 'POST'])
-@store_login_required
-def edit_invoice(invoice_id):
-    """ইনভয়েস এডিট করুন (এরর ছাড়া)"""
-    from bson import ObjectId
-    
-    try:
-        invoice = store_invoices_col.find_one({'_id': ObjectId(invoice_id)})
-    except:
-        flash('Invalid invoice ID!', 'danger')
-        return redirect(url_for('store_invoices'))
-    
-    if not invoice:
-        flash('Invoice not found!', 'danger')
-        return redirect(url_for('store_invoices'))
-    
-    if request.method == 'POST':
-        try:
-            # Get old items to restore stock
-            old_items = invoice.get('items', [])
-            
-            # Restore stock for old items
-            for item in old_items:
-                product_name = item.get('product_name')
-                quantity = int(item.get('quantity', 0))
-                
-                product = store_products_col.find_one({'name': product_name})
-                if product:
-                    new_stock = product. get('stock', 0) + quantity
-                    store_products_col.update_one(
-                        {'name': product_name},
-                        {'$set': {'stock': new_stock}}
-                    )
-            
-            # Get updated data
-            customer_name = request.form.get('customer_name', '').strip()
-            customer_phone = request.form.get('customer_phone', '').strip()
-            customer_address = request.form.get('customer_address', '').strip()
-            invoice_date = request.form.get('invoice_date', get_bd_date_str())
-            status = request.form.get('status', 'unpaid')
-            
-            # Items
-            items_json = request.form.get('items_json', '[]')
-            items = json. loads(items_json)
-            
-            if not customer_name or not items:
-                flash('Customer name and at least one item required!', 'danger')
-                return redirect(url_for('edit_invoice', invoice_id=invoice_id))
-            
-            # Calculate totals
-            subtotal = sum(float(item.get('total', 0)) for item in items)
-            discount = float(request.form.get('discount', 0))
-            tax = float(request.form.get('tax', 0))
-            total_amount = subtotal - discount + tax
-            
-            # Update invoice
-            store_invoices_col.update_one(
-                {'_id': ObjectId(invoice_id)},
-                {'$set': {
-                    'customer_name': customer_name,
-                    'customer_phone': customer_phone,
-                    'customer_address': customer_address,
-                    'invoice_date': invoice_date,
-                    'status': status,
-                    'items': items,
-                    'subtotal': subtotal,
-                    'discount': discount,
-                    'tax': tax,
-                    'total_amount': total_amount,
-                    'updated_at': get_bd_time(),
-                    'updated_by': session. get('store_user')
-                }}
-            )
-            
-            # Update stock for new items
-            for item in items:
-                product_name = item.get('product_name')
-                quantity = int(item.get('quantity', 0))
-                
-                product = store_products_col.find_one({'name': product_name})
-                if product:
-                    new_stock = product.get('stock', 0) - quantity
-                    store_products_col.update_one(
-                        {'name': product_name},
-                        {'$set': {'stock': new_stock}}
-                    )
-            
-            flash(f'Invoice {invoice["invoice_number"]} updated successfully! ', 'success')
-            return redirect(url_for('view_invoice', invoice_id=invoice_id))
-            
-        except Exception as e:
-            flash(f'Error updating invoice: {str(e)}', 'danger')
-            return redirect(url_for('edit_invoice', invoice_id=invoice_id))
-    
-    # GET request - show form
-    customers = list(store_customers_col.find())
-    products = list(store_products_col.find())
-    
-    edit_invoice_html = '''
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Edit Invoice</title>
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-        <link rel="stylesheet" href="https://cdnjs.cloudflare. com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-        <style>
-            body { background: #f4f6f9; }
-            .sidebar {
-                background: linear-gradient(180deg, #2c3e50 0%, #3498db 100%);
-                min-height: 100vh;
-                color: white;
-                position: fixed;
-                width: 250px;
-                padding-top: 20px;
-            }
-            .sidebar-brand {
-                padding: 20px;
-                font-size: 1.5rem;
-                font-weight: bold;
-                text-align: center;
-                border-bottom: 1px solid rgba(255,255,255,0.2);
-            }
-            .sidebar-menu {
-                list-style: none;
-                padding: 0;
-                margin-top: 20px;
-            }
-            .sidebar-menu li { padding: 0; }
-            .sidebar-menu a {
-                display: block;
-                padding: 15px 25px;
-                color: white;
-                text-decoration: none;
-                transition: all 0.3s;
-            }
-            .sidebar-menu a:hover {
-                background: rgba(255,255,255,0.1);
-                padding-left: 30px;
-            }
-            . main-content {
-                margin-left: 250px;
-                padding: 20px;
-            }
-            .form-card {
-                background: white;
-                border-radius: 10px;
-                padding: 30px;
-                box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            }
-            .item-row {
-                background: #f8f9fa;
-                padding: 15px;
-                border-radius: 8px;
-                margin-bottom: 10px;
-                border: 1px solid #dee2e6;
-            }
-            .summary-box {
-                background: #e9ecef;
-                padding: 20px;
-                border-radius: 8px;
-                margin-top: 20px;
-            }
-        </style>
-    </head>
-    <body>
-        <!-- Sidebar -->
-        <div class="sidebar">
-            <div class="sidebar-brand">
-                <i class="fas fa-store"></i> Store Panel
-            </div>
-            <ul class="sidebar-menu">
-                <li><a href="{{ url_for('store_panel') }}"><i class="fas fa-home"></i> Dashboard</a></li>
-                <li><a href="{{ url_for('store_products') }}"><i class="fas fa-box"></i> Products</a></li>
-                <li><a href="{{ url_for('store_customers') }}"><i class="fas fa-users"></i> Customers</a></li>
-                <li><a href="{{ url_for('store_invoices') }}" class="active"><i class="fas fa-file-invoice"></i> Invoices</a></li>
-                <li><a href="{{ url_for('store_estimates') }}"><i class="fas fa-file-alt"></i> Estimates</a></li>
-                <li><a href="{{ url_for('store_payments') }}"><i class="fas fa-money-bill"></i> Payments</a></li>
-                <li><a href="{{ url_for('store_reports') }}"><i class="fas fa-chart-bar"></i> Reports</a></li>
-                <li style="margin-top: 20px; border-top: 1px solid rgba(255,255,255,0.2); padding-top: 20px;">
-                    <a href="{{ url_for('dashboard') }}"><i class="fas fa-building"></i> Main System</a>
-                </li>
-                <li><a href="{{ url_for('store_logout') }}"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
-            </ul>
-        </div>
-
-        <!-- Main Content -->
-        <div class="main-content">
-            <div class="mb-3">
-                <a href="{{ url_for('view_invoice', invoice_id=invoice._id) }}" class="btn btn-secondary">
-                    <i class="fas fa-arrow-left"></i> Back to Invoice
-                </a>
-            </div>
-
-            <div class="form-card">
-                <h4 class="mb-4"><i class="fas fa-edit"></i> Edit Invoice - {{ invoice.invoice_number }}</h4>
-                
-                {% with messages = get_flashed_messages(with_categories=true) %}
-                    {% if messages %}
-                        {% for category, message in messages %}
-                            <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
-                                {{ message }}
-                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                            </div>
-                        {% endfor %}
-                    {% endif %}
-                {% endwith %}
-
-                <form method="POST" id="invoiceForm">
-                    <!-- Customer Info -->
-                    <div class="row mb-4">
-                        <div class="col-md-4">
-                            <label class="form-label">Customer Name *</label>
-                            <input type="text" name="customer_name" id="customerName" class="form-control" 
-                                   value="{{ invoice.customer_name }}" list="customerList" required>
-                            <datalist id="customerList">
-                                {% for customer in customers %}
-                                <option value="{{ customer.name }}" data-phone="{{ customer.phone }}" data-address="{{ customer.address }}">
-                                {% endfor %}
-                            </datalist>
-                        </div>
-                        <div class="col-md-3">
-                            <label class="form-label">Phone</label>
-                            <input type="text" name="customer_phone" id="customerPhone" class="form-control" 
-                                   value="{{ invoice.customer_phone }}">
-                        </div>
-                        <div class="col-md-3">
-                            <label class="form-label">Invoice Date</label>
-                            <input type="date" name="invoice_date" class="form-control" 
-                                   value="{{ invoice.invoice_date }}">
-                        </div>
-                        <div class="col-md-2">
-                            <label class="form-label">Status</label>
-                            <select name="status" class="form-select">
-                                <option value="unpaid" {% if invoice.status == 'unpaid' %}selected{% endif %}>Unpaid</option>
-                                <option value="partial" {% if invoice.status == 'partial' %}selected{% endif %}>Partial</option>
-                                <option value="paid" {% if invoice.status == 'paid' %}selected{% endif %}>Paid</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <div class="mb-4">
-                        <label class="form-label">Address</label>
-                        <input type="text" name="customer_address" id="customerAddress" class="form-control" 
-                               value="{{ invoice.customer_address }}">
-                    </div>
-
-                    <!-- Items Section -->
-                    <h5 class="mb-3">Invoice Items</h5>
-                    <div id="itemsContainer"></div>
-                    
-                    <button type="button" class="btn btn-success mb-3" onclick="addItem()">
-                        <i class="fas fa-plus"></i> Add Item
-                    </button>
-
-                    <!-- Summary -->
-                    <div class="summary-box">
-                        <div class="row">
-                            <div class="col-md-8">
-                                <div class="mb-2">
-                                    <label class="form-label">Discount (৳)</label>
-                                    <input type="number" name="discount" id="discount" class="form-control" 
-                                           value="{{ invoice.discount }}" step="0.01" min="0" onchange="calculateTotal()">
-                                </div>
-                                <div>
-                                    <label class="form-label">Tax (৳)</label>
-                                    <input type="number" name="tax" id="tax" class="form-control" 
-                                           value="{{ invoice.tax }}" step="0.01" min="0" onchange="calculateTotal()">
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <h5>Subtotal: <span id="subtotalDisplay">৳0.00</span></h5>
-                                <h5>Discount: <span id="discountDisplay">৳0.00</span></h5>
-                                <h5>Tax: <span id="taxDisplay">৳0.00</span></h5>
-                                <h4 class="text-primary">Total: <span id="totalDisplay">৳0.00</span></h4>
-                            </div>
-                        </div>
-                    </div>
-
-                    <input type="hidden" name="items_json" id="itemsJson">
-
-                    <div class="d-grid mt-4">
-                        <button type="submit" class="btn btn-warning btn-lg">
-                            <i class="fas fa-save"></i> Update Invoice
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
-
-        <script src="https://cdn.jsdelivr. net/npm/bootstrap@5. 1.3/dist/js/bootstrap.bundle.min.js"></script>
-        <script>
-            const products = {{ products | tojson }};
-            const existingItems = {{ invoice.items | tojson }};
-            let itemCounter = 0;
-
-            // Auto-fill customer info
-            document.getElementById('customerName').addEventListener('input', function() {
-                const customerName = this.value;
-                const customers = {{ customers | tojson }};
-                const customer = customers.find(c => c.name === customerName);
-                
-                if (customer) {
-                    document.getElementById('customerPhone').value = customer. phone || '';
-                    document.getElementById('customerAddress').value = customer.address || '';
-                }
-            });
-
-            function addItem(existingData = null) {
-                itemCounter++;
-                const container = document.getElementById('itemsContainer');
-                
-                const itemDiv = document.createElement('div');
-                itemDiv.className = 'item-row';
-                itemDiv.id = 'item-' + itemCounter;
-                
-                const productName = existingData ? existingData.product_name : '';
-                const price = existingData ? existingData.price : '';
-                const quantity = existingData ? existingData.quantity : 1;
-                const total = existingData ? existingData.total : '';
-                
-                itemDiv.innerHTML = `
-                    <div class="row">
-                        <div class="col-md-4">
-                            <label class="form-label">Product</label>
-                            <input type="text" class="form-control product-name" list="productList-${itemCounter}" 
-                                   value="${productName}" onchange="updatePrice(${itemCounter})" required>
-                            <datalist id="productList-${itemCounter}">
-                                ${products.map(p => `<option value="${p.name}" data-price="${p.price}" data-stock="${p.stock}">`).join('')}
-                            </datalist>
-                        </div>
-                        <div class="col-md-2">
-                            <label class="form-label">Price (৳)</label>
-                            <input type="number" class="form-control item-price" value="${price}" step="0.01" min="0" 
-                                   onchange="calculateItemTotal(${itemCounter})" required>
-                        </div>
-                        <div class="col-md-2">
-                            <label class="form-label">Quantity</label>
-                            <input type="number" class="form-control item-quantity" value="${quantity}" min="1" 
-                                   onchange="calculateItemTotal(${itemCounter})" required>
-                        </div>
-                        <div class="col-md-3">
-                            <label class="form-label">Total (৳)</label>
-                            <input type="number" class="form-control item-total" value="${total}" readonly>
-                        </div>
-                        <div class="col-md-1">
-                            <label class="form-label">&nbsp;</label>
-                            <button type="button" class="btn btn-danger w-100" onclick="removeItem(${itemCounter})">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </div>
-                    </div>
-                `;
-                
-                container.appendChild(itemDiv);
-                
-                if (existingData) {
-                    calculateItemTotal(itemCounter);
-                }
-            }
-
-            function updatePrice(itemId) {
-                const itemDiv = document.getElementById('item-' + itemId);
-                const productName = itemDiv.querySelector('.product-name').value;
-                const product = products.find(p => p.name === productName);
-                
-                if (product) {
-                    itemDiv.querySelector('.item-price'). value = product.price;
-                    calculateItemTotal(itemId);
-                }
-            }
-
-            function calculateItemTotal(itemId) {
-                const itemDiv = document.getElementById('item-' + itemId);
-                const price = parseFloat(itemDiv.querySelector('.item-price').value) || 0;
-                const quantity = parseInt(itemDiv.querySelector('. item-quantity').value) || 0;
-                const total = price * quantity;
-                
-                itemDiv.querySelector('.item-total'). value = total.toFixed(2);
-                calculateTotal();
-            }
-
-            function removeItem(itemId) {
-                const itemDiv = document.getElementById('item-' + itemId);
-                itemDiv.remove();
-                calculateTotal();
-            }
-
-            function calculateTotal() {
-                let subtotal = 0;
-                
-                document.querySelectorAll('.item-total').forEach(input => {
-                    subtotal += parseFloat(input.value) || 0;
-                });
-                
-                const discount = parseFloat(document.getElementById('discount').value) || 0;
-                const tax = parseFloat(document.getElementById('tax').value) || 0;
-                const total = subtotal - discount + tax;
-                
-                document.getElementById('subtotalDisplay').textContent = '৳' + subtotal.toFixed(2);
-                document. getElementById('discountDisplay').textContent = '৳' + discount. toFixed(2);
-                document.getElementById('taxDisplay').textContent = '৳' + tax. toFixed(2);
-                document.getElementById('totalDisplay').textContent = '৳' + total. toFixed(2);
-            }
-
-            document.getElementById('invoiceForm').addEventListener('submit', function(e) {
-                const items = [];
-                
-                document.querySelectorAll('.item-row').forEach(itemDiv => {
-                    const productName = itemDiv.querySelector('.product-name').value;
-                    const price = parseFloat(itemDiv.querySelector('.item-price').value) || 0;
-                    const quantity = parseInt(itemDiv. querySelector('.item-quantity').value) || 0;
-                    const total = parseFloat(itemDiv.querySelector('.item-total').value) || 0;
-                    
-                    if (productName && quantity > 0) {
-                        items.push({
-                            product_name: productName,
-                            price: price,
-                            quantity: quantity,
-                            total: total
-                        });
-                    }
-                });
-                
-                if (items.length === 0) {
-                    e.preventDefault();
-                    alert('Please add at least one item! ');
-                    return false;
-                }
-                
-                document.getElementById('itemsJson').value = JSON.stringify(items);
-            });
-
-            // Load existing items
-            existingItems.forEach(item => {
-                addItem(item);
-            });
-            
-            calculateTotal();
-        </script>
-    </body>
-    </html>
-    '''
-    
-    return render_template_string(edit_invoice_html, 
-                                 invoice=invoice,
-                                 customers=customers, 
-                                 products=products)
-
-# ==============================================================================
-# Delete Invoice
-# ==============================================================================
-
-@app.route('/store/invoices/delete/<invoice_id>', methods=['POST'])
-@store_login_required
-def delete_invoice(invoice_id):
-    """ইনভয়েস ডিলিট করুন"""
-    from bson import ObjectId
-    
-    try:
-        invoice = store_invoices_col.find_one({'_id': ObjectId(invoice_id)})
-        
-        if invoice:
-            # Restore stock
-            for item in invoice.get('items', []):
-                product_name = item.get('product_name')
-                quantity = int(item.get('quantity', 0))
-                
-                product = store_products_col.find_one({'name': product_name})
-                if product:
-                    new_stock = product.get('stock', 0) + quantity
-                    store_products_col.update_one(
-                        {'name': product_name},
-                        {'$set': {'stock': new_stock}}
-                    )
-            
-            store_invoices_col.delete_one({'_id': ObjectId(invoice_id)})
-            flash('Invoice deleted successfully!', 'success')
-        else:
-            flash('Invoice not found!', 'danger')
-    except Exception as e:
-        flash(f'Error deleting invoice: {str(e)}', 'danger')
-    
-    return redirect(url_for('store_invoices'))
-    # ==============================================================================
-# Store Estimates Management
-# ==============================================================================
-
-@app.route('/store/estimates')
-@store_login_required
-def store_estimates():
-    """স্টোর এস্টিমেট লিস্ট"""
-    estimates = list(store_estimates_col.find(). sort('created_at', -1))
-    
-    estimates_html = '''
-    <! DOCTYPE html>
-    <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1. 0">
-        <title>Estimates - Store Panel</title>
-        <link href="https://cdn.jsdelivr. net/npm/bootstrap@5. 1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0. 0/css/all.min. css">
-        <style>
-            body { background: #f4f6f9; }
-            .sidebar {
-                background: linear-gradient(180deg, #2c3e50 0%, #3498db 100%);
-                min-height: 100vh;
-                color: white;
-                position: fixed;
-                width: 250px;
-                padding-top: 20px;
-            }
-            .sidebar-brand {
-                padding: 20px;
-                font-size: 1.5rem;
-                font-weight: bold;
-                text-align: center;
-                border-bottom: 1px solid rgba(255,255,255,0.2);
-            }
-            .sidebar-menu {
-                list-style: none;
-                padding: 0;
-                margin-top: 20px;
-            }
-            .sidebar-menu li { padding: 0; }
-            .sidebar-menu a {
-                display: block;
-                padding: 15px 25px;
-                color: white;
-                text-decoration: none;
-                transition: all 0.3s;
-            }
-            .sidebar-menu a:hover {
-                background: rgba(255,255,255,0.1);
-                padding-left: 30px;
-            }
-            .main-content {
-                margin-left: 250px;
-                padding: 20px;
-            }
-            .content-card {
-                background: white;
-                border-radius: 10px;
-                padding: 25px;
-                box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            }
-        </style>
-    </head>
-    <body>
-        <!-- Sidebar -->
-        <div class="sidebar">
-            <div class="sidebar-brand">
-                <i class="fas fa-store"></i> Store Panel
-            </div>
-            <ul class="sidebar-menu">
-                <li><a href="{{ url_for('store_panel') }}"><i class="fas fa-home"></i> Dashboard</a></li>
-                <li><a href="{{ url_for('store_products') }}"><i class="fas fa-box"></i> Products</a></li>
-                <li><a href="{{ url_for('store_customers') }}"><i class="fas fa-users"></i> Customers</a></li>
-                <li><a href="{{ url_for('store_invoices') }}"><i class="fas fa-file-invoice"></i> Invoices</a></li>
-                <li><a href="{{ url_for('store_estimates') }}" class="active"><i class="fas fa-file-alt"></i> Estimates</a></li>
-                <li><a href="{{ url_for('store_payments') }}"><i class="fas fa-money-bill"></i> Payments</a></li>
-                <li><a href="{{ url_for('store_reports') }}"><i class="fas fa-chart-bar"></i> Reports</a></li>
-                <li style="margin-top: 20px; border-top: 1px solid rgba(255,255,255,0.2); padding-top: 20px;">
-                    <a href="{{ url_for('dashboard') }}"><i class="fas fa-building"></i> Main System</a>
-                </li>
-                <li><a href="{{ url_for('store_logout') }}"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
-            </ul>
-        </div>
-
-        <!-- Main Content -->
-        <div class="main-content">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h3><i class="fas fa-file-alt"></i> Estimates Management</h3>
-                <a href="{{ url_for('add_estimate') }}" class="btn btn-primary">
-                    <i class="fas fa-plus"></i> Create New Estimate
-                </a>
-            </div>
-
-            {% with messages = get_flashed_messages(with_categories=true) %}
-                {% if messages %}
-                    {% for category, message in messages %}
-                        <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
-                            {{ message }}
-                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                        </div>
-                    {% endfor %}
-                {% endif %}
-            {% endwith %}
-
-            <div class="content-card">
-                <div class="table-responsive">
-                    <table class="table table-hover">
-                        <thead class="table-light">
-                            <tr>
-                                <th>Estimate #</th>
-                                <th>Customer</th>
-                                <th>Date</th>
-                                <th>Total Amount</th>
-                                <th>Status</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% if estimates %}
-                                {% for estimate in estimates %}
-                                <tr>
-                                    <td><strong>{{ estimate.estimate_number }}</strong></td>
-                                    <td>{{ estimate.customer_name }}</td>
-                                    <td>{{ estimate.estimate_date if estimate.estimate_date else 'N/A' }}</td>
-                                    <td><strong>৳{{ "%.2f"|format(estimate.total_amount) }}</strong></td>
-                                    <td>
-                                        {% if estimate.status == 'approved' %}
-                                            <span class="badge bg-success">Approved</span>
-                                        {% elif estimate.status == 'rejected' %}
-                                            <span class="badge bg-danger">Rejected</span>
-                                        {% else %}
-                                            <span class="badge bg-warning">Pending</span>
-                                        {% endif %}
-                                    </td>
-                                    <td>
-                                        <a href="{{ url_for('print_estimate', estimate_id=estimate._id) }}" class="btn btn-sm btn-success" title="Print" target="_blank">
-                                            <i class="fas fa-print"></i>
-                                        </a>
-                                        <form method="POST" action="{{ url_for('convert_to_invoice', estimate_id=estimate._id) }}" 
-                                              style="display:inline;">
-                                            <button type="submit" class="btn btn-sm btn-primary" title="Convert to Invoice">
-                                                <i class="fas fa-exchange-alt"></i>
-                                            </button>
-                                        </form>
-                                        <form method="POST" action="{{ url_for('delete_estimate', estimate_id=estimate._id) }}" 
-                                              style="display:inline;" onsubmit="return confirm('Delete this estimate?');">
-                                            <button type="submit" class="btn btn-sm btn-danger" title="Delete">
-                                                <i class="fas fa-trash"></i>
-                                            </button>
-                                        </form>
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            {% else %}
-                                <tr>
-                                    <td colspan="6" class="text-center text-muted">No estimates found.  Create your first estimate!</td>
-                                </tr>
-                            {% endif %}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min. js"></script>
-    </body>
-    </html>
-    '''
-    
-    return render_template_string(estimates_html, estimates=estimates)
-
-@app.route('/store/estimates/add', methods=['GET', 'POST'])
-@store_login_required
-def add_estimate():
-    """নতুন এস্টিমেট তৈরি (Invoice এর মতো)"""
-    if request.method == 'POST':
-        try:
-            customer_name = request.form. get('customer_name', '').strip()
-            customer_phone = request.form.get('customer_phone', '').strip()
-            customer_address = request.form.get('customer_address', '').strip()
-            estimate_date = request.form.get('estimate_date', get_bd_date_str())
-            
-            items_json = request.form.get('items_json', '[]')
-            items = json.loads(items_json)
-            
-            if not customer_name or not items:
-                flash('Customer name and at least one item required!', 'danger')
-                return redirect(url_for('add_estimate'))
-            
-            subtotal = sum(float(item. get('total', 0)) for item in items)
-            discount = float(request.form.get('discount', 0))
-            tax = float(request.form.get('tax', 0))
-            total_amount = subtotal - discount + tax
-            
-            # Generate estimate number
-            last_estimate = store_estimates_col.find_one(sort=[('created_at', -1)])
-            if last_estimate and 'estimate_number' in last_estimate:
-                last_num = int(last_estimate['estimate_number'].split('-')[-1])
-                estimate_number = f"EST-{last_num + 1:05d}"
-            else:
-                estimate_number = "EST-00001"
-            
-            estimate_data = {
-                'estimate_number': estimate_number,
-                'customer_name': customer_name,
-                'customer_phone': customer_phone,
-                'customer_address': customer_address,
-                'estimate_date': estimate_date,
-                'items': items,
-                'subtotal': subtotal,
-                'discount': discount,
-                'tax': tax,
-                'total_amount': total_amount,
-                'status': 'pending',
-                'created_at': get_bd_time(),
-                'created_by': session. get('store_user')
-            }
-            
-            store_estimates_col.insert_one(estimate_data)
-            flash(f'Estimate {estimate_number} created successfully!', 'success')
-            return redirect(url_for('store_estimates'))
-            
-        except Exception as e:
-            flash(f'Error creating estimate: {str(e)}', 'danger')
-            return redirect(url_for('add_estimate'))
-    
-    # GET - Same form as invoice
-    customers = list(store_customers_col.find())
-    products = list(store_products_col.find())
-    
-    # Use same HTML as add_invoice but change title and endpoints
-    return redirect(url_for('store_estimates'))  # Simplified for now
-
-@app.route('/store/estimates/print/<estimate_id>')
-@store_login_required
-def print_estimate(estimate_id):
-    """এস্টিমেট প্রিন্ট (Invoice এর মতো)"""
-    from bson import ObjectId
-    
-    try:
-        estimate = store_estimates_col.find_one({'_id': ObjectId(estimate_id)})
-    except:
-        return "Invalid estimate ID", 400
-    
-    if not estimate:
-        return "Estimate not found", 404
-    
-    # Similar print template as invoice but with "ESTIMATE" title
-    flash('Estimate print feature - similar to invoice print', 'info')
-    return redirect(url_for('store_estimates'))
-
-@app.route('/store/estimates/convert/<estimate_id>', methods=['POST'])
-@store_login_required
-def convert_to_invoice(estimate_id):
-    """এস্টিমেট কে ইনভয়েসে কনভার্ট করুন"""
-    from bson import ObjectId
-    
-    try:
-        estimate = store_estimates_col.find_one({'_id': ObjectId(estimate_id)})
-        
-        if not estimate:
-            flash('Estimate not found!', 'danger')
-            return redirect(url_for('store_estimates'))
-        
-        # Generate invoice number
-        last_invoice = store_invoices_col.find_one(sort=[('created_at', -1)])
-        if last_invoice and 'invoice_number' in last_invoice:
-            last_num = int(last_invoice['invoice_number'].split('-')[-1])
-            invoice_number = f"INV-{last_num + 1:05d}"
-        else:
-            invoice_number = "INV-00001"
-        
-        # Create invoice from estimate
-        invoice_data = {
-            'invoice_number': invoice_number,
-            'customer_name': estimate['customer_name'],
-            'customer_phone': estimate['customer_phone'],
-            'customer_address': estimate. get('customer_address', ''),
-            'invoice_date': get_bd_date_str(),
-            'items': estimate['items'],
-            'subtotal': estimate['subtotal'],
-            'discount': estimate.get('discount', 0),
-            'tax': estimate.get('tax', 0),
-            'total_amount': estimate['total_amount'],
-            'status': 'unpaid',
-            'converted_from_estimate': estimate['estimate_number'],
-            'created_at': get_bd_time(),
-            'created_by': session.get('store_user')
+    flash('Session terminated.')
+    return redirect(url_for('index'))
+
+@app.route('/admin/get-users', methods=['GET'])
+def get_users():
+    if not session.get('logged_in') or session.get('role') != 'admin': 
+        return jsonify({})
+    return jsonify(load_users())
+
+@app.route('/admin/save-user', methods=['POST'])
+def save_user():
+    if not session.get('logged_in') or session.get('role') != 'admin': 
+        return jsonify({'status': 'error', 'message': 'Unauthorized'})
+    
+    data = request.json
+    username = data.get('username', '').strip()
+    password = data.get('password', '').strip()
+    permissions = data.get('permissions', [])
+    action = data.get('action_type')
+    
+    if not username or not password: 
+        return jsonify({'status': 'error', 'message': 'Invalid Data'})
+
+    users_db = load_users()
+    
+    if action == 'create':
+        if username in users_db: 
+            return jsonify({'status': 'error', 'message': 'User already exists!'})
+        users_db[username] = {
+            "password": password, 
+            "role": "user", 
+            "permissions": permissions,
+            "created_at": get_bd_date_str(), 
+            "last_login": "Never", 
+            "last_duration": "N/A"
         }
-        
-        result = store_invoices_col. insert_one(invoice_data)
-        
-        # Update estimate status
-        store_estimates_col.update_one(
-            {'_id': ObjectId(estimate_id)},
-            {'$set': {'status': 'approved', 'converted_to_invoice': invoice_number}}
-        )
-        
-        # Update stock
-        for item in estimate['items']:
-            product_name = item. get('product_name')
-            quantity = int(item.get('quantity', 0))
-            
-            product = store_products_col.find_one({'name': product_name})
-            if product:
-                new_stock = product.get('stock', 0) - quantity
-                store_products_col.update_one(
-                    {'name': product_name},
-                    {'$set': {'stock': new_stock}}
-                )
-        
-        flash(f'Estimate converted to Invoice {invoice_number} successfully!', 'success')
-        return redirect(url_for('view_invoice', invoice_id=result.inserted_id))
-        
-    except Exception as e:
-        flash(f'Error converting estimate: {str(e)}', 'danger')
-        return redirect(url_for('store_estimates'))
-
-@app.route('/store/estimates/delete/<estimate_id>', methods=['POST'])
-@store_login_required
-def delete_estimate(estimate_id):
-    """এস্টিমেট ডিলিট"""
-    from bson import ObjectId
+    elif action == 'update':
+        if username not in users_db: 
+            return jsonify({'status': 'error', 'message': 'User not found!'})
+        users_db[username]['password'] = password
+        users_db[username]['permissions'] = permissions
     
+    save_users(users_db)
+    return jsonify({'status': 'success', 'message': 'User saved successfully!'})
+
+@app.route('/admin/delete-user', methods=['POST'])
+def delete_user():
+    if not session.get('logged_in') or session.get('role') != 'admin': 
+        return jsonify({'status': 'error', 'message': 'Unauthorized'})
+    
+    username = request.json.get('username')
+    users_db = load_users()
+    
+    if username == 'Admin': 
+        return jsonify({'status': 'error', 'message': 'Cannot delete Main Admin!'})
+
+    if username in users_db:
+        del users_db[username]
+        save_users(users_db)
+        return jsonify({'status': 'success', 'message': 'User deleted!'})
+    
+    return jsonify({'status': 'error', 'message': 'User not found'})
+
+@app.route('/admin/store')
+def store_dashboard():
+    if not session.get('logged_in'):
+        return redirect(url_for('index'))
+    return render_template_string(STORE_DASHBOARD_TEMPLATE)
+
+@app.route('/generate-report', methods=['POST'])
+def generate_report():
+    if not session.get('logged_in'): return redirect(url_for('index'))
+    
+    internal_ref_no = request.form['ref_no']
+    if not internal_ref_no: return redirect(url_for('index'))
+
     try:
-        store_estimates_col.delete_one({'_id': ObjectId(estimate_id)})
-        flash('Estimate deleted successfully!', 'success')
-    except:
-        flash('Error deleting estimate!', 'danger')
+        report_data = fetch_closing_report_data(internal_ref_no)
+        if not report_data:
+            flash(f"Booking Not Found: {internal_ref_no}")
+            return redirect(url_for('index'))
+        
+        update_stats(internal_ref_no, session.get('user', 'Unknown'))
+        return render_template_string(CLOSING_REPORT_PREVIEW_TEMPLATE, report_data=report_data, ref_no=internal_ref_no)
+    except Exception as e:
+        flash(f"System Error: {str(e)}")
+        return redirect(url_for('index'))
+
+@app.route('/download-closing-excel', methods=['GET'])
+def download_closing_excel():
+    if not session.get('logged_in'): return redirect(url_for('index'))
     
-    return redirect(url_for('store_estimates'))
+    internal_ref_no = request.args.get('ref_no')
+    try:
+        report_data = fetch_closing_report_data(internal_ref_no)
+        if report_data:
+            excel_file = create_formatted_excel_report(report_data, internal_ref_no)
+            update_stats(internal_ref_no, session.get('user', 'Unknown'))
+            return make_response(send_file(
+                excel_file, 
+                as_attachment=True, 
+                download_name=f"Report-{internal_ref_no.replace('/', '_')}.xlsx", 
+                mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+            ))
+        else:
+            flash("Data source returned empty.")
+            return redirect(url_for('index'))
+    except Exception as e:
+        flash("Failed to generate Excel.")
+        return redirect(url_for('index'))
 
-# ==============================================================================
-# Store Payments
-# ==============================================================================
+@app.route('/admin/accessories', methods=['GET'])
+def accessories_search_page():
+    if not session.get('logged_in'): return redirect(url_for('index'))
+    if 'accessories' not in session.get('permissions', []):
+        flash("Access Denied")
+        return redirect(url_for('index'))
+    return render_template_string(ACCESSORIES_SEARCH_TEMPLATE)
 
-@app.route('/store/payments')
-@store_login_required
-def store_payments():
-    """পেমেন্ট লিস্ট"""
-    payments = list(store_payments_col. find(). sort('created_at', -1))
+@app.route('/admin/accessories/input', methods=['POST'])
+def accessories_input_page():
+    if not session.get('logged_in'): return redirect(url_for('index'))
     
-    payments_html = '''
-    <! DOCTYPE html>
-    <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1. 0">
-        <title>Payments - Store Panel</title>
-        <link href="https://cdn.jsdelivr. net/npm/bootstrap@5. 1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-        <link rel="stylesheet" href="https://cdnjs.cloudflare. com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-        <style>
-            body { background: #f4f6f9; }
-            .sidebar {
-                background: linear-gradient(180deg, #2c3e50 0%, #3498db 100%);
-                min-height: 100vh;
-                color: white;
-                position: fixed;
-                width: 250px;
-                padding-top: 20px;
-            }
-            .sidebar-brand {
-                padding: 20px;
-                font-size: 1.5rem;
-                font-weight: bold;
-                text-align: center;
-                border-bottom: 1px solid rgba(255,255,255,0.2);
-            }
-            .sidebar-menu {
-                list-style: none;
-                padding: 0;
-                margin-top: 20px;
-            }
-            .sidebar-menu li { padding: 0; }
-            .sidebar-menu a {
-                display: block;
-                padding: 15px 25px;
-                color: white;
-                text-decoration: none;
-                transition: all 0.3s;
-            }
-            .sidebar-menu a:hover {
-                background: rgba(255,255,255,0.1);
-                padding-left: 30px;
-            }
-            . main-content {
-                margin-left: 250px;
-                padding: 20px;
-            }
-            .content-card {
-                background: white;
-                border-radius: 10px;
-                padding: 25px;
-                box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            }
-        </style>
-    </head>
-    <body>
-        <!-- Sidebar -->
-        <div class="sidebar">
-            <div class="sidebar-brand">
-                <i class="fas fa-store"></i> Store Panel
-            </div>
-            <ul class="sidebar-menu">
-                <li><a href="{{ url_for('store_panel') }}"><i class="fas fa-home"></i> Dashboard</a></li>
-                <li><a href="{{ url_for('store_products') }}"><i class="fas fa-box"></i> Products</a></li>
-                <li><a href="{{ url_for('store_customers') }}"><i class="fas fa-users"></i> Customers</a></li>
-                <li><a href="{{ url_for('store_invoices') }}"><i class="fas fa-file-invoice"></i> Invoices</a></li>
-                <li><a href="{{ url_for('store_estimates') }}"><i class="fas fa-file-alt"></i> Estimates</a></li>
-                <li><a href="{{ url_for('store_payments') }}" class="active"><i class="fas fa-money-bill"></i> Payments</a></li>
-                <li><a href="{{ url_for('store_reports') }}"><i class="fas fa-chart-bar"></i> Reports</a></li>
-                <li style="margin-top: 20px; border-top: 1px solid rgba(255,255,255,0.2); padding-top: 20px;">
-                    <a href="{{ url_for('dashboard') }}"><i class="fas fa-building"></i> Main System</a>
-                </li>
-                <li><a href="{{ url_for('store_logout') }}"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
-            </ul>
-        </div>
-
-        <!-- Main Content -->
-        <div class="main-content">
-            <h3 class="mb-4"><i class="fas fa-money-bill"></i> Payments Management</h3>
-
-            <div class="content-card">
-                <div class="alert alert-info">
-                    <i class="fas fa-info-circle"></i> Payment tracking coming soon!  Link payments to invoices and track payment history.
-                </div>
-                
-                <div class="table-responsive">
-                    <table class="table table-hover">
-                        <thead class="table-light">
-                            <tr>
-                                <th>Date</th>
-                                <th>Invoice #</th>
-                                <th>Customer</th>
-                                <th>Amount</th>
-                                <th>Method</th>
-                                <th>Status</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td colspan="6" class="text-center text-muted">No payments recorded yet</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle. min.js"></script>
-    </body>
-    </html>
-    '''
+    ref_no = request.form.get('ref_no') or request.args.get('ref')
+    if ref_no: ref_no = ref_no.strip().upper()
     
-    return render_template_string(payments_html)
+    if not ref_no: return redirect(url_for('accessories_search_page'))
 
-# ==============================================================================
-# Store Reports
-# ==============================================================================
+    db_acc = load_accessories_db()
 
-@app. route('/store/reports')
-@store_login_required
-def store_reports():
-    """রিপোর্ট পেজ"""
-    # Calculate statistics
-    total_sales = 0
-    total_invoices = store_invoices_col.count_documents({})
-    
-    for invoice in store_invoices_col. find():
-        total_sales += invoice. get('total_amount', 0)
-    
-    paid_invoices = store_invoices_col.count_documents({'status': 'paid'})
-    unpaid_invoices = store_invoices_col.count_documents({'status': 'unpaid'})
-    
-    low_stock_products = list(store_products_col.find({'stock': {'$lt': 10}}))
-    
-    reports_html = '''
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Reports - Store Panel</title>
-        <link href="https://cdn. jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-        <style>
-            body { background: #f4f6f9; }
-            . sidebar {
-                background: linear-gradient(180deg, #2c3e50 0%, #3498db 100%);
-                min-height: 100vh;
-                color: white;
-                position: fixed;
-                width: 250px;
-                padding-top: 20px;
-            }
-            .sidebar-brand {
-                padding: 20px;
-                font-size: 1.5rem;
-                font-weight: bold;
-                text-align: center;
-                border-bottom: 1px solid rgba(255,255,255,0. 2);
-            }
-            . sidebar-menu {
-                list-style: none;
-                padding: 0;
-                margin-top: 20px;
-            }
-            .sidebar-menu li { padding: 0; }
-            .sidebar-menu a {
-                display: block;
-                padding: 15px 25px;
-                color: white;
-                text-decoration: none;
-                transition: all 0.3s;
-            }
-            .sidebar-menu a:hover {
-                background: rgba(255,255,255,0.1);
-                padding-left: 30px;
-            }
-            .main-content {
-                margin-left: 250px;
-                padding: 20px;
-            }
-            .report-card {
-                background: white;
-                border-radius: 10px;
-                padding: 25px;
-                box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-                margin-bottom: 20px;
-            }
-            .stat-box {
-                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                color: white;
-                padding: 20px;
-                border-radius: 10px;
-                text-align: center;
-            }
-            .stat-number {
-                font-size: 2rem;
-                font-weight: bold;
-            }
-        </style>
-    </head>
-    <body>
-        <!-- Sidebar -->
-        <div class="sidebar">
-            <div class="sidebar-brand">
-                <i class="fas fa-store"></i> Store Panel
-            </div>
-            <ul class="sidebar-menu">
-                <li><a href="{{ url_for('store_panel') }}"><i class="fas fa-home"></i> Dashboard</a></li>
-                <li><a href="{{ url_for('store_products') }}"><i class="fas fa-box"></i> Products</a></li>
-                <li><a href="{{ url_for('store_customers') }}"><i class="fas fa-users"></i> Customers</a></li>
-                <li><a href="{{ url_for('store_invoices') }}"><i class="fas fa-file-invoice"></i> Invoices</a></li>
-                <li><a href="{{ url_for('store_estimates') }}"><i class="fas fa-file-alt"></i> Estimates</a></li>
-                <li><a href="{{ url_for('store_payments') }}"><i class="fas fa-money-bill"></i> Payments</a></li>
-                <li><a href="{{ url_for('store_reports') }}" class="active"><i class="fas fa-chart-bar"></i> Reports</a></li>
-                <li style="margin-top: 20px; border-top: 1px solid rgba(255,255,255,0.2); padding-top: 20px;">
-                    <a href="{{ url_for('dashboard') }}"><i class="fas fa-building"></i> Main System</a>
-                </li>
-                <li><a href="{{ url_for('store_logout') }}"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
-            </ul>
-        </div>
-
-        <!-- Main Content -->
-        <div class="main-content">
-            <h3 class="mb-4"><i class="fas fa-chart-bar"></i> Sales Reports & Analytics</h3>
-
-            <!-- Statistics -->
-            <div class="row mb-4">
-                <div class="col-md-3">
-                    <div class="stat-box" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);">
-                        <div class="stat-number">৳{{ "%.2f"|format(total_sales) }}</div>
-                        <div>Total Sales</div>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="stat-box" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
-                        <div class="stat-number">{{ total_invoices }}</div>
-                        <div>Total Invoices</div>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="stat-box" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
-                        <div class="stat-number">{{ paid_invoices }}</div>
-                        <div>Paid Invoices</div>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="stat-box" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
-                        <div class="stat-number">{{ unpaid_invoices }}</div>
-                        <div>Unpaid Invoices</div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Low Stock Alert -->
-            <div class="report-card">
-                <h5 class="mb-3"><i class="fas fa-exclamation-triangle text-warning"></i> Low Stock Alert</h5>
-                <div class="table-responsive">
-                    <table class="table table-hover">
-                        <thead class="table-light">
-                            <tr>
-                                <th>Product</th>
-                                <th>Current Stock</th>
-                                <th>Status</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% if low_stock_products %}
-                                {% for product in low_stock_products %}
-                                <tr>
-                                    <td>{{ product.name }}</td>
-                                    <td><strong>{{ product.stock }}</strong></td>
-                                    <td>
-                                        {% if product.stock == 0 %}
-                                            <span class="badge bg-danger">Out of Stock</span>
-                                        {% else %}
-                                            <span class="badge bg-warning">Low Stock</span>
-                                        {% endif %}
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            {% else %}
-                                <tr>
-                                    <td colspan="3" class="text-center text-success">All products have sufficient stock! </td>
-                                </tr>
-                            {% endif %}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
-    </body>
-    </html>
-    '''
-    
-    return render_template_string(reports_html, 
-                                 total_sales=total_sales,
-                                 total_invoices=total_invoices,
-                                 paid_invoices=paid_invoices,
-                                 unpaid_invoices=unpaid_invoices,
-                                 low_stock_products=low_stock_products)
-
-# ==============================================================================
-# Accessories Management
-# ==============================================================================
-
-@app.route('/accessories')
-@login_required
-def accessories_page():
-    """এক্সেসরিজ ম্যানেজমেন্ট পেজ"""
-    accessories = list(accessories_col.find().sort('created_at', -1))
-    
-    accessories_html = '''
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Accessories Management</title>
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-        <style>
-            body { background: #f8f9fa; }
-            . navbar { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
-            .card { border: none; border-radius: 15px; box-shadow: 0 5px 20px rgba(0,0,0,0.1); margin-top: 20px; }
-        </style>
-    </head>
-    <body>
-        <nav class="navbar navbar-dark">
-            <div class="container-fluid">
-                <a class="navbar-brand" href="{{ url_for('dashboard') }}">
-                    <i class="fas fa-arrow-left"></i> Back to Dashboard
-                </a>
-            </div>
-        </nav>
-
-        <div class="container">
-            <div class="card">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center mb-4">
-                        <h3><i class="fas fa-toolbox"></i> Accessories Inventory</h3>
-                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addModal">
-                            <i class="fas fa-plus"></i> Add Accessory
-                        </button>
-                    </div>
-
-                    {% with messages = get_flashed_messages(with_categories=true) %}
-                        {% if messages %}
-                            {% for category, message in messages %}
-                                <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
-                                    {{ message }}
-                                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                                </div>
-                            {% endfor %}
-                        {% endif %}
-                    {% endwith %}
-
-                    <div class="table-responsive">
-                        <table class="table table-hover">
-                            <thead class="table-light">
-                                <tr>
-                                    <th>Name</th>
-                                    <th>Category</th>
-                                    <th>Quantity</th>
-                                    <th>Location</th>
-                                    <th>Added Date</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% if accessories %}
-                                    {% for item in accessories %}
-                                    <tr>
-                                        <td><strong>{{ item.name }}</strong></td>
-                                        <td><span class="badge bg-info">{{ item.category }}</span></td>
-                                        <td>{{ item.quantity }}</td>
-                                        <td>{{ item.location }}</td>
-                                        <td>{{ item. created_at.strftime('%d-%m-%Y') if item.created_at else 'N/A' }}</td>
-                                        <td>
-                                            <button class="btn btn-sm btn-warning" onclick="alert('Edit feature')">
-                                                <i class="fas fa-edit"></i>
-                                            </button>
-                                            <form method="POST" action="{{ url_for('delete_accessory', acc_id=item._id) }}" 
-                                                  style="display:inline;" onsubmit="return confirm('Delete? ');">
-                                                <button type="submit" class="btn btn-sm btn-danger">
-                                                    <i class="fas fa-trash"></i>
-                                                </button>
-                                            </form>
-                                        </td>
-                                    </tr>
-                                    {% endfor %}
-                                {% else %}
-                                    <tr>
-                                        <td colspan="6" class="text-center text-muted">No accessories found</td>
-                                    </tr>
-                                {% endif %}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Add Modal -->
-        <div class="modal fade" id="addModal" tabindex="-1">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title">Add Accessory</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                    </div>
-                    <form method="POST" action="{{ url_for('add_accessory') }}">
-                        <div class="modal-body">
-                            <div class="mb-3">
-                                <label class="form-label">Name *</label>
-                                <input type="text" name="name" class="form-control" required>
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label">Category *</label>
-                                <input type="text" name="category" class="form-control" required>
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label">Quantity *</label>
-                                <input type="number" name="quantity" class="form-control" min="0" required>
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label">Location</label>
-                                <input type="text" name="location" class="form-control">
-                            </div>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                            <button type="submit" class="btn btn-primary">Add Accessory</button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1. 3/dist/js/bootstrap. bundle.min.js"></script>
-    </body>
-    </html>
-    '''
-    
-    return render_template_string(accessories_html, accessories=accessories)
-
-@app.route('/accessories/add', methods=['POST'])
-@login_required
-def add_accessory():
-    """এক্সেসরি যোগ করুন"""
-    name = request.form.get('name', '').strip()
-    category = request.form.get('category', '').strip()
-    quantity = request.form.get('quantity', 0)
-    location = request. form.get('location', ''). strip()
-    
-    if name and category:
-        accessories_col.insert_one({
-            'name': name,
-            'category': category,
-            'quantity': int(quantity),
-            'location': location,
-            'created_at': get_bd_time(),
-            'created_by': session. get('username')
-        })
-        flash('Accessory added successfully!', 'success')
+    if ref_no in db_acc:
+        data = db_acc[ref_no]
+        colors = data['colors']
+        style = data['style']
+        buyer = data['buyer']
+        challans = data['challans'] 
     else:
-        flash('Name and category required!', 'danger')
+        try:
+            api_data = fetch_closing_report_data(ref_no)
+            if not api_data:
+                flash(f"Booking not found: {ref_no}")
+                return redirect(url_for('accessories_search_page'))
+            
+            colors = sorted(list(set([item['color'] for item in api_data])))
+            style = api_data[0].get('style', 'N/A')
+            buyer = api_data[0].get('buyer', 'N/A')
+            challans = []
+            
+            db_acc[ref_no] = {
+                "style": style, "buyer": buyer, "colors": colors, 
+                "item_type": "", "challans": challans
+            }
+            save_accessories_db(db_acc)
+        except:
+            flash("Connection Error with ERP")
+            return redirect(url_for('accessories_search_page'))
+
+    return render_template_string(ACCESSORIES_INPUT_TEMPLATE, ref=ref_no, colors=colors, style=style, buyer=buyer, challans=challans)
+
+@app.route('/admin/accessories/input_direct')
+def accessories_input_direct():
+    return accessories_input_page() 
+
+@app.route('/admin/accessories/save', methods=['POST'])
+def accessories_save():
+    if not session.get('logged_in'): return redirect(url_for('index'))
     
-    return redirect(url_for('accessories_page'))
-
-@app.route('/accessories/delete/<acc_id>', methods=['POST'])
-@login_required
-def delete_accessory(acc_id):
-    """এক্সেসরি ডিলিট করুন"""
-    from bson import ObjectId
+    ref = request.form.get('ref').strip().upper()
+    db_acc = load_accessories_db()
     
-    try:
-        accessories_col.delete_one({'_id': ObjectId(acc_id)})
-        flash('Accessory deleted! ', 'success')
-    except:
-        flash('Error deleting accessory!', 'danger')
-    
-    return redirect(url_for('accessories_page'))
-    # ==============================================================================
-# Error Handlers
-# ==============================================================================
-
-@app.errorhandler(404)
-def not_found_error(error):
-    """404 Error Handler"""
-    error_html = '''
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>404 - Page Not Found</title>
-        <link href="https://cdn. jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-        <style>
-            body {
-                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                min-height: 100vh;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                color: white;
-            }
-            .error-container {
-                text-align: center;
-            }
-            .error-code {
-                font-size: 8rem;
-                font-weight: bold;
-                text-shadow: 3px 3px 10px rgba(0,0,0,0.3);
-            }
-        </style>
-    </head>
-    <body>
-        <div class="error-container">
-            <div class="error-code">404</div>
-            <h2>Page Not Found</h2>
-            <p class="mb-4">The page you are looking for doesn't exist.</p>
-            <a href="{{ url_for('dashboard') }}" class="btn btn-light btn-lg">
-                <i class="fas fa-home"></i> Go to Dashboard
-            </a>
-        </div>
-    </body>
-    </html>
-    '''
-    return render_template_string(error_html), 404
-
-@app.errorhandler(500)
-def internal_error(error):
-    """500 Error Handler"""
-    error_html = '''
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>500 - Internal Server Error</title>
-        <link href="https://cdn. jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-        <style>
-            body {
-                background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-                min-height: 100vh;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                color: white;
-            }
-            .error-container {
-                text-align: center;
-            }
-            .error-code {
-                font-size: 8rem;
-                font-weight: bold;
-                text-shadow: 3px 3px 10px rgba(0,0,0,0.3);
-            }
-        </style>
-    </head>
-    <body>
-        <div class="error-container">
-            <div class="error-code">500</div>
-            <h2>Internal Server Error</h2>
-            <p class="mb-4">Something went wrong.  Please try again later.</p>
-            <a href="{{ url_for('dashboard') }}" class="btn btn-light btn-lg">
-                <i class="fas fa-home"></i> Go to Dashboard
-            </a>
-        </div>
-    </body>
-    </html>
-    '''
-    return render_template_string(error_html), 500
-
-@app.errorhandler(403)
-def forbidden_error(error):
-    """403 Error Handler"""
-    error_html = '''
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>403 - Forbidden</title>
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-        <style>
-            body {
-                background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
-                min-height: 100vh;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                color: white;
-            }
-            . error-container {
-                text-align: center;
-            }
-            .error-code {
-                font-size: 8rem;
-                font-weight: bold;
-                text-shadow: 3px 3px 10px rgba(0,0,0,0.3);
-            }
-        </style>
-    </head>
-    <body>
-        <div class="error-container">
-            <div class="error-code">403</div>
-            <h2>Access Forbidden</h2>
-            <p class="mb-4">You don't have permission to access this resource. </p>
-            <a href="{{ url_for('dashboard') }}" class="btn btn-light btn-lg">
-                <i class="fas fa-home"></i> Go to Dashboard
-            </a>
-        </div>
-    </body>
-    </html>
-    '''
-    return render_template_string(error_html), 403
-
-# ==============================================================================
-# Helper Routes for Testing
-# ==============================================================================
-
-@app.route('/test-db')
-def test_db():
-    """Database Connection Test"""
-    try:
-        # Test MongoDB connection
-        client. admin. command('ping')
+    if ref in db_acc:
+        if request.form.get('item_type'): db_acc[ref]['item_type'] = request.form.get('item_type')
         
-        # Count documents
-        users_count = users_col.count_documents({})
-        products_count = store_products_col.count_documents({})
+        for item in db_acc[ref]['challans']:
+            item['status'] = "✔"
         
-        return f'''
-        <h2>Database Connection Test</h2>
-        <p style="color: green;">✓ MongoDB Connected Successfully!</p>
-        <ul>
-            <li>Users: {users_count}</li>
-            <li>Products: {products_count}</li>
-            <li>Server Time: {get_bd_time(). strftime('%Y-%m-%d %H:%M:%S')}</li>
-        </ul>
-        <a href="{url_for('login')}">Go to Login</a>
-        '''
+        new_entry = {
+            "date": get_bd_date_str(),
+            "line": request.form.get('line_no'),
+            "color": request.form.get('color'),
+            "size": request.form.get('size'),
+            "qty": request.form.get('qty'),
+            "status": ""
+        }
+        db_acc[ref]['challans'].append(new_entry)
+        save_accessories_db(db_acc)
+    
+    return redirect(url_for('accessories_print_view', ref=ref))
+
+@app.route('/admin/accessories/print', methods=['GET'])
+def accessories_print_view():
+    if not session.get('logged_in'): return redirect(url_for('index'))
+    
+    ref = request.args.get('ref').strip().upper()
+    db_acc = load_accessories_db()
+    
+    if ref not in db_acc: return redirect(url_for('accessories_search_page'))
+    
+    data = db_acc[ref]
+    challans = data['challans']
+    
+    line_summary = {}
+    for c in challans:
+        ln = c['line']
+        try: q = int(c['qty'])
+        except: q = 0
+        line_summary[ln] = line_summary.get(ln, 0) + q
+    sorted_line_summary = dict(sorted(line_summary.items()))
+
+    return render_template_string(ACCESSORIES_REPORT_TEMPLATE, ref=ref, buyer=data['buyer'], style=data['style'], item_type=data.get('item_type', ''), challans=challans, line_summary=sorted_line_summary, count=len(challans), today=get_bd_date_str())
+
+@app.route('/admin/accessories/edit', methods=['GET'])
+def accessories_edit():
+    if not session.get('logged_in'): return redirect(url_for('index'))
+    
+    ref = request.args.get('ref')
+    try: index = int(request.args.get('index'))
+    except: return redirect(url_for('accessories_search_page'))
+    
+    db_acc = load_accessories_db()
+    if ref in db_acc and 0 <= index < len(db_acc[ref]['challans']):
+        item = db_acc[ref]['challans'][index]
+        return render_template_string(ACCESSORIES_EDIT_TEMPLATE, ref=ref, index=index, item=item)
+    
+    return redirect(url_for('accessories_print_view', ref=ref))
+
+@app.route('/admin/accessories/update', methods=['POST'])
+def accessories_update():
+    if not session.get('logged_in'): return redirect(url_for('index'))
+    
+    ref = request.form.get('ref')
+    index = int(request.form.get('index'))
+    db_acc = load_accessories_db()
+
+    if ref in db_acc and 0 <= index < len(db_acc[ref]['challans']):
+        db_acc[ref]['challans'][index]['line'] = request.form.get('line_no')
+        db_acc[ref]['challans'][index]['color'] = request.form.get('color')
+        db_acc[ref]['challans'][index]['size'] = request.form.get('size')
+        db_acc[ref]['challans'][index]['qty'] = request.form.get('qty')
+        save_accessories_db(db_acc)
+    
+    return redirect(url_for('accessories_input_direct', ref=ref))
+
+@app.route('/admin/accessories/delete', methods=['POST'])
+def accessories_delete():
+    if not session.get('logged_in') or session.get('role') != 'admin': return redirect(url_for('index'))
+    
+    ref = request.form.get('ref')
+    index = int(request.form.get('index'))
+    db_acc = load_accessories_db()
+
+    if ref in db_acc and 0 <= index < len(db_acc[ref]['challans']):
+        del db_acc[ref]['challans'][index]
+        save_accessories_db(db_acc)
+    
+    return redirect(url_for('accessories_input_direct', ref=ref))
+
+@app.route('/generate-po-report', methods=['POST'])
+def generate_po_report():
+    if not session.get('logged_in'): return redirect(url_for('index'))
+
+    if os.path.exists(UPLOAD_FOLDER): 
+        shutil.rmtree(UPLOAD_FOLDER)
+    os.makedirs(UPLOAD_FOLDER)
+
+    try:
+        uploaded_files = request.files.getlist('pdf_files')
+        all_data = []
+        final_meta = {'buyer': 'N/A', 'booking': 'N/A', 'style': 'N/A', 'season': 'N/A', 'dept': 'N/A', 'item': 'N/A'}
+        
+        for file in uploaded_files:
+            if file.filename == '': continue
+            file_path = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
+            file.save(file_path)
+            data, meta = extract_data_dynamic(file_path)
+            if meta['buyer'] != 'N/A': final_meta = meta
+            if data: all_data.extend(data)
+        
+        if not all_data:
+            return render_template_string(PO_REPORT_TEMPLATE, tables=None, message="No PO data found in uploaded files.")
+
+        update_po_stats(session.get('user', 'Unknown'), len(uploaded_files))
+
+        df = pd.DataFrame(all_data)
+        df['Color'] = df['Color'].str.strip()
+        df = df[df['Color'] != ""]
+        unique_colors = df['Color'].unique()
+        
+        final_tables = []
+        grand_total_qty = 0
+
+        for color in unique_colors:
+            color_df = df[df['Color'] == color]
+            pivot = color_df.pivot_table(index='P.O NO', columns='Size', values='Quantity', aggfunc='sum', fill_value=0)
+            pivot.columns.name = None
+            
+            try:
+                sorted_cols = sort_sizes(pivot.columns.tolist())
+                pivot = pivot[sorted_cols]
+            except: pass
+            
+            pivot['Total'] = pivot.sum(axis=1)
+            grand_total_qty += pivot['Total'].sum()
+
+            actual_qty = pivot.sum()
+            actual_qty.name = 'Actual Qty'
+            qty_plus_3 = (actual_qty * 1.03).round().astype(int)
+            qty_plus_3.name = '3% Order Qty'
+            
+            pivot_final = pd.concat([pivot, actual_qty.to_frame().T, qty_plus_3.to_frame().T])
+            pivot_final = pivot_final.reset_index()
+            pivot_final = pivot_final.rename(columns={'index': 'P.O NO'})
+            
+            pd.set_option('colheader_justify', 'center')
+            html_table = pivot_final.to_html(classes='table table-bordered table-striped', index=False, border=0)
+            
+            html_table = re.sub(r'<tr>\s*<td>', '<tr><td class="order-col">', html_table)
+            html_table = html_table.replace('<th>Total</th>', '<th class="total-col-header">Total</th>')
+            html_table = html_table.replace('<td>Total</td>', '<td class="total-col">Total</td>')
+            html_table = html_table.replace('<td>Actual Qty</td>', '<td class="summary-label">Actual Qty</td>')
+            html_table = html_table.replace('<td>3% Order Qty</td>', '<td class="summary-label">3% Order Qty</td>')
+            html_table = re.sub(r'<tr>\s*<td class="summary-label">', '<tr class="summary-row"><td class="summary-label">', html_table)
+
+            final_tables.append({'color': color, 'table': html_table})
+            
+        return render_template_string(PO_REPORT_TEMPLATE, tables=final_tables, meta=final_meta, grand_total=f"{grand_total_qty:,}")
     except Exception as e:
-        return f'''
-        <h2>Database Connection Test</h2>
-        <p style="color: red;">✗ Connection Failed! </p>
-        <p>Error: {str(e)}</p>
-        '''
+        flash(f"Error processing files: {str(e)}")
+        return redirect(url_for('index'))
 
-@app.route('/create-demo-data')
-@admin_required
-def create_demo_data():
-    """ডেমো ডেটা তৈরি করুন (Testing এর জন্য)"""
-    try:
-        # Demo Store User
-        if store_users_col.count_documents({'username': 'store1'}) == 0:
-            store_users_col.insert_one({
-                'username': 'store1',
-                'password': 'store123',
-                'role': 'staff',
-                'status': 'active',
-                'created_at': get_bd_time()
-            })
-        
-        # Demo Products
-        demo_products = [
-            {'name': 'Laptop', 'category': 'Electronics', 'price': 45000, 'stock': 10, 'unit': 'pcs'},
-            {'name': 'Mouse', 'category': 'Electronics', 'price': 500, 'stock': 50, 'unit': 'pcs'},
-            {'name': 'Keyboard', 'category': 'Electronics', 'price': 1500, 'stock': 30, 'unit': 'pcs'},
-            {'name': 'Monitor', 'category': 'Electronics', 'price': 12000, 'stock': 15, 'unit': 'pcs'},
-            {'name': 'Headphone', 'category': 'Electronics', 'price': 2000, 'stock': 25, 'unit': 'pcs'},
-        ]
-        
-        for product in demo_products:
-            if store_products_col.count_documents({'name': product['name']}) == 0:
-                product['created_at'] = get_bd_time()
-                product['created_by'] = 'admin'
-                store_products_col.insert_one(product)
-        
-        # Demo Customers
-        demo_customers = [
-            {'name': 'Ahmed Hassan', 'phone': '01712345678', 'email': 'ahmed@example.com', 'address': 'Dhaka, Bangladesh'},
-            {'name': 'Fatima Khan', 'phone': '01823456789', 'email': 'fatima@example.com', 'address': 'Chittagong, Bangladesh'},
-            {'name': 'Rahul Ahmed', 'phone': '01934567890', 'email': 'rahul@example.com', 'address': 'Sylhet, Bangladesh'},
-        ]
-        
-        for customer in demo_customers:
-            if store_customers_col.count_documents({'phone': customer['phone']}) == 0:
-                customer['created_at'] = get_bd_time()
-                customer['created_by'] = 'admin'
-                store_customers_col.insert_one(customer)
-        
-        # Demo Accessories
-        demo_accessories = [
-            {'name': 'HDMI Cable', 'category': 'Cables', 'quantity': 100, 'location': 'Shelf A1'},
-            {'name': 'USB Cable', 'category': 'Cables', 'quantity': 150, 'location': 'Shelf A2'},
-            {'name': 'Power Adapter', 'category': 'Adapters', 'quantity': 80, 'location': 'Shelf B1'},
-        ]
-        
-        for accessory in demo_accessories:
-            if accessories_col.count_documents({'name': accessory['name']}) == 0:
-                accessory['created_at'] = get_bd_time()
-                accessory['created_by'] = 'admin'
-                accessories_col.insert_one(accessory)
-        
-        flash('Demo data created successfully!', 'success')
-    except Exception as e:
-        flash(f'Error creating demo data: {str(e)}', 'danger')
-    
-    return redirect(url_for('dashboard'))
 
 # ==============================================================================
-# System Info Route
-# ==============================================================================
-
-@app.route('/system-info')
-@admin_required
-def system_info():
-    """সিস্টেম ইনফরমেশন"""
-    import platform
-    import sys
-    
-    info_html = '''
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>System Information</title>
-        <link href="https://cdn.jsdelivr. net/npm/bootstrap@5. 1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-        <link rel="stylesheet" href="https://cdnjs.cloudflare. com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-        <style>
-            body { background: #f8f9fa; padding: 20px; }
-            .info-card { 
-                background: white; 
-                border-radius: 15px; 
-                padding: 30px; 
-                box-shadow: 0 5px 20px rgba(0,0,0,0.1);
-                max-width: 800px;
-                margin: 0 auto;
-            }
-            .info-row { 
-                padding: 10px; 
-                border-bottom: 1px solid #e9ecef; 
-            }
-            .info-label { 
-                font-weight: bold; 
-                color: #495057; 
-            }
-        </style>
-    </head>
-    <body>
-        <div class="info-card">
-            <h2 class="mb-4"><i class="fas fa-info-circle"></i> System Information</h2>
-            
-            <div class="info-row">
-                <span class="info-label">Python Version:</span>
-                <span>{{ python_version }}</span>
-            </div>
-            
-            <div class="info-row">
-                <span class="info-label">Flask Version:</span>
-                <span>{{ flask_version }}</span>
-            </div>
-            
-            <div class="info-row">
-                <span class="info-label">Operating System:</span>
-                <span>{{ os_info }}</span>
-            </div>
-            
-            <div class="info-row">
-                <span class="info-label">Server Time (BD):</span>
-                <span>{{ current_time }}</span>
-            </div>
-            
-            <div class="info-row">
-                <span class="info-label">Total Users:</span>
-                <span>{{ total_users }}</span>
-            </div>
-            
-            <div class="info-row">
-                <span class="info-label">Total Store Users:</span>
-                <span>{{ total_store_users }}</span>
-            </div>
-            
-            <div class="info-row">
-                <span class="info-label">Total Products:</span>
-                <span>{{ total_products }}</span>
-            </div>
-            
-            <div class="info-row">
-                <span class="info-label">Total Customers:</span>
-                <span>{{ total_customers }}</span>
-            </div>
-            
-            <div class="info-row">
-                <span class="info-label">Total Invoices:</span>
-                <span>{{ total_invoices }}</span>
-            </div>
-            
-            <div class="info-row">
-                <span class="info-label">Total Estimates:</span>
-                <span>{{ total_estimates }}</span>
-            </div>
-            
-            <div class="info-row">
-                <span class="info-label">Total Accessories:</span>
-                <span>{{ total_accessories }}</span>
-            </div>
-            
-            <div class="mt-4 text-center">
-                <a href="{{ url_for('dashboard') }}" class="btn btn-primary">
-                    <i class="fas fa-arrow-left"></i> Back to Dashboard
-                </a>
-                <a href="{{ url_for('create_demo_data') }}" class="btn btn-success">
-                    <i class="fas fa-plus"></i> Create Demo Data
-                </a>
-            </div>
-        </div>
-    </body>
-    </html>
-    '''
-    
-    return render_template_string(info_html,
-                                 python_version=sys.version,
-                                 flask_version=Flask.__version__,
-                                 os_info=f"{platform.system()} {platform. release()}",
-                                 current_time=get_bd_time().strftime('%Y-%m-%d %H:%M:%S %Z'),
-                                 total_users=users_col.count_documents({}),
-                                 total_store_users=store_users_col.count_documents({}),
-                                 total_products=store_products_col.count_documents({}),
-                                 total_customers=store_customers_col.count_documents({}),
-                                 total_invoices=store_invoices_col. count_documents({}),
-                                 total_estimates=store_estimates_col.count_documents({}),
-                                 total_accessories=accessories_col.count_documents({}))
-
-# ==============================================================================
-# Main Application Runner
+# APPLICATION ENTRY POINT
 # ==============================================================================
 
 if __name__ == '__main__':
-    print("=" * 60)
-    print("🚀 Office Management System Starting...")
-    print("=" * 60)
-    print(f"📅 Server Time (Bangladesh): {get_bd_time(). strftime('%Y-%m-%d %H:%M:%S')}")
-    print(f"🔗 MongoDB Status: Connected to {MONGO_URI[:30]}...")
-    print(f"👤 Default Admin: username='admin', password='admin123'")
-    print("=" * 60)
-    print("\n✨ Features Available:")
-    print("   1. Main System Login (admin/admin123)")
-    print("   2.  Closing Report (Preview → Download)")
-    print("   3.  PO Sheet (Preview → Download)")
-    print("   4. Store Panel (Beautiful Design)")
-    print("   5.  Products Management")
-    print("   6.  Customers Management")
-    print("   7. Invoices (Add/Edit/View/Print)")
-    print("   8.  Estimates (Convert to Invoice)")
-    print("   9. Reports & Analytics")
-    print("   10. Accessories Management")
-    print("   11.  User Management (Admin Only)")
-    print("   12.  Store User Management (Admin Only)")
-    print("=" * 60)
-    print("\n🔑 Access URLs:")
-    print("   Main Login:  http://localhost:5000/login")
-    print("   Store Login: http://localhost:5000/store/login")
-    print("   Test DB:     http://localhost:5000/test-db")
-    print("   System Info: http://localhost:5000/system-info")
-    print("=" * 60)
-    print("\n⚙️  Important Notes:")
-    print("   ✓ Closing Report: প্রিভিউ দেখে তারপর ডাউনলোড")
-    print("   ✓ PO Sheet: প্রিভিউ দেখে তারপর ডাউনলোড")
-    print("   ✓ Invoice/Estimate: এরর ছাড়া এডিট করা যাবে")
-    print("   ✓ Store Login: সরাসরি Store Panel এ যাবে")
-    print("   ✓ Print: Professional Template সহ")
-    print("=" * 60)
-    print("\n🎯 Quick Start:")
-    print("   1. প্রথমে: http://localhost:5000/test-db - DB চেক করুন")
-    print("   2. Login: admin / admin123")
-    print("   3. Demo Data: Dashboard থেকে 'Create Demo Data' ক্লিক করুন")
-    print("   4. Store User তৈরি করুন: User Management থেকে")
-    print("=" * 60)
-    print("\n💡 Troubleshooting:")
-    print("   - যদি MongoDB Error আসে: MONGO_URI চেক করুন")
-    print("   - যদি Port Busy: app.run(port=5001) করুন")
-    print("   - Session Timeout: 2 ঘণ্টা পর আবার Login করুন")
-    print("=" * 60)
-    print("\n🔥 Server Starting on http://localhost:5000")
-    print("   Press CTRL+C to quit\n")
-    
-    # Run the application
-    try:
-        app.run(
-            host='0.0.0.0',  # সব IP থেকে এক্সেস করা যাবে
-            port=5000,
-            debug=True,  # Development mode (Auto-reload on code change)
-            threaded=True  # Multiple requests handle করবে
-        )
-    except KeyboardInterrupt:
-        print("\n\n" + "=" * 60)
-        print("👋 Server Stopped.  Thank you for using Office Management System!")
-        print("=" * 60)
-    except Exception as e:
-        print("\n\n" + "=" * 60)
-        print(f"❌ Error starting server: {str(e)}")
-        print("=" * 60)
-        download_name=filename
-    )
-    
+    # Render requires binding to 0.0.0.0 and the PORT env variable
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host='0.0.0.0', port=port, debug=True)
