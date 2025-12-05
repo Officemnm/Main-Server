@@ -17,6 +17,7 @@ import shutil
 import numpy as np
 from pymongo import MongoClient 
 from collections import defaultdict
+import uuid
 
 # --- Flask লাইব্রেরি ইম্পোর্ট ---
 from flask import Flask, request, render_template_string, send_file, flash, session, redirect, url_for, make_response, jsonify
@@ -59,6 +60,7 @@ def add_header(response):
 # ==============================================================================
 # MongoDB কানেকশন সেটআপ
 # ==============================================================================
+# স্পেস রিমুভ করা হয়েছে কানেকশন স্ট্রিং থেকে
 MONGO_URI = "mongodb+srv://Mehedi:Mehedi123@office.jxdnuaj.mongodb.net/?appName=Office"
 
 try:
@@ -68,6 +70,15 @@ try:
     users_col = db['users']
     stats_col = db['stats']
     accessories_col = db['accessories']
+    
+    # Store related collections
+    store_users_col = db['store_users']
+    store_products_col = db['store_products']
+    store_customers_col = db['store_customers']
+    store_invoices_col = db['store_invoices']
+    store_estimates_col = db['store_estimates']
+    store_payments_col = db['store_payments']
+    
     print("MongoDB Connected Successfully!")
 except Exception as e:
     print(f"MongoDB Connection Error: {e}")
@@ -357,6 +368,9 @@ COMMON_STYLES = """
             font-weight: 400;
         }
 
+        /* ============================================= */
+        /* FIXED: Status Badge with Glowing Green Dot   */
+        /* ============================================= */
         .status-badge {
             background: var(--bg-card);
             padding: 12px 24px;
@@ -370,6 +384,84 @@ COMMON_STYLES = """
             box-shadow: var(--shadow-card);
             transition: var(--transition-smooth);
         }
+        
+        .status-badge:hover {
+            border-color: rgba(16, 185, 129, 0.3);
+            box-shadow: 0 0 20px rgba(16, 185, 129, 0.15);
+        }
+        
+        /* FIXED: Glowing Green Status Dot */
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            background: var(--accent-green);
+            border-radius: 50%;
+            position: relative;
+            animation: statusGlow 2s ease-in-out infinite;
+            box-shadow: 
+                0 0 5px var(--accent-green),
+                0 0 10px var(--accent-green),
+                0 0 20px var(--accent-green),
+                0 0 30px rgba(16, 185, 129, 0.5);
+        }
+        
+        .status-dot::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 100%;
+            height: 100%;
+            background: var(--accent-green);
+            border-radius: 50%;
+            animation: statusPulseRing 2s ease-out infinite;
+        }
+        
+        .status-dot::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 6px;
+            height: 6px;
+            background: #fff;
+            border-radius: 50%;
+            opacity: 0.8;
+        }
+        
+        @keyframes statusGlow {
+            0%, 100% { 
+                opacity: 1;
+                box-shadow: 
+                    0 0 5px var(--accent-green),
+                    0 0 10px var(--accent-green),
+                    0 0 20px var(--accent-green),
+                    0 0 30px rgba(16, 185, 129, 0.5);
+            }
+            50% { 
+                opacity: 0.8;
+                box-shadow: 
+                    0 0 10px var(--accent-green),
+                    0 0 20px var(--accent-green),
+                    0 0 40px var(--accent-green),
+                    0 0 60px rgba(16, 185, 129, 0.6);
+            }
+        }
+        
+        @keyframes statusPulseRing {
+            0% {
+                transform: translate(-50%, -50%) scale(1);
+                opacity: 0.8;
+            }
+            100% {
+                transform: translate(-50%, -50%) scale(2.5);
+                opacity: 0;
+            }
+        }
+        /* ============================================= */
+        
         /* Enhanced Cards & Grid */
         .stats-grid { 
             display: grid;
@@ -426,6 +518,11 @@ COMMON_STYLES = """
             color: white;
             letter-spacing: -0.3px;
         }
+        
+        .section-header .actions {
+            display: flex;
+            gap: 10px;
+        }
 
         .section-header i {
             font-size: 20px;
@@ -437,6 +534,7 @@ COMMON_STYLES = """
             opacity: 1;
             transform: rotate(10deg) scale(1.1);
         }
+        
         /* Stat Cards with Animations */
         .stat-card { 
             display: flex;
@@ -515,6 +613,7 @@ COMMON_STYLES = """
         .count-up {
             display: inline-block;
         }
+
         /* Progress Bars with Animation */
         .progress-item { margin-bottom: 24px; }
 
@@ -572,6 +671,7 @@ COMMON_STYLES = """
         .progress-orange { background: var(--gradient-orange); }
         .progress-purple { background: linear-gradient(135deg, #8B5CF6 0%, #A78BFA 100%); }
         .progress-green { background: linear-gradient(135deg, #10B981 0%, #34D399 100%); }
+        
         /* Enhanced Forms */
         .input-group { margin-bottom: 20px; }
 
@@ -585,7 +685,7 @@ COMMON_STYLES = """
             letter-spacing: 1.5px;
         }
 
-        input, select { 
+        input, select, textarea { 
             width: 100%;
             padding: 14px 18px; 
             background: rgba(255, 255, 255, 0.03);
@@ -597,13 +697,18 @@ COMMON_STYLES = """
             outline: none; 
             transition: var(--transition-smooth);
         }
+        
+        textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
 
-        input::placeholder {
+        input::placeholder, textarea::placeholder {
             color: var(--text-secondary);
             opacity: 0.5;
         }
 
-        input:focus, select:focus { 
+        input:focus, select:focus, textarea:focus { 
             border-color: var(--accent-orange);
             background: rgba(255, 122, 0, 0.05);
             box-shadow: 0 0 0 4px var(--accent-orange-glow), 0 0 20px var(--accent-orange-glow);
@@ -625,8 +730,8 @@ COMMON_STYLES = """
             padding: 10px;
         }
         
-        button { 
-            width: 100%;
+        button, .btn { 
+            width: auto;
             padding: 14px 24px; 
             background: var(--gradient-orange);
             color: white; 
@@ -639,8 +744,17 @@ COMMON_STYLES = """
             position: relative;
             overflow: hidden;
             letter-spacing: 0.5px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
         }
-        button::before {
+        
+        button.full-width {
+            width: 100%;
+        }
+        
+        button::before, .btn::before {
             content: '';
             position: absolute;
             top: 0;
@@ -651,15 +765,56 @@ COMMON_STYLES = """
             transition: 0.5s;
         }
 
-        button:hover::before { left: 100%; }
+        button:hover::before, .btn:hover::before { left: 100%; }
 
-        button:hover { 
+        button:hover, .btn:hover { 
             transform: translateY(-3px);
             box-shadow: 0 10px 30px var(--accent-orange-glow);
         }
 
-        button:active {
+        button:active, .btn:active {
             transform: translateY(0);
+        }
+        
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+        }
+        
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: var(--accent-orange);
+        }
+        
+        .btn-success {
+            background: linear-gradient(135deg, #10B981 0%, #34D399 100%);
+        }
+        
+        .btn-success:hover {
+            box-shadow: 0 10px 30px rgba(16, 185, 129, 0.3);
+        }
+        
+        .btn-danger {
+            background: linear-gradient(135deg, #EF4444 0%, #F87171 100%);
+        }
+        
+        .btn-danger:hover {
+            box-shadow: 0 10px 30px rgba(239, 68, 68, 0.3);
+        }
+        
+        .btn-purple {
+            background: linear-gradient(135deg, #8B5CF6 0%, #A78BFA 100%);
+        }
+        
+        .btn-purple:hover {
+            box-shadow: 0 10px 30px rgba(139, 92, 246, 0.3);
+        }
+        
+        .btn-sm {
+            padding: 8px 16px;
+            font-size: 13px;
+            width: auto;
         }
 
         /* Enhanced Tables */
@@ -706,6 +861,11 @@ COMMON_STYLES = """
             display: inline-block;
         }
         
+        .badge-green { background: rgba(16, 185, 129, 0.15); color: #34D399; }
+        .badge-red { background: rgba(239, 68, 68, 0.15); color: #F87171; }
+        .badge-yellow { background: rgba(245, 158, 11, 0.15); color: #FBBF24; }
+        .badge-blue { background: rgba(59, 130, 246, 0.15); color: #60A5FA; }
+        
         /* Action Buttons */
         .action-cell { 
             display: flex;
@@ -751,6 +911,31 @@ COMMON_STYLES = """
             transform: scale(1.1);
             box-shadow: 0 0 20px rgba(239, 68, 68, 0.4);
         }
+        
+        .btn-view {
+            background: rgba(59, 130, 246, 0.15);
+            color: #60A5FA;
+        }
+        
+        .btn-view:hover {
+            background: var(--accent-blue);
+            color: white;
+            transform: scale(1.1);
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.4);
+        }
+        
+        .btn-print-sm {
+            background: rgba(16, 185, 129, 0.15);
+            color: #34D399;
+        }
+        
+        .btn-print-sm:hover {
+            background: var(--accent-green);
+            color: white;
+            transform: scale(1.1);
+            box-shadow: 0 0 20px rgba(16, 185, 129, 0.4);
+        }
+        
         /* Enhanced Loading Overlay */
         #loading-overlay { 
             display: none;
@@ -837,6 +1022,7 @@ COMMON_STYLES = """
             opacity: 0;
             animation: checkmark-anim 0.4s 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
         }
+        
         /* Fail Cross Animation */
         .fail-container { 
             display: none; 
@@ -937,6 +1123,7 @@ COMMON_STYLES = """
             from { opacity: 0; }
             to { opacity: 1; }
         }
+        
         .welcome-content {
             background: var(--gradient-card);
             border: 1px solid var(--border-color);
@@ -962,6 +1149,7 @@ COMMON_STYLES = """
             animation: welcomeGlow 3s ease-in-out infinite;
             opacity: 0.3;
         }
+        
         @keyframes welcomeSlideIn {
             from { 
                 opacity: 0;
@@ -1070,6 +1258,7 @@ COMMON_STYLES = """
             visibility: visible;
             bottom: 130%;
         }
+        
         /* File Upload Zone */
         .upload-zone {
             border: 2px dashed var(--border-color);
@@ -1177,6 +1366,12 @@ COMMON_STYLES = """
             color: #34D399;
         }
         
+        .flash-warning {
+            background: rgba(245, 158, 11, 0.1);
+            border: 1px solid rgba(245, 158, 11, 0.2);
+            color: #FBBF24;
+        }
+        
         /* Ripple Effect */
         .ripple {
             position: relative;
@@ -1198,7 +1393,8 @@ COMMON_STYLES = """
                 opacity: 0;
             }
         }
-        /* Mobile */
+        
+        /* Mobile Toggle & Responsive */
         .mobile-toggle { 
             display: none; 
             position: fixed; 
@@ -1272,6 +1468,7 @@ COMMON_STYLES = """
             0% { background-position: 200% 0; }
             100% { background-position: -200% 0; }
         }
+        
         /* Notification Dot */
         .notification-dot {
             position: absolute;
@@ -1347,6 +1544,7 @@ COMMON_STYLES = """
             transform: scale(1.1) rotate(90deg);
             box-shadow: 0 12px 40px var(--accent-orange-glow);
         }
+        
         /* Glow Text */
         .glow-text {
             text-shadow: 0 0 20px var(--accent-orange-glow);
@@ -1382,7 +1580,13 @@ COMMON_STYLES = """
             50% { background-position: 100% 50%; }
             100% { background-position: 0% 50%; }
         }
+        
         /* Permission Checkbox Styles */
+        .perm-checkbox-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
         .perm-checkbox {
             background: rgba(255, 255, 255, 0.03);
             padding: 14px 18px;
@@ -1393,7 +1597,7 @@ COMMON_STYLES = """
             border: 1px solid var(--border-color);
             transition: var(--transition-smooth);
             flex: 1;
-            min-width: 100px;
+            min-width: 120px;
         }
 
         .perm-checkbox:hover {
@@ -1405,6 +1609,7 @@ COMMON_STYLES = """
             width: auto;
             margin-right: 10px;
             accent-color: var(--accent-orange);
+            transform: scale(1.2);
         }
 
         .perm-checkbox span {
@@ -1437,8 +1642,360 @@ COMMON_STYLES = """
         .time-badge i {
             color: var(--accent-orange);
         }
+        
+        /* Grid Layouts for Store */
+        .grid-2 {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+        
+        .grid-3 {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+        
+        .grid-4 {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+        }
+        
+        @media (max-width: 900px) {
+            .grid-3, .grid-4 { grid-template-columns: repeat(2, 1fr); }
+        }
+        
+        @media (max-width: 768px) {
+            .grid-2, .grid-3, .grid-4 {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        /* Modal Overlay */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(10, 10, 15, 0.9);
+            backdrop-filter: blur(10px);
+            z-index: 9000;
+            justify-content: center;
+            align-items: flex-start; /* Aligns to top */
+            padding-top: 5vh;
+            overflow-y: auto;
+        }
+        
+        .modal-overlay.active {
+            display: flex;
+        }
+        
+        .modal-content {
+            background: var(--gradient-card);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 600px;
+            width: 90%;
+            animation: modalSlideIn 0.3s ease-out;
+            margin-bottom: 5vh;
+        }
+
+        .modal-content.modal-lg {
+            max-width: 900px;
+        }
+        
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-30px) scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .modal-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: white;
+        }
+        
+        .modal-close {
+            width: 36px;
+            height: 36px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition-smooth);
+        }
+        
+        .modal-close:hover {
+            background: var(--accent-red);
+            color: white;
+            border-color: var(--accent-red);
+            transform: rotate(90deg);
+        }
+
+        .modal-footer {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+        }
+        
+        /* Search Box */
+        .search-box {
+            position: relative;
+            margin-bottom: 20px;
+        }
+        
+        .search-box input {
+            padding-left: 45px;
+        }
+        
+        .search-box i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-secondary);
+        }
+        
+        /* Tab Navigation */
+        .tab-nav {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+        }
+        
+        .tab-btn {
+            padding: 10px 20px;
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            font-weight: 600;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: var(--transition-smooth);
+        }
+        
+        .tab-btn:hover {
+            color: var(--accent-orange);
+            background: rgba(255, 122, 0, 0.1);
+        }
+        
+        .tab-btn.active {
+            color: var(--accent-orange);
+            background: rgba(255, 122, 0, 0.15);
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.3s ease-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        /* Amount Display */
+        .amount-display {
+            font-size: 28px;
+            font-weight: 800;
+            color: var(--accent-green);
+        }
+        
+        .amount-due {
+            color: var(--accent-red);
+        }
+        
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-secondary);
+        }
+        
+        .empty-state i, .empty-state .lottie-player {
+            font-size: 60px;
+            opacity: 0.8;
+            margin: 0 auto 20px;
+            display: block;
+        }
+        
+        .empty-state p {
+            font-size: 16px;
+            margin-bottom: 20px;
+        }
+        
+        /* Current Entry Indicator - নতুন যোগ করা হয়েছে */
+        .current-entry {
+            background: rgba(255, 122, 0, 0.1) !important;
+            border-left: 3px solid var(--accent-orange) !important;
+        }
+        
+        .current-entry .status-cell {
+            color: var(--accent-orange) !important;
+        }
+        
+        /* API Cache Indicator */
+        .cache-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+        
+        .cache-fresh {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--accent-green);
+        }
+        
+        .cache-stale {
+            background: rgba(245, 158, 11, 0.1);
+            color: #FBBF24;
+        }
+
+        /* Invoice/Estimate Creation specific styles */
+        #item-list tr .action-cell {
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        #item-list tr:hover .action-cell {
+            opacity: 1;
+        }
+
+        .summary-card {
+            background: var(--bg-card);
+            border-radius: var(--card-radius);
+            padding: 24px;
+        }
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 14px;
+        }
+        .summary-row:last-child {
+            border-bottom: none;
+        }
+        .summary-row span:first-child {
+            color: var(--text-secondary);
+        }
+        .summary-row span:last-child {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        .summary-total {
+            font-size: 18px;
+            font-weight: 700;
+            padding-top: 20px;
+            margin-top: 10px;
+            border-top: 2px solid var(--accent-orange);
+            color: var(--accent-orange);
+        }
+        .summary-total span:last-child {
+            font-size: 22px;
+        }
+
+        /* Login Screen Specific Styles */
+        .login-wrapper {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100vw;
+            height: 100vh;
+            padding: 20px;
+            background: var(--gradient-dark);
+            flex-direction: column;
+            position: relative;
+        }
+        
+        .login-card {
+            width: 100%;
+            max-width: 450px;
+            padding: 40px;
+            z-index: 2;
+        }
+        
+        .login-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .login-logo {
+            font-size: 40px;
+            color: var(--accent-orange);
+            margin-bottom: 15px;
+            filter: drop-shadow(0 0 15px var(--accent-orange-glow));
+        }
+        
+        .login-title {
+            font-size: 24px;
+            font-weight: 800;
+            color: white;
+            margin-bottom: 8px;
+        }
+        
+        .login-subtitle {
+            color: var(--text-secondary);
+        }
+        
+        /* Print Styles */
+        @media print {
+            body { background: #fff !important; color: #000 !important; }
+            .no-print { display: none !important; }
+            .main-content { margin-left: 0 !important; width: 100% !important; padding: 0 !important; }
+            .print-container {
+                padding: 0;
+                box-shadow: none !important;
+                border: none !important;
+                background: #fff !important;
+            }
+            .print-header h1 { color: #000 !important; }
+            .print-header p, .print-meta span { color: #555 !important; }
+            .print-table th, .print-table td {
+                color: #000 !important;
+                border-color: #ddd !important;
+            }
+            .print-summary span { color: #333 !important; }
+            .print-summary .print-total { color: #000 !important; }
+        }
     </style>
 """
+
 # ==============================================================================
 # হেল্পার ফাংশন: পরিসংখ্যান ও হিস্ট্রি (MongoDB ব্যবহার করে)
 # ==============================================================================
@@ -1449,14 +2006,14 @@ def load_users():
         "Admin": {
             "password": "@Nijhum@12", 
             "role": "admin", 
-            "permissions": ["closing", "po_sheet", "user_manage", "view_history", "accessories"],
+            "permissions": ["closing", "po_sheet", "user_manage", "view_history", "accessories", "store"],
             "created_at": "N/A",
             "last_login": "Never",
             "last_duration": "N/A"
         }
     }
     if record:
-        return record['data']
+        return record.get('data', default_users)
     else:
         users_col.insert_one({"_id": "global_users", "data": default_users})
         return default_users
@@ -1471,7 +2028,7 @@ def save_users(users_data):
 def load_stats():
     record = stats_col.find_one({"_id": "dashboard_stats"})
     if record:
-        return record['data']
+        return record.get('data', {"downloads": [], "last_booking": "None"})
     else:
         default_stats = {"downloads": [], "last_booking": "None"}
         stats_col.insert_one({"_id": "dashboard_stats", "data": default_stats})
@@ -1483,6 +2040,7 @@ def save_stats(data):
         {"_id": "dashboard_stats", "data": data},
         upsert=True
     )
+
 def update_stats(ref_no, username):
     data = load_stats()
     now = get_bd_time() # BD Time
@@ -1495,10 +2053,7 @@ def update_stats(ref_no, username):
         "iso_time": now.isoformat()
     }
     data['downloads'].insert(0, new_record)
-    # Analytics এর জন্য ডাটা লিমিট বাড়ানো হয়েছে
-    if len(data['downloads']) > 3000:
-        data['downloads'] = data['downloads'][:3000]
-        
+    data['downloads'] = data['downloads'][:3000] # Limit history
     data['last_booking'] = ref_no
     save_stats(data)
 
@@ -1515,16 +2070,12 @@ def update_po_stats(username, file_count):
     }
     if 'downloads' not in data: data['downloads'] = []
     data['downloads'].insert(0, new_record)
-    if len(data['downloads']) > 3000:
-        data['downloads'] = data['downloads'][:3000]
+    data['downloads'] = data['downloads'][:3000] # Limit history
     save_stats(data)
 
 def load_accessories_db():
     record = accessories_col.find_one({"_id": "accessories_data"})
-    if record:
-        return record['data']
-    else:
-        return {}
+    return record.get('data', {}) if record else {}
 
 def save_accessories_db(data):
     accessories_col.replace_one(
@@ -1532,6 +2083,116 @@ def save_accessories_db(data):
         {"_id": "accessories_data", "data": data},
         upsert=True
     )
+# ==============================================================================
+# Store Helper Functions
+# ==============================================================================
+
+def load_store_users():
+    record = store_users_col.find_one({"_id": "store_users_data"})
+    default_users = {
+        "StoreAdmin": {
+            "password": "store123", 
+            "role": "store_admin", 
+            "permissions": ["products", "customers", "invoices", "estimates", "payments", "user_manage"],
+            "created_at": get_bd_date_str(),
+            "last_login": "Never"
+        }
+    }
+    if record:
+        return record.get('data', default_users)
+    else:
+        store_users_col.insert_one({"_id": "store_users_data", "data": default_users})
+        return default_users
+
+def save_store_users(users_data):
+    store_users_col.replace_one(
+        {"_id": "store_users_data"}, 
+        {"_id": "store_users_data", "data": users_data}, 
+        upsert=True
+    )
+
+def load_store_products():
+    record = store_products_col.find_one({"_id": "products_data"})
+    return record.get('data', []) if record else []
+
+def save_store_products(products):
+    store_products_col.replace_one(
+        {"_id": "products_data"},
+        {"_id": "products_data", "data": products},
+        upsert=True
+    )
+
+def load_store_customers():
+    record = store_customers_col.find_one({"_id": "customers_data"})
+    return record.get('data', []) if record else []
+
+def save_store_customers(customers):
+    store_customers_col.replace_one(
+        {"_id": "customers_data"},
+        {"_id": "customers_data", "data": customers},
+        upsert=True
+    )
+
+def load_store_invoices():
+    record = store_invoices_col.find_one({"_id": "invoices_data"})
+    return record.get('data', []) if record else []
+
+def save_store_invoices(invoices):
+    store_invoices_col.replace_one(
+        {"_id": "invoices_data"},
+        {"_id": "invoices_data", "data": invoices},
+        upsert=True
+    )
+
+def load_store_estimates():
+    record = store_estimates_col.find_one({"_id": "estimates_data"})
+    return record.get('data', []) if record else []
+
+def save_store_estimates(estimates):
+    store_estimates_col.replace_one(
+        {"_id": "estimates_data"},
+        {"_id": "estimates_data", "data": estimates},
+        upsert=True
+    )
+
+def load_store_payments():
+    record = store_payments_col.find_one({"_id": "payments_data"})
+    return record.get('data', []) if record else []
+
+def save_store_payments(payments):
+    store_payments_col.replace_one(
+        {"_id": "payments_data"},
+        {"_id": "payments_data", "data": payments},
+        upsert=True
+    )
+
+def generate_invoice_number():
+    invoices = load_store_invoices()
+    if not invoices:
+        return "INV-0001"
+    last_num = 0
+    for inv in invoices:
+        try:
+            num = int(inv['invoice_no'].split('-')[1])
+            if num > last_num:
+                last_num = num
+        except:
+            pass
+    return f"INV-{str(last_num + 1).zfill(4)}"
+
+def generate_estimate_number():
+    estimates = load_store_estimates()
+    if not estimates:
+        return "EST-0001"
+    last_num = 0
+    for est in estimates:
+        try:
+            num = int(est['estimate_no'].split('-')[1])
+            if num > last_num:
+                last_num = num
+        except:
+            pass
+    return f"EST-{str(last_num + 1).zfill(4)}"
 
 # --- আপডেটেড: রিয়েল-টাইম ড্যাশবোর্ড সামারি এবং এনালিটিক্স ---
 def get_dashboard_summary_v2():
@@ -1610,6 +2271,7 @@ def get_dashboard_summary_v2():
                 daily_data[sort_key]['closing'] += 1
             daily_data[sort_key]['label'] = dt_obj.strftime('%d-%b')
         except: pass
+
     # Get last month's 1st date to today
     first_of_last_month = (now.replace(day=1) - timedelta(days=1)).replace(day=1)
     start_date = first_of_last_month.strftime('%Y-%m-%d')
@@ -1650,6 +2312,57 @@ def get_dashboard_summary_v2():
         },
         "history": history
     }
+
+def get_store_dashboard_summary():
+    products = load_store_products()
+    customers = load_store_customers()
+    invoices = load_store_invoices()
+    estimates = load_store_estimates()
+    
+    # Calculate total sales this month
+    now = get_bd_time()
+    current_month = now.strftime('%m-%Y')
+    monthly_sales = 0
+    total_due = 0
+    
+    for inv in invoices:
+        inv_date = inv.get('date', '')
+        try:
+            inv_dt = datetime.strptime(inv_date, '%Y-%m-%d')
+            if inv_dt.strftime('%m-%Y') == current_month:
+                monthly_sales += inv.get('total', 0) - inv.get('paid', 0)
+        except:
+            pass
+        total_due += inv.get('due', 0)
+    
+    recent_invoices = sorted(invoices, key=lambda x: x.get('date', '1970-01-01'), reverse=True)[:5]
+    
+    return {
+        "products_count": len(products),
+        "customers_count": len(customers),
+        "invoices_count": len(invoices),
+        "estimates_count": len(estimates),
+        "monthly_sales": f"{monthly_sales:,.2f}",
+        "total_due": f"{total_due:,.2f}",
+        "recent_invoices": recent_invoices,
+    }
+
+# ==============================================================================
+# API CACHING HELPER - নতুন ফাংশন যোগ করা হয়েছে
+# ==============================================================================
+
+def should_refresh_api_data(last_api_call_time):
+    """২৪ ঘন্টা পরে API রিফ্রেশ করা উচিত কিনা চেক করে"""
+    if not last_api_call_time:
+        return True
+    try:
+        # Assuming last_api_call_time is already timezone-aware
+        last_call = datetime.fromisoformat(last_api_call_time)
+        now = get_bd_time()
+        time_diff = now - last_call
+        return time_diff.total_seconds() > 86400  # 24 hours
+    except (ValueError, TypeError):
+        return True
 
 # ==============================================================================
 # লজিক পার্ট: PURCHASE ORDER SHEET PARSER (PDF)
@@ -1810,6 +2523,7 @@ def extract_data_dynamic(file_path):
                             })
     except Exception as e: print(f"Error processing file: {e}")
     return extracted_data, metadata
+
 # ==============================================================================
 # লজিক পার্ট: CLOSING REPORT API & EXCEL GENERATION
 # ==============================================================================
@@ -1831,6 +2545,7 @@ def get_authenticated_session(username, password):
         return None
 
 def fetch_closing_report_data(internal_ref_no):
+    """API থেকে ক্লোজিং রিপোর্ট ডাটা ফেচ করে"""
     active_session = get_authenticated_session("input2.clothing-cutting", "123456")
     if not active_session: return None
 
@@ -1854,6 +2569,69 @@ def fetch_closing_report_data(internal_ref_no):
     if found_data:
         return parse_report_data(found_data)
     return None
+
+def fetch_closing_report_data_with_cache(internal_ref_no):
+    """
+    ক্যাশিং সহ API থেকে ডাটা ফেচ করে।
+    """
+    acc_db = load_accessories_db()
+    ref = internal_ref_no.upper()
+    
+    if ref in acc_db:
+        last_api_call = acc_db[ref].get('last_api_call')
+        cached_colors = acc_db[ref].get('colors', [])
+        
+        if not should_refresh_api_data(last_api_call) and cached_colors:
+            print(f"[CACHE HIT] Using cached data for {ref}")
+            return {
+                'colors': cached_colors,
+                'buyer': acc_db[ref].get('buyer', 'N/A'),
+                'style': acc_db[ref].get('style', 'N/A'),
+                'from_cache': True,
+                'last_updated': last_api_call
+            }
+    
+    print(f"[API CALL] Fetching fresh data for {ref}")
+    report_data = fetch_closing_report_data(ref)
+    
+    colors = []
+    buyer = "N/A"
+    style = "N/A"
+    
+    if report_data:
+        for block in report_data:
+            color_name = block.get('color', '')
+            if color_name and color_name not in colors:
+                colors.append(color_name)
+            if block.get('buyer') != 'N/A':
+                buyer = block.get('buyer')
+            if block.get('style') != 'N/A':
+                style = block.get('style')
+    
+    if ref not in acc_db:
+        acc_db[ref] = {
+            "buyer": buyer,
+            "style": style,
+            "colors": colors,
+            "challans": [],
+            "last_api_call": get_bd_time().isoformat()
+        }
+    else:
+        acc_db[ref]['buyer'] = buyer if buyer != 'N/A' else acc_db[ref].get('buyer', 'N/A')
+        acc_db[ref]['style'] = style if style != 'N/A' else acc_db[ref].get('style', 'N/A')
+        acc_db[ref]['colors'] = colors if colors else acc_db[ref].get('colors', [])
+        acc_db[ref]['last_api_call'] = get_bd_time().isoformat()
+    
+    save_accessories_db(acc_db)
+    
+    return {
+        'colors': sorted(colors),
+        'buyer': buyer,
+        'style': style,
+        'from_cache': False,
+        'last_updated': get_bd_time().isoformat()
+    }
+
 
 def parse_report_data(html_content):
     all_report_data = []
@@ -1913,6 +2691,7 @@ def parse_report_data(html_content):
                 })
         return all_report_data
     except Exception as e:
+        print(f"Parse error: {e}")
         return None
 
 def create_formatted_excel_report(report_data, internal_ref_no=""):
@@ -2136,3043 +2915,2378 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
     return file_stream
 
 # ==============================================================================
-# HTML TEMPLATES: LOGIN PAGE - FIXED RESPONSIVE & CENTERED
+# HTML টেমপ্লেট স্ট্রিং (পেজ রেন্ডারিং)
 # ==============================================================================
 
-LOGIN_TEMPLATE = f"""
-<!doctype html>
+# ----------------- MAIN LAYOUT -----------------
+LAYOUT_HTML = """
+<!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Login - MNM Software</title>
-    {COMMON_STYLES}
-    <style>
-        html, body {{
-            height: 100%;
-            margin: 0;
-            padding: 0;
-            overflow-x: hidden;
-        }}
-        
-        body {{
-            background: var(--bg-body);
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            position: relative;
-            overflow-y: auto;
-        }}
-        
-        /* Animated Background Orbs */
-        .bg-orb {{
-            position: fixed;
-            border-radius: 50%;
-            filter: blur(80px);
-            opacity: 0.4;
-            animation: orbFloat 20s ease-in-out infinite;
-            pointer-events: none;
-        }}
-        
-        .orb-1 {{
-            width: 300px;
-            height: 300px;
-            background: var(--accent-orange);
-            top: -100px;
-            left: -100px;
-            animation-delay: 0s;
-        }}
-        
-        .orb-2 {{
-            width: 250px;
-            height: 250px;
-            background: var(--accent-purple);
-            bottom: -50px;
-            right: -50px;
-            animation-delay: -5s;
-        }}
-        
-        .orb-3 {{
-            width: 150px;
-            height: 150px;
-            background: var(--accent-green);
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            animation-delay: -10s;
-        }}
-        
-        @keyframes orbFloat {{
-            0%, 100% {{ transform: translate(0, 0) scale(1); }}
-            25% {{ transform: translate(30px, -30px) scale(1.05); }}
-            50% {{ transform: translate(-20px, 20px) scale(0.95); }}
-            75% {{ transform: translate(15px, 30px) scale(1.02); }}
-        }}
-        
-        .login-container {{
-            position: relative;
-            z-index: 10;
-            width: 100%;
-            max-width: 420px;
-            padding: 20px;
-            margin: auto;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            min-height: 100vh;
-        }}
-        
-        .login-card {{
-            background: var(--gradient-card);
-            border: 1px solid var(--border-color);
-            border-radius: 24px;
-            padding: 40px 35px;
-            backdrop-filter: blur(20px);
-            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.5), 0 0 60px var(--accent-orange-glow);
-            animation: loginCardAppear 0.8s cubic-bezier(0.4, 0, 0.2, 1);
-        }}
-        @keyframes loginCardAppear {{
-            from {{
-                opacity: 0;
-                transform: translateY(30px) scale(0.95);
-            }}
-            to {{
-                opacity: 1;
-                transform: translateY(0) scale(1);
-            }}
-        }}
-        
-        .brand-section {{
-            text-align: center;
-            margin-bottom: 35px;
-        }}
-        
-        .brand-icon {{
-            width: 70px;
-            height: 70px;
-            background: var(--gradient-orange);
-            border-radius: 18px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 32px;
-            color: white;
-            margin-bottom: 18px;
-            box-shadow: 0 15px 40px var(--accent-orange-glow);
-            animation: brandIconPulse 3s ease-in-out infinite;
-        }}
-        
-        @keyframes brandIconPulse {{
-            0%, 100% {{ transform: scale(1) rotate(0deg); box-shadow: 0 15px 40px var(--accent-orange-glow); }}
-            50% {{ transform: scale(1.05) rotate(5deg); box-shadow: 0 20px 50px var(--accent-orange-glow); }}
-        }}
-        
-        .brand-name {{
-            font-size: 28px;
-            font-weight: 900;
-            color: white;
-            letter-spacing: -1px;
-        }}
-        
-        .brand-name span {{
-            background: var(--gradient-orange);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }}
-        
-        .brand-tagline {{
-            color: var(--text-secondary);
-            font-size: 11px;
-            letter-spacing: 2px;
-            margin-top: 6px;
-            font-weight: 600;
-            text-transform: uppercase;
-        }}
-        
-        .login-form .input-group {{
-            margin-bottom: 20px;
-        }}
-        
-        .login-form .input-group label {{
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin-bottom: 8px;
-        }}
-        
-        .login-form .input-group label i {{
-            color: var(--accent-orange);
-            font-size: 13px;
-        }}
-        
-        .login-form input {{
-            padding: 14px 18px;
-            font-size: 14px;
-            border-radius: 12px;
-        }}
-        
-        .login-btn {{
-            margin-top: 8px;
-            padding: 14px 24px;
-            font-size: 15px;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-        }}
-        
-        .login-btn i {{
-            transition: transform 0.3s;
-        }}
-        
-        .login-btn:hover i {{
-            transform: translateX(5px);
-        }}
-        
-        .error-box {{
-            margin-top: 20px;
-            padding: 14px 18px;
-            background: rgba(239, 68, 68, 0.1);
-            border: 1px solid rgba(239, 68, 68, 0.2);
-            border-radius: 10px;
-            color: #F87171;
-            font-size: 13px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            animation: errorShake 0.5s ease-out;
-        }}
-        
-        @keyframes errorShake {{
-            0%, 100% {{ transform: translateX(0); }}
-            20%, 60% {{ transform: translateX(-5px); }}
-            40%, 80% {{ transform: translateX(5px); }}
-        }}
-        
-        .footer-credit {{
-            text-align: center;
-            margin-top: 25px;
-            color: var(--text-secondary);
-            font-size: 11px;
-            opacity: 0.5;
-            font-weight: 500;
-        }}
-        
-        .footer-credit a {{
-            color: var(--accent-orange);
-            text-decoration: none;
-        }}
-        
-        /* Responsive Fixes */
-        @media (max-width: 480px) {{
-            .login-container {{
-                padding: 15px;
-            }}
-            
-            .login-card {{
-                padding: 30px 25px;
-                border-radius: 20px;
-            }}
-            
-            .brand-icon {{
-                width: 60px;
-                height: 60px;
-                font-size: 28px;
-            }}
-            
-            .brand-name {{
-                font-size: 24px;
-            }}
-            
-            .brand-tagline {{
-                font-size: 10px;
-            }}
-            
-            .login-form input {{
-                padding: 12px 16px;
-                font-size: 14px;
-            }}
-            
-            .login-btn {{
-                padding: 12px 20px;
-                font-size: 14px;
-            }}
-        }}
-        
-        @media (max-height: 700px) {{
-            .login-container {{
-                min-height: auto;
-                padding-top: 30px;
-                padding-bottom: 30px;
-            }}
-            
-            .brand-section {{
-                margin-bottom: 25px;
-            }}
-            
-            .brand-icon {{
-                width: 60px;
-                height: 60px;
-                font-size: 26px;
-                margin-bottom: 12px;
-            }}
-        }}
-    </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }} - CCBL Office</title>
+    {{ COMMON_STYLES | safe }}
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" rel="stylesheet" />
 </head>
 <body>
-    <div class="bg-orb orb-1"></div>
-    <div class="bg-orb orb-2"></div>
-    <div class="bg-orb orb-3"></div>
-    
-    <div class="login-container">
-        <div class="login-card">
-            <div class="brand-section">
-                <div class="brand-icon">
-                    <i class="fas fa-layer-group"></i>
-                </div>
-                <div class="brand-name">MNM<span>Software</span></div>
-                <div class="brand-tagline">Secure Access Portal</div>
-            </div>
-            
-            <form action="/login" method="post" class="login-form">
-                <div class="input-group">
-                    <label><i class="fas fa-user"></i> USERNAME</label>
-                    <input type="text" name="username" required placeholder="Enter your ID" autocomplete="off">
-                </div>
-                <div class="input-group">
-                    <label><i class="fas fa-lock"></i> PASSWORD</label>
-                    <input type="password" name="password" required placeholder="Enter your Password">
-                </div>
-                <button type="submit" class="login-btn">
-                    Sign In <i class="fas fa-arrow-right"></i>
-                </button>
-            </form>
-            
-            {{% with messages = get_flashed_messages() %}}
-                {{% if messages %}}
-                    <div class="error-box">
-                        <i class="fas fa-exclamation-circle"></i>
-                        <span>{{{{ messages[0] }}}}</span>
-                    </div>
-                {{% endif %}}
-            {{% endwith %}}
-            
-            <div class="footer-credit">
-                © 2025 <a href="#">Mehedi Hasan</a> • All Rights Reserved
-            </div>
-        </div>
-    </div>
-    
-    <script>
-        // Add ripple effect to button
-        document.querySelector('.login-btn').addEventListener('click', function(e) {{
-            const ripple = document.createElement('span');
-            ripple.classList.add('ripple-effect');
-            const rect = this.getBoundingClientRect();
-            ripple.style.left = (e.clientX - rect.left) + 'px';
-            ripple.style.top = (e.clientY - rect.top) + 'px';
-            this.appendChild(ripple);
-            setTimeout(() => ripple.remove(), 600);
-        }});
-    </script>
-</body>
-</html>
-"""
-
-# ==============================================================================
-# ADMIN DASHBOARD TEMPLATE - MODERN UI WITH DEW STYLE CHART
-# ==============================================================================
-
-ADMIN_DASHBOARD_TEMPLATE = f"""
-<!doctype html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Admin Dashboard - MNM Software</title>
-    {COMMON_STYLES}
-</head>
-<body>
-    <div class="animated-bg"></div>
     <div id="particles-js"></div>
-
-    <div class="welcome-modal" id="welcomeModal">
-        <div class="welcome-content">
-            <div class="welcome-icon" id="welcomeIcon"><i class="fas fa-hand-sparkles"></i></div>
-            <div class="welcome-greeting" id="greetingText">Good Morning</div>
-            <div class="welcome-title">Welcome Back, <span>{{{{ session.user }}}}</span>!</div>
-            <div class="welcome-message">
-                You're now logged into the MNM Software Dashboard.
-                All systems are operational and ready for your commands.
-            </div>
-            <button class="welcome-close" onclick="closeWelcome()">
-                <i class="fas fa-rocket" style="margin-right: 8px;"></i> Let's Go!
-            </button>
-        </div>
-    </div>
-
-    <div id="loading-overlay">
-        <div class="spinner-container">
-            <div class="spinner" id="spinner-anim"></div>
-            <div class="spinner-inner"></div>
-        </div>
-        
-        <div class="checkmark-container" id="success-anim">
-            <div class="checkmark-circle"></div>
-            <div class="anim-text">Successful!</div>
-        </div>
-
-        <div class="fail-container" id="fail-anim">
-            <div class="fail-circle"></div>
-            <div class="anim-text">Action Failed!</div>
-            <div style="font-size:13px; color:#F87171; margin-top:8px;">Please check server or inputs</div>
-        </div>
-        
-        <div class="loading-text" id="loading-text">Processing Request...</div>
-    </div>
-
-    <div class="mobile-toggle" onclick="document.querySelector('.sidebar').classList.toggle('active')">
-        <i class="fas fa-bars"></i>
-    </div>
-
-    <div class="sidebar">
-        <div class="brand-logo">
-            <i class="fas fa-layer-group"></i> 
-            MNM<span>Software</span>
-        </div>
-        <div class="nav-menu">
-            <div class="nav-link active" onclick="showSection('dashboard', this)">
-                <i class="fas fa-home"></i> Dashboard
-                <span class="nav-badge">Live</span>
-            </div>
-            <div class="nav-link" onclick="showSection('analytics', this)">
-                <i class="fas fa-chart-pie"></i> Closing Report
-            </div>
-            <a href="/admin/accessories" class="nav-link">
-                <i class="fas fa-database"></i> Accessories Challan
-            </a>
-            <div class="nav-link" onclick="showSection('help', this)">
-                <i class="fas fa-file-invoice"></i> PO Generator
-            </div>
-            <div class="nav-link" onclick="showSection('settings', this)">
-                <i class="fas fa-users-cog"></i> User Manage
-            </div>
-            <a href="/admin/store" class="nav-link">
-                <i class="fas fa-store"></i> Store
-            </a>
-            <a href="/logout" class="nav-link" style="color: var(--accent-red); margin-top: 20px;">
-                <i class="fas fa-sign-out-alt"></i> Sign Out
-            </a>
-        </div>
-        <div class="sidebar-footer">
-            <i class="fas fa-code" style="margin-right: 5px;"></i> Powered by Mehedi Hasan
-        </div>
-    </div>
-
-    <div class="main-content">
-        
-        <div id="section-dashboard">
-            <div class="header-section">
-                <div>
-                    <div class="page-title">Main Dashboard</div>
-                    <div class="page-subtitle">Lifetime Overview & Analytics</div>
-                </div>
-                <div class="status-badge">
-                    <div class="status-dot"></div>
-                    <span>System Online</span>
-                </div>
-            </div>
-            
-            {{% with messages = get_flashed_messages() %}}
-                {{% if messages %}}
-                    <div class="flash-message flash-error">
-                        <i class="fas fa-exclamation-circle"></i>
-                        <span>{{{{ messages[0] }}}}</span>
-                    </div>
-                {{% endif %}}
-            {{% endwith %}}
-
-            <div class="stats-grid">
-                <div class="card stat-card" style="animation-delay: 0.1s;">
-                    <div class="stat-icon"><i class="fas fa-file-export"></i></div>
-                    <div class="stat-info">
-                        <h3 class="count-up" data-target="{{{{ stats.closing.count }}}}">0</h3>
-                        <p>Lifetime Closing</p>
-                    </div>
-                </div>
-                <div class="card stat-card" style="animation-delay: 0.2s;">
-                    <div class="stat-icon" style="background: linear-gradient(145deg, rgba(139, 92, 246, 0.15), rgba(139, 92, 246, 0.05));">
-                        <i class="fas fa-boxes" style="color: var(--accent-purple);"></i>
-                    </div>
-                    <div class="stat-info">
-                        <h3 class="count-up" data-target="{{{{ stats.accessories.count }}}}">0</h3>
-                        <p>Lifetime Accessories</p>
-                    </div>
-                </div>
-                <div class="card stat-card" style="animation-delay: 0.3s;">
-                    <div class="stat-icon" style="background: linear-gradient(145deg, rgba(16, 185, 129, 0.15), rgba(16, 185, 129, 0.05));">
-                        <i class="fas fa-file-pdf" style="color: var(--accent-green);"></i>
-                    </div>
-                    <div class="stat-info">
-                        <h3 class="count-up" data-target="{{{{ stats.po.count }}}}">0</h3>
-                        <p>Lifetime PO Sheets</p>
-                    </div>
-                </div>
-                <div class="card stat-card" style="animation-delay: 0.4s;">
-                    <div class="stat-icon" style="background: linear-gradient(145deg, rgba(59, 130, 246, 0.15), rgba(59, 130, 246, 0.05));">
-                        <i class="fas fa-users" style="color: var(--accent-blue);"></i>
-                    </div>
-                    <div class="stat-info">
-                        <h3 class="count-up" data-target="{{{{ stats.users.count }}}}">0</h3>
-                        <p>Total Users</p>
-                    </div>
-                </div>
-            </div>
-
-            <div class="dashboard-grid-2">
-                <div class="card">
-                    <div class="section-header">
-                        <span>Daily Activity Chart</span>
-                        <div class="realtime-indicator">
-                            <div class="realtime-dot"></div>
-                            <span>Real-time</span>
-                        </div>
-                    </div>
-                    <div class="chart-container" style="height: 320px;">
-                        <canvas id="mainChart"></canvas>
-                    </div>
-                </div>
-                <div class="card">
-                    <div class="section-header">
-                        <span>Module Usage</span>
-                        <i class="fas fa-chart-bar" style="color: var(--accent-orange);"></i>
-                    </div>
-                    
-                    <div class="progress-item">
-                        <div class="progress-header">
-                            <span>Closing Report</span>
-                            <span class="progress-value">{{{{ stats.closing.count }}}} Lifetime</span>
-                        </div>
-                        <div class="progress-bar-container">
-                            <div class="progress-bar-fill progress-orange" style="width: 85%;"></div>
-                        </div>
-                    </div>
-                    
-                    <div class="progress-item">
-                        <div class="progress-header">
-                            <span>Accessories</span>
-                            <span class="progress-value">{{{{ stats.accessories.count }}}} Challans</span>
-                        </div>
-                        <div class="progress-bar-container">
-                            <div class="progress-bar-fill progress-purple" style="width: 65%;"></div>
-                        </div>
-                    </div>
-                    
-                    <div class="progress-item">
-                        <div class="progress-header">
-                            <span>PO Generator</span>
-                            <span class="progress-value">{{{{ stats.po.count }}}} Files</span>
-                        </div>
-                        <div class="progress-bar-container">
-                            <div class="progress-bar-fill progress-green" style="width: 45%;"></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="card">
-                <div class="section-header">
-                    <span>Recent Activity Log</span>
-                    <i class="fas fa-history" style="color: var(--text-secondary);"></i>
-                </div>
-                <div style="overflow-x: auto;">
-                    <table class="dark-table">
-                        <thead>
-                            <tr>
-                                <th>Time</th>
-                                <th>User</th>
-                                <th>Action</th>
-                                <th>Reference</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {{% for log in stats.history[:10] %}}
-                            <tr style="animation: fadeInUp 0.5s ease-out {{{{ loop.index * 0.05 }}}}s backwards;">
-                                <td>
-                                    <div class="time-badge">
-                                        <i class="far fa-clock"></i>
-                                        {{{{ log.time }}}}
-                                    </div>
-                                </td>
-                                <td style="font-weight: 600; color: white;">{{{{ log.user }}}}</td>
-                                <td>
-                                    <span class="table-badge" style="
-                                        {{% if log.type == 'Closing Report' %}}
-                                        background: rgba(255, 122, 0, 0.1); color: var(--accent-orange);
-                                        {{% elif log.type == 'PO Sheet' %}}
-                                        background: rgba(16, 185, 129, 0.1); color: var(--accent-green);
-                                        {{% else %}}
-                                        background: rgba(139, 92, 246, 0.1); color: var(--accent-purple);
-                                        {{% endif %}}
-                                    ">{{{{ log.type }}}}</span>
-                                </td>
-                                <td style="color: var(--text-secondary);">{{{{ log.ref if log.ref else '-' }}}}</td>
-                            </tr>
-                            {{% else %}}
-                            <tr>
-                                <td colspan="4" style="text-align: center; padding: 40px; color: var(--text-secondary);">
-                                    <i class="fas fa-inbox" style="font-size: 40px; opacity: 0.3; margin-bottom: 15px; display: block;"></i>
-                                    No activity recorded yet. 
-                                </td>
-                            </tr>
-                            {{% endfor %}}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-
-        <div id="section-analytics" style="display:none;">
-            <div class="header-section">
-                <div>
-                    <div class="page-title">Closing Report</div>
-                    <div class="page-subtitle">Generate production closing reports</div>
-                </div>
-            </div>
-            <div class="card" style="max-width: 550px; margin: 0 auto; margin-top: 30px;">
-                <div class="section-header">
-                    <span><i class="fas fa-magic" style="margin-right: 10px; color: var(--accent-orange);"></i>Generate Report</span>
-                </div>
-                <form action="/generate-report" method="post" onsubmit="return showLoading()">
-                    <div class="input-group">
-                        <label><i class="fas fa-bookmark" style="margin-right: 5px;"></i> INTERNAL REF NO</label>
-                        <input type="text" name="ref_no" placeholder="e.g. IB-12345 or Booking-123" required>
-                    </div>
-                    <button type="submit">
-                        <i class="fas fa-bolt" style="margin-right: 10px;"></i> Generate Report
-                    </button>
-                </form>
-            </div>
-        </div>
-
-        <div id="section-help" style="display:none;">
-            <div class="header-section">
-                <div>
-                    <div class="page-title">PO Sheet Generator</div>
-                    <div class="page-subtitle">Process and generate PO summary sheets</div>
-                </div>
-            </div>
-            <div class="card" style="max-width: 650px; margin: 0 auto; margin-top: 30px;">
-                <div class="section-header">
-                    <span><i class="fas fa-file-pdf" style="margin-right: 10px; color: var(--accent-green);"></i>Upload PDF Files</span>
-                </div>
-                <form action="/generate-po-report" method="post" enctype="multipart/form-data" onsubmit="return showLoading()">
-                    <div class="upload-zone" id="uploadZone" onclick="document.getElementById('file-upload').click()">
-                        <input type="file" name="pdf_files" multiple accept=".pdf" required style="display: none;" id="file-upload">
-                        <div class="upload-icon">
-                            <i class="fas fa-cloud-upload-alt"></i>
-                        </div>
-                        <div class="upload-text">Click or Drag to Upload PDF Files</div>
-                        <div class="upload-hint">Supports multiple PDF files</div>
-                        <div id="file-count">No files selected</div>
-                    </div>
-                    <button type="submit" style="margin-top: 25px; background: linear-gradient(135deg, #10B981 0%, #34D399 100%);">
-                        <i class="fas fa-cogs" style="margin-right: 10px;"></i> Process Files
-                    </button>
-                </form>
-            </div>
-        </div>
-
-        <div id="section-settings" style="display:none;">
-            <div class="header-section">
-                <div>
-                    <div class="page-title">User Management</div>
-                    <div class="page-subtitle">Manage user accounts and permissions</div>
-                </div>
-            </div>
-            <div class="dashboard-grid-2">
-                <div class="card">
-                    <div class="section-header">
-                        <span>User Directory</span>
-                        <span class="table-badge" style="background: var(--accent-orange); color: white;">{{{{ stats.users.count }}}} Users</span>
-                    </div>
-                    <div id="userTableContainer" style="max-height: 450px; overflow-y: auto;">
-                        <div class="skeleton" style="height: 50px; margin-bottom: 10px;"></div>
-                        <div class="skeleton" style="height: 50px; margin-bottom: 10px;"></div>
-                        <div class="skeleton" style="height: 50px;"></div>
-                    </div>
-                </div>
-                <div class="card">
-                    <div class="section-header">
-                        <span>Create / Edit User</span>
-                        <i class="fas fa-user-plus" style="color: var(--accent-orange);"></i>
-                    </div>
-                    <form id="userForm">
-                        <input type="hidden" id="action_type" value="create">
-                        <div class="input-group">
-                            <label><i class="fas fa-user" style="margin-right: 5px;"></i> USERNAME</label>
-                            <input type="text" id="new_username" required placeholder="Enter username">
-                        </div>
-                        <div class="input-group">
-                            <label><i class="fas fa-key" style="margin-right: 5px;"></i> PASSWORD</label>
-                            <input type="text" id="new_password" required placeholder="Enter password">
-                        </div>
-                        <div class="input-group">
-                            <label><i class="fas fa-shield-alt" style="margin-right: 5px;"></i> PERMISSIONS</label>
-                            <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 5px;">
-                                <label class="perm-checkbox">
-                                    <input type="checkbox" id="perm_closing" checked>
-                                    <span>Closing</span>
-                                </label>
-                                <label class="perm-checkbox">
-                                    <input type="checkbox" id="perm_po">
-                                    <span>PO Sheet</span>
-                                </label>
-                                <label class="perm-checkbox">
-                                    <input type="checkbox" id="perm_acc">
-                                    <span>Accessories</span>
-                                </label>
-                            </div>
-                        </div>
-                        <button type="button" onclick="handleUserSubmit()" id="saveUserBtn">
-                            <i class="fas fa-save" style="margin-right: 10px;"></i> Save User
-                        </button>
-                        <button type="button" onclick="resetForm()" style="margin-top: 12px; background: rgba(255,255,255,0.05); border: 1px solid var(--border-color);">
-                            <i class="fas fa-undo" style="margin-right: 10px;"></i> Reset Form
-                        </button>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
-    <script>
-        // ===== WELCOME POPUP WITH TIME-BASED GREETING =====
-        function showWelcomePopup() {{
-            const hour = new Date().getHours();
-            let greeting, icon;
-            
-            if (hour >= 5 && hour < 12) {{
-                greeting = "Good Morning";
-                icon = '<i class="fas fa-sun"></i>';
-            }} else if (hour >= 12 && hour < 17) {{
-                greeting = "Good Afternoon";
-                icon = '<i class="fas fa-sun"></i>';
-            }} else if (hour >= 17 && hour < 21) {{
-                greeting = "Good Evening";
-                icon = '<i class="fas fa-city"></i>';
-            }} else {{
-                greeting = "Good Night";
-                icon = '<i class="fas fa-moon"></i>';
-            }}
-            
-            document.getElementById('greetingText').textContent = greeting;
-            document.getElementById('welcomeIcon').innerHTML = icon;
-            document.getElementById('welcomeModal').style.display = 'flex';
-        }}
-        
-        function closeWelcome() {{
-            const modal = document.getElementById('welcomeModal');
-            modal.style.animation = 'modalFadeOut 0.3s ease-out forwards';
-            setTimeout(() => {{
-                modal.style.display = 'none';
-                sessionStorage.setItem('welcomeShown', 'true');
-            }}, 300);
-        }}
-        
-        if (!sessionStorage.getItem('welcomeShown')) {{
-            setTimeout(showWelcomePopup, 500);
-        }}
-        
-        // ===== SECTION NAVIGATION =====
-        function showSection(id, element) {{
-            ['dashboard', 'analytics', 'help', 'settings'].forEach(sid => {{
-                document.getElementById('section-' + sid).style.display = 'none';
-            }});
-            document.getElementById('section-' + id).style.display = 'block';
-            
-            if (element) {{
-                document.querySelectorAll('.nav-link').forEach(el => el.classList.remove('active'));
-                element.classList.add('active');
-            }}
-            
-            if (id === 'settings') loadUsers();
-            if (window.innerWidth < 1024) document.querySelector('.sidebar').classList.remove('active');
-        }}
-        
-        // ===== FILE UPLOAD HANDLER =====
-        const fileUpload = document.getElementById('file-upload');
-        const uploadZone = document.getElementById('uploadZone');
-        
-        if (fileUpload) {{
-            fileUpload.addEventListener('change', function() {{
-                const count = this.files.length;
-                document.getElementById('file-count').innerHTML = count > 0 
-                    ? `<i class="fas fa-check-circle" style="margin-right: 5px;"></i>${{count}} file(s) selected`
-                    : 'No files selected';
-            }});
-            uploadZone.addEventListener('dragover', (e) => {{
-                e.preventDefault();
-                uploadZone.classList.add('dragover');
-            }});
-            uploadZone.addEventListener('dragleave', () => {{
-                uploadZone.classList.remove('dragover');
-            }});
-            uploadZone.addEventListener('drop', (e) => {{
-                e.preventDefault();
-                uploadZone.classList.remove('dragover');
-                fileUpload.files = e.dataTransfer.files;
-                fileUpload.dispatchEvent(new Event('change'));
-            }});
-        }}
-        
-        // ===== DEW STYLE DAILY CHART =====
-        const ctx = document.getElementById('mainChart').getContext('2d');
-        const gradientOrange = ctx.createLinearGradient(0, 0, 0, 300);
-        gradientOrange.addColorStop(0, 'rgba(255, 122, 0, 0.5)');
-        gradientOrange.addColorStop(1, 'rgba(255, 122, 0, 0.0)');
-        const gradientPurple = ctx.createLinearGradient(0, 0, 0, 300);
-        gradientPurple.addColorStop(0, 'rgba(139, 92, 246, 0.5)');
-        gradientPurple.addColorStop(1, 'rgba(139, 92, 246, 0.0)');
-        const gradientGreen = ctx.createLinearGradient(0, 0, 0, 300);
-        gradientGreen.addColorStop(0, 'rgba(16, 185, 129, 0.5)');
-        gradientGreen.addColorStop(1, 'rgba(16, 185, 129, 0.0)');
-        new Chart(ctx, {{
-            type: 'line',
-            data: {{
-                labels: {{{{ stats.chart.labels | tojson }}}},
-                datasets: [
-                    {{
-                        label: 'Closing',
-                        data: {{{{ stats.chart.closing | tojson }}}},
-                        borderColor: '#FF7A00',
-                        backgroundColor: gradientOrange,
-                        tension: 0.4,
-                        fill: true,
-                        pointBackgroundColor: '#FF7A00',
-                        pointBorderColor: '#fff',
-                        pointBorderWidth: 2,
-                        pointRadius: 4,
-                        pointHoverRadius: 7,
-                        borderWidth: 3
-                    }},
-                    {{
-                        label: 'Accessories',
-                        data: {{{{ stats.chart.acc | tojson }}}},
-                        borderColor: '#8B5CF6',
-                        backgroundColor: gradientPurple,
-                        tension: 0.4,
-                        fill: true,
-                        pointBackgroundColor: '#8B5CF6',
-                        pointBorderColor: '#fff',
-                        pointBorderWidth: 2,
-                        pointRadius: 4,
-                        pointHoverRadius: 7,
-                        borderWidth: 3
-                    }},
-                    {{
-                        label: 'PO Sheets',
-                        data: {{{{ stats.chart.po | tojson }}}},
-                        borderColor: '#10B981',
-                        backgroundColor: gradientGreen,
-                        tension: 0.4,
-                        fill: true,
-                        pointBackgroundColor: '#10B981',
-                        pointBorderColor: '#fff',
-                        pointBorderWidth: 2,
-                        pointRadius: 4,
-                        pointHoverRadius: 7,
-                        borderWidth: 3
-                    }}
-                ]
-            }},
-            options: {{
-                plugins: {{
-                    legend: {{
-                        display: true,
-                        position: 'top',
-                        labels: {{
-                            color: '#8b8b9e',
-                            font: {{ size: 11, weight: 500 }},
-                            usePointStyle: true,
-                            padding: 15,
-                            boxWidth: 8
-                        }}
-                    }},
-                    tooltip: {{
-                        mode: 'index',
-                        intersect: false,
-                        backgroundColor: 'rgba(22, 22, 31, 0.95)',
-                        titleColor: '#fff',
-                        bodyColor: '#8b8b9e',
-                        borderColor: 'rgba(255, 122, 0, 0.3)',
-                        borderWidth: 1,
-                        padding: 12,
-                        cornerRadius: 10,
-                        displayColors: true
-                    }}
-                }},
-                scales: {{
-                    x: {{
-                        grid: {{ 
-                            display: false 
-                        }},
-                        ticks: {{ 
-                            color: '#8b8b9e', 
-                            font: {{ size: 10 }},
-                            maxRotation: 45,
-                            minRotation: 45
-                        }}
-                    }},
-                    y: {{
-                        grid: {{ 
-                            color: 'rgba(255,255,255,0.03)',
-                            drawBorder: false
-                        }},
-                        ticks: {{ 
-                            color: '#8b8b9e', 
-                            font: {{ size: 10 }},
-                            stepSize: 1
-                        }},
-                        beginAtZero: true
-                    }}
-                }},
-                responsive: true,
-                maintainAspectRatio: false,
-                interaction: {{
-                    intersect: false,
-                    mode: 'index'
-                }},
-                animation: {{
-                    duration: 2000,
-                    easing: 'easeOutQuart'
-                }}
-            }}
-        }});
-
-        // ===== COUNT UP ANIMATION =====
-        function animateCountUp() {{
-            document.querySelectorAll('.count-up').forEach(counter => {{
-                const target = parseInt(counter.getAttribute('data-target'));
-                const duration = 2000;
-                const step = target / (duration / 16);
-                let current = 0;
-                
-                const updateCounter = () => {{
-                    current += step;
-                    if (current < target) {{
-                        counter.textContent = Math.floor(current);
-                        requestAnimationFrame(updateCounter);
-                    }} else {{
-                        counter.textContent = target;
-                    }}
-                }};
-                
-                updateCounter();
-            }});
-        }}
-        
-        setTimeout(animateCountUp, 500);
-
-        // ===== LOADING ANIMATION =====
-        function showLoading() {{
-            const overlay = document.getElementById('loading-overlay');
-            const spinner = document.getElementById('spinner-anim').parentElement;
-            const success = document.getElementById('success-anim');
-            const fail = document.getElementById('fail-anim');
-            const text = document.getElementById('loading-text');
-            
-            overlay.style.display = 'flex';
-            spinner.style.display = 'block';
-            success.style.display = 'none';
-            fail.style.display = 'none';
-            text.style.display = 'block';
-            text.textContent = 'Processing Request...';
-            
-            return true;
-        }}
-
-        function showSuccess() {{
-            const overlay = document.getElementById('loading-overlay');
-            const spinner = document.getElementById('spinner-anim').parentElement;
-            const success = document.getElementById('success-anim');
-            const text = document.getElementById('loading-text');
-            
-            spinner.style.display = 'none';
-            success.style.display = 'block';
-            text.style.display = 'none';
-            
-            setTimeout(() => {{ overlay.style.display = 'none'; }}, 1500);
-        }}
-
-        // ===== USER MANAGEMENT =====
-        function loadUsers() {{
-            fetch('/admin/get-users')
-                .then(res => res.json())
-                .then(data => {{
-                    let html = '<table class="dark-table"><thead><tr><th>User</th><th>Role</th><th style="text-align:right;">Actions</th></tr></thead><tbody>';
-                    
-                    for (const [u, d] of Object.entries(data)) {{
-                        const roleClass = d.role === 'admin' ? 'background: rgba(255, 122, 0, 0.1); color: var(--accent-orange);' : 'background: rgba(139, 92, 246, 0.1); color: var(--accent-purple);';
-                        
-                        html += `<tr>
-                            <td style="font-weight: 600;">${{u}}</td>
-                            <td><span class="table-badge" style="${{roleClass}}">${{d.role}}</span></td>
-                            <td style="text-align:right;">
-                                ${{d.role !== 'admin' ? `
-                                    <div class="action-cell">
-                                        <button class="action-btn btn-edit" onclick="editUser('${{u}}', '${{d.password}}', '${{d.permissions.join(',')}}')">
-                                            <i class="fas fa-edit"></i>
-                                        </button> 
-                                        <button class="action-btn btn-del" onclick="deleteUser('${{u}}')">
-                                            <i class="fas fa-trash"></i>
-                                        </button>
-                                    </div>
-                                ` : '<i class="fas fa-shield-alt" style="color: var(--accent-orange); opacity: 0.5;"></i>'}}
-                            </td>
-                        </tr>`;
-                    }}
-                    
-                    document.getElementById('userTableContainer').innerHTML = html + '</tbody></table>';
-                }});
-        }}
-        
-        function handleUserSubmit() {{
-            const u = document.getElementById('new_username').value;
-            const p = document.getElementById('new_password').value;
-            const a = document.getElementById('action_type').value;
-            
-            let perms = [];
-            if (document.getElementById('perm_closing').checked) perms.push('closing');
-            if (document.getElementById('perm_po').checked) perms.push('po_sheet');
-            if (document.getElementById('perm_acc').checked) perms.push('accessories');
-            
-            showLoading();
-            
-            fetch('/admin/save-user', {{
-                method: 'POST',
-                headers: {{'Content-Type': 'application/json'}},
-                body: JSON.stringify({{ username: u, password: p, permissions: perms, action_type: a }})
-            }})
-            .then(r => r.json())
-            .then(d => {{
-                if (d.status === 'success') {{
-                    showSuccess();
-                    loadUsers();
-                    resetForm();
-                }} else {{
-                    alert(d.message);
-                    document.getElementById('loading-overlay').style.display = 'none';
-                }}
-            }});
-        }}
-        
-        function editUser(u, p, permsStr) {{
-            document.getElementById('new_username').value = u;
-            document.getElementById('new_username').readOnly = true;
-            document.getElementById('new_password').value = p;
-            document.getElementById('action_type').value = 'update';
-            document.getElementById('saveUserBtn').innerHTML = '<i class="fas fa-sync" style="margin-right: 10px;"></i> Update User';
-            const pArr = permsStr.split(',');
-            document.getElementById('perm_closing').checked = pArr.includes('closing');
-            document.getElementById('perm_po').checked = pArr.includes('po_sheet');
-            document.getElementById('perm_acc').checked = pArr.includes('accessories');
-        }}
-        
-        function resetForm() {{
-            document.getElementById('userForm').reset();
-            document.getElementById('action_type').value = 'create';
-            document.getElementById('saveUserBtn').innerHTML = '<i class="fas fa-save" style="margin-right: 10px;"></i> Save User';
-            document.getElementById('new_username').readOnly = false;
-            document.getElementById('perm_closing').checked = true;
-        }}
-        
-        function deleteUser(u) {{
-            if (confirm('Are you sure you want to delete "' + u + '"?')) {{
-                fetch('/admin/delete-user', {{
-                    method: 'POST',
-                    headers: {{'Content-Type': 'application/json'}},
-                    body: JSON.stringify({{ username: u }})
-                }}).then(() => loadUsers());
-            }}
-        }}
-        
-        // ===== PARTICLES.JS INITIALIZATION =====
-        if (typeof particlesJS !== 'undefined') {{
-            particlesJS('particles-js', {{
-                particles: {{
-                    number: {{ value: 50, density: {{ enable: true, value_area: 800 }} }},
-                    color: {{ value: '#FF7A00' }},
-                    shape: {{ type: 'circle' }},
-                    opacity: {{ value: 0.3, random: true }},
-                    size: {{ value: 3, random: true }},
-                    line_linked: {{ enable: true, distance: 150, color: '#FF7A00', opacity: 0.1, width: 1 }},
-                    move: {{ enable: true, speed: 1, direction: 'none', random: true, out_mode: 'out' }}
-                }},
-                interactivity: {{
-                    events: {{ onhover: {{ enable: true, mode: 'grab' }} }},
-                    modes: {{ grab: {{ distance: 140, line_linked: {{ opacity: 0.3 }} }} }}
-                }}
-            }});
-        }}
-        
-        // Add CSS for fadeInUp animation
-        const style = document.createElement('style');
-        style.textContent = `
-            @keyframes fadeInUp {{
-                from {{ opacity: 0; transform: translateY(20px); }}
-                to {{ opacity: 1; transform: translateY(0); }}
-            }}
-            @keyframes modalFadeOut {{
-                to {{ opacity: 0; }}
-            }}
-        `;
-        document.head.appendChild(style);
-    </script>
-</body>
-</html>
-"""
-# ==============================================================================
-# USER DASHBOARD TEMPLATE - MODERN UI
-# ==============================================================================
-
-USER_DASHBOARD_TEMPLATE = f"""
-<!doctype html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Dashboard - MNM Software</title>
-    {COMMON_STYLES}
-</head>
-<body>
     <div class="animated-bg"></div>
-    
-    <div class="welcome-modal" id="welcomeModal">
-        <div class="welcome-content">
-            <div class="welcome-icon" id="welcomeIcon"><i class="fas fa-hand-sparkles"></i></div>
-            <div class="welcome-greeting" id="greetingText">Good Morning</div>
-            <div class="welcome-title">Welcome, <span>{{{{ session.user }}}}</span>!</div>
-            <div class="welcome-message">
-                Your workspace is ready.
-                Access your assigned modules below.
-            </div>
-            <button class="welcome-close" onclick="closeWelcome()">
-                <i class="fas fa-rocket" style="margin-right: 8px;"></i> Get Started
-            </button>
+
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="brand-logo">
+            <i class="fa-solid fa-bolt"></i>
+            <span>CCBL</span> Office
         </div>
-    </div>
+        <nav class="nav-menu">
+            {% if session.get('user_type') == 'main' %}
+                <a href="{{ url_for('dashboard') }}" class="nav-link {% if active_page == 'dashboard' %}active{% endif %}">
+                    <i class="fa-solid fa-border-all"></i> Dashboard
+                </a>
+                {% if 'closing' in session['permissions'] %}
+                <a href="{{ url_for('closing_report_page') }}" class="nav-link {% if active_page == 'closing' %}active{% endif %}">
+                    <i class="fa-solid fa-file-excel"></i> Closing Report
+                </a>
+                {% endif %}
+                {% if 'po_sheet' in session['permissions'] %}
+                <a href="{{ url_for('po_sheet_page') }}" class="nav-link {% if active_page == 'po_sheet' %}active{% endif %}">
+                    <i class="fa-solid fa-file-pdf"></i> PO Sheet
+                </a>
+                {% endif %}
+                {% if 'accessories' in session['permissions'] %}
+                <a href="{{ url_for('accessories_challan_page') }}" class="nav-link {% if active_page == 'accessories' %}active{% endif %}">
+                    <i class="fa-solid fa-boxes-stacked"></i> Accessories
+                </a>
+                {% endif %}
+                {% if 'view_history' in session['permissions'] %}
+                <a href="{{ url_for('history_page') }}" class="nav-link {% if active_page == 'history' %}active{% endif %}">
+                    <i class="fa-solid fa-clock-rotate-left"></i> History
+                </a>
+                {% endif %}
+                {% if 'user_manage' in session['permissions'] %}
+                <a href="{{ url_for('user_management') }}" class="nav-link {% if active_page == 'user_manage' %}active{% endif %}">
+                    <i class="fa-solid fa-users-gear"></i> User Manage
+                </a>
+                {% endif %}
+                {% if 'store' in session['permissions'] %}
+                <a href="{{ url_for('store_dashboard') }}" class="nav-link {% if active_page.startswith('store_') %}active{% endif %}">
+                    <i class="fa-solid fa-store"></i> Store Panel
+                </a>
+                {% endif %}
+            {% elif session.get('user_type') == 'store' %}
+                <a href="{{ url_for('store_dashboard') }}" class="nav-link {% if active_page == 'store_dashboard' %}active{% endif %}">
+                    <i class="fa-solid fa-border-all"></i> Dashboard
+                </a>
+                {% if 'products' in session['permissions'] %}
+                <a href="{{ url_for('store_products') }}" class="nav-link {% if active_page == 'store_products' %}active{% endif %}">
+                    <i class="fa-solid fa-box-archive"></i> Products
+                </a>
+                {% endif %}
+                {% if 'customers' in session['permissions'] %}
+                <a href="{{ url_for('store_customers') }}" class="nav-link {% if active_page == 'store_customers' %}active{% endif %}">
+                    <i class="fa-solid fa-user-tag"></i> Customers
+                </a>
+                {% endif %}
+                {% if 'invoices' in session['permissions'] %}
+                <a href="{{ url_for('store_invoices') }}" class="nav-link {% if active_page == 'store_invoices' %}active{% endif %}">
+                    <i class="fa-solid fa-file-invoice-dollar"></i> Invoices
+                </a>
+                {% endif %}
+                {% if 'estimates' in session['permissions'] %}
+                <a href="{{ url_for('store_estimates') }}" class="nav-link {% if active_page == 'store_estimates' %}active{% endif %}">
+                    <i class="fa-solid fa-file-alt"></i> Estimates
+                </a>
+                {% endif %}
+                {% if 'user_manage' in session['permissions'] %}
+                <a href="{{ url_for('store_user_management') }}" class="nav-link {% if active_page == 'store_user_manage' %}active{% endif %}">
+                    <i class="fa-solid fa-users-cog"></i> User Manage
+                </a>
+                {% endif %}
+                <a href="{{ url_for('dashboard') }}" class="nav-link">
+                    <i class="fa-solid fa-arrow-left"></i> Back to Main App
+                </a>
+            {% endif %}
+        </nav>
+        <div class="sidebar-footer">
+            <a href="{{ url_for('logout') }}" class="nav-link" style="color: var(--accent-red);"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
+            <p style="margin-top: 15px;">© {{ get_bd_time().year }} CCBL</p>
+        </div>
+    </aside>
     
+    <!-- Mobile Toggle Button -->
+    <button class="mobile-toggle" id="mobile-toggle"><i class="fa-solid fa-bars"></i></button>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Loading Overlay -->
     <div id="loading-overlay">
         <div class="spinner-container">
             <div class="spinner"></div>
             <div class="spinner-inner"></div>
         </div>
-        <div class="loading-text">Processing...</div>
-    </div>
-    
-    <div class="sidebar">
-        <div class="brand-logo">
-            <i class="fas fa-layer-group"></i> 
-            MNM<span>Software</span>
-        </div>
-        <div class="nav-menu">
-            <div class="nav-link active">
-                <i class="fas fa-home"></i> Home
-            </div>
-            <a href="/logout" class="nav-link" style="color: var(--accent-red); margin-top: auto;">
-                <i class="fas fa-sign-out-alt"></i> Sign Out
-            </a>
-        </div>
-        <div class="sidebar-footer">
-            <i class="fas fa-code" style="margin-right: 5px;"></i> Powered by Mehedi Hasan
-        </div>
-    </div>
-    
-    <div class="main-content">
-        <div class="header-section">
-            <div>
-                <div class="page-title">Welcome, {{{{ session.user }}}}!</div>
-                <div class="page-subtitle">Your assigned production modules</div>
-            </div>
-            <div class="status-badge">
-                <div class="status-dot"></div>
-                <span>Online</span>
-            </div>
-        </div>
-
-        {{% with messages = get_flashed_messages() %}}
-            {{% if messages %}}
-                <div class="flash-message flash-error">
-                    <i class="fas fa-exclamation-circle"></i>
-                    <span>{{{{ messages[0] }}}}</span>
-                </div>
-            {{% endif %}}
-        {{% endwith %}}
-
-        <div class="stats-grid">
-            {{% if 'closing' in session.permissions %}}
-            <div class="card" style="animation: fadeInUp 0.5s ease-out 0.1s backwards;">
-                <div class="section-header">
-                    <span><i class="fas fa-file-export" style="margin-right: 10px; color: var(--accent-orange);"></i>Closing Report</span>
-                </div>
-                <p style="color: var(--text-secondary); margin-bottom: 20px; font-size: 14px; line-height: 1.6;">
-                    Generate production closing reports with real-time data.  
-                </p>
-                <form action="/generate-report" method="post" onsubmit="showLoading()">
-                    <div class="input-group">
-                        <label>BOOKING REF NO</label>
-                        <input type="text" name="ref_no" required placeholder="Enter Booking Reference">
-                    </div>
-                    <button type="submit">
-                        <i class="fas fa-magic" style="margin-right: 8px;"></i> Generate
-                    </button>
-                </form>
-            </div>
-            {{% endif %}}
-            
-            {{% if 'po_sheet' in session.permissions %}}
-            <div class="card" style="animation: fadeInUp 0.5s ease-out 0.2s backwards;">
-                <div class="section-header">
-                    <span><i class="fas fa-file-pdf" style="margin-right: 10px; color: var(--accent-green);"></i>PO Sheet</span>
-                </div>
-                <p style="color: var(--text-secondary); margin-bottom: 20px; font-size: 14px; line-height: 1.6;">
-                    Process PDF files and generate PO summary reports.
-                </p>
-                <form action="/generate-po-report" method="post" enctype="multipart/form-data" onsubmit="showLoading()">
-                    <div class="input-group">
-                        <label>PDF FILES</label>
-                        <input type="file" name="pdf_files" multiple accept=".pdf" required style="padding: 12px;">
-                    </div>
-                    <button type="submit" style="background: linear-gradient(135deg, #10B981 0%, #34D399 100%);">
-                        <i class="fas fa-cogs" style="margin-right: 8px;"></i> Process Files
-                    </button>
-                </form>
-            </div>
-            {{% endif %}}
-            
-            {{% if 'accessories' in session.permissions %}}
-            <div class="card" style="animation: fadeInUp 0.5s ease-out 0.3s backwards;">
-                <div class="section-header">
-                    <span><i class="fas fa-boxes" style="margin-right: 10px; color: var(--accent-purple);"></i>Accessories</span>
-                </div>
-                <p style="color: var(--text-secondary); margin-bottom: 20px; font-size: 14px; line-height: 1.6;">
-                    Manage challans, entries and delivery history for accessories.
-                </p>
-                <a href="/admin/accessories">
-                    <button style="background: linear-gradient(135deg, #8B5CF6 0%, #A78BFA 100%);">
-                        <i class="fas fa-external-link-alt" style="margin-right: 8px;"></i> Open Dashboard
-                    </button>
-                </a>
-            </div>
-            {{% endif %}}
-        </div>
-    </div>
-    
-    <script>
-        // Welcome Popup
-        function showWelcomePopup() {{
-            const hour = new Date().getHours();
-            let greeting, icon;
-            
-            if (hour >= 5 && hour < 12) {{
-                greeting = "Good Morning";
-                icon = '<i class="fas fa-sun"></i>';
-            }} else if (hour >= 12 && hour < 17) {{
-                greeting = "Good Afternoon";
-                icon = '<i class="fas fa-sun"></i>';
-            }} else if (hour >= 17 && hour < 21) {{
-                greeting = "Good Evening";
-                icon = '<i class="fas fa-city"></i>';
-            }} else {{
-                greeting = "Good Night";
-                icon = '<i class="fas fa-moon"></i>';
-            }}
-            
-            document.getElementById('greetingText').textContent = greeting;
-            document.getElementById('welcomeIcon').innerHTML = icon;
-            document.getElementById('welcomeModal').style.display = 'flex';
-        }}
-        
-        function closeWelcome() {{
-            const modal = document.getElementById('welcomeModal');
-            modal.style.opacity = '0';
-            setTimeout(() => {{
-                modal.style.display = 'none';
-                sessionStorage.setItem('welcomeShown', 'true');
-            }}, 300);
-        }}
-        
-        if (!sessionStorage.getItem('welcomeShown')) {{
-            setTimeout(showWelcomePopup, 500);
-        }}
-        
-        function showLoading() {{
-            document.getElementById('loading-overlay').style.display = 'flex';
-            return true;
-        }}
-        
-        // Add fadeInUp animation
-        const style = document.createElement('style');
-        style.textContent = `
-            @keyframes fadeInUp {{
-                from {{ opacity: 0; transform: translateY(20px); }}
-                to {{ opacity: 1; transform: translateY(0); }}
-            }}
-        `;
-        document.head.appendChild(style);
-    </script>
-</body>
-</html>
-"""
-
-ACCESSORIES_SEARCH_TEMPLATE = f"""
-<!doctype html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Accessories Search - MNM Software</title>
-    {COMMON_STYLES}
-    <style>
-        body {{
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-        }}
-        
-        .search-container {{
-            position: relative;
-            z-index: 10;
-            width: 100%;
-            max-width: 480px;
-            padding: 20px;
-        }}
-        
-        .search-card {{
-            background: var(--gradient-card);
-            border: 1px solid var(--border-color);
-            border-radius: 24px;
-            padding: 50px 45px;
-            backdrop-filter: blur(20px);
-            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.5), 0 0 60px var(--accent-orange-glow);
-            animation: cardAppear 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-        }}
-        
-        @keyframes cardAppear {{
-            from {{ opacity: 0; transform: translateY(20px) scale(0.95); }}
-            to {{ opacity: 1; transform: translateY(0) scale(1); }}
-        }}
-        
-        .search-header {{
-            text-align: center;
-            margin-bottom: 40px;
-        }}
-        
-        .search-icon {{
-            width: 80px;
-            height: 80px;
-            background: linear-gradient(145deg, rgba(139, 92, 246, 0.2), rgba(139, 92, 246, 0.05));
-            border-radius: 20px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 36px;
-            color: var(--accent-purple);
-            margin-bottom: 20px;
-            animation: iconFloat 3s ease-in-out infinite;
-        }}
-        
-        @keyframes iconFloat {{
-            0%, 100% {{ transform: translateY(0); }}
-            50% {{ transform: translateY(-10px); }}
-        }}
-        
-        .search-title {{
-            font-size: 28px;
-            font-weight: 800;
-            color: white;
-            margin-bottom: 8px;
-        }}
-        
-        .search-subtitle {{
-            color: var(--text-secondary);
-            font-size: 14px;
-        }}
-        
-        .nav-links {{
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-top: 30px;
-            padding-top: 20px;
-            border-top: 1px solid var(--border-color);
-        }}
-        
-        .nav-links a {{
-            color: var(--text-secondary);
-            text-decoration: none;
-            font-size: 13px;
-            font-weight: 500;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            transition: var(--transition-smooth);
-        }}
-        
-        .nav-links a:hover {{
-            color: var(--accent-orange);
-        }}
-        
-        .nav-links a.logout {{
-            color: var(--accent-red);
-        }}
-        
-        .nav-links a.logout:hover {{
-            color: #ff6b6b;
-        }}
-    </style>
-</head>
-<body>
-    <div class="animated-bg"></div>
-    
-    <div class="search-container">
-        <div class="search-card">
-            <div class="search-header">
-                <div class="search-icon">
-                    <i class="fas fa-boxes"></i>
-                </div>
-                <div class="search-title">Accessories Challan</div>
-                <div class="search-subtitle">Enter booking reference to continue</div>
-            </div>
-            
-            <form action="/admin/accessories/input" method="post">
-                <div class="input-group">
-                    <label><i class="fas fa-search" style="margin-right: 5px;"></i> BOOKING REFERENCE</label>
-                    <input type="text" name="ref_no" required placeholder="e.g. IB-12345" autocomplete="off">
-                </div>
-                <button type="submit" style="background: linear-gradient(135deg, #8B5CF6 0%, #A78BFA 100%);">
-                    Proceed to Entry <i class="fas fa-arrow-right" style="margin-left: 10px;"></i>
-                </button>
-            </form>
-            
-            {{% with messages = get_flashed_messages() %}}
-                {{% if messages %}}
-                    <div class="flash-message flash-error" style="margin-top: 20px;">
-                        <i class="fas fa-exclamation-circle"></i>
-                        <span>{{{{ messages[0] }}}}</span>
-                    </div>
-                {{% endif %}}
-            {{% endwith %}}
-            
-            <div class="nav-links">
-                <a href="/"><i class="fas fa-arrow-left"></i> Back to Dashboard</a>
-                <a href="/logout" class="logout">Sign Out <i class="fas fa-sign-out-alt"></i></a>
-            </div>
-        </div>
-        
-        <div style="text-align: center; margin-top: 25px; color: var(--text-secondary); font-size: 11px; opacity: 0.4;">
-            © 2025 Mehedi Hasan
-        </div>
-    </div>
-</body>
-</html>
-"""
-
-ACCESSORIES_INPUT_TEMPLATE = f"""
-<!doctype html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Accessories Entry - MNM Software</title>
-    {COMMON_STYLES}
-    <style>
-        .ref-badge {{
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-            background: rgba(255, 122, 0, 0.1);
-            border: 1px solid rgba(255, 122, 0, 0.2);
-            padding: 10px 20px;
-            border-radius: 12px;
-            margin-top: 10px;
-        }}
-        
-        .ref-badge .ref-no {{
-            font-size: 18px;
-            font-weight: 800;
-            color: var(--accent-orange);
-        }}
-        
-        .ref-badge .ref-info {{
-            color: var(--text-secondary);
-            font-size: 13px;
-            font-weight: 500;
-        }}
-        
-        .history-scroll {{
-            max-height: 500px;
-            overflow-y: auto;
-            padding-right: 5px;
-        }}
-        
-        .challan-row {{
-            display: grid;
-            grid-template-columns: 60px 1fr 80px 60px 80px;
-            gap: 10px;
-            padding: 14px;
-            background: rgba(255, 255, 255, 0.02);
-            border-radius: 10px;
-            margin-bottom: 8px;
-            align-items: center;
-            transition: var(--transition-smooth);
-            border: 1px solid transparent;
-        }}
-        
-        .challan-row:hover {{
-            background: rgba(255, 122, 0, 0.05);
-            border-color: var(--border-glow);
-        }}
-        
-        .line-badge {{
-            background: var(--gradient-orange);
-            color: white;
-            padding: 6px 12px;
-            border-radius: 8px;
-            font-weight: 700;
-            font-size: 13px;
-            text-align: center;
-        }}
-        
-        .qty-value {{
-            font-size: 18px;
-            font-weight: 800;
-            color: var(--accent-green);
-        }}
-        
-        .status-check {{
-            color: var(--accent-green);
-            font-size: 20px;
-        }}
-        
-        .print-btn {{
-            background: linear-gradient(135deg, #10B981 0%, #34D399 100%) !important;
-        }}
-        
-        .empty-state {{
-            text-align: center;
-            padding: 50px 20px;
-            color: var(--text-secondary);
-        }}
-        
-        .empty-state i {{
-            font-size: 50px;
-            opacity: 0.2;
-            margin-bottom: 15px;
-        }}
-        
-        .grid-2-cols {{
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-        }}
-        
-        .count-badge {{
-            background: var(--accent-purple);
-            color: white;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 700;
-            margin-left: 10px;
-        }}
-        
-        /* Fixed Select Styling */
-        select {{
-            background-color: #1a1a25 !important;
-            color: white !important;
-        }}
-        
-        select option {{
-            background-color: #1a1a25 !important;
-            color: white !important;
-            padding: 10px;
-        }}
-    </style>
-</head>
-<body>
-    <div class="animated-bg"></div>
-    
-    <div id="loading-overlay">
-        <div class="spinner-container">
-            <div class="spinner" id="spinner-anim"></div>
-            <div class="spinner-inner"></div>
-        </div>
-        <div class="checkmark-container" id="success-anim">
+        <div class="checkmark-container">
             <div class="checkmark-circle"></div>
-            <div class="anim-text">Saved!</div>
+            <p class="anim-text">Success!</p>
         </div>
-        <div class="loading-text" id="loading-text">Saving Entry...</div>
+        <div class="fail-container">
+            <div class="fail-circle"></div>
+            <p class="anim-text">Failed!</p>
+        </div>
+        <p class="loading-text">Processing...</p>
     </div>
 
-    <div class="sidebar">
-        <div class="brand-logo">
-            <i class="fas fa-boxes"></i> 
-            Accessories
+    <!-- Welcome Modal -->
+    {% if session.get('show_welcome') %}
+    <div class="welcome-modal" id="welcome-modal" style="display: flex;">
+        <div class="welcome-content">
+            <div class="welcome-icon" style="color: var(--accent-orange);">
+                <i class="fas fa-hand-sparkles"></i>
+            </div>
+            <p class="welcome-greeting">Hello, {{ session.get('username') }}!</p>
+            <h2 class="welcome-title">Welcome to <span>CCBL Office</span></h2>
+            <p class="welcome-message">Your all-in-one hub for managing reports, inventory, and more. Ready to boost your productivity?</p>
+            <button class="welcome-close" id="close-welcome">Let's Get Started</button>
         </div>
-        <div class="nav-menu">
-            <a href="/" class="nav-link"><i class="fas fa-home"></i> Dashboard</a>
-            <a href="/admin/accessories" class="nav-link active"><i class="fas fa-search"></i> Search</a>
-            <a href="/logout" class="nav-link" style="color: var(--accent-red); margin-top: 20px;">
-                <i class="fas fa-sign-out-alt"></i> Sign Out
-            </a>
-        </div>
-        <div class="sidebar-footer">© 2025 Mehedi Hasan</div>
     </div>
-    
-    <div class="main-content">
-        <div class="header-section">
-            <div>
-                <div class="page-title">Accessories Entry</div>
-                <div class="ref-badge">
-                    <span class="ref-no">{{{{ ref }}}}</span>
-                    <span class="ref-info">{{{{ buyer }}}} • {{{{ style }}}}</span>
-                </div>
-            </div>
-            <a href="/admin/accessories/print?ref={{{{ ref }}}}" target="_blank">
-                <button class="print-btn" style="width: auto; padding: 14px 30px;">
-                    <i class="fas fa-print" style="margin-right: 10px;"></i> Print Report
-                </button>
-            </a>
-        </div>
+    {% set s = session.pop('show_welcome', None) %}
+    {% endif %}
 
-        <div class="dashboard-grid-2">
-            <div class="card">
-                <div class="section-header">
-                    <span><i class="fas fa-plus-circle" style="margin-right: 10px; color: var(--accent-orange);"></i>New Challan Entry</span>
-                </div>
-                <form action="/admin/accessories/save" method="post" onsubmit="return showLoading()">
-                    <input type="hidden" name="ref" value="{{{{ ref }}}}">
-                    
-                    <div class="grid-2-cols">
-                        <div class="input-group">
-                            <label><i class="fas fa-tag" style="margin-right: 5px;"></i> TYPE</label>
-                            <select name="item_type">
-                                <option value="Top">Top</option>
-                                <option value="Bottom">Bottom</option>
-                            </select>
-                        </div>
-                        <div class="input-group">
-                            <label><i class="fas fa-palette" style="margin-right: 5px;"></i> COLOR</label>
-                            <select name="color" required>
-                                <option value="" disabled selected>Select Color</option>
-                                {{% for c in colors %}}
-                                <option value="{{{{ c }}}}">{{{{ c }}}}</option>
-                                {{% endfor %}}
-                            </select>
-                        </div>
-                    </div>
-                    
-                    <div class="grid-2-cols">
-                        <div class="input-group">
-                            <label><i class="fas fa-industry" style="margin-right: 5px;"></i> LINE NO</label>
-                            <input type="text" name="line_no" required placeholder="e.g. L-01">
-                        </div>
-                        <div class="input-group">
-                            <label><i class="fas fa-ruler" style="margin-right: 5px;"></i> SIZE</label>
-                            <input type="text" name="size" value="ALL" placeholder="Size">
-                        </div>
-                    </div>
-                    
-                    <div class="input-group">
-                        <label><i class="fas fa-sort-numeric-up" style="margin-right: 5px;"></i> QUANTITY</label>
-                        <input type="number" name="qty" required placeholder="Enter Quantity" min="1">
-                    </div>
-                    
-                    <button type="submit">
-                        <i class="fas fa-save" style="margin-right: 10px;"></i> Save Entry
-                    </button>
-                </form>
-            </div>
-
-            <div class="card">
-                <div class="section-header">
-                    <span>Recent History</span>
-                    <span class="count-badge">{{{{ challans|length }}}}</span>
-                </div>
-                <div class="history-scroll">
-                    {{% if challans %}}
-                        {{% for item in challans|reverse %}}
-                        <div class="challan-row" style="animation: fadeInUp 0.3s ease-out {{{{ loop.index * 0.05 }}}}s backwards;">
-                            <div class="line-badge">{{{{ item.line }}}}</div>
-                            <div style="color: white; font-weight: 500; font-size: 13px;">{{{{ item.color }}}}</div>
-                            <div class="qty-value">{{{{ item.qty }}}}</div>
-                            <div class="status-check">{{{{ item.status if item.status else '●' }}}}</div>
-                            <div class="action-cell">
-                                {{% if session.role == 'admin' %}}
-                                <a href="/admin/accessories/edit?ref={{{{ ref }}}}&index={{{{ (challans|length) - loop.index }}}}" class="action-btn btn-edit">
-                                    <i class="fas fa-pen"></i>
-                                </a>
-                                <form action="/admin/accessories/delete" method="POST" style="display: inline;" onsubmit="return confirm('Delete this entry?');">
-                                    <input type="hidden" name="ref" value="{{{{ ref }}}}">
-                                    <input type="hidden" name="index" value="{{{{ (challans|length) - loop.index }}}}">
-                                    <button type="submit" class="action-btn btn-del"><i class="fas fa-trash"></i></button>
-                                </form>
-                                {{% else %}}
-                                <span style="font-size: 10px; color: var(--text-secondary); opacity: 0.5;">🔒</span>
-                                {{% endif %}}
-                            </div>
-                        </div>
-                        {{% endfor %}}
-                    {{% else %}}
-                        <div class="empty-state">
-                            <i class="fas fa-inbox"></i>
-                            <div>No challans added yet</div>
-                            <div style="font-size: 12px; margin-top: 5px;">Add your first entry using the form</div>
-                        </div>
-                    {{% endif %}}
-                </div>
-            </div>
+    <!-- Modal Overlay -->
+    <div class="modal-overlay" id="modal-overlay">
+        <div class="modal-content" id="modal-content-main">
+            <!-- Dynamic content will be loaded here -->
         </div>
     </div>
     
-    <script>
-        function showLoading() {{
-            const overlay = document.getElementById('loading-overlay');
-            const spinner = document.getElementById('spinner-anim').parentElement;
-            const success = document.getElementById('success-anim');
-            const text = document.getElementById('loading-text');
-            
-            overlay.style.display = 'flex';
-            spinner.style.display = 'block';
-            success.style.display = 'none';
-            text.style.display = 'block';
-            text.textContent = 'Saving Entry...';
-            
-            return true;
-        }}
-        
-        const style = document.createElement('style');
-        style.textContent = `
-            @keyframes fadeInUp {{
-                from {{ opacity: 0; transform: translateY(10px); }}
-                to {{ opacity: 1; transform: translateY(0); }}
-            }}
-        `;
-        document.head.appendChild(style);
-    </script>
+    <!-- Global JS -->
+    {% block scripts %}{% endblock %}
 </body>
 </html>
 """
 
-ACCESSORIES_EDIT_TEMPLATE = f"""
-<!doctype html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Edit Entry - MNM Software</title>
-    {COMMON_STYLES}
-    <style>
-        body {{
-            justify-content: center;
-            align-items: center;
-        }}
-        
-        .edit-container {{
-            position: relative;
-            z-index: 10;
-            width: 100%;
-            max-width: 450px;
-            padding: 20px;
-        }}
-        
-        .edit-card {{
-            background: var(--gradient-card);
-            border: 1px solid var(--border-color);
-            border-radius: 24px;
-            padding: 45px;
-            backdrop-filter: blur(20px);
-            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.5);
-            animation: cardAppear 0.5s ease-out;
-        }}
-        
-        @keyframes cardAppear {{
-            from {{ opacity: 0; transform: scale(0.95); }}
-            to {{ opacity: 1; transform: scale(1); }}
-        }}
-        
-        .edit-header {{
-            text-align: center;
-            margin-bottom: 35px;
-        }}
-        
-        .edit-icon {{
-            width: 70px;
-            height: 70px;
-            background: linear-gradient(145deg, rgba(139, 92, 246, 0.2), rgba(139, 92, 246, 0.05));
-            border-radius: 16px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 28px;
-            color: var(--accent-purple);
-            margin-bottom: 15px;
-        }}
-        
-        .edit-title {{
-            font-size: 24px;
-            font-weight: 800;
-            color: white;
-        }}
-        
-        .cancel-link {{
-            display: block;
-            text-align: center;
-            margin-top: 20px;
-            color: var(--text-secondary);
-            font-size: 13px;
-            text-decoration: none;
-            transition: var(--transition-smooth);
-        }}
-        
-        .cancel-link:hover {{
-            color: var(--accent-orange);
-        }}
-    </style>
-</head>
-<body>
-    <div class="animated-bg"></div>
-    
-    <div class="edit-container">
-        <div class="edit-card">
-            <div class="edit-header">
-                <div class="edit-icon">
-                    <i class="fas fa-edit"></i>
-                </div>
-                <div class="edit-title">Edit Entry</div>
-            </div>
-            
-            <form action="/admin/accessories/update" method="post">
-                <input type="hidden" name="ref" value="{{{{ ref }}}}">
-                <input type="hidden" name="index" value="{{{{ index }}}}">
-                
-                <div class="input-group">
-                    <label><i class="fas fa-industry" style="margin-right: 5px;"></i> LINE NO</label>
-                    <input type="text" name="line_no" value="{{{{ item.line }}}}" required>
-                </div>
-                
-                <div class="input-group">
-                    <label><i class="fas fa-palette" style="margin-right: 5px;"></i> COLOR</label>
-                    <input type="text" name="color" value="{{{{ item.color }}}}" required>
-                </div>
-                
-                <div class="input-group">
-                    <label><i class="fas fa-ruler" style="margin-right: 5px;"></i> SIZE</label>
-                    <input type="text" name="size" value="{{{{ item.size }}}}" required>
-                </div>
-                
-                <div class="input-group">
-                    <label><i class="fas fa-sort-numeric-up" style="margin-right: 5px;"></i> QUANTITY</label>
-                    <input type="number" name="qty" value="{{{{ item.qty }}}}" required>
-                </div>
-                
-                <button type="submit" style="background: linear-gradient(135deg, #8B5CF6 0%, #A78BFA 100%);">
-                    <i class="fas fa-sync-alt" style="margin-right: 10px;"></i> Update Entry
-                </button>
-            </form>
-            
-            <a href="/admin/accessories/input_direct?ref={{{{ ref }}}}" class="cancel-link">
-                <i class="fas fa-times" style="margin-right: 5px;"></i> Cancel
-            </a>
-        </div>
-    </div>
-</body>
-</html>
-"""
-
-# ==============================================================================
-# STORE DASHBOARD TEMPLATE - NEW (ALUMINUM SHOP)
-# ==============================================================================
-
-STORE_DASHBOARD_TEMPLATE = f"""
-<!doctype html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Store Dashboard - MNM Software</title>
-    {COMMON_STYLES}
-    <style>
-        .store-card {{
-            background: var(--gradient-card);
-            border: 1px solid var(--border-color);
-            border-radius: 20px;
-            padding: 30px;
-            transition: var(--transition-smooth);
-            cursor: pointer;
-            position: relative;
-            overflow: hidden;
-        }}
-        
-        .store-card::before {{
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 4px;
-            background: var(--gradient-orange);
-            opacity: 0;
-            transition: var(--transition-smooth);
-        }}
-        
-        .store-card:hover {{
-            transform: translateY(-8px);
-            border-color: var(--accent-orange);
-            box-shadow: 0 20px 40px rgba(255, 122, 0, 0.15);
-        }}
-        
-        .store-card:hover::before {{
-            opacity: 1;
-        }}
-        
-        .store-card-icon {{
-            width: 70px;
-            height: 70px;
-            border-radius: 18px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 28px;
-            margin-bottom: 20px;
-            transition: var(--transition-smooth);
-        }}
-        
-        .store-card:hover .store-card-icon {{
-            transform: scale(1.1) rotate(-5deg);
-        }}
-        
-        .icon-orange {{
-            background: linear-gradient(145deg, rgba(255, 122, 0, 0.2), rgba(255, 122, 0, 0.05));
-            color: var(--accent-orange);
-        }}
-        
-        .icon-purple {{
-            background: linear-gradient(145deg, rgba(139, 92, 246, 0.2), rgba(139, 92, 246, 0.05));
-            color: var(--accent-purple);
-        }}
-        
-        .icon-green {{
-            background: linear-gradient(145deg, rgba(16, 185, 129, 0.2), rgba(16, 185, 129, 0.05));
-            color: var(--accent-green);
-        }}
-        
-        .icon-blue {{
-            background: linear-gradient(145deg, rgba(59, 130, 246, 0.2), rgba(59, 130, 246, 0.05));
-            color: var(--accent-blue);
-        }}
-        
-        .icon-cyan {{
-            background: linear-gradient(145deg, rgba(6, 182, 212, 0.2), rgba(6, 182, 212, 0.05));
-            color: var(--accent-cyan);
-        }}
-        
-        .icon-red {{
-            background: linear-gradient(145deg, rgba(239, 68, 68, 0.2), rgba(239, 68, 68, 0.05));
-            color: var(--accent-red);
-        }}
-        
-        .store-card-title {{
-            font-size: 20px;
-            font-weight: 700;
-            color: white;
-            margin-bottom: 8px;
-        }}
-        
-        .store-card-desc {{
-            font-size: 13px;
-            color: var(--text-secondary);
-            line-height: 1.5;
-            margin-bottom: 20px;
-        }}
-        
-        .store-card-stat {{
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding-top: 15px;
-            border-top: 1px solid var(--border-color);
-        }}
-        
-        .stat-number {{
-            font-size: 28px;
-            font-weight: 800;
-            color: white;
-        }}
-        
-        .stat-label {{
-            font-size: 11px;
-            color: var(--text-secondary);
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }}
-        
-        .store-grid {{
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 24px;
-            margin-top: 30px;
-        }}
-        
-        .coming-soon-badge {{
-            position: absolute;
-            top: 15px;
-            right: 15px;
-            background: rgba(255, 122, 0, 0.2);
-            color: var(--accent-orange);
-            padding: 5px 12px;
-            border-radius: 20px;
-            font-size: 10px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }}
-        
-        .quick-action {{
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            background: rgba(255, 255, 255, 0.05);
-            padding: 8px 16px;
-            border-radius: 8px;
-            font-size: 12px;
-            color: var(--text-secondary);
-            transition: var(--transition-smooth);
-        }}
-        
-        .quick-action:hover {{
-            background: var(--accent-orange);
-            color: white;
-        }}
-    </style>
-</head>
-<body>
-    <div class="animated-bg"></div>
-
-    <div class="mobile-toggle" onclick="document.querySelector('.sidebar').classList.toggle('active')">
-        <i class="fas fa-bars"></i>
-    </div>
-
-    <div class="sidebar">
-        <div class="brand-logo">
-            <i class="fas fa-store"></i> 
-            Store<span>Panel</span>
-        </div>
-        <div class="nav-menu">
-            <a href="/" class="nav-link">
-                <i class="fas fa-arrow-left"></i> Back to Main
-            </a>
-            <div class="nav-link active">
-                <i class="fas fa-th-large"></i> Store Dashboard
-            </div>
-            <div class="nav-link" style="opacity: 0.5; cursor: not-allowed;">
-                <i class="fas fa-box"></i> Products
-                <span class="nav-badge" style="background: var(--accent-purple);">Soon</span>
-            </div>
-            <div class="nav-link" style="opacity: 0.5; cursor: not-allowed;">
-                <i class="fas fa-users"></i> Customers
-                <span class="nav-badge" style="background: var(--accent-purple);">Soon</span>
-            </div>
-            <div class="nav-link" style="opacity: 0.5; cursor: not-allowed;">
-                <i class="fas fa-file-invoice-dollar"></i> Invoices
-                <span class="nav-badge" style="background: var(--accent-purple);">Soon</span>
-            </div>
-            <a href="/logout" class="nav-link" style="color: var(--accent-red); margin-top: 20px;">
-                <i class="fas fa-sign-out-alt"></i> Sign Out
-            </a>
-        </div>
-        <div class="sidebar-footer">
-            <i class="fas fa-code" style="margin-right: 5px;"></i> Powered by Mehedi Hasan
-        </div>
-    </div>
-
-    <div class="main-content">
-        <div class="header-section">
-            <div>
-                <div class="page-title">Store Dashboard</div>
-                <div class="page-subtitle">Aluminum Shop Management System</div>
-            </div>
-            <div class="status-badge">
-                <div class="status-dot"></div>
-                <span>Store Active</span>
-            </div>
-        </div>
-
-        <div class="store-grid">
-            <div class="store-card">
-                <span class="coming-soon-badge">Coming Soon</span>
-                <div class="store-card-icon icon-orange">
-                    <i class="fas fa-boxes"></i>
-                </div>
-                <div class="store-card-title">Product Inventory</div>
-                <div class="store-card-desc">
-                    Manage aluminum products, profiles, sheets, and accessories. Track stock levels and reorder points.
-                </div>
-                <div class="store-card-stat">
-                    <div>
-                        <div class="stat-number">0</div>
-                        <div class="stat-label">Total Products</div>
-                    </div>
-                    <div class="quick-action">
-                        <i class="fas fa-plus"></i> Add Product
-                    </div>
-                </div>
-            </div>
-
-            <div class="store-card">
-                <span class="coming-soon-badge">Coming Soon</span>
-                <div class="store-card-icon icon-green">
-                    <i class="fas fa-shopping-cart"></i>
-                </div>
-                <div class="store-card-title">Sales & Orders</div>
-                <div class="store-card-desc">
-                    Create new sales orders, manage pending orders, and track delivery status.
-                </div>
-                <div class="store-card-stat">
-                    <div>
-                        <div class="stat-number">0</div>
-                        <div class="stat-label">Today's Sales</div>
-                    </div>
-                    <div class="quick-action">
-                        <i class="fas fa-receipt"></i> New Sale
-                    </div>
-                </div>
-            </div>
-
-            <div class="store-card">
-                <span class="coming-soon-badge">Coming Soon</span>
-                <div class="store-card-icon icon-purple">
-                    <i class="fas fa-users"></i>
-                </div>
-                <div class="store-card-title">Customer Management</div>
-                <div class="store-card-desc">
-                    Maintain customer database, track purchase history, and manage credit accounts.
-                </div>
-                <div class="store-card-stat">
-                    <div>
-                        <div class="stat-number">0</div>
-                        <div class="stat-label">Total Customers</div>
-                    </div>
-                    <div class="quick-action">
-                        <i class="fas fa-user-plus"></i> Add Customer
-                    </div>
-                </div>
-            </div>
-
-            <div class="store-card">
-                <span class="coming-soon-badge">Coming Soon</span>
-                <div class="store-card-icon icon-blue">
-                    <i class="fas fa-file-invoice-dollar"></i>
-                </div>
-                <div class="store-card-title">Invoices & Billing</div>
-                <div class="store-card-desc">
-                    Generate professional invoices, track payments, and manage outstanding dues.
-                </div>
-                <div class="store-card-stat">
-                    <div>
-                        <div class="stat-number">৳0</div>
-                        <div class="stat-label">This Month</div>
-                    </div>
-                    <div class="quick-action">
-                        <i class="fas fa-file-alt"></i> Create Invoice
-                    </div>
-                </div>
-            </div>
-
-            <div class="store-card">
-                <span class="coming-soon-badge">Coming Soon</span>
-                <div class="store-card-icon icon-red">
-                    <i class="fas fa-wallet"></i>
-                </div>
-                <div class="store-card-title">Expense Tracker</div>
-                <div class="store-card-desc">
-                    Record daily expenses, categorize costs, and monitor profit margins.
-                </div>
-                <div class="store-card-stat">
-                    <div>
-                        <div class="stat-number">৳0</div>
-                        <div class="stat-label">Total Expense</div>
-                    </div>
-                    <div class="quick-action">
-                        <i class="fas fa-plus"></i> Add Expense
-                    </div>
-                </div>
-            </div>
-
-            <div class="store-card">
-                <span class="coming-soon-badge">Coming Soon</span>
-                <div class="store-card-icon icon-cyan">
-                    <i class="fas fa-chart-line"></i>
-                </div>
-                <div class="store-card-title">Reports & Analytics</div>
-                <div class="store-card-desc">
-                    View sales reports, profit analysis, stock movement, and business insights.
-                </div>
-                <div class="store-card-stat">
-                    <div>
-                        <div class="stat-number">0</div>
-                        <div class="stat-label">Reports Generated</div>
-                    </div>
-                    <div class="quick-action">
-                        <i class="fas fa-download"></i> Export Report
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="card" style="margin-top: 30px;">
-            <div class="section-header">
-                <span><i class="fas fa-info-circle" style="margin-right: 10px; color: var(--accent-orange);"></i>About Store Module</span>
-            </div>
-            <p style="color: var(--text-secondary); line-height: 1.8; font-size: 14px;">
-                এই Store মডিউলটি একটি এলুমিনিয়াম দোকানের জন্য ডিজাইন করা হয়েছে। এখানে আপনি প্রোডাক্ট ইনভেন্টরি, 
-                সেলস অর্ডার, কাস্টমার ম্যানেজমেন্ট, ইনভয়েস জেনারেশন, খরচ ট্র্যাকিং এবং বিজনেস রিপোর্ট তৈরি করতে পারবেন।
-                <br><br>
-                <strong style="color: var(--accent-orange);">Coming Soon:</strong> সকল ফিচার শীঘ্রই অ্যাক্টিভ করা হবে।
-            </p>
-        </div>
-    </div>
-</body>
-</html>
-"""
-# ==============================================================================
-# REPORT TEMPLATES (ORIGINAL WHITE DESIGN - PRINT FRIENDLY)
-# ==============================================================================
-
-CLOSING_REPORT_PREVIEW_TEMPLATE = """
+# ----------------- LOGIN PAGE -----------------
+LOGIN_HTML = """
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Closing Report Preview</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        body { background-color: #f8f9fa; padding: 30px 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; font-size: 1.1rem; }
-        .container { max-width: 1400px; }
-        .company-header { text-align: center; margin-bottom: 20px; border-bottom: 2px solid #000; padding-bottom: 10px; }
-        .company-name { font-size: 2.2rem; font-weight: 800; color: #2c3e50; text-transform: uppercase; letter-spacing: 1px; line-height: 1; }
-        .report-title { font-size: 1.1rem; color: #555; font-weight: 600; text-transform: uppercase; margin-top: 5px; }
-        .date-section { font-size: 1.2rem; font-weight: 800; color: #000; margin-top: 5px; }
-        .info-container { margin-bottom: 15px; background: white; padding: 15px; display: flex; justify-content: space-between; align-items: flex-end;}
-        .info-row { display: flex; flex-direction: column; gap: 5px; }
-        .info-item { font-size: 1.2rem; font-weight: 600; color: #444; }
-        .info-label { font-weight: 800; color: #444; width: 90px; display: inline-block; }
-        .info-value { font-weight: 800; color: #000; }
-        .booking-box { background: #2c3e50; color: white; padding: 10px 20px; border-radius: 5px; text-align: right; box-shadow: 0 4px 10px rgba(44, 62, 80, 0.3); display: flex; flex-direction: column; justify-content: center; min-width: 200px; }
-        .booking-label { font-size: 1.1rem; opacity: 0.9; text-transform: uppercase; letter-spacing: 1px; font-weight: 700; }
-        .booking-value { font-size: 1.8rem; font-weight: 800; line-height: 1.1; }
-        .table-card { background: white; border-radius: 0; margin-bottom: 30px; border: none; }
-        .color-header { background-color: #2c3e50 !important; color: white; padding: 10px 15px; font-size: 1.4rem; font-weight: 800; text-transform: uppercase; border: 1px solid #000;}
-        .table { margin-bottom: 0; width: 100%; border-collapse: collapse; font-size: 1rem; }
-        .table th { background-color: #fff !important; color: #000 !important; text-align: center; border: 1px solid #000; padding: 8px; vertical-align: middle; font-weight: 900; font-size: 1.2rem; }
-        .table td { text-align: center; vertical-align: middle; border: 1px solid #000; padding: 6px; color: #000; font-weight: 600; font-size: 1.1rem; }
-        .col-3pct { background-color: #B9C2DF !important; font-weight: 700; }
-        .col-input { background-color: #C4D09D !important; font-weight: 700; }
-        .col-balance { font-weight: 700; color: #c0392b; }
-        .total-row td { background-color: #fff !important; color: #000 !important; font-weight: 900; font-size: 1.2rem; border-top: 2px solid #000; }
-        .action-bar { margin-bottom: 20px; display: flex; justify-content: flex-end; gap: 15px; position: sticky; top: 0; z-index: 1000; background: #f8f9fa; padding: 10px 0; }
-        .btn-print { background-color: #2c3e50; color: white; border-radius: 50px; padding: 10px 30px; font-weight: 600; border: none; }
-        .btn-excel { background-color: #27ae60; color: white; border-radius: 50px; padding: 10px 30px; font-weight: 600; text-decoration: none; display: inline-block; }
-        .btn-excel:hover { color: white; background-color: #219150; }
-        .footer-credit { text-align: center; margin-top: 40px; margin-bottom: 20px; font-size: 1rem; color: #2c3e50; padding-top: 10px; border-top: 1px solid #000; font-weight: 600;}
-        @media print {
-            @page { margin: 5mm; size: portrait; } 
-            body { background-color: white; padding: 0; }
-            .container { max-width: 100% !important; width: 100%; }
-            .no-print { display: none !important; }
-            .action-bar { display: none; }
-            .table th, .table td { border: 1px solid #000 !important; }
-            .color-header { background-color: #2c3e50 !important; -webkit-print-color-adjust: exact; color: white !important;}
-            .col-3pct { background-color: #B9C2DF !important; -webkit-print-color-adjust: exact; }
-            .col-input { background-color: #C4D09D !important; -webkit-print-color-adjust: exact; }
-            .booking-box { background-color: #2c3e50 !important; -webkit-print-color-adjust: exact; color: white !important; border: 1px solid #000;}
-            .total-row td { font-weight: 900 !important; color: #000 !important; }
-        }
-    </style>
+    <title>{{ title }} - CCBL Office</title>
+    {{ COMMON_STYLES | safe }}
 </head>
 <body>
-    <div class="container">
-        <div class="action-bar no-print">
-            <a href="/" class="btn btn-outline-secondary rounded-pill px-4">Back to Dashboard</a>
-            <button onclick="window.print()" class="btn btn-print"><i class="fas fa-print"></i> Print Report</button>
-            <a href="/download-closing-excel?ref_no={{ ref_no }}" class="btn btn-excel"><i class="fas fa-file-excel"></i> Download Excel</a>
-        </div>
-        <div class="company-header">
-            <div class="company-name">COTTON CLOTHING BD LTD</div>
-            <div class="report-title">CLOSING REPORT [ INPUT SECTION ]</div>
-            <div class="date-section">Date: <span id="date"></span></div>
-        </div>
-        {% if report_data %}
-        <div class="info-container">
-            <div class="info-row">
-                <div class="info-item"><span class="info-label">Buyer:</span> <span class="info-value">{{ report_data[0].buyer }}</span></div>
-                <div class="info-item"><span class="info-label">Style:</span> <span class="info-value">{{ report_data[0].style }}</span></div>
+    <div id="particles-js"></div>
+    <div class="animated-bg"></div>
+    <div class="login-wrapper">
+        <div class="card login-card glass">
+            <div class="login-header">
+                <div class="login-logo"><i class="fa-solid fa-bolt"></i></div>
+                <h1 class="login-title">{{ title }}</h1>
+                <p class="login-subtitle">Sign in to access the dashboard</p>
             </div>
-            <div class="booking-box">
-                <div class="booking-label">IR/IB NO</div>
-                <div class="booking-value">{{ ref_no }}</div>
-            </div>
-        </div>
-        {% for block in report_data %}
-        <div class="table-card">
-            <div class="color-header">COLOR: {{ block.color }}</div>
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th>SIZE</th>
-                        <th>ORDER QTY 3%</th>
-                        <th>ACTUAL QTY</th>
-                        <th>CUTTING QC</th>
-                        <th>INPUT QTY</th>
-                        <th>BALANCE</th>
-                        <th>SHORT/PLUS</th>
-                        <th>PERCENTAGE %</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% set ns = namespace(tot_3=0, tot_act=0, tot_cut=0, tot_inp=0, tot_bal=0, tot_sp=0) %}
-                    {% for i in range(block.headers|length) %}
-                        {% set actual = block.gmts_qty[i]|replace(',', '')|int %}
-                        {% set qty_3 = (actual * 1.03)|round|int %}
-                        {% set cut_qc = 0 %}
-                        {% if i < block.cutting_qc|length %}
-                            {% set cut_qc = block.cutting_qc[i]|replace(',', '')|int %}
-                        {% endif %}
-                        {% set inp_qty = 0 %}
-                        {% if i < block.sewing_input|length %}
-                            {% set inp_qty = block.sewing_input[i]|replace(',', '')|int %}
-                        {% endif %}
-                        {% set balance = cut_qc - inp_qty %}
-                        {% set short_plus = inp_qty - qty_3 %}
-                        {% set percentage = 0 %}
-                        {% if qty_3 > 0 %}
-                            {% set percentage = (short_plus / qty_3) * 100 %}
-                        {% endif %}
-                        {% set ns.tot_3 = ns.tot_3 + qty_3 %}
-                        {% set ns.tot_act = ns.tot_act + actual %}
-                        {% set ns.tot_cut = ns.tot_cut + cut_qc %}
-                        {% set ns.tot_inp = ns.tot_inp + inp_qty %}
-                        {% set ns.tot_bal = ns.tot_bal + balance %}
-                        {% set ns.tot_sp = ns.tot_sp + short_plus %}
-                        <tr>
-                            <td>{{ block.headers[i] }}</td>
-                            <td class="col-3pct">{{ qty_3 }}</td>
-                            <td>{{ actual }}</td>
-                            <td>{{ cut_qc }}</td>
-                            <td class="col-input">{{ inp_qty }}</td>
-                            <td class="col-balance">{{ balance }}</td>
-                            <td style="color: {{ 'green' if short_plus >= 0 else 'red' }}">{{ short_plus }}</td>
-                            <td>{{ "%.2f"|format(percentage) }}%</td>
-                        </tr>
+            
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="flash-message flash-{{ category }}">{{ message }}</div>
                     {% endfor %}
-                    <tr class="total-row">
-                        <td>TOTAL</td>
-                        <td>{{ ns.tot_3 }}</td>
-                        <td>{{ ns.tot_act }}</td>
-                        <td>{{ ns.tot_cut }}</td>
-                        <td>{{ ns.tot_inp }}</td>
-                        <td>{{ ns.tot_bal }}</td>
-                        <td>{{ ns.tot_sp }}</td>
-                        <td>
-                            {% if ns.tot_3 > 0 %}
-                                {{ "%.2f"|format((ns.tot_sp / ns.tot_3) * 100) }}%
-                            {% else %}
-                                0.00%
-                            {% endif %}
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
+                {% endif %}
+            {% endwith %}
+
+            <form method="POST" action="">
+                <div class="input-group">
+                    <label for="username">Username</label>
+                    <input type="text" id="username" name="username" placeholder="e.g., admin" required>
+                </div>
+                <div class="input-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" name="password" placeholder="Enter your password" required>
+                </div>
+                <button type="submit" class="full-width ripple"><i class="fa-solid fa-right-to-bracket"></i> Login</button>
+            </form>
+            {% if "Store" not in title %}
+            <div style="text-align: center; margin-top: 20px;">
+                <a href="{{ url_for('store_login') }}" style="color: var(--accent-orange); text-decoration: none; font-weight: 500;">
+                    Go to Store Login <i class="fa-solid fa-arrow-right"></i>
+                </a>
+            </div>
+            {% else %}
+            <div style="text-align: center; margin-top: 20px;">
+                <a href="{{ url_for('login') }}" style="color: var(--accent-orange); text-decoration: none; font-weight: 500;">
+                    <i class="fa-solid fa-arrow-left"></i> Back to Main Login
+                </a>
+            </div>
+            {% endif %}
         </div>
-        {% endfor %}
-        <div class="footer-credit">Report Generated By <span style="color: #000; font-weight: 900;">Mehedi Hasan</span></div>
-        {% endif %}
+        <p style="color: var(--text-secondary); margin-top: 30px; font-size: 13px;">© {{ get_bd_time().year }} Cotton Clothing (BD) Ltd. All rights reserved.</p>
     </div>
-    <script>
-        const dateObj = new Date();
-        document.getElementById('date').innerText = dateObj.toLocaleDateString('en-GB');
-    </script>
+    {% block scripts %}{% endblock %}
 </body>
 </html>
 """
 
-ACCESSORIES_REPORT_TEMPLATE = """
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Accessories Delivery Report</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <style>
-        body { font-family: 'Poppins', sans-serif; background: #fff; padding: 20px; color: #000; }
-        .container { max-width: 1000px; margin: 0 auto; border: 2px solid #000; padding: 20px; min-height: 90vh; position: relative; }
-        .header { text-align: center; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 20px; position: relative; }
-        .company-name { font-size: 28px; font-weight: 800; text-transform: uppercase; color: #2c3e50; line-height: 1; }
-        .company-address { font-size: 12px; font-weight: 600; color: #444; margin-top: 5px; margin-bottom: 10px; }
-        .report-title { background: #2c3e50; color: white; padding: 5px 25px; display: inline-block; font-weight: bold; font-size: 18px; border-radius: 4px; }
-        .info-grid { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; }
-        .info-left { flex: 2; border: 1px dashed #555; padding: 15px; margin-right: 15px; }
-        .info-row { display: flex; margin-bottom: 5px; font-size: 14px; align-items: center; }
-        .info-label { font-weight: 800; width: 80px; color: #444; }
-        .info-val { font-weight: 700; font-size: 15px; color: #000; }
-        .booking-border { border: 2px solid #000; padding: 2px 8px; display: inline-block; font-weight: 900; }
-        .info-right { flex: 1; display: flex; flex-direction: column; justify-content: space-between; height: 100%; border-left: 1px solid #ddd; padding-left: 15px; }
-        .right-item { font-size: 14px; margin-bottom: 8px; font-weight: 700; }
-        .right-label { color: #555; }
-        .summary-container { margin-bottom: 20px; border: 2px solid #000; padding: 10px; background: #f9f9f9; }
-        .summary-header { font-weight: 900; text-align: center; border-bottom: 1px solid #000; margin-bottom: 5px; text-transform: uppercase; }
-        .summary-table { width: 100%; font-size: 13px; font-weight: 700; }
-        .summary-table td { padding: 2px 5px; }
-        .main-table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 14px; }
-        .main-table th { background: #2c3e50 !important; color: white !important; padding: 10px; border: 1px solid #000; font-size: 14px; text-transform: uppercase; -webkit-print-color-adjust: exact; }
-        .main-table td { border: 1px solid #000; padding: 6px; text-align: center; vertical-align: middle; color: #000; font-weight: 600; }
-        .line-card { display: inline-block; padding: 4px 10px; border: 2px solid #000; font-size: 16px; font-weight: 900; border-radius: 4px; box-shadow: 2px 2px 0 #000; background: #fff; }
-        .line-text-bold { font-size: 14px; font-weight: 800; opacity: 0.7; }
-        .status-cell { font-size: 20px; color: green; font-weight: 900; }
-        .qty-cell { font-size: 16px; font-weight: 800; }
-        .action-btn { color: white; padding: 4px 8px; border-radius: 4px; text-decoration: none; font-size: 12px; margin: 0 2px; display: inline-block; }
-        .btn-edit-row { background-color: #f39c12; }
-        .btn-del-row { background-color: #e74c3c; }
-        .footer-total { margin-top: 20px; display: flex; justify-content: flex-end; }
-        .total-box { border: 3px solid #000; padding: 8px 30px; font-size: 20px; font-weight: 900; background: #ddd; -webkit-print-color-adjust: exact; }
-        .no-print { margin-bottom: 20px; text-align: right; }
-        .btn { padding: 8px 20px; background: #2c3e50; color: white; border: none; cursor: pointer; text-decoration: none; display: inline-block; border-radius: 4px; font-size: 14px; }
-        .btn-add { background: #27ae60; }
-        .generator-sig { text-align: right; font-size: 10px; margin-top: 5px; color: #555; }
-        @media print {
-            .no-print { display: none; }
-            .action-col { display: none; }
-            .container { border: none; padding: 0; margin: 0; max-width: 100%; }
-            body { padding: 0; }
-        }
-    </style>
-</head>
-<body>
-<div class="no-print">
-    <a href="/admin/accessories/input_direct?ref={{ ref }}" class="btn">Back</a>
-    <button onclick="window.print()" class="btn">🖨️ Print</button>
+# ----------------- MAIN DASHBOARD -----------------
+DASHBOARD_HTML = """
+{% extends "layout.html" %}
+{% block content %}
+<div class="header-section">
+    <div>
+        <h1 class="page-title">Dashboard</h1>
+        <p class="page-subtitle">Welcome back, {{ session.get('username') }}! Here's your real-time overview.</p>
+    </div>
+    <div class="status-badge">
+        <div class="status-dot"></div>
+        <span>System is <strong>Online</strong> & Healthy</span>
+    </div>
 </div>
-<div class="container">
-    <div class="header">
-        <div class="company-name">COTTON CLOTHING BD LTD</div>
-        <div class="company-address">Kazi Tower, 27 Road, Gazipura, Tongi, Gazipur.</div>
-        <div class="report-title">ACCESSORIES DELIVERY CHALLAN</div>
-    </div>
-    <div class="info-grid">
-        <div class="info-left">
-            <div class="info-row"><span class="info-label">Booking:</span> <span class="booking-border">{{ ref }}</span></div>
-            <div class="info-row"><span class="info-label">Buyer:</span> <span class="info-val">{{ buyer }}</span></div>
-            <div class="info-row"><span class="info-label">Style:</span> <span class="info-val">{{ style }}</span></div>
-            <div class="info-row"><span class="info-label">Date:</span> <span class="info-val">{{ today }}</span></div>
+
+<!-- Stats Grid -->
+<div class="stats-grid">
+    <div class="card stat-card" style="animation-delay: 0.1s;">
+        <div class="stat-icon" style="color: var(--accent-orange);">
+            <i class="fa-solid fa-file-excel"></i>
         </div>
-        <div class="info-right">
-            <div class="right-item"><span class="right-label">Store:</span> Clothing General Store</div>
-            <div class="right-item"><span class="right-label">Send:</span> Cutting</div>
-            <div class="right-item"><span class="right-label">Item:</span> <span style="border: 1px solid #000; padding: 0 5px;">{{ item_type if item_type else 'Top/Btm' }}</span></div>
+        <div class="stat-info">
+            <h3 class="count-up">{{ summary.closing.count }}</h3>
+            <p>Closing Reports</p>
         </div>
     </div>
-    <div class="summary-container">
-        <div class="summary-header">Line-wise Summary</div>
-        <table class="summary-table">
-            <tr>
-            {% for line, qty in line_summary.items() %}
-                <td>{{ line }}: {{ qty }} pcs</td>
-                {% if loop.index % 4 == 0 %}</tr><tr>{% endif %}
-            {% endfor %}
-            </tr>
-        </table>
-        <div style="text-align: right; margin-top: 5px; font-weight: 800; border-top: 1px solid #ccc;">Total Deliveries: {{ count }}</div>
+    <div class="card stat-card" style="animation-delay: 0.2s;">
+        <div class="stat-icon" style="color: var(--accent-purple);">
+            <i class="fa-solid fa-file-pdf"></i>
+        </div>
+        <div class="stat-info">
+            <h3 class="count-up">{{ summary.po.count }}</h3>
+            <p>PO Sheets</p>
+        </div>
     </div>
-    <table class="main-table">
+    <div class="card stat-card" style="animation-delay: 0.3s;">
+        <div class="stat-icon" style="color: var(--accent-green);">
+            <i class="fa-solid fa-boxes-stacked"></i>
+        </div>
+        <div class="stat-info">
+            <h3 class="count-up">{{ summary.accessories.count }}</h3>
+            <p>Accessories Challans</p>
+        </div>
+    </div>
+    <div class="card stat-card" style="animation-delay: 0.4s;">
+        <div class="stat-icon" style="color: var(--accent-cyan);">
+            <i class="fa-solid fa-users"></i>
+        </div>
+        <div class="stat-info">
+            <h3 class="count-up">{{ summary.users.count }}</h3>
+            <p>Active Users</p>
+        </div>
+    </div>
+</div>
+
+<!-- Dashboard Grid 2 -->
+<div class="dashboard-grid-2">
+    <!-- Activity Chart -->
+    <div class="card">
+        <div class="section-header">
+            <span>Recent Activity (Last 45 Days)</span>
+            <div class="realtime-indicator">
+                <div class="realtime-dot"></div>
+                Real-time
+            </div>
+        </div>
+        <div class="chart-container">
+            <canvas id="activityChart"></canvas>
+        </div>
+    </div>
+
+    <!-- Today's Activity -->
+    <div class="card">
+        <div class="section-header">
+            <span>Activity Today</span>
+            <div class="time-badge">
+                <i class="fa-regular fa-calendar-check"></i>
+                <span>{{ get_bd_date_str() }}</span>
+            </div>
+        </div>
+        <div class="progress-item">
+            <div class="progress-header">
+                <span>Closing Reports</span>
+                <span class="progress-value">{{ summary.closing.details|length }}</span>
+            </div>
+            <div class="progress-bar-container">
+                <div class="progress-bar-fill progress-orange" style="width: {{ (summary.closing.details|length / 20 * 100)|int }}%;"></div>
+            </div>
+        </div>
+        <div class="progress-item">
+            <div class="progress-header">
+                <span>PO Sheets</span>
+                <span class="progress-value">{{ summary.po.details|length }}</span>
+            </div>
+            <div class="progress-bar-container">
+                <div class="progress-bar-fill progress-purple" style="width: {{ (summary.po.details|length / 20 * 100)|int }}%;"></div>
+            </div>
+        </div>
+        <div class="progress-item" style="margin-bottom:0;">
+            <div class="progress-header">
+                <span>Accessories Challans</span>
+                <span class="progress-value">{{ summary.accessories.details|length }}</span>
+            </div>
+            <div class="progress-bar-container">
+                <div class="progress-bar-fill progress-green" style="width: {{ (summary.accessories.details|length / 20 * 100)|int }}%;"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent History Table -->
+<div class="card">
+    <div class="section-header">
+        <span>Recent History</span>
+        <a href="{{ url_for('history_page') }}" class="btn btn-sm btn-secondary">View All <i class="fa-solid fa-arrow-right"></i></a>
+    </div>
+    {% if summary.history %}
+    <table class="dark-table">
         <thead>
             <tr>
-                <th width="15%">DATE</th>
-                <th width="15%">LINE NO</th>
-                <th width="20%">COLOR</th>
-                <th width="10%">SIZE</th>
-                <th width="10%">STATUS</th>
-                <th width="15%">QTY</th>
-                {% if session.role == 'admin' %}
-                <th width="15%" class="action-col">ACTION</th>
-                {% endif %}
+                <th>Type</th>
+                <th>Reference/Count</th>
+                <th>User</th>
+                <th>Date & Time</th>
             </tr>
         </thead>
         <tbody>
-            {% set ns = namespace(grand_total=0) %}
-            {% for item in challans %}
-                {% set ns.grand_total = ns.grand_total + item.qty|int %}
-                <tr>
-                    <td>{{ item.date }}</td>
-                    <td>
-                        {% if loop.index == count %}
-                            <div class="line-card">{{ item.line }}</div>
-                        {% else %}
-                            <span class="line-text-bold">{{ item.line }}</span>
-                        {% endif %}
-                    </td>
-                    <td>{{ item.color }}</td>
-                    <td>{{ item.size }}</td>
-                    <td class="status-cell">{{ item.status }}</td>
-                    <td class="qty-cell">{{ item.qty }}</td>
-                    {% if session.role == 'admin' %}
-                    <td class="action-col">
-                        <a href="/admin/accessories/edit?ref={{ ref }}&index={{ loop.index0 }}" class="action-btn btn-edit-row"><i class="fas fa-pencil-alt"></i></a>
-                        <form action="/admin/accessories/delete" method="POST" style="display:inline;" onsubmit="return confirm('Delete this challan?');">
-                            <input type="hidden" name="ref" value="{{ ref }}">
-                            <input type="hidden" name="index" value="{{ loop.index0 }}">
-                            <button type="submit" class="action-btn btn-del-row" style="border:none; cursor:pointer;"><i class="fas fa-trash"></i></button>
-                        </form>
-                    </td>
+        {% for item in summary.history[:7] %}
+            <tr class="animate__animated animate__fadeInUp" style="animation-delay: {{ loop.index * 0.05 }}s;">
+                <td>
+                    {% if item.type == 'Closing Report' %}
+                        <span class="table-badge" style="background: rgba(255, 122, 0, 0.15); color: #FF9A40;"><i class="fa-solid fa-file-excel"></i> {{ item.type }}</span>
+                    {% elif item.type == 'PO Sheet' %}
+                        <span class="table-badge" style="background: rgba(139, 92, 246, 0.15); color: #A78BFA;"><i class="fa-solid fa-file-pdf"></i> {{ item.type }}</span>
+                    {% else %}
+                        <span class="table-badge" style="background: rgba(16, 185, 129, 0.15); color: #34D399;"><i class="fa-solid fa-boxes-stacked"></i> {{ item.type }}</span>
                     {% endif %}
-                </tr>
-            {% endfor %}
+                </td>
+                <td>{{ item.ref if item.ref else (item.file_count ~ ' files') }}</td>
+                <td><i class="fa-solid fa-user-circle" style="color:var(--text-secondary); margin-right: 5px;"></i> {{ item.user }}</td>
+                <td>{{ item.date }} at {{ item.time }}</td>
+            </tr>
+        {% endfor %}
         </tbody>
     </table>
-    <div class="footer-total">
-        <div class="total-box">
-            TOTAL QTY: {{ ns.grand_total }}
+    {% else %}
+        <div class="empty-state">
+            <i class="fa-solid fa-history"></i>
+            <p>No history records found yet.</p>
         </div>
-    </div>
-    <div class="generator-sig">Report Generated By Mehedi Hasan</div>
-    <div style="margin-top: 60px; display: flex; justify-content: space-between; text-align: center; font-weight: bold; padding: 0 50px;">
-        <div style="border-top: 2px solid #000; width: 180px; padding-top: 5px;">Received By</div>
-        <div style="border-top: 2px solid #000; width: 180px; padding-top: 5px;">Input Incharge</div>
-        <div style="border-top: 2px solid #000; width: 180px; padding-top: 5px;">Store</div>
-    </div>
+    {% endif %}
 </div>
-</body>
-</html>
+{% endblock %}
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const ctx = document.getElementById('activityChart').getContext('2d');
+    
+    // Create gradient
+    const gradientOrange = ctx.createLinearGradient(0, 0, 0, 300);
+    gradientOrange.addColorStop(0, 'rgba(255, 122, 0, 0.5)');
+    gradientOrange.addColorStop(1, 'rgba(255, 122, 0, 0)');
+    
+    const gradientPurple = ctx.createLinearGradient(0, 0, 0, 300);
+    gradientPurple.addColorStop(0, 'rgba(139, 92, 246, 0.5)');
+    gradientPurple.addColorStop(1, 'rgba(139, 92, 246, 0)');
+    
+    const gradientGreen = ctx.createLinearGradient(0, 0, 0, 300);
+    gradientGreen.addColorStop(0, 'rgba(16, 185, 129, 0.5)');
+    gradientGreen.addColorStop(1, 'rgba(16, 185, 129, 0)');
+
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: {{ summary.chart.labels | tojson }},
+            datasets: [{
+                label: 'Closing',
+                data: {{ summary.chart.closing | tojson }},
+                borderColor: 'var(--accent-orange)',
+                backgroundColor: gradientOrange,
+                fill: true,
+                tension: 0.4,
+                pointBackgroundColor: 'var(--accent-orange)',
+                pointRadius: 4,
+                pointHoverRadius: 6
+            }, {
+                label: 'PO Sheet',
+                data: {{ summary.chart.po | tojson }},
+                borderColor: 'var(--accent-purple)',
+                backgroundColor: gradientPurple,
+                fill: true,
+                tension: 0.4,
+                pointBackgroundColor: 'var(--accent-purple)',
+                pointRadius: 4,
+                pointHoverRadius: 6
+            }, {
+                label: 'Accessories',
+                data: {{ summary.chart.acc | tojson }},
+                borderColor: 'var(--accent-green)',
+                backgroundColor: gradientGreen,
+                fill: true,
+                tension: 0.4,
+                pointBackgroundColor: 'var(--accent-green)',
+                pointRadius: 4,
+                pointHoverRadius: 6
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { labels: { color: 'var(--text-secondary)' } },
+                tooltip: {
+                    backgroundColor: 'var(--bg-card)',
+                    titleColor: 'var(--text-primary)',
+                    bodyColor: 'var(--text-secondary)',
+                    borderColor: 'var(--border-color)',
+                    borderWidth: 1,
+                    padding: 10,
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    grid: { color: 'rgba(255, 255, 255, 0.05)' },
+                    ticks: { color: 'var(--text-secondary)', stepSize: 1 }
+                },
+                x: {
+                    grid: { display: false },
+                    ticks: { color: 'var(--text-secondary)' }
+                }
+            }
+        }
+    });
+});
+</script>
+{% endblock %}
 """
 
-PO_REPORT_TEMPLATE = """
+# ----------------- CLOSING/PO/ACCESSORIES PAGES -----------------
+# (These remain largely the same from part 1, so they are condensed here)
+CLOSING_REPORT_PAGE_HTML = """
+{% extends "layout.html" %}
+{% block content %}
+<div class="header-section">
+    <div>
+        <h1 class="page-title">Closing Report Generator</h1>
+        <p class="page-subtitle">Enter an IR/IB number to generate a closing report.</p>
+    </div>
+</div>
+{% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        {% for category, message in messages %}
+            <div class="flash-message flash-{{ category }}">{{ message }}</div>
+        {% endfor %}
+    {% endif %}
+{% endwith %}
+<div class="card">
+    <form method="POST" action="{{ url_for('closing_report_page') }}">
+        <div class="input-group">
+            <label for="ref_no">IR/IB Number</label>
+            <input type="text" id="ref_no" name="ref_no" placeholder="e.g., CCBL-IB-24-1234" required value="{{ ref_no or '' }}">
+        </div>
+        <button type="submit" class="full-width ripple"><i class="fa-solid fa-cogs"></i> Generate Report</button>
+    </form>
+</div>
+{% endblock %}
+"""
+
+PREVIEW_PAGE_HTML = """
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PO Report - Cotton Clothing BD</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <title>Preview - {{ title }}</title>
+    {{ COMMON_STYLES | safe }}
     <style>
-        body { background-color: #f8f9fa; padding: 30px 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        .container { max-width: 1200px; }
-        .company-header { text-align: center; margin-bottom: 20px; border-bottom: 2px solid #000; padding-bottom: 10px; }
-        .company-name { font-size: 2.2rem; font-weight: 800; color: #2c3e50; text-transform: uppercase; letter-spacing: 1px; line-height: 1; }
-        .report-title { font-size: 1.1rem; color: #555; font-weight: 600; text-transform: uppercase; margin-top: 5px; }
-        .date-section { font-size: 1.2rem; font-weight: 800; color: #000; margin-top: 5px; }
-        .info-container { display: flex; justify-content: space-between; margin-bottom: 15px; gap: 15px; }
-        .info-box { background: white; border: 1px solid #ddd; border-left: 5px solid #2c3e50; padding: 10px 15px; border-radius: 5px; flex: 2; box-shadow: 0 2px 5px rgba(0,0,0,0.05); display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-        .total-box { background: #2c3e50; color: white; padding: 10px 15px; border-radius: 5px; width: 240px; text-align: right; display: flex; flex-direction: column; justify-content: center; box-shadow: 0 4px 10px rgba(44, 62, 80, 0.3); }
-        .info-item { margin-bottom: 6px; font-size: 1.3rem; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .info-label { font-weight: 800; color: #444; width: 90px; display: inline-block; }
-        .info-value { font-weight: 800; color: #000; }
-        .total-label { font-size: 1.1rem; opacity: 0.9; text-transform: uppercase; letter-spacing: 1px; font-weight: 700; }
-        .total-value { font-size: 2.5rem; font-weight: 800; line-height: 1.1; }
-        .table-card { background: white; border-radius: 0; margin-bottom: 20px; overflow: hidden; border: 1px solid #dee2e6; }
-        .color-header { background-color: #e9ecef; color: #2c3e50; padding: 10px 12px; font-size: 1.5rem; font-weight: 900; border-bottom: 1px solid #dee2e6; text-transform: uppercase; }
-        .table { margin-bottom: 0; width: 100%; border-collapse: collapse; }
-        .table th { background-color: #2c3e50; color: white; font-weight: 900; font-size: 1.2rem; text-align: center; border: 1px solid #34495e; padding: 8px 4px; vertical-align: middle; }
-        .table th:empty { background-color: white !important; border: none; }
-        .table td { text-align: center; vertical-align: middle; border: 1px solid #dee2e6; padding: 6px 3px; color: #000; font-weight: 800; font-size: 1.15rem; }
-        .table-striped tbody tr:nth-of-type(odd) { background-color: #f8f9fa; }
-        .order-col { font-weight: 900 !important; text-align: center !important; background-color: #fdfdfd; white-space: nowrap; width: 1%; }
-        .total-col { font-weight: 900; background-color: #e8f6f3 !important; color: #16a085; border-left: 2px solid #1abc9c !important; }
-        .total-col-header { background-color: #e8f6f3 !important; color: #000 !important; font-weight: 900 !important; border: 1px solid #34495e !important; }
-        .table-striped tbody tr.summary-row, .table-striped tbody tr.summary-row td { background-color: #d1ecff !important; --bs-table-accent-bg: #d1ecff !important; color: #000 !important; font-weight: 900 !important; border-top: 2px solid #aaa !important; font-size: 1.2rem !important; }
-        .summary-label { text-align: right !important; padding-right: 15px !important; color: #000 !important; }
-        .action-bar { margin-bottom: 20px; display: flex; justify-content: flex-end; gap: 10px; }
-        .btn-print { background-color: #e74c3c; color: white; border-radius: 50px; padding: 8px 30px; font-weight: 600; border: none; }
-        .footer-credit { text-align: center; margin-top: 30px; margin-bottom: 20px; font-size: 0.8rem; color: #2c3e50; padding-top: 10px; border-top: 1px solid #ddd; }
-        @media print {
-            @page { margin: 5mm; size: portrait; }
-            body { background-color: white; padding: 0; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; color-adjust: exact !important; }
-            .container { max-width: 100% !important; width: 100% !important; padding: 0; margin: 0; }
-            .no-print { display: none !important; }
-            .company-header { border-bottom: 2px solid #000; margin-bottom: 5px; padding-bottom: 5px; }
-            .company-name { font-size: 1.8rem; } 
-            .info-container { margin-bottom: 10px; }
-            .info-box { border: 1px solid #000 !important; border-left: 5px solid #000 !important; padding: 5px 10px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-            .total-box { border: 2px solid #000 !important; background: white !important; color: black !important; padding: 5px 10px; }
-            .info-item { font-size: 13pt !important; font-weight: 800 !important; }
-            .table th, .table td { border: 1px solid #000 !important; padding: 2px !important; font-size: 13pt !important; font-weight: 800 !important; }
-            .table th:empty { background-color: white !important; border: none !important; }
-            .table-striped tbody tr.summary-row td { background-color: #d1ecff !important; box-shadow: inset 0 0 0 9999px #d1ecff !important; color: #000 !important; font-weight: 900 !important; }
-            .color-header { background-color: #f1f1f1 !important; border: 1px solid #000 !important; font-size: 1.4rem !important; font-weight: 900; padding: 5px; margin-top: 10px; box-shadow: inset 0 0 0 9999px #f1f1f1 !important; }
-            .total-col-header { background-color: #e8f6f3 !important; box-shadow: inset 0 0 0 9999px #e8f6f3 !important; color: #000 !important; }
-            .table-card { border: none; margin-bottom: 10px; break-inside: avoid; }
-            .footer-credit { display: block !important; color: black; border-top: 1px solid #000; margin-top: 10px; font-size: 8pt !important; }
+        body { display: block; background: #333; }
+        .preview-controls { 
+            position: fixed; top: 0; left: 0; width: 100%; 
+            background: var(--bg-card); padding: 15px; 
+            display: flex; gap: 15px; justify-content: center;
+            border-bottom: 1px solid var(--border-color);
+            z-index: 100;
         }
+        #pdf-preview { margin-top: 80px; text-align: center; }
+        iframe { width: 80%; height: 85vh; border: 1px solid #555; border-radius: 8px; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="action-bar no-print">
-            <a href="/" class="btn btn-outline-secondary rounded-pill px-4">Back to Dashboard</a>
-            <button onclick="window.print()" class="btn btn-print"><i class="fas fa-file-pdf"></i> Print</button>
-        </div>
-        <div class="company-header">
-            <div class="company-name">COTTON CLOTHING BD LTD</div>
-            <div class="report-title">Purchase Order Summary</div>
-            <div class="date-section">Date: <span id="date"></span></div>
-        </div>
-        {% if message %}
-            <div class="alert alert-warning text-center no-print">{{ message }}</div>
-        {% endif %}
-        {% if tables %}
-            <div class="info-container">
-                <div class="info-box">
-                    <div>
-                        <div class="info-item"><span class="info-label">Buyer:</span> <span class="info-value">{{ meta.buyer }}</span></div>
-                        <div class="info-item"><span class="info-label">Booking:</span> <span class="info-value">{{ meta.booking }}</span></div>
-                        <div class="info-item"><span class="info-label">Style:</span> <span class="info-value">{{ meta.style }}</span></div>
-                    </div>
-                    <div>
-                        <div class="info-item"><span class="info-label">Season:</span> <span class="info-value">{{ meta.season }}</span></div>
-                        <div class="info-item"><span class="info-label">Dept:</span> <span class="info-value">{{ meta.dept }}</span></div>
-                        <div class="info-item"><span class="info-label">Item:</span> <span class="info-value">{{ meta.item }}</span></div>
-                    </div>
-                </div>
-                <div class="total-box">
-                    <div class="total-label">Grand Total</div>
-                    <div class="total-value">{{ grand_total }}</div>
-                    <small>Pieces</small>
-                </div>
-            </div>
-            {% for item in tables %}
-                <div class="table-card">
-                    <div class="color-header">COLOR: {{ item.color }}</div>
-                    <div class="table-responsive">{{ item.table | safe }}</div>
-                </div>
-            {% endfor %}
-            <div class="footer-credit">Report Created By <strong>Mehedi Hasan</strong></div>
-        {% endif %}
+    <div class="preview-controls no-print">
+        <h3 style="color: white; margin-right: auto;">Preview: {{ filename }}</h3>
+        <a href="javascript:window.print()" class="btn btn-success"><i class="fa fa-print"></i> Print</a>
+        <a href="{{ download_url }}" class="btn btn-primary"><i class="fa fa-download"></i> Download Excel</a>
+        <a href="{{ back_url }}" class="btn btn-secondary"><i class="fa fa-arrow-left"></i> Back</a>
     </div>
-    <script>
-        const dateObj = new Date();
-        const day = String(dateObj.getDate()).padStart(2, '0');
-        const month = String(dateObj.getMonth() + 1).padStart(2, '0');
-        const year = dateObj.getFullYear();
-        document.getElementById('date').innerText = `${day}-${month}-${year}`;
-    </script>
+    <div id="pdf-preview">
+        <iframe src="{{ preview_url }}"></iframe>
+    </div>
 </body>
 </html>
 """
+
+PO_SHEET_PAGE_HTML = """
+{% extends "layout.html" %}
+{% block content %}
+<div class="header-section">
+    <div><h1 class="page-title">PO Sheet Generator</h1><p class="page-subtitle">Upload PO PDFs to generate a consolidated Excel sheet.</p></div>
+</div>
+{% with messages = get_flashed_messages(with_categories=true) %}{% for c, m in messages %}<div class="flash-message flash-{{c}}">{{m}}</div>{% endfor %}{% endwith %}
+<div class="card">
+    <form method="POST" enctype="multipart/form-data" id="po-form">
+        <div class="input-group">
+            <label>Upload PO Files (PDF)</label>
+            <div class="upload-zone" id="upload-zone">
+                <input type="file" name="po_files" id="po_files" multiple accept=".pdf" style="display:none;">
+                <div class="upload-icon"><i class="fa-solid fa-cloud-arrow-up"></i></div>
+                <div class="upload-text">Click to browse or drag & drop files here</div>
+                <div class="upload-hint">You can select multiple PDF files at once</div>
+            </div>
+            <div id="file-count" style="margin-top: 15px; color: var(--accent-green); font-weight: 600;"></div>
+        </div>
+        <button type="submit" class="full-width ripple"><i class="fa-solid fa-cogs"></i> Generate PO Sheet</button>
+    </form>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+    const uploadZone = document.getElementById('upload-zone');
+    const fileInput = document.getElementById('po_files');
+    const fileCount = document.getElementById('file-count');
+
+    uploadZone.addEventListener('click', () => fileInput.click());
+    
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+      uploadZone.addEventListener(eventName, e => {
+        e.preventDefault();
+        e.stopPropagation();
+      }, false);
+    });
+    
+    ['dragenter', 'dragover'].forEach(eventName => {
+      uploadZone.addEventListener(eventName, () => uploadZone.classList.add('dragover'), false);
+    });
+
+    ['dragleave', 'drop'].forEach(eventName => {
+      uploadZone.addEventListener(eventName, () => uploadZone.classList.remove('dragover'), false);
+    });
+
+    uploadZone.addEventListener('drop', e => {
+      fileInput.files = e.dataTransfer.files;
+      updateFileCount();
+    });
+
+    fileInput.addEventListener('change', updateFileCount);
+
+    function updateFileCount() {
+        const numFiles = fileInput.files.length;
+        if (numFiles > 0) {
+            fileCount.textContent = `${numFiles} file(s) selected.`;
+        } else {
+            fileCount.textContent = '';
+        }
+    }
+</script>
+{% endblock %}
+"""
+
+ACCESSORIES_CHALLAN_PAGE_HTML = """
+{% extends "layout.html" %}
+{% block content %}
+<div class="header-section">
+    <div><h1 class="page-title">Accessories Challan</h1><p class="page-subtitle">Create and manage accessories challans.</p></div>
+</div>
+{% with messages = get_flashed_messages(with_categories=true) %}{% for c, m in messages %}<div class="flash-message flash-{{c}}">{{m}}</div>{% endfor %}{% endwith %}
+<div class="dashboard-grid-2">
+    <div class="card">
+        <form id="ref-form" method="POST" action="{{ url_for('accessories_challan_page') }}">
+            <div class="input-group">
+                <label for="ref_no">Enter IR/IB Number to load data</label>
+                <input type="text" name="ref_no" id="ref_no" placeholder="e.g., CCBL-IB-24-1234" value="{{ ref_no or '' }}" required>
+            </div>
+            <button type="submit" name="action" value="load" class="full-width ripple"><i class="fa-solid fa-search"></i> Load Data</button>
+        </form>
+        {% if data %}
+        <form id="challan-form" method="POST" action="{{ url_for('accessories_challan_page') }}" style="margin-top: 20px;">
+            <input type="hidden" name="ref_no" value="{{ ref_no }}">
+            <div class="input-group">
+                <label>Select Colors</label>
+                <div style="max-height: 150px; overflow-y: auto; background: rgba(255,255,255,0.03); border-radius: 12px; padding: 10px; border: 1px solid var(--border-color);">
+                {% for color in data.colors %}
+                    <label class="perm-checkbox" style="margin-bottom: 8px;">
+                        <input type="checkbox" name="colors" value="{{ color }}"> <span>{{ color }}</span>
+                    </label>
+                {% endfor %}
+                </div>
+            </div>
+            <div class="input-group">
+                <label for="challan_qty">Challan Quantity (per color)</label>
+                <input type="number" name="challan_qty" id="challan_qty" required placeholder="e.g., 500">
+            </div>
+            <div class="grid-2">
+                <div class="input-group">
+                    <label for="out_time">Out Time</label>
+                    <input type="time" name="out_time" id="out_time" required>
+                </div>
+                <div class="input-group">
+                    <label for="vehicle_no">Vehicle Number</label>
+                    <input type="text" name="vehicle_no" id="vehicle_no" required placeholder="e.g., DHAKA-1234">
+                </div>
+            </div>
+            <button type="submit" name="action" value="generate" class="full-width ripple btn-success"><i class="fa-solid fa-plus-circle"></i> Generate Challan</button>
+        </form>
+        {% endif %}
+    </div>
+    <div class="card">
+        {% if data %}
+            <div class="section-header">
+                <span>Details for {{ ref_no }}</span>
+                <span class="cache-indicator {{ 'cache-fresh' if data.from_cache else 'cache-stale' }}">
+                    <i class="fa-solid {{ 'fa-check-circle' if data.from_cache else 'fa-cloud-download-alt' }}"></i>
+                    {{ 'From Cache' if data.from_cache else 'Live Data' }}
+                </span>
+            </div>
+            <p><strong>Buyer:</strong> {{ data.buyer }}</p>
+            <p style="margin-top: 5px;"><strong>Style:</strong> {{ data.style }}</p>
+            <hr style="border-color: var(--border-color); margin: 20px 0;">
+        {% endif %}
+        <div class="section-header">
+            <span>Recent Challans for {{ ref_no }}</span>
+        </div>
+        {% if challans %}
+        <div style="max-height: 300px; overflow-y:auto;">
+        <table class="dark-table">
+        {% for c in challans %}
+            <tr><td>
+                <strong>{{ c.qty }} pcs</strong> for {{ c.colors|join(', ') }}
+                <br><small style="color: var(--text-secondary);">{{ c.date }} at {{ c.time }} | Vehicle: {{ c.vehicle_no }}</small>
+            </td></tr>
+        {% endfor %}
+        </table>
+        </div>
+        {% else %}
+        <div class="empty-state" style="padding:20px 0;">
+            <i class="fa-solid fa-file-circle-xmark"></i>
+            <p>No challans found for this reference.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+"""
+
+USER_MANAGEMENT_HTML = """
+{% extends "layout.html" %}
+{% block content %}
+<div class="header-section">
+    <div><h1 class="page-title">User Management</h1><p class="page-subtitle">Add, edit, or remove users and manage their permissions.</p></div>
+    <button class="btn btn-primary" onclick="openModal('{{ url_for('add_user') }}')"><i class="fa-solid fa-user-plus"></i> Add New User</button>
+</div>
+{% with messages = get_flashed_messages(with_categories=true) %}{% for c, m in messages %}<div class="flash-message flash-{{c}}">{{m}}</div>{% endfor %}{% endwith %}
+<div class="card">
+    <table class="dark-table">
+        <thead><tr><th>Username</th><th>Role</th><th>Permissions</th><th>Created On</th><th>Last Login</th><th>Actions</th></tr></thead>
+        <tbody>
+            {% for username, details in users.items() %}
+            <tr>
+                <td><i class="fa-solid fa-user" style="margin-right:8px; color:var(--text-secondary);"></i> {{ username }}</td>
+                <td><span class="table-badge">{{ details.role or 'user' }}</span></td>
+                <td>
+                    {% for perm in details.permissions or [] %}
+                    <span class="table-badge" style="background: rgba(255,255,255,0.05); margin-right: 4px; margin-bottom: 4px;">{{ perm }}</span>
+                    {% endfor %}
+                </td>
+                <td>{{ details.created_at or 'N/A' }}</td>
+                <td>{{ details.last_login or 'Never' }}</td>
+                <td class="action-cell">
+                    <button onclick="openModal('{{ url_for('edit_user', username=username) }}')" class="action-btn btn-edit tooltip" data-tooltip="Edit"><i class="fa-solid fa-pencil-alt"></i></button>
+                    {% if username != 'Admin' and username != session.get('username') %}
+                    <form action="{{ url_for('delete_user', username=username) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this user?');" style="display:inline;">
+                        <button type="submit" class="action-btn btn-del tooltip" data-tooltip="Delete"><i class="fa-solid fa-trash-alt"></i></button>
+                    </form>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
+"""
+
+USER_FORM_MODAL_HTML = """
+<form method="POST" action="{{ action_url }}">
+    <div class="modal-header">
+        <h2 class="modal-title">{{ 'Add' if 'add' in action_url else 'Edit' }} User</h2>
+        <span class="modal-close" onclick="closeModal()">&times;</span>
+    </div>
+    <div class="modal-body">
+        <div class="input-group">
+            <label for="username">Username</label>
+            <input type="text" name="username" value="{{ user.username or '' }}" {{ 'readonly' if user.username }} required>
+        </div>
+        <div class="input-group">
+            <label for="password">Password {% if 'edit' in action_url %}(Leave blank to keep unchanged){% endif %}</label>
+            <input type="password" name="password" {{ 'required' if 'add' in action_url }}>
+        </div>
+        <div class="input-group">
+            <label for="role">Role</label>
+            <select name="role">
+                <option value="user" {{ 'selected' if user.role == 'user' }}>User</option>
+                <option value="admin" {{ 'selected' if user.role == 'admin' }}>Admin</option>
+            </select>
+        </div>
+        <div class="input-group">
+            <label>Permissions</label>
+            <div class="perm-checkbox-group">
+                {% for p in available_permissions %}
+                <label class="perm-checkbox">
+                    <input type="checkbox" name="permissions" value="{{ p }}" {{ 'checked' if p in (user.permissions or []) }}> <span>{{ p.replace('_', ' ')|title }}</span>
+                </label>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+        <button type="submit" class="btn btn-primary"><i class="fa-solid fa-save"></i> Save User</button>
+    </div>
+</form>
+"""
+
+HISTORY_PAGE_HTML = """
+{% extends "layout.html" %}
+{% block content %}
+<div class="header-section">
+    <div><h1 class="page-title">Activity History</h1><p class="page-subtitle">A log of all generated reports and sheets.</p></div>
+</div>
+<div class="card">
+    <table class="dark-table">
+        <thead><tr><th>Type</th><th>Details</th><th>User</th><th>Timestamp</th></tr></thead>
+        <tbody>
+        {% for item in history %}
+            <tr>
+                <td>
+                    {% if item.type == 'Closing Report' %}<span class="table-badge" style="background: rgba(255, 122, 0, 0.15); color: #FF9A40;"><i class="fa-solid fa-file-excel"></i> {{ item.type }}</span>
+                    {% elif item.type == 'PO Sheet' %}<span class="table-badge" style="background: rgba(139, 92, 246, 0.15); color: #A78BFA;"><i class="fa-solid fa-file-pdf"></i> {{ item.type }}</span>
+                    {% else %}<span class="table-badge" style="background: rgba(16, 185, 129, 0.15); color: #34D399;"><i class="fa-solid fa-boxes-stacked"></i> {{ item.type }}</span>
+                    {% endif %}
+                </td>
+                <td>
+                    <strong>{{ item.ref if item.ref else ('PO files: ' ~ item.file_count) }}</strong>
+                    {% if item.type == 'Accessories Challan' %}<br><small>{{ item.qty }} pcs for {{ item.colors|join(', ') }}</small>{% endif %}
+                </td>
+                <td><i class="fa-solid fa-user-circle"></i> {{ item.user }}</td>
+                <td>{{ item.date }} at {{ item.time }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
+"""
+
+
 # ==============================================================================
-# FLASK ROUTES (CONTROLLER LOGIC)
 # ==============================================================================
+# ======================== STORE MANAGEMENT TEMPLATES ==========================
+# ==============================================================================
+# ==============================================================================
+
+# ----------------- STORE DASHBOARD -----------------
+STORE_DASHBOARD_HTML = """
+{% extends "layout.html" %}
+{% block content %}
+<div class="header-section">
+    <div>
+        <h1 class="page-title">Store Dashboard</h1>
+        <p class="page-subtitle">Manage your inventory, sales, and customers from one place.</p>
+    </div>
+    <div class="status-badge">
+        <i class="fa-solid fa-store" style="color: var(--accent-orange);"></i>
+        <span>Welcome, {{ session.get('username') }}!</span>
+    </div>
+</div>
+
+<!-- Stats Grid -->
+<div class="stats-grid">
+    <div class="card stat-card">
+        <div class="stat-icon" style="color: var(--accent-green);">
+            <i class="fa-solid fa-dollar-sign"></i>
+        </div>
+        <div class="stat-info">
+            <h3>{{ summary.monthly_sales }}</h3>
+            <p>Sales This Month</p>
+        </div>
+    </div>
+    <div class="card stat-card">
+        <div class="stat-icon" style="color: var(--accent-red);">
+            <i class="fa-solid fa-hand-holding-dollar"></i>
+        </div>
+        <div class="stat-info">
+            <h3>{{ summary.total_due }}</h3>
+            <p>Total Amount Due</p>
+        </div>
+    </div>
+    <div class="card stat-card">
+        <div class="stat-icon" style="color: var(--accent-purple);">
+            <i class="fa-solid fa-file-invoice-dollar"></i>
+        </div>
+        <div class="stat-info">
+            <h3>{{ summary.invoices_count }}</h3>
+            <p>Total Invoices</p>
+        </div>
+    </div>
+    <div class="card stat-card">
+        <div class="stat-icon" style="color: var(--accent-cyan);">
+            <i class="fa-solid fa-box-archive"></i>
+        </div>
+        <div class="stat-info">
+            <h3>{{ summary.products_count }}</h3>
+            <p>Total Products</p>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Invoices Table -->
+<div class="card">
+    <div class="section-header">
+        <span>Recent Invoices</span>
+        <a href="{{ url_for('store_invoices') }}" class="btn btn-sm btn-secondary">View All Invoices <i class="fa-solid fa-arrow-right"></i></a>
+    </div>
+    {% if summary.recent_invoices %}
+    <table class="dark-table">
+        <thead>
+            <tr>
+                <th>Invoice #</th>
+                <th>Customer</th>
+                <th>Date</th>
+                <th>Total</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for inv in summary.recent_invoices %}
+            <tr>
+                <td><strong>{{ inv.invoice_no }}</strong></td>
+                <td>{{ inv.customer_name }}</td>
+                <td>{{ inv.date }}</td>
+                <td>{{ "%.2f"|format(inv.total) }} BDT</td>
+                <td>
+                    {% if inv.due == 0 %}
+                        <span class="table-badge badge-green">Paid</span>
+                    {% elif inv.due == inv.total %}
+                        <span class="table-badge badge-red">Unpaid</span>
+                    {% else %}
+                        <span class="table-badge badge-yellow">Partially Paid</span>
+                    {% endif %}
+                </td>
+                <td class="action-cell">
+                    <a href="{{ url_for('view_invoice', inv_no=inv.invoice_no) }}" class="action-btn btn-view tooltip" data-tooltip="View"><i class="fa-solid fa-eye"></i></a>
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+        <div class="empty-state">
+            <lottie-player src="https://assets1.lottiefiles.com/packages/lf20_p2i2c27s.json" background="transparent" speed="1" style="width: 150px; height: 150px;" loop autoplay></lottie-player>
+            <p>No invoices created yet.</p>
+            <a href="{{ url_for('create_invoice') }}" class="btn btn-primary"><i class="fa-solid fa-plus"></i> Create First Invoice</a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
+"""
+
+# ----------------- STORE PRODUCTS -----------------
+STORE_PRODUCTS_HTML = """
+{% extends "layout.html" %}
+{% block content %}
+<div class="header-section">
+    <div>
+        <h1 class="page-title">Products</h1>
+        <p class="page-subtitle">Manage your product inventory.</p>
+    </div>
+    <button class="btn btn-primary" onclick="openModal('{{ url_for('add_product') }}')">
+        <i class="fa-solid fa-plus"></i> Add New Product
+    </button>
+</div>
+{% with messages = get_flashed_messages(with_categories=true) %}{% for c, m in messages %}<div class="flash-message flash-{{c}}">{{m}}</div>{% endfor %}{% endwith %}
+
+<div class="card">
+    {% if products %}
+    <table class="dark-table">
+        <thead>
+            <tr>
+                <th>Product Name</th>
+                <th>Code</th>
+                <th>Price (BDT)</th>
+                <th>Stock</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for product in products %}
+            <tr>
+                <td><strong>{{ product.name }}</strong></td>
+                <td>{{ product.code }}</td>
+                <td>{{ "%.2f"|format(product.price) }}</td>
+                <td>{{ product.stock }}</td>
+                <td class="action-cell">
+                    <button onclick="openModal('{{ url_for('edit_product', p_id=product.id) }}')" class="action-btn btn-edit tooltip" data-tooltip="Edit"><i class="fa-solid fa-pencil-alt"></i></button>
+                    <form action="{{ url_for('delete_product', p_id=product.id) }}" method="POST" onsubmit="return confirm('Are you sure?');" style="display:inline;">
+                        <button type="submit" class="action-btn btn-del tooltip" data-tooltip="Delete"><i class="fa-solid fa-trash-alt"></i></button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <div class="empty-state">
+        <lottie-player src="https://assets8.lottiefiles.com/packages/lf20_kxsd2ytq.json" background="transparent" speed="1" style="width: 180px; height: 180px;" loop autoplay></lottie-player>
+        <p>No products found. Add your first product to get started!</p>
+        <button class="btn btn-primary" onclick="openModal('{{ url_for('add_product') }}')"><i class="fa-solid fa-plus"></i> Add Product</button>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+"""
+
+PRODUCT_FORM_MODAL_HTML = """
+<form method="POST" action="{{ action_url }}">
+    <div class="modal-header">
+        <h2 class="modal-title">{{ title }}</h2>
+        <span class="modal-close" onclick="closeModal()">&times;</span>
+    </div>
+    <div class="modal-body">
+        <div class="input-group">
+            <label for="name">Product Name</label>
+            <input type="text" name="name" value="{{ product.name or '' }}" required>
+        </div>
+        <div class="grid-2">
+            <div class="input-group">
+                <label for="code">Product Code</label>
+                <input type="text" name="code" value="{{ product.code or '' }}">
+            </div>
+            <div class="input-group">
+                <label for="price">Price (BDT)</label>
+                <input type="number" step="0.01" name="price" value="{{ product.price or '' }}" required>
+            </div>
+        </div>
+        <div class="input-group">
+            <label for="stock">Stock Quantity</label>
+            <input type="number" name="stock" value="{{ product.stock or '0' }}" required>
+        </div>
+        <div class="input-group">
+            <label for="details">Details</label>
+            <textarea name="details">{{ product.details or '' }}</textarea>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+        <button type="submit" class="btn btn-primary"><i class="fa-solid fa-save"></i> Save Product</button>
+    </div>
+</form>
+"""
+
+# ----------------- STORE CUSTOMERS -----------------
+STORE_CUSTOMERS_HTML = """
+{% extends "layout.html" %}
+{% block content %}
+<div class="header-section">
+    <div>
+        <h1 class="page-title">Customers</h1>
+        <p class="page-subtitle">View and manage your customer list.</p>
+    </div>
+    <button class="btn btn-primary" onclick="openModal('{{ url_for('add_customer') }}')">
+        <i class="fa-solid fa-user-plus"></i> Add New Customer
+    </button>
+</div>
+{% with messages = get_flashed_messages(with_categories=true) %}{% for c, m in messages %}<div class="flash-message flash-{{c}}">{{m}}</div>{% endfor %}{% endwith %}
+
+<div class="card">
+    {% if customers %}
+    <table class="dark-table">
+        <thead>
+            <tr>
+                <th>Customer Name</th>
+                <th>Email</th>
+                <th>Phone</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for customer in customers %}
+            <tr>
+                <td><strong>{{ customer.name }}</strong></td>
+                <td>{{ customer.email }}</td>
+                <td>{{ customer.phone }}</td>
+                <td class="action-cell">
+                    <button onclick="openModal('{{ url_for('edit_customer', c_id=customer.id) }}')" class="action-btn btn-edit tooltip" data-tooltip="Edit"><i class="fa-solid fa-pencil-alt"></i></button>
+                    <form action="{{ url_for('delete_customer', c_id=customer.id) }}" method="POST" onsubmit="return confirm('Are you sure?');" style="display:inline;">
+                        <button type="submit" class="action-btn btn-del tooltip" data-tooltip="Delete"><i class="fa-solid fa-trash-alt"></i></button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <div class="empty-state">
+        <lottie-player src="https://assets6.lottiefiles.com/packages/lf20_ab0c5hsh.json" background="transparent" speed="1" style="width: 200px; height: 200px;" loop autoplay></lottie-player>
+        <p>No customers found. Add your first customer!</p>
+        <button class="btn btn-primary" onclick="openModal('{{ url_for('add_customer') }}')"><i class="fa-solid fa-user-plus"></i> Add Customer</button>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+"""
+
+CUSTOMER_FORM_MODAL_HTML = """
+<form method="POST" action="{{ action_url }}">
+    <div class="modal-header">
+        <h2 class="modal-title">{{ title }}</h2>
+        <span class="modal-close" onclick="closeModal()">&times;</span>
+    </div>
+    <div class="modal-body">
+        <div class="input-group">
+            <label>Customer Name</label>
+            <input type="text" name="name" value="{{ customer.name or '' }}" required>
+        </div>
+        <div class="grid-2">
+            <div class="input-group">
+                <label>Email</label>
+                <input type="email" name="email" value="{{ customer.email or '' }}">
+            </div>
+            <div class="input-group">
+                <label>Phone</label>
+                <input type="text" name="phone" value="{{ customer.phone or '' }}" required>
+            </div>
+        </div>
+        <div class="input-group">
+            <label>Address</label>
+            <textarea name="address">{{ customer.address or '' }}</textarea>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+        <button type="submit" class="btn btn-primary"><i class="fa-solid fa-save"></i> Save Customer</button>
+    </div>
+</form>
+"""
+
+# ----------------- STORE INVOICES -----------------
+STORE_INVOICES_LIST_HTML = """
+{% extends "layout.html" %}
+{% block content %}
+<div class="header-section">
+    <div>
+        <h1 class="page-title">Invoices</h1>
+        <p class="page-subtitle">Track all your sales invoices.</p>
+    </div>
+    <a href="{{ url_for('create_invoice') }}" class="btn btn-primary">
+        <i class="fa-solid fa-plus"></i> Create New Invoice
+    </a>
+</div>
+{% with messages = get_flashed_messages(with_categories=true) %}{% for c, m in messages %}<div class="flash-message flash-{{c}}">{{m}}</div>{% endfor %}{% endwith %}
+
+<div class="card">
+    {% if invoices %}
+    <table class="dark-table">
+        <thead>
+            <tr>
+                <th>Invoice #</th>
+                <th>Customer</th>
+                <th>Date</th>
+                <th>Total</th>
+                <th>Due</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for inv in invoices %}
+            <tr>
+                <td><strong>{{ inv.invoice_no }}</strong></td>
+                <td>{{ inv.customer_name }}</td>
+                <td>{{ inv.date }}</td>
+                <td>{{ "%.2f"|format(inv.total) }}</td>
+                <td>{{ "%.2f"|format(inv.due) }}</td>
+                <td>
+                    {% if inv.due == 0 %} <span class="table-badge badge-green">Paid</span>
+                    {% elif inv.due == inv.total %} <span class="table-badge badge-red">Unpaid</span>
+                    {% else %} <span class="table-badge badge-yellow">Partially Paid</span>
+                    {% endif %}
+                </td>
+                <td class="action-cell">
+                    <a href="{{ url_for('view_invoice', inv_no=inv.invoice_no) }}" class="action-btn btn-view tooltip" data-tooltip="View"><i class="fa-solid fa-eye"></i></a>
+                    <a href="javascript:void(0)" onclick="openModal('{{ url_for('add_payment', inv_no=inv.invoice_no) }}')" class="action-btn btn-edit tooltip" data-tooltip="Add Payment"><i class="fa-solid fa-money-bill-wave"></i></a>
+                    <form action="{{ url_for('delete_invoice', inv_no=inv.invoice_no) }}" method="POST" onsubmit="return confirm('Are you sure?');" style="display:inline;">
+                        <button type="submit" class="action-btn btn-del tooltip" data-tooltip="Delete"><i class="fa-solid fa-trash-alt"></i></button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <div class="empty-state">
+        <lottie-player src="https://assets1.lottiefiles.com/packages/lf20_p2i2c27s.json" background="transparent" speed="1" style="width: 150px; height: 150px;" loop autoplay></lottie-player>
+        <p>No invoices created yet.</p>
+        <a href="{{ url_for('create_invoice') }}" class="btn btn-primary"><i class="fa-solid fa-plus"></i> Create First Invoice</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+"""
+
+# ----------------- CREATE INVOICE/ESTIMATE -----------------
+CREATE_INVOICE_ESTIMATE_HTML = """
+{% extends "layout.html" %}
+{% block content %}
+<form method="POST" id="invoice-form">
+<div class="header-section">
+    <div>
+        <h1 class="page-title">{{ title }}</h1>
+        <p class="page-subtitle">Fill in the details below.</p>
+    </div>
+    <button type="submit" class="btn btn-success"><i class="fa-solid fa-save"></i> Save {{ type|title }}</button>
+</div>
+
+<div class="dashboard-grid-2">
+    <div>
+        <div class="card" style="margin-bottom: 24px;">
+            <div class="section-header"><span>Customer Information</span></div>
+            <div class="input-group">
+                <label>Select Customer</label>
+                <select name="customer_id" id="customer-select" required>
+                    <option></option>
+                    {% for c in customers %}
+                        <option value="{{ c.id }}" {% if c.id == (doc.customer_id if doc else '') %}selected{% endif %}>{{ c.name }} - {{ c.phone }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="grid-2">
+                <div class="input-group">
+                    <label>{{ type|title }} Number</label>
+                    <input type="text" name="{{ type }}_no" value="{{ doc_number }}" readonly>
+                </div>
+                <div class="input-group">
+                    <label>Date</label>
+                    <input type="date" name="date" value="{{ doc.date if doc else get_bd_time().strftime('%Y-%m-%d') }}" required>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="section-header">
+                <span>Products / Services</span>
+                <button type="button" id="add-item-btn" class="btn btn-sm btn-secondary"><i class="fa-solid fa-plus"></i> Add Item</button>
+            </div>
+            <table class="dark-table">
+                <thead><tr><th style="width:40%;">Item</th><th>Qty</th><th>Price</th><th>Total</th><th></th></tr></thead>
+                <tbody id="item-list">
+                {% if doc and doc.items %}
+                    {% for item in doc.items %}
+                    <tr>
+                        <td><input type="text" name="item_name" placeholder="Item Name" value="{{ item.name }}" required></td>
+                        <td><input type="number" name="item_qty" class="qty" placeholder="1" value="{{ item.qty }}" required></td>
+                        <td><input type="number" name="item_price" class="price" step="0.01" placeholder="0.00" value="{{ item.price }}" required></td>
+                        <td><input type="text" name="item_total" class="total" value="{{ '%.2f'|format(item.qty * item.price) }}" readonly></td>
+                        <td class="action-cell"><button type="button" class="action-btn btn-del remove-item"><i class="fa fa-trash"></i></button></td>
+                    </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td><input type="text" name="item_name" placeholder="Item Name" required></td>
+                        <td><input type="number" name="item_qty" class="qty" placeholder="1" value="1" required></td>
+                        <td><input type="number" name="item_price" class="price" step="0.01" placeholder="0.00" required></td>
+                        <td><input type="text" name="item_total" class="total" readonly></td>
+                        <td class="action-cell"><button type="button" class="action-btn btn-del remove-item"><i class="fa fa-trash"></i></button></td>
+                    </tr>
+                {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div>
+        <div class="card summary-card" style="margin-bottom: 24px;">
+            <div class="section-header"><span>Summary</span></div>
+            <div class="summary-row"><span>Subtotal</span><span id="subtotal">0.00</span></div>
+            <div class="summary-row">
+                <span>Discount</span>
+                <input type="number" name="discount" id="discount" value="{{ doc.discount or 0 }}" step="0.01" style="width: 100px; text-align:right; padding: 5px 10px; font-size:14px;">
+            </div>
+            <div class="summary-row">
+                <span>Tax (%)</span>
+                <input type="number" name="tax" id="tax" value="{{ doc.tax or 0 }}" step="0.01" style="width: 100px; text-align:right; padding: 5px 10px; font-size:14px;">
+            </div>
+            <div class="summary-row summary-total"><span>Total (BDT)</span><span id="grand-total">0.00</span></div>
+        </div>
+        <div class="card">
+             <div class="input-group">
+                <label>Notes</label>
+                <textarea name="notes" placeholder="Any additional notes...">{{ doc.notes or '' }}</textarea>
+            </div>
+        </div>
+    </div>
+</div>
+</form>
+
+<template id="item-template">
+    <tr>
+        <td><input type="text" name="item_name" placeholder="Item Name" required></td>
+        <td><input type="number" name="item_qty" class="qty" placeholder="1" value="1" required></td>
+        <td><input type="number" name="item_price" class="price" step="0.01" placeholder="0.00" required></td>
+        <td><input type="text" name="item_total" class="total" readonly></td>
+        <td class="action-cell"><button type="button" class="action-btn btn-del remove-item"><i class="fa fa-trash"></i></button></td>
+    </tr>
+</template>
+
+{% endblock %}
+{% block scripts %}
+<script>
+$(document).ready(function() {
+    $('#customer-select').select2({
+        placeholder: "Search for a customer",
+        allowClear: true
+    });
+    
+    function calculateTotals() {
+        let subtotal = 0;
+        $('#item-list tr').each(function() {
+            let qty = parseFloat($(this).find('.qty').val()) || 0;
+            let price = parseFloat($(this).find('.price').val()) || 0;
+            let total = qty * price;
+            $(this).find('.total').val(total.toFixed(2));
+            subtotal += total;
+        });
+
+        $('#subtotal').text(subtotal.toFixed(2));
+
+        let discount = parseFloat($('#discount').val()) || 0;
+        let tax_percent = parseFloat($('#tax').val()) || 0;
+        
+        let total_after_discount = subtotal - discount;
+        let tax_amount = total_after_discount * (tax_percent / 100);
+        let grand_total = total_after_discount + tax_amount;
+
+        $('#grand-total').text(grand_total.toFixed(2));
+    }
+    
+    $('#add-item-btn').on('click', function() {
+        const template = document.getElementById('item-template').content.cloneNode(true);
+        $('#item-list').append(template);
+    });
+
+    $('#item-list').on('click', '.remove-item', function() {
+        $(this).closest('tr').remove();
+        calculateTotals();
+    });
+
+    $('#invoice-form').on('input', '.qty, .price, #discount, #tax', function() {
+        calculateTotals();
+    });
+
+    calculateTotals();
+});
+</script>
+{% endblock %}
+"""
+
+# ----------------- VIEW INVOICE/ESTIMATE -----------------
+VIEW_INVOICE_ESTIMATE_HTML = """
+{% extends "layout.html" %}
+{% block content %}
+<div class="header-section no-print">
+    <div>
+        <h1 class="page-title">{{ type|title }} #{{ doc.invoice_no or doc.estimate_no }}</h1>
+        <p class="page-subtitle">Details for {{ doc.customer_name }}</p>
+    </div>
+    <div class="actions">
+        <a href="javascript:window.print()" class="btn btn-success"><i class="fa-solid fa-print"></i> Print</a>
+        {% if type == 'estimate' %}
+        <a href="{{ url_for('convert_to_invoice', est_no=doc.estimate_no) }}" class="btn btn-purple"><i class="fa-solid fa-exchange-alt"></i> Convert to Invoice</a>
+        {% else %}
+        <button onclick="openModal('{{ url_for('add_payment', inv_no=doc.invoice_no) }}')" class="btn btn-purple"><i class="fa-solid fa-money-bill-wave"></i> Add Payment</button>
+        {% endif %}
+        <a href="{{ url_for('store_invoices' if type == 'invoice' else 'store_estimates') }}" class="btn btn-secondary"><i class="fa-solid fa-arrow-left"></i> Back to List</a>
+    </div>
+</div>
+
+<div class="card print-container">
+    <header class="print-header" style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 40px; padding-bottom: 20px; border-bottom: 1px solid var(--border-color);">
+        <div>
+            <h1 style="font-size: 28px; font-weight: 800; color: var(--text-primary);">{{ type|title|upper }}</h1>
+            <p style="color: var(--text-secondary);">#{{ doc.invoice_no or doc.estimate_no }}</p>
+        </div>
+        <div style="text-align: right;">
+            <h2 style="font-size: 20px; font-weight: 700;">Cotton Clothing (BD) Ltd.</h2>
+            <p style="color: var(--text-secondary);">Your Company Address</p>
+        </div>
+    </header>
+    
+    <div class="print-meta" style="display: flex; justify-content: space-between; margin-bottom: 40px; font-size: 14px;">
+        <div>
+            <span style="display: block; color: var(--text-secondary); margin-bottom: 5px;">Billed To</span>
+            <strong style="display: block; font-size: 16px;">{{ doc.customer_name }}</strong>
+            <p style="color: var(--text-secondary); margin: 0;">{{ customer.address or 'No address' }}</p>
+            <p style="color: var(--text-secondary); margin: 0;">{{ customer.email or 'No email' }}</p>
+            <p style="color: var(--text-secondary); margin: 0;">{{ customer.phone }}</p>
+        </div>
+        <div style="text-align: right;">
+            <p><span style="color: var(--text-secondary);">Date of Issue:</span> <strong>{{ doc.date }}</strong></p>
+            {% if type == 'invoice' %}
+            <p><span style="color: var(--text-secondary);">Due Date:</span> <strong>{{ doc.due_date or 'N/A' }}</strong></p>
+            <div style="margin-top: 20px;">
+                {% if doc.due == 0 %} <span class="table-badge badge-green" style="font-size: 16px;">PAID</span>
+                {% else %} <span class="table-badge badge-red" style="font-size: 16px;">UNPAID</span>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <table class="dark-table print-table" style="margin-bottom: 30px;">
+        <thead style="background: var(--bg-card);"><tr style="background: var(--bg-card) !important;"><th style="background: var(--bg-card) !important;">Item</th><th style="text-align:right;">Qty</th><th style="text-align:right;">Price</th><th style="text-align:right;">Total</th></tr></thead>
+        <tbody>
+        {% for item in doc.items %}
+            <tr><td><strong>{{ item.name }}</strong></td><td style="text-align:right;">{{ item.qty }}</td><td style="text-align:right;">{{ "%.2f"|format(item.price) }}</td><td style="text-align:right;">{{ "%.2f"|format(item.qty * item.price) }}</td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    
+    <div class="print-summary" style="display: flex; justify-content: flex-end;">
+        <div style="width: 300px;">
+            <div style="display: flex; justify-content: space-between; padding: 8px 0;"><span style="color: var(--text-secondary);">Subtotal</span><span>{{ "%.2f"|format(doc.subtotal) }} BDT</span></div>
+            <div style="display: flex; justify-content: space-between; padding: 8px 0;"><span style="color: var(--text-secondary);">Discount</span><span>-{{ "%.2f"|format(doc.discount) }} BDT</span></div>
+            <div style="display: flex; justify-content: space-between; padding: 8px 0;"><span style="color: var(--text-secondary);">Tax ({{ doc.tax }}%)</span><span>+{{ "%.2f"|format(doc.tax_amount) }} BDT</span></div>
+            {% if type == 'invoice' %}
+            <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border-color);"><span style="color: var(--text-secondary);">Paid</span><span>-{{ "%.2f"|format(doc.paid) }} BDT</span></div>
+            <div class="print-total" style="display: flex; justify-content: space-between; padding: 15px 0; font-size: 20px; font-weight: 700; color: var(--accent-red); border-top: 2px solid var(--accent-red); margin-top:10px;"><span>Amount Due</span><span>{{ "%.2f"|format(doc.due) }} BDT</span></div>
+            {% else %}
+             <div class="print-total" style="display: flex; justify-content: space-between; padding: 15px 0; font-size: 20px; font-weight: 700; color: var(--accent-orange); border-top: 2px solid var(--accent-orange); margin-top:10px;"><span>Grand Total</span><span>{{ "%.2f"|format(doc.total) }} BDT</span></div>
+            {% endif %}
+        </div>
+    </div>
+    
+    {% if doc.notes %}
+    <div style="margin-top: 40px;">
+        <h4 style="font-weight: 600; margin-bottom: 10px;">Notes</h4>
+        <p style="color: var(--text-secondary);">{{ doc.notes }}</p>
+    </div>
+    {% endif %}
+
+    {% if type == 'invoice' and payments %}
+    <div class="no-print" style="margin-top: 40px;">
+        <h3 class="page-title">Payment History</h3>
+        <div class="card">
+            <table class="dark-table">
+            <thead><tr><th>Date</th><th>Amount</th><th>Method</th><th>Notes</th></tr></thead>
+            <tbody>
+            {% for p in payments %}
+                <tr><td>{{ p.date }}</td><td>{{ "%.2f"|format(p.amount) }}</td><td>{{ p.method }}</td><td>{{ p.notes }}</td></tr>
+            {% endfor %}
+            </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+
+</div>
+{% endblock %}
+"""
+
+# ----------------- ADD PAYMENT MODAL -----------------
+ADD_PAYMENT_MODAL_HTML = """
+<form method="POST" action="{{ url_for('add_payment', inv_no=invoice.invoice_no) }}">
+    <div class="modal-header">
+        <h2 class="modal-title">Add Payment for #{{ invoice.invoice_no }}</h2>
+        <span class="modal-close" onclick="closeModal()">&times;</span>
+    </div>
+    <div class="modal-body">
+        <p style="margin-bottom: 20px;">Amount Due: <strong style="color: var(--accent-red);">{{ "%.2f"|format(invoice.due) }} BDT</strong></p>
+        <div class="input-group">
+            <label>Amount</label>
+            <input type="number" step="0.01" name="amount" max="{{ invoice.due }}" required>
+        </div>
+        <div class="grid-2">
+            <div class="input-group">
+                <label>Payment Date</label>
+                <input type="date" name="date" value="{{ get_bd_time().strftime('%Y-%m-%d') }}" required>
+            </div>
+            <div class="input-group">
+                <label>Payment Method</label>
+                <select name="method">
+                    <option>Cash</option>
+                    <option>Bank Transfer</option>
+                    <option>Cheque</option>
+                    <option>Mobile Banking</option>
+                </select>
+            </div>
+        </div>
+        <div class="input-group">
+            <label>Notes</label>
+            <textarea name="notes"></textarea>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+        <button type="submit" class="btn btn-primary"><i class="fa-solid fa-plus"></i> Add Payment</button>
+    </div>
+</form>
+"""
+
+# ----------------- STORE USER MANAGEMENT -----------------
+STORE_USER_MANAGEMENT_HTML = """
+{% extends "layout.html" %}
+{% block content %}
+<div class="header-section">
+    <div><h1 class="page-title">Store User Management</h1><p class="page-subtitle">Manage users for the Store Panel.</p></div>
+    <button class="btn btn-primary" onclick="openModal('{{ url_for('add_store_user') }}')"><i class="fa-solid fa-user-plus"></i> Add Store User</button>
+</div>
+{% with messages = get_flashed_messages(with_categories=true) %}{% for c, m in messages %}<div class="flash-message flash-{{c}}">{{m}}</div>{% endfor %}{% endwith %}
+<div class="card">
+    <table class="dark-table">
+        <thead><tr><th>Username</th><th>Role</th><th>Permissions</th><th>Created On</th><th>Last Login</th><th>Actions</th></tr></thead>
+        <tbody>
+            {% for username, details in users.items() %}
+            <tr>
+                <td><i class="fa-solid fa-user"></i> {{ username }}</td>
+                <td><span class="table-badge">{{ details.role or 'user' }}</span></td>
+                <td>
+                    {% for perm in details.permissions or [] %}
+                    <span class="table-badge" style="background: rgba(255,255,255,0.05); margin-right: 4px; margin-bottom: 4px;">{{ perm }}</span>
+                    {% endfor %}
+                </td>
+                <td>{{ details.created_at or 'N/A' }}</td>
+                <td>{{ details.last_login or 'Never' }}</td>
+                <td class="action-cell">
+                    <button onclick="openModal('{{ url_for('edit_store_user', username=username) }}')" class="action-btn btn-edit"><i class="fa-solid fa-pencil-alt"></i></button>
+                    {% if username != 'StoreAdmin' and username != session.get('username') %}
+                    <form action="{{ url_for('delete_store_user', username=username) }}" method="POST" onsubmit="return confirm('Are you sure?');">
+                        <button type="submit" class="action-btn btn-del"><i class="fa-solid fa-trash-alt"></i></button>
+                    </form>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
+"""
+
+STORE_USER_FORM_MODAL_HTML = """
+<form method="POST" action="{{ action_url }}">
+    <div class="modal-header">
+        <h2 class="modal-title">{{ 'Add' if 'add' in action_url else 'Edit' }} Store User</h2>
+        <span class="modal-close" onclick="closeModal()">&times;</span>
+    </div>
+    <div class="modal-body">
+        <div class="input-group">
+            <label for="username">Username</label>
+            <input type="text" name="username" value="{{ user.username or '' }}" {{ 'readonly' if user.username }} required>
+        </div>
+        <div class="input-group">
+            <label for="password">Password {% if 'edit' in action_url %}(Leave blank to keep unchanged){% endif %}</label>
+            <input type="password" name="password" {{ 'required' if 'add' in action_url }}>
+        </div>
+        <div class="input-group">
+            <label for="role">Role</label>
+            <select name="role">
+                <option value="store_user" {{ 'selected' if user.role == 'store_user' }}>Store User</option>
+                <option value="store_admin" {{ 'selected' if user.role == 'store_admin' }}>Store Admin</option>
+            </select>
+        </div>
+        <div class="input-group">
+            <label>Permissions</label>
+            <div class="perm-checkbox-group">
+                {% for p in available_permissions %}
+                <label class="perm-checkbox">
+                    <input type="checkbox" name="permissions" value="{{ p }}" {{ 'checked' if p in (user.permissions or []) }}> <span>{{ p.replace('_', ' ')|title }}</span>
+                </label>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+        <button type="submit" class="btn btn-primary"><i class="fa-solid fa-save"></i> Save User</button>
+    </div>
+</form>
+"""
+
+
+# ==============================================================================
+# FLASK রাউট এবং লজিক
+# ==============================================================================
+
+# ----------------- DECORATORS & CORE ROUTES -----------------
+def login_required(f):
+    def decorated_function(*args, **kwargs):
+        if 'username' not in session:
+            return redirect(url_for('login'))
+        session.permanent = True 
+        return f(*args, **kwargs)
+    decorated_function.__name__ = f.__name__
+    return decorated_function
+
+def store_login_required(f):
+    def decorated_function(*args, **kwargs):
+        if 'username' not in session or (session.get('user_type') != 'store' and 'store' not in session.get('permissions', [])):
+             return redirect(url_for('store_login'))
+        session.permanent = True
+        return f(*args, **kwargs)
+    decorated_function.__name__ = f.__name__
+    return decorated_function
+
+def permission_required(permission):
+    def decorator(f):
+        def decorated_function(*args, **kwargs):
+            if permission not in session.get('permissions', []):
+                flash(f"You don't have permission to access this page.", "error")
+                # Redirect to appropriate dashboard
+                if session.get('user_type') == 'store':
+                    return redirect(url_for('store_dashboard'))
+                return redirect(url_for('dashboard'))
+            return f(*args, **kwargs)
+        decorated_function.__name__ = f.__name__
+        return decorated_function
+    return decorator
+
 
 @app.route('/')
 def index():
-    load_users()
-    if not session.get('logged_in'):
-        return render_template_string(LOGIN_TEMPLATE)
-    else:
-        if session.get('role') == 'admin':
-            stats = get_dashboard_summary_v2()
-            return render_template_string(ADMIN_DASHBOARD_TEMPLATE, stats=stats)
-        else:
-            perms = session.get('permissions', [])
-            if len(perms) == 1 and 'accessories' in perms:
-                return redirect(url_for('accessories_search_page'))
-            else:
-                return render_template_string(USER_DASHBOARD_TEMPLATE)
+    if 'username' in session:
+        if session.get('user_type') == 'store':
+            return redirect(url_for('store_dashboard'))
+        return redirect(url_for('dashboard'))
+    return redirect(url_for('login'))
 
-@app.route('/login', methods=['POST'])
+@app.route('/login', methods=['GET', 'POST'])
 def login():
-    username = request.form.get('username')
-    password = request.form.get('password')
-
-    users_db = load_users()
-
-    if username in users_db and users_db[username]['password'] == password:
-        session.permanent = True
-        session['logged_in'] = True
-        session['user'] = username
-        session['role'] = users_db[username]['role']
-        session['permissions'] = users_db[username].get('permissions', [])
-        
-        now = get_bd_time()
-        session['login_start'] = now.isoformat()
-        
-        users_db[username]['last_login'] = now.strftime('%I:%M %p, %d %b')
-        save_users(users_db)
-        
-        return redirect(url_for('index'))
-    else:
-        flash('Invalid Username or Password.')
-        return redirect(url_for('index'))
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+        users = load_users()
+        if username in users and users[username]['password'] == password:
+            session['username'] = username
+            session['permissions'] = users[username].get('permissions', [])
+            session['user_type'] = 'main'
+            session['show_welcome'] = True 
+            
+            # Update last login time
+            users[username]['last_login'] = get_bd_time().strftime('%d-%m-%Y %I:%M %p')
+            save_users(users)
+            
+            return redirect(url_for('dashboard'))
+        else:
+            flash("Invalid credentials. Please try again.", "error")
+    return render_template_string(LOGIN_HTML, title="Main Login")
 
 @app.route('/logout')
 def logout():
-    if session.get('logged_in') and 'login_start' in session:
-        try:
-            start_time = datetime.fromisoformat(session['login_start'])
-            end_time = get_bd_time()
-            duration = end_time - start_time
-            minutes = int(duration.total_seconds() / 60)
-            dur_str = f"{minutes} mins" if minutes < 60 else f"{minutes // 60}h {minutes % 60}m"
-
-            username = session.get('user')
-            users_db = load_users()
-            if username in users_db:
-                users_db[username]['last_duration'] = dur_str
-                save_users(users_db)
-        except: pass
-
     session.clear()
-    flash('Session terminated.')
-    return redirect(url_for('index'))
-
-@app.route('/admin/get-users', methods=['GET'])
-def get_users():
-    if not session.get('logged_in') or session.get('role') != 'admin': 
-        return jsonify({})
-    return jsonify(load_users())
-
-@app.route('/admin/save-user', methods=['POST'])
-def save_user():
-    if not session.get('logged_in') or session.get('role') != 'admin': 
-        return jsonify({'status': 'error', 'message': 'Unauthorized'})
+    return redirect(url_for('login'))
     
-    data = request.json
-    username = data.get('username', '').strip()
-    password = data.get('password', '').strip()
-    permissions = data.get('permissions', [])
-    action = data.get('action_type')
-    
-    if not username or not password: 
-        return jsonify({'status': 'error', 'message': 'Invalid Data'})
+@app.route('/dashboard')
+@login_required
+def dashboard():
+    summary = get_dashboard_summary_v2()
+    return render_template_string(DASHBOARD_HTML, title="Dashboard", active_page="dashboard", summary=summary, get_bd_time=get_bd_time, get_bd_date_str=get_bd_date_str)
 
-    users_db = load_users()
-    
-    if action == 'create':
-        if username in users_db: 
-            return jsonify({'status': 'error', 'message': 'User already exists!'})
-        users_db[username] = {
-            "password": password, 
-            "role": "user", 
-            "permissions": permissions,
-            "created_at": get_bd_date_str(), 
-            "last_login": "Never", 
-            "last_duration": "N/A"
-        }
-    elif action == 'update':
-        if username not in users_db: 
-            return jsonify({'status': 'error', 'message': 'User not found!'})
-        users_db[username]['password'] = password
-        users_db[username]['permissions'] = permissions
-    
-    save_users(users_db)
-    return jsonify({'status': 'success', 'message': 'User saved successfully!'})
+@app.context_processor
+def inject_common_vars():
+    """Makes COMMON_STYLES available to all templates."""
+    return dict(COMMON_STYLES=COMMON_STYLES)
 
-@app.route('/admin/delete-user', methods=['POST'])
-def delete_user():
-    if not session.get('logged_in') or session.get('role') != 'admin': 
-        return jsonify({'status': 'error', 'message': 'Unauthorized'})
-    
-    username = request.json.get('username')
-    users_db = load_users()
-    
-    if username == 'Admin': 
-        return jsonify({'status': 'error', 'message': 'Cannot delete Main Admin!'})
+# ----------------- Main App Routes (Closing, PO, etc.) -----------------
 
-    if username in users_db:
-        del users_db[username]
-        save_users(users_db)
-        return jsonify({'status': 'success', 'message': 'User deleted!'})
-    
-    return jsonify({'status': 'error', 'message': 'User not found'})
-
-@app.route('/admin/store')
-def store_dashboard():
-    if not session.get('logged_in'):
-        return redirect(url_for('index'))
-    return render_template_string(STORE_DASHBOARD_TEMPLATE)
-
-@app.route('/generate-report', methods=['POST'])
-def generate_report():
-    if not session.get('logged_in'): return redirect(url_for('index'))
-    
-    internal_ref_no = request.form['ref_no']
-    if not internal_ref_no: return redirect(url_for('index'))
-
-    try:
-        report_data = fetch_closing_report_data(internal_ref_no)
-        if not report_data:
-            flash(f"Booking Not Found: {internal_ref_no}")
-            return redirect(url_for('index'))
+@app.route('/closing-report', methods=['GET', 'POST'])
+@login_required
+@permission_required('closing')
+def closing_report_page():
+    ref_no = None
+    if request.method == 'POST':
+        ref_no = request.form.get('ref_no')
+        if not ref_no:
+            flash("IR/IB Number is required.", "error")
+            return redirect(url_for('closing_report_page'))
         
-        update_stats(internal_ref_no, session.get('user', 'Unknown'))
-        return render_template_string(CLOSING_REPORT_PREVIEW_TEMPLATE, report_data=report_data, ref_no=internal_ref_no)
-    except Exception as e:
-        flash(f"System Error: {str(e)}")
-        return redirect(url_for('index'))
+        session['last_ref_no'] = ref_no # Save to session for preview
+        
+        # Show loading screen
+        return render_template_string("""
+            {% extends "layout.html" %}
+            {% block content %}
+            <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                    document.getElementById('loading-overlay').style.display = 'flex';
+                    window.location.href = "{{ url_for('process_and_preview_closing') }}";
+                });
+            </script>
+            {% endblock %}
+        """, title="Processing...")
 
-@app.route('/download-closing-excel', methods=['GET'])
-def download_closing_excel():
-    if not session.get('logged_in'): return redirect(url_for('index'))
+    return render_template_string(CLOSING_REPORT_PAGE_HTML, title="Closing Report", active_page="closing", ref_no=session.get('last_ref_no'))
+
+@app.route('/process-and-preview-closing')
+@login_required
+def process_and_preview_closing():
+    ref_no = session.get('last_ref_no')
+    if not ref_no:
+        flash("Session expired or invalid reference number.", "warning")
+        return redirect(url_for('closing_report_page'))
+        
+    report_data = fetch_closing_report_data(ref_no)
+    if not report_data:
+        flash(f"Could not find data for IR/IB No: {ref_no}. Please check the number and try again.", "error")
+        return redirect(url_for('closing_report_page'))
+
+    excel_stream = create_formatted_excel_report(report_data, ref_no)
+    if not excel_stream:
+        flash("Failed to generate the Excel report.", "error")
+        return redirect(url_for('closing_report_page'))
+
+    # Save to a temporary file for preview
+    filename = f"Closing_Report_{ref_no}_{get_bd_time().strftime('%Y%m%d%H%M%S')}.xlsx"
+    filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+    with open(filepath, 'wb') as f:
+        f.write(excel_stream.getvalue())
+
+    # Update stats after successful generation
+    update_stats(ref_no, session['username'])
     
-    internal_ref_no = request.args.get('ref_no')
-    try:
-        report_data = fetch_closing_report_data(internal_ref_no)
-        if report_data:
-            excel_file = create_formatted_excel_report(report_data, internal_ref_no)
-            update_stats(internal_ref_no, session.get('user', 'Unknown'))
-            return make_response(send_file(
-                excel_file, 
-                as_attachment=True, 
-                download_name=f"Report-{internal_ref_no.replace('/', '_')}.xlsx", 
-                mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-            ))
+    # URL for Google Docs Viewer
+    preview_url = f"https://docs.google.com/gview?url={request.url_root}{url_for('download_file', filename=filename)}&embedded=true"
+
+    return render_template_string(
+        PREVIEW_PAGE_HTML,
+        title="Closing Report Preview",
+        preview_url=preview_url,
+        download_url=url_for('download_file', filename=filename),
+        back_url=url_for('closing_report_page'),
+        filename=filename
+    )
+
+@app.route('/po-sheet', methods=['GET', 'POST'])
+@login_required
+@permission_required('po_sheet')
+def po_sheet_page():
+    if request.method == 'POST':
+        files = request.files.getlist('po_files')
+        if not files or all(f.filename == '' for f in files):
+            flash("No files selected for upload.", "error")
+            return redirect(request.url)
+
+        session['po_file_paths'] = []
+        for file in files:
+            if file and file.filename.endswith('.pdf'):
+                filename = f"po_{uuid.uuid4()}.pdf"
+                filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+                file.save(filepath)
+                session['po_file_paths'].append(filepath)
+
+        if not session['po_file_paths']:
+            flash("No valid PDF files were uploaded.", "error")
+            return redirect(request.url)
+        
+        # Show loading screen
+        return render_template_string("""
+            {% extends "layout.html" %}
+            {% block content %}
+            <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                    document.getElementById('loading-overlay').style.display = 'flex';
+                    window.location.href = "{{ url_for('process_and_preview_po') }}";
+                });
+            </script>
+            {% endblock %}
+        """, title="Processing POs...")
+
+    return render_template_string(PO_SHEET_PAGE_HTML, title="PO Sheet", active_page="po_sheet")
+
+@app.route('/process-and-preview-po')
+@login_required
+def process_and_preview_po():
+    file_paths = session.get('po_file_paths', [])
+    if not file_paths:
+        flash("Session expired or no files to process.", "warning")
+        return redirect(url_for('po_sheet_page'))
+
+    all_data = []
+    fabric_booking_detected = False
+    
+    for path in file_paths:
+        data, metadata = extract_data_dynamic(path)
+        if not data and metadata.get('booking') != 'N/A':
+            fabric_booking_detected = True
+        all_data.extend(data)
+        os.remove(path) # Clean up file
+
+    session.pop('po_file_paths', None) # Clean up session
+
+    if not all_data:
+        if fabric_booking_detected:
+            flash("Fabric Booking Sheet detected. No garment data to process.", "warning")
         else:
-            flash("Data source returned empty.")
-            return redirect(url_for('index'))
-    except Exception as e:
-        flash("Failed to generate Excel.")
-        return redirect(url_for('index'))
+            flash("Could not extract any data from the uploaded PDFs.", "error")
+        return redirect(url_for('po_sheet_page'))
 
-@app.route('/admin/accessories', methods=['GET'])
-def accessories_search_page():
-    if not session.get('logged_in'): return redirect(url_for('index'))
-    if 'accessories' not in session.get('permissions', []):
-        flash("Access Denied")
-        return redirect(url_for('index'))
-    return render_template_string(ACCESSORIES_SEARCH_TEMPLATE)
-
-@app.route('/admin/accessories/input', methods=['POST'])
-def accessories_input_page():
-    if not session.get('logged_in'): return redirect(url_for('index'))
+    df = pd.DataFrame(all_data)
+    pivot_df = df.pivot_table(index=['P.O NO', 'Color'], columns='Size', values='Quantity', fill_value=0).reset_index()
     
-    ref_no = request.form.get('ref_no') or request.args.get('ref')
-    if ref_no: ref_no = ref_no.strip().upper()
+    # Sort sizes logically before creating the Excel
+    if 'Size' in df.columns:
+        original_sizes = df['Size'].unique()
+        sorted_size_list = sort_sizes(original_sizes)
+        
+        # Reorder pivot table columns based on sorted sizes
+        fixed_cols = ['P.O NO', 'Color']
+        pivot_cols = list(pivot_df.columns)
+        size_cols = [s for s in sorted_size_list if s in pivot_cols]
+        other_cols = [c for c in pivot_cols if c not in fixed_cols and c not in size_cols]
+        pivot_df = pivot_df[fixed_cols + size_cols + other_cols]
+
+    # Add a Total column
+    pivot_df['Total Quantity'] = pivot_df.drop(columns=['P.O NO', 'Color']).sum(axis=1)
     
-    if not ref_no: return redirect(url_for('accessories_search_page'))
+    output_filename = f"PO_Sheet_{get_bd_time().strftime('%Y%m%d%H%M%S')}.xlsx"
+    output_filepath = os.path.join(app.config['UPLOAD_FOLDER'], output_filename)
+    pivot_df.to_excel(output_filepath, index=False)
+    
+    update_po_stats(session['username'], len(file_paths))
 
-    db_acc = load_accessories_db()
+    preview_url = f"https://docs.google.com/gview?url={request.url_root}{url_for('download_file', filename=output_filename)}&embedded=true"
+    
+    return render_template_string(
+        PREVIEW_PAGE_HTML,
+        title="PO Sheet Preview",
+        preview_url=preview_url,
+        download_url=url_for('download_file', filename=output_filename),
+        back_url=url_for('po_sheet_page'),
+        filename=output_filename
+    )
 
-    if ref_no in db_acc:
-        data = db_acc[ref_no]
-        colors = data['colors']
-        style = data['style']
-        buyer = data['buyer']
-        challans = data['challans'] 
-    else:
-        try:
-            api_data = fetch_closing_report_data(ref_no)
-            if not api_data:
-                flash(f"Booking not found: {ref_no}")
-                return redirect(url_for('accessories_search_page'))
-            
-            colors = sorted(list(set([item['color'] for item in api_data])))
-            style = api_data[0].get('style', 'N/A')
-            buyer = api_data[0].get('buyer', 'N/A')
-            challans = []
-            
-            db_acc[ref_no] = {
-                "style": style, "buyer": buyer, "colors": colors, 
-                "item_type": "", "challans": challans
+
+@app.route('/download/<filename>')
+@login_required
+def download_file(filename):
+    return send_file(os.path.join(app.config['UPLOAD_FOLDER'], filename), as_attachment=True)
+
+@app.route('/accessories', methods=['GET', 'POST'])
+@login_required
+@permission_required('accessories')
+def accessories_challan_page():
+    ref_no = request.form.get('ref_no', session.get('last_acc_ref'))
+    data, challans, action = None, None, request.form.get('action')
+
+    if ref_no:
+        session['last_acc_ref'] = ref_no
+        acc_db = load_accessories_db()
+        challans = sorted(acc_db.get(ref_no.upper(), {}).get('challans', []), key=lambda x: x['timestamp'], reverse=True)
+
+    if action == 'load':
+        if not ref_no:
+            flash("IR/IB Number is required.", "error")
+        else:
+            data = fetch_closing_report_data_with_cache(ref_no)
+            if not data or not data.get('colors'):
+                flash(f"No data or colors found for {ref_no}.", "warning")
+                data = None
+    
+    elif action == 'generate':
+        colors = request.form.getlist('colors')
+        qty = request.form.get('challan_qty')
+        out_time = request.form.get('out_time')
+        vehicle = request.form.get('vehicle_no')
+
+        if not all([ref_no, colors, qty, out_time, vehicle]):
+            flash("All fields are required to generate a challan.", "error")
+        else:
+            acc_db = load_accessories_db()
+            ref_upper = ref_no.upper()
+            now = get_bd_time()
+            challan_entry = {
+                'id': str(uuid.uuid4()),
+                'colors': colors,
+                'qty': int(qty),
+                'out_time': out_time,
+                'vehicle_no': vehicle,
+                'user': session['username'],
+                'date': now.strftime('%d-%m-%Y'),
+                'time': now.strftime('%I:%M %p'),
+                'timestamp': now.isoformat()
             }
-            save_accessories_db(db_acc)
-        except:
-            flash("Connection Error with ERP")
-            return redirect(url_for('accessories_search_page'))
+            if ref_upper not in acc_db:
+                # This should ideally not happen if 'load' was clicked first
+                acc_db[ref_upper] = {"challans": []}
+            acc_db[ref_upper].setdefault('challans', []).append(challan_entry)
+            save_accessories_db(acc_db)
+            flash(f"Challan for {len(colors)} color(s) generated successfully!", "success")
+            return redirect(url_for('accessories_challan_page')) # Redirect to prevent re-submission
+        # Reload data after failed generation attempt
+        data = fetch_closing_report_data_with_cache(ref_no)
 
-    return render_template_string(ACCESSORIES_INPUT_TEMPLATE, ref=ref_no, colors=colors, style=style, buyer=buyer, challans=challans)
+    return render_template_string(ACCESSORIES_CHALLAN_PAGE_HTML, title="Accessories", active_page="accessories", ref_no=ref_no, data=data, challans=challans)
 
-@app.route('/admin/accessories/input_direct')
-def accessories_input_direct():
-    return accessories_input_page() 
 
-@app.route('/admin/accessories/save', methods=['POST'])
-def accessories_save():
-    if not session.get('logged_in'): return redirect(url_for('index'))
+@app.route('/history')
+@login_required
+@permission_required('view_history')
+def history_page():
+    stats = load_stats()
+    history = stats.get('downloads', [])
+    return render_template_string(HISTORY_PAGE_HTML, title="History", active_page="history", history=history)
+
+# ----------------- User Management Routes -----------------
+@app.route('/user-management')
+@login_required
+@permission_required('user_manage')
+def user_management():
+    users = load_users()
+    return render_template_string(USER_MANAGEMENT_HTML, title="User Management", active_page="user_manage", users=users)
+
+@app.route('/user/add', methods=['GET', 'POST'])
+@login_required
+@permission_required('user_manage')
+def add_user():
+    available_permissions = ["closing", "po_sheet", "user_manage", "view_history", "accessories", "store"]
+    if request.method == 'POST':
+        users = load_users()
+        username = request.form['username']
+        if username in users:
+            flash("Username already exists.", "error")
+        else:
+            users[username] = {
+                "password": request.form['password'],
+                "role": request.form['role'],
+                "permissions": request.form.getlist('permissions'),
+                "created_at": get_bd_date_str()
+            }
+            save_users(users)
+            flash(f"User '{username}' created successfully.", "success")
+            return redirect(url_for('user_management'))
     
-    ref = request.form.get('ref').strip().upper()
-    db_acc = load_accessories_db()
+    # For modal GET request
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return render_template_string(USER_FORM_MODAL_HTML, action_url=url_for('add_user'), user={}, available_permissions=available_permissions)
     
-    if ref in db_acc:
-        if request.form.get('item_type'): db_acc[ref]['item_type'] = request.form.get('item_type')
-        
-        for item in db_acc[ref]['challans']:
-            item['status'] = "✔"
-        
-        new_entry = {
-            "date": get_bd_date_str(),
-            "line": request.form.get('line_no'),
-            "color": request.form.get('color'),
-            "size": request.form.get('size'),
-            "qty": request.form.get('qty'),
-            "status": ""
+    # Fallback for direct navigation (optional)
+    return redirect(url_for('user_management'))
+
+@app.route('/user/edit/<username>', methods=['GET', 'POST'])
+@login_required
+@permission_required('user_manage')
+def edit_user(username):
+    users = load_users()
+    user = users.get(username)
+    if not user:
+        flash("User not found.", "error")
+        return redirect(url_for('user_management'))
+
+    available_permissions = ["closing", "po_sheet", "user_manage", "view_history", "accessories", "store"]
+    
+    if request.method == 'POST':
+        user['role'] = request.form['role']
+        user['permissions'] = request.form.getlist('permissions')
+        if request.form.get('password'):
+            user['password'] = request.form['password']
+        save_users(users)
+        flash(f"User '{username}' updated successfully.", "success")
+        return redirect(url_for('user_management'))
+
+    # For modal GET request
+    user_data = user.copy()
+    user_data['username'] = username
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return render_template_string(USER_FORM_MODAL_HTML, action_url=url_for('edit_user', username=username), user=user_data, available_permissions=available_permissions)
+    
+    return redirect(url_for('user_management'))
+
+
+@app.route('/user/delete/<username>', methods=['POST'])
+@login_required
+@permission_required('user_manage')
+def delete_user(username):
+    if username == 'Admin' or username == session.get('username'):
+        flash("Cannot delete the root admin or yourself.", "error")
+        return redirect(url_for('user_management'))
+    
+    users = load_users()
+    if username in users:
+        del users[username]
+        save_users(users)
+        flash(f"User '{username}' deleted successfully.", "success")
+    else:
+        flash("User not found.", "error")
+    return redirect(url_for('user_management'))
+
+
+# ==============================================================================
+# ==============================================================================
+# ======================== STORE MANAGEMENT ROUTES =============================
+# ==============================================================================
+# ==============================================================================
+
+@app.route('/store/login', methods=['GET', 'POST'])
+def store_login():
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+        users = load_store_users()
+        if username in users and users[username]['password'] == password:
+            session['username'] = username
+            session['permissions'] = users[username].get('permissions', [])
+            session['user_type'] = 'store' 
+            session['show_welcome'] = True
+            
+            users[username]['last_login'] = get_bd_time().strftime('%d-%m-%Y %I:%M %p')
+            save_store_users(users)
+            
+            return redirect(url_for('store_dashboard'))
+        else:
+            flash("Invalid store credentials.", "error")
+    return render_template_string(LOGIN_HTML, title="Store Login")
+
+@app.route('/store')
+@app.route('/store/dashboard')
+@store_login_required
+def store_dashboard():
+    summary = get_store_dashboard_summary()
+    return render_template_string(STORE_DASHBOARD_HTML, title="Store Dashboard", active_page="store_dashboard", summary=summary)
+
+# ----------------- Store Product Routes -----------------
+@app.route('/store/products')
+@store_login_required
+@permission_required('products')
+def store_products():
+    products = load_store_products()
+    return render_template_string(STORE_PRODUCTS_HTML, title="Products", active_page="store_products", products=products)
+
+@app.route('/store/product/add', methods=['GET', 'POST'])
+@store_login_required
+@permission_required('products')
+def add_product():
+    if request.method == 'POST':
+        products = load_store_products()
+        new_product = {
+            "id": str(uuid.uuid4()),
+            "name": request.form['name'],
+            "code": request.form['code'],
+            "price": float(request.form['price']),
+            "stock": int(request.form['stock']),
+            "details": request.form['details']
         }
-        db_acc[ref]['challans'].append(new_entry)
-        save_accessories_db(db_acc)
+        products.append(new_product)
+        save_store_products(products)
+        flash("Product added successfully!", "success")
+        return redirect(url_for('store_products'))
     
-    return redirect(url_for('accessories_print_view', ref=ref))
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return render_template_string(PRODUCT_FORM_MODAL_HTML, title="Add New Product", action_url=url_for('add_product'), product={})
+    return redirect(url_for('store_products'))
 
-@app.route('/admin/accessories/print', methods=['GET'])
-def accessories_print_view():
-    if not session.get('logged_in'): return redirect(url_for('index'))
-    
-    ref = request.args.get('ref').strip().upper()
-    db_acc = load_accessories_db()
-    
-    if ref not in db_acc: return redirect(url_for('accessories_search_page'))
-    
-    data = db_acc[ref]
-    challans = data['challans']
-    
-    line_summary = {}
-    for c in challans:
-        ln = c['line']
-        try: q = int(c['qty'])
-        except: q = 0
-        line_summary[ln] = line_summary.get(ln, 0) + q
-    sorted_line_summary = dict(sorted(line_summary.items()))
-
-    return render_template_string(ACCESSORIES_REPORT_TEMPLATE, ref=ref, buyer=data['buyer'], style=data['style'], item_type=data.get('item_type', ''), challans=challans, line_summary=sorted_line_summary, count=len(challans), today=get_bd_date_str())
-
-@app.route('/admin/accessories/edit', methods=['GET'])
-def accessories_edit():
-    if not session.get('logged_in'): return redirect(url_for('index'))
-    
-    ref = request.args.get('ref')
-    try: index = int(request.args.get('index'))
-    except: return redirect(url_for('accessories_search_page'))
-    
-    db_acc = load_accessories_db()
-    if ref in db_acc and 0 <= index < len(db_acc[ref]['challans']):
-        item = db_acc[ref]['challans'][index]
-        return render_template_string(ACCESSORIES_EDIT_TEMPLATE, ref=ref, index=index, item=item)
-    
-    return redirect(url_for('accessories_print_view', ref=ref))
-
-@app.route('/admin/accessories/update', methods=['POST'])
-def accessories_update():
-    if not session.get('logged_in'): return redirect(url_for('index'))
-    
-    ref = request.form.get('ref')
-    index = int(request.form.get('index'))
-    db_acc = load_accessories_db()
-
-    if ref in db_acc and 0 <= index < len(db_acc[ref]['challans']):
-        db_acc[ref]['challans'][index]['line'] = request.form.get('line_no')
-        db_acc[ref]['challans'][index]['color'] = request.form.get('color')
-        db_acc[ref]['challans'][index]['size'] = request.form.get('size')
-        db_acc[ref]['challans'][index]['qty'] = request.form.get('qty')
-        save_accessories_db(db_acc)
-    
-    return redirect(url_for('accessories_input_direct', ref=ref))
-
-@app.route('/admin/accessories/delete', methods=['POST'])
-def accessories_delete():
-    if not session.get('logged_in') or session.get('role') != 'admin': return redirect(url_for('index'))
-    
-    ref = request.form.get('ref')
-    index = int(request.form.get('index'))
-    db_acc = load_accessories_db()
-
-    if ref in db_acc and 0 <= index < len(db_acc[ref]['challans']):
-        del db_acc[ref]['challans'][index]
-        save_accessories_db(db_acc)
-    
-    return redirect(url_for('accessories_input_direct', ref=ref))
-
-@app.route('/generate-po-report', methods=['POST'])
-def generate_po_report():
-    if not session.get('logged_in'): return redirect(url_for('index'))
-
-    if os.path.exists(UPLOAD_FOLDER): 
-        shutil.rmtree(UPLOAD_FOLDER)
-    os.makedirs(UPLOAD_FOLDER)
-
-    try:
-        uploaded_files = request.files.getlist('pdf_files')
-        all_data = []
-        final_meta = {'buyer': 'N/A', 'booking': 'N/A', 'style': 'N/A', 'season': 'N/A', 'dept': 'N/A', 'item': 'N/A'}
+@app.route('/store/product/edit/<p_id>', methods=['GET', 'POST'])
+@store_login_required
+@permission_required('products')
+def edit_product(p_id):
+    products = load_store_products()
+    product = next((p for p in products if p.get('id') == p_id), None)
+    if not product:
+        flash("Product not found.", "error")
+        return redirect(url_for('store_products'))
         
-        for file in uploaded_files:
-            if file.filename == '': continue
-            file_path = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
-            file.save(file_path)
-            data, meta = extract_data_dynamic(file_path)
-            if meta['buyer'] != 'N/A': final_meta = meta
-            if data: all_data.extend(data)
+    if request.method == 'POST':
+        product['name'] = request.form['name']
+        product['code'] = request.form['code']
+        product['price'] = float(request.form['price'])
+        product['stock'] = int(request.form['stock'])
+        product['details'] = request.form['details']
+        save_store_products(products)
+        flash("Product updated successfully!", "success")
+        return redirect(url_for('store_products'))
+
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return render_template_string(PRODUCT_FORM_MODAL_HTML, title="Edit Product", action_url=url_for('edit_product', p_id=p_id), product=product)
+    return redirect(url_for('store_products'))
+
+@app.route('/store/product/delete/<p_id>', methods=['POST'])
+@store_login_required
+@permission_required('products')
+def delete_product(p_id):
+    products = load_store_products()
+    products = [p for p in products if p.get('id') != p_id]
+    save_store_products(products)
+    flash("Product deleted successfully!", "success")
+    return redirect(url_for('store_products'))
+
+
+# ----------------- Store Customer Routes -----------------
+@app.route('/store/customers')
+@store_login_required
+@permission_required('customers')
+def store_customers():
+    customers = load_store_customers()
+    return render_template_string(STORE_CUSTOMERS_HTML, title="Customers", active_page="store_customers", customers=customers)
+
+@app.route('/store/customer/add', methods=['GET', 'POST'])
+@store_login_required
+@permission_required('customers')
+def add_customer():
+    if request.method == 'POST':
+        customers = load_store_customers()
+        new_customer = {
+            "id": str(uuid.uuid4()),
+            "name": request.form['name'],
+            "email": request.form['email'],
+            "phone": request.form['phone'],
+            "address": request.form['address']
+        }
+        customers.append(new_customer)
+        save_store_customers(customers)
+        flash("Customer added successfully!", "success")
+        return redirect(url_for('store_customers'))
         
-        if not all_data:
-            return render_template_string(PO_REPORT_TEMPLATE, tables=None, message="No PO data found in uploaded files.")
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return render_template_string(CUSTOMER_FORM_MODAL_HTML, title="Add New Customer", action_url=url_for('add_customer'), customer={})
+    return redirect(url_for('store_customers'))
 
-        update_po_stats(session.get('user', 'Unknown'), len(uploaded_files))
-
-        df = pd.DataFrame(all_data)
-        df['Color'] = df['Color'].str.strip()
-        df = df[df['Color'] != ""]
-        unique_colors = df['Color'].unique()
+@app.route('/store/customer/edit/<c_id>', methods=['GET', 'POST'])
+@store_login_required
+@permission_required('customers')
+def edit_customer(c_id):
+    customers = load_store_customers()
+    customer = next((c for c in customers if c.get('id') == c_id), None)
+    if not customer:
+        flash("Customer not found.", "error")
+        return redirect(url_for('store_customers'))
         
-        final_tables = []
-        grand_total_qty = 0
+    if request.method == 'POST':
+        customer['name'] = request.form['name']
+        customer['email'] = request.form['email']
+        customer['phone'] = request.form['phone']
+        customer['address'] = request.form['address']
+        save_store_customers(customers)
+        flash("Customer updated successfully!", "success")
+        return redirect(url_for('store_customers'))
 
-        for color in unique_colors:
-            color_df = df[df['Color'] == color]
-            pivot = color_df.pivot_table(index='P.O NO', columns='Size', values='Quantity', aggfunc='sum', fill_value=0)
-            pivot.columns.name = None
-            
-            try:
-                sorted_cols = sort_sizes(pivot.columns.tolist())
-                pivot = pivot[sorted_cols]
-            except: pass
-            
-            pivot['Total'] = pivot.sum(axis=1)
-            grand_total_qty += pivot['Total'].sum()
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return render_template_string(CUSTOMER_FORM_MODAL_HTML, title="Edit Customer", action_url=url_for('edit_customer', c_id=c_id), customer=customer)
+    return redirect(url_for('store_customers'))
 
-            actual_qty = pivot.sum()
-            actual_qty.name = 'Actual Qty'
-            qty_plus_3 = (actual_qty * 1.03).round().astype(int)
-            qty_plus_3.name = '3% Order Qty'
-            
-            pivot_final = pd.concat([pivot, actual_qty.to_frame().T, qty_plus_3.to_frame().T])
-            pivot_final = pivot_final.reset_index()
-            pivot_final = pivot_final.rename(columns={'index': 'P.O NO'})
-            
-            pd.set_option('colheader_justify', 'center')
-            html_table = pivot_final.to_html(classes='table table-bordered table-striped', index=False, border=0)
-            
-            html_table = re.sub(r'<tr>\s*<td>', '<tr><td class="order-col">', html_table)
-            html_table = html_table.replace('<th>Total</th>', '<th class="total-col-header">Total</th>')
-            html_table = html_table.replace('<td>Total</td>', '<td class="total-col">Total</td>')
-            html_table = html_table.replace('<td>Actual Qty</td>', '<td class="summary-label">Actual Qty</td>')
-            html_table = html_table.replace('<td>3% Order Qty</td>', '<td class="summary-label">3% Order Qty</td>')
-            html_table = re.sub(r'<tr>\s*<td class="summary-label">', '<tr class="summary-row"><td class="summary-label">', html_table)
+@app.route('/store/customer/delete/<c_id>', methods=['POST'])
+@store_login_required
+@permission_required('customers')
+def delete_customer(c_id):
+    customers = load_store_customers()
+    customers = [c for c in customers if c.get('id') != c_id]
+    save_store_customers(customers)
+    flash("Customer deleted successfully!", "success")
+    return redirect(url_for('store_customers'))
 
-            final_tables.append({'color': color, 'table': html_table})
-            
-        return render_template_string(PO_REPORT_TEMPLATE, tables=final_tables, meta=final_meta, grand_total=f"{grand_total_qty:,}")
-    except Exception as e:
-        flash(f"Error processing files: {str(e)}")
-        return redirect(url_for('index'))
+# ----------------- Store Invoice Routes -----------------
+@app.route('/store/invoices')
+@store_login_required
+@permission_required('invoices')
+def store_invoices():
+    invoices = load_store_invoices()
+    sorted_invoices = sorted(invoices, key=lambda x: x.get('date', '1970-01-01'), reverse=True)
+    return render_template_string(STORE_INVOICES_LIST_HTML, title="Invoices", active_page="store_invoices", invoices=sorted_invoices)
 
+@app.route('/store/invoice/create', methods=['GET', 'POST'])
+@store_login_required
+@permission_required('invoices')
+def create_invoice():
+    if request.method == 'POST':
+        invoices = load_store_invoices()
+        customers = load_store_customers()
+        
+        items = []
+        subtotal = 0
+        item_names = request.form.getlist('item_name')
+        item_qtys = request.form.getlist('item_qty')
+        item_prices = request.form.getlist('item_price')
+        
+        for i in range(len(item_names)):
+            qty = float(item_qtys[i])
+            price = float(item_prices[i])
+            total = qty * price
+            items.append({"name": item_names[i], "qty": qty, "price": price})
+            subtotal += total
+        
+        discount = float(request.form.get('discount', 0))
+        tax_percent = float(request.form.get('tax', 0))
+        total_after_discount = subtotal - discount
+        tax_amount = total_after_discount * (tax_percent / 100)
+        grand_total = total_after_discount + tax_amount
+        
+        customer = next((c for c in customers if c.get('id') == request.form['customer_id']), None)
+        
+        new_invoice = {
+            "invoice_no": request.form['invoice_no'],
+            "customer_id": request.form['customer_id'],
+            "customer_name": customer['name'] if customer else 'N/A',
+            "date": request.form['date'],
+            "items": items,
+            "subtotal": subtotal,
+            "discount": discount,
+            "tax": tax_percent,
+            "tax_amount": tax_amount,
+            "total": grand_total,
+            "paid": 0,
+            "due": grand_total,
+            "notes": request.form.get('notes', '')
+        }
+        invoices.append(new_invoice)
+        save_store_invoices(invoices)
+        flash(f"Invoice {new_invoice['invoice_no']} created successfully!", "success")
+        return redirect(url_for('view_invoice', inv_no=new_invoice['invoice_no']))
+        
+    customers = load_store_customers()
+    return render_template_string(CREATE_INVOICE_ESTIMATE_HTML, title="Create New Invoice", active_page="store_invoices", customers=customers, doc_number=generate_invoice_number(), get_bd_time=get_bd_time, type="invoice")
+
+@app.route('/store/invoice/view/<inv_no>')
+@store_login_required
+@permission_required('invoices')
+def view_invoice(inv_no):
+    invoice = next((i for i in load_store_invoices() if i['invoice_no'] == inv_no), None)
+    if not invoice:
+        flash("Invoice not found.", "error")
+        return redirect(url_for('store_invoices'))
+    customer = next((c for c in load_store_customers() if c.get('id') == invoice['customer_id']), {})
+    payments = [p for p in load_store_payments() if p['invoice_no'] == inv_no]
+    return render_template_string(VIEW_INVOICE_ESTIMATE_HTML, title=f"View Invoice", active_page="store_invoices", doc=invoice, customer=customer, payments=payments, type="invoice")
+
+@app.route('/store/invoice/delete/<inv_no>', methods=['POST'])
+@store_login_required
+@permission_required('invoices')
+def delete_invoice(inv_no):
+    invoices = [i for i in load_store_invoices() if i['invoice_no'] != inv_no]
+    save_store_invoices(invoices)
+    # Also delete associated payments
+    payments = [p for p in load_store_payments() if p['invoice_no'] != inv_no]
+    save_store_payments(payments)
+    flash(f"Invoice {inv_no} deleted.", "success")
+    return redirect(url_for('store_invoices'))
+
+# ----------------- Store Estimate Routes -----------------
+@app.route('/store/estimates')
+@store_login_required
+@permission_required('estimates')
+def store_estimates():
+    estimates = sorted(load_store_estimates(), key=lambda x: x.get('date', '1970-01-01'), reverse=True)
+    return render_template_string(STORE_INVOICES_LIST_HTML, title="Estimates", active_page="store_estimates", invoices=estimates) # Re-use template
+
+@app.route('/store/estimate/create', methods=['GET', 'POST'])
+@store_login_required
+@permission_required('estimates')
+def create_estimate():
+    if request.method == 'POST':
+        estimates = load_store_estimates()
+        customers = load_store_customers()
+        # Similar logic to create_invoice but for estimates
+        items = []
+        subtotal = 0
+        item_names = request.form.getlist('item_name')
+        item_qtys = request.form.getlist('item_qty')
+        item_prices = request.form.getlist('item_price')
+        
+        for i in range(len(item_names)):
+            qty = float(item_qtys[i]); price = float(item_prices[i]); total = qty * price
+            items.append({"name": item_names[i], "qty": qty, "price": price})
+            subtotal += total
+        
+        discount = float(request.form.get('discount', 0))
+        tax_percent = float(request.form.get('tax', 0))
+        total_after_discount = subtotal - discount
+        tax_amount = total_after_discount * (tax_percent / 100)
+        grand_total = total_after_discount + tax_amount
+        customer = next((c for c in customers if c.get('id') == request.form['customer_id']), None)
+
+        new_estimate = {
+            "estimate_no": request.form['estimate_no'], "customer_id": request.form['customer_id'],
+            "customer_name": customer['name'] if customer else 'N/A', "date": request.form['date'],
+            "items": items, "subtotal": subtotal, "discount": discount, "tax": tax_percent,
+            "tax_amount": tax_amount, "total": grand_total, "notes": request.form.get('notes', '')
+        }
+        estimates.append(new_estimate)
+        save_store_estimates(estimates)
+        flash(f"Estimate {new_estimate['estimate_no']} created successfully!", "success")
+        return redirect(url_for('view_estimate', est_no=new_estimate['estimate_no']))
+        
+    customers = load_store_customers()
+    return render_template_string(CREATE_INVOICE_ESTIMATE_HTML, title="Create New Estimate", active_page="store_estimates", customers=customers, doc_number=generate_estimate_number(), get_bd_time=get_bd_time, type="estimate")
+
+@app.route('/store/estimate/view/<est_no>')
+@store_login_required
+@permission_required('estimates')
+def view_estimate(est_no):
+    estimate = next((e for e in load_store_estimates() if e['estimate_no'] == est_no), None)
+    if not estimate:
+        flash("Estimate not found.", "error")
+        return redirect(url_for('store_estimates'))
+    customer = next((c for c in load_store_customers() if c.get('id') == estimate['customer_id']), {})
+    return render_template_string(VIEW_INVOICE_ESTIMATE_HTML, title=f"View Estimate", active_page="store_estimates", doc=estimate, customer=customer, type="estimate")
+
+@app.route('/store/estimate/delete/<est_no>', methods=['POST'])
+@store_login_required
+@permission_required('estimates')
+def delete_estimate(est_no):
+    estimates = [e for e in load_store_estimates() if e['estimate_no'] != est_no]
+    save_store_estimates(estimates)
+    flash(f"Estimate {est_no} deleted.", "success")
+    return redirect(url_for('store_estimates'))
+
+@app.route('/store/estimate/convert/<est_no>')
+@store_login_required
+@permission_required('invoices')
+def convert_to_invoice(est_no):
+    estimate = next((e for e in load_store_estimates() if e['estimate_no'] == est_no), None)
+    if not estimate:
+        flash("Estimate not found.", "error")
+        return redirect(url_for('store_estimates'))
+    
+    invoices = load_store_invoices()
+    new_invoice = {
+        **estimate, # copy all data
+        "invoice_no": generate_invoice_number(),
+        "paid": 0,
+        "due": estimate['total']
+    }
+    del new_invoice['estimate_no']
+    
+    invoices.append(new_invoice)
+    save_store_invoices(invoices)
+    
+    # Optional: delete the estimate after conversion
+    estimates = [e for e in load_store_estimates() if e['estimate_no'] != est_no]
+    save_store_estimates(estimates)
+    
+    flash(f"Estimate {est_no} converted to Invoice {new_invoice['invoice_no']}.", "success")
+    return redirect(url_for('view_invoice', inv_no=new_invoice['invoice_no']))
+
+# ----------------- Store Payment Routes -----------------
+@app.route('/store/payment/add/<inv_no>', methods=['GET', 'POST'])
+@store_login_required
+@permission_required('payments')
+def add_payment(inv_no):
+    invoices = load_store_invoices()
+    invoice = next((i for i in invoices if i['invoice_no'] == inv_no), None)
+    if not invoice:
+        flash("Invoice not found.", "error")
+        return redirect(url_for('store_invoices'))
+
+    if request.method == 'POST':
+        payments = load_store_payments()
+        amount = float(request.form['amount'])
+        
+        payments.append({
+            "payment_id": str(uuid.uuid4()), "invoice_no": inv_no,
+            "amount": amount, "date": request.form['date'],
+            "method": request.form['method'], "notes": request.form.get('notes', '')
+        })
+        save_store_payments(payments)
+        
+        # Update invoice status
+        invoice['paid'] += amount
+        invoice['due'] -= amount
+        save_store_invoices(invoices)
+        
+        flash("Payment added successfully!", "success")
+        return redirect(url_for('view_invoice', inv_no=inv_no))
+
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return render_template_string(ADD_PAYMENT_MODAL_HTML, invoice=invoice, get_bd_time=get_bd_time)
+    return redirect(url_for('view_invoice', inv_no=inv_no))
+
+
+# ----------------- Store User Management Routes -----------------
+@app.route('/store/user-management')
+@store_login_required
+@permission_required('user_manage')
+def store_user_management():
+    users = load_store_users()
+    return render_template_string(STORE_USER_MANAGEMENT_HTML, title="Store User Management", active_page="store_user_manage", users=users)
+
+@app.route('/store/user/add', methods=['GET', 'POST'])
+@store_login_required
+@permission_required('user_manage')
+def add_store_user():
+    available_permissions = ["products", "customers", "invoices", "estimates", "payments", "user_manage"]
+    if request.method == 'POST':
+        users = load_store_users()
+        username = request.form['username']
+        if username in users:
+            flash("Username already exists.", "error")
+        else:
+            users[username] = {
+                "password": request.form['password'], "role": request.form['role'],
+                "permissions": request.form.getlist('permissions'), "created_at": get_bd_date_str()
+            }
+            save_store_users(users)
+            flash("Store user created successfully.", "success")
+        return redirect(url_for('store_user_management'))
+    
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return render_template_string(STORE_USER_FORM_MODAL_HTML, action_url=url_for('add_store_user'), user={}, available_permissions=available_permissions)
+    return redirect(url_for('store_user_management'))
+
+@app.route('/store/user/edit/<username>', methods=['GET', 'POST'])
+@store_login_required
+@permission_required('user_manage')
+def edit_store_user(username):
+    users = load_store_users()
+    user = users.get(username)
+    available_permissions = ["products", "customers", "invoices", "estimates", "payments", "user_manage"]
+    if not user:
+        flash("User not found.", "error")
+        return redirect(url_for('store_user_management'))
+
+    if request.method == 'POST':
+        user['role'] = request.form['role']
+        user['permissions'] = request.form.getlist('permissions')
+        if request.form.get('password'):
+            user['password'] = request.form['password']
+        save_store_users(users)
+        flash("Store user updated successfully.", "success")
+        return redirect(url_for('store_user_management'))
+
+    user_data = user.copy(); user_data['username'] = username
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return render_template_string(STORE_USER_FORM_MODAL_HTML, action_url=url_for('edit_store_user', username=username), user=user_data, available_permissions=available_permissions)
+    return redirect(url_for('store_user_management'))
+
+@app.route('/store/user/delete/<username>', methods=['POST'])
+@store_login_required
+@permission_required('user_manage')
+def delete_store_user(username):
+    if username == 'StoreAdmin' or username == session.get('username'):
+        flash("Cannot delete the root store admin or yourself.", "error")
+        return redirect(url_for('store_user_management'))
+    
+    users = load_store_users()
+    if username in users:
+        del users[username]
+        save_store_users(users)
+        flash("Store user deleted.", "success")
+    return redirect(url_for('store_user_management'))
 
 # ==============================================================================
-# APPLICATION ENTRY POINT
+# MAIN APP EXECUTION
 # ==============================================================================
-
 if __name__ == '__main__':
-    # Render requires binding to 0.0.0.0 and the PORT env variable
-    port = int(os.environ.get("PORT", 5000))
-    app.run(host='0.0.0.0', port=port, debug=True)
+    app.run(debug=True, port=5000)
