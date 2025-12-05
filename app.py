@@ -59,7 +59,7 @@ def add_header(response):
 # ==============================================================================
 # MongoDB কানেকশন সেটআপ
 # ==============================================================================
-# Fixed: Removed spaces in connection string
+# স্পেস রিমুভ করা হয়েছে কানেকশন স্ট্রিং থেকে
 MONGO_URI = "mongodb+srv://Mehedi:Mehedi123@office.jxdnuaj.mongodb.net/?appName=Office"
 
 try:
@@ -177,8 +177,7 @@ def save_accessories_db(data):
         {"_id": "accessories_data", "data": data},
         upsert=True
     )
-
-# ==============================================================================
+    # ==============================================================================
 # Store Helper Functions
 # ==============================================================================
 
@@ -275,7 +274,8 @@ def save_store_payments(payments):
         {"_id": "payments_data", "data": payments},
         upsert=True
     )
-    def generate_invoice_number():
+
+def generate_invoice_number():
     invoices = load_store_invoices()
     if not invoices:
         return "INV-0001"
@@ -2454,8 +2454,6 @@ def fetch_closing_report_data(internal_ref_no):
 def fetch_closing_report_data_with_cache(internal_ref_no):
     """
     ক্যাশিং সহ API থেকে ডাটা ফেচ করে।
-    - যদি ডাটা ক্যাশে থাকে এবং ২৪ ঘন্টার মধ্যে ফেচ করা হয়েছে, ক্যাশ থেকে রিটার্ন করে
-    - অন্যথায় নতুন API কল করে এবং ক্যাশ আপডেট করে
     """
     acc_db = load_accessories_db()
     ref = internal_ref_no.upper()
@@ -4314,7 +4312,7 @@ ACCESSORIES_INPUT_TEMPLATE = """
             border-color: var(--border-glow);
         }
         
-        /* FIXED: Current entry styling - বর্তমান এন্ট্রি হাইলাইট */
+        /* FIXED: Current entry styling */
         .challan-row.current-entry {
             background: rgba(255, 122, 0, 0.1);
             border: 2px solid var(--accent-orange);
@@ -4331,7 +4329,7 @@ ACCESSORIES_INPUT_TEMPLATE = """
             text-align: center;
         }
         
-        /* FIXED: Current entry line badge - আলাদা স্টাইল */
+        /* FIXED: Current entry line badge */
         .current-entry .line-badge {
             background: linear-gradient(135deg, #FF7A00 0%, #FF5500 100%);
             box-shadow: 0 4px 15px rgba(255, 122, 0, 0.4);
@@ -4349,7 +4347,7 @@ ACCESSORIES_INPUT_TEMPLATE = """
             color: var(--accent-green);
         }
         
-        /* FIXED: Status cell - পুরাতন এন্ট্রিতে টিক, বর্তমানে ফাঁকা */
+        /* FIXED: Status cell */
         .status-cell {
             font-size: 20px;
             color: var(--accent-green);
@@ -4612,7 +4610,7 @@ ACCESSORIES_INPUT_TEMPLATE = """
             return true;
         }
         
-        // FIXED: Print Preview Function - নতুন উইন্ডোতে প্রিন্ট প্রিভিউ খোলা
+        // FIXED: Print Preview Function
         function openPrintPreview(event) {
             event.preventDefault();
             const url = event.currentTarget.href;
@@ -4620,7 +4618,6 @@ ACCESSORIES_INPUT_TEMPLATE = """
             if (printWindow) {
                 printWindow.focus();
             } else {
-                // Popup blocked হলে সরাসরি নেভিগেট
                 window.location.href = url;
             }
         }
@@ -4769,7 +4766,7 @@ ACCESSORIES_EDIT_TEMPLATE = """
 """
 
 # ==============================================================================
-# ACCESSORIES PRINT REPORT TEMPLATE - FIXED: AUTO PRINT PREVIEW
+# ACCESSORIES PRINT REPORT TEMPLATE
 # ==============================================================================
 
 ACCESSORIES_REPORT_TEMPLATE = """
@@ -4805,7 +4802,6 @@ ACCESSORIES_REPORT_TEMPLATE = """
         .main-table th { background: #2c3e50 !important; color: white !important; padding: 10px; border: 1px solid #000; font-size: 14px; text-transform: uppercase; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
         .main-table td { border: 1px solid #000; padding: 6px; text-align: center; vertical-align: middle; color: #000; font-weight: 600; }
         
-        /* FIXED: Current entry styling - বর্তমান এন্ট্রি হাইলাইট */
         .main-table tr.current-row {
             background: #fff3cd !important;
             -webkit-print-color-adjust: exact;
@@ -4945,9 +4941,8 @@ ACCESSORIES_REPORT_TEMPLATE = """
 </div>
 
 <script>
-    // FIXED: Auto print dialog - পেজ লোড হলে অটো প্রিন্ট ডায়ালগ দেখাবে
+    // FIXED: Auto print dialog
     window.onload = function() {
-        // Small delay to ensure page is fully rendered
         setTimeout(function() {
             window.print();
         }, 500);
@@ -4956,6 +4951,7 @@ ACCESSORIES_REPORT_TEMPLATE = """
 </body>
 </html>
 """
+
 # ==============================================================================
 # STORE DASHBOARD TEMPLATE - MAIN STORE MANAGEMENT
 # ==============================================================================
@@ -6086,7 +6082,6 @@ STORE_INVOICES_TEMPLATE = """
             });
         }
         
-        // FIXED: Print window function
         function openPrintWindow(event, url) {
             event.preventDefault();
             const printWin = window.open(url, '_blank', 'width=900,height=700,scrollbars=yes,resizable=yes');
@@ -6653,7 +6648,7 @@ STORE_INVOICE_VIEW_TEMPLATE = """
 """
 
 # ==============================================================================
-# STORE INVOICE PRINT TEMPLATE - FIXED: PROPER PRINT STYLING
+# STORE INVOICE PRINT TEMPLATE
 # ==============================================================================
 
 STORE_INVOICE_PRINT_TEMPLATE = """
@@ -6919,7 +6914,6 @@ STORE_INVOICE_PRINT_TEMPLATE = """
     </div>
     
     <script>
-        // FIXED: Auto print on page load
         window.onload = function() {
             setTimeout(function() {
                 window.print();
@@ -7751,7 +7745,6 @@ STORE_ESTIMATE_PRINT_TEMPLATE = """
 </body>
 </html>
 """
-
 # ==============================================================================
 # STORE PAYMENTS LIST TEMPLATE
 # ==============================================================================
@@ -8308,6 +8301,7 @@ STORE_USER_MANAGEMENT_TEMPLATE = """
 </body>
 </html>
 """
+
 # ==============================================================================
 # FLASK ROUTES: AUTHENTICATION & SESSION MANAGEMENT
 # ==============================================================================
