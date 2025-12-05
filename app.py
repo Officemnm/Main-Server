@@ -57,8 +57,9 @@ def add_header(response):
     return response
 
 # ==============================================================================
-# MongoDB কানেকশন সেটআপ (ফিক্সড: স্পেস রিমুভ করা হয়েছে)
+# MongoDB কানেকশন সেটআপ
 # ==============================================================================
+# Fixed: Removed spaces in connection string
 MONGO_URI = "mongodb+srv://Mehedi:Mehedi123@office.jxdnuaj.mongodb.net/?appName=Office"
 
 try:
@@ -176,8 +177,9 @@ def save_accessories_db(data):
         {"_id": "accessories_data", "data": data},
         upsert=True
     )
-    # ==============================================================================
-# Store Helper Functions (ফিক্সড: স্পেস রিমুভ করা হয়েছে)
+
+# ==============================================================================
+# Store Helper Functions
 # ==============================================================================
 
 def load_store_users():
@@ -273,8 +275,7 @@ def save_store_payments(payments):
         {"_id": "payments_data", "data": payments},
         upsert=True
     )
-
-def generate_invoice_number():
+    def generate_invoice_number():
     invoices = load_store_invoices()
     if not invoices:
         return "INV-0001"
@@ -450,8 +451,9 @@ def get_store_dashboard_summary():
         "monthly_sales": monthly_sales,
         "total_due": total_due
     }
-    # ==============================================================================
-# API CACHING HELPER - নতুন ফাংশন যোগ করা হয়েছে (ফিক্সড)
+
+# ==============================================================================
+# API CACHING HELPER - নতুন ফাংশন যোগ করা হয়েছে
 # ==============================================================================
 
 def should_refresh_api_data(last_api_call_time):
@@ -482,8 +484,7 @@ def get_colors_from_cached_data(ref, acc_db):
             if color and color not in colors:
                 colors.append(color)
     return colors
-
-# ==============================================================================
+    # ==============================================================================
 # ENHANCED CSS STYLES - PREMIUM MODERN UI WITH ANIMATIONS
 # ==============================================================================
 COMMON_STYLES = """
@@ -634,7 +635,8 @@ COMMON_STYLES = """
             filter: drop-shadow(0 0 10px var(--accent-orange-glow));
             animation: logoFloat 3s ease-in-out infinite;
         }
-                @keyframes logoFloat {
+
+        @keyframes logoFloat {
             0%, 100% { transform: translateY(0) rotate(0deg); }
             50% { transform: translateY(-5px) rotate(5deg); }
         }
@@ -1200,7 +1202,8 @@ COMMON_STYLES = """
             font-size: 13px;
             width: auto;
         }
-                /* Enhanced Tables */
+
+        /* Enhanced Tables */
         .dark-table { 
             width: 100%;
             border-collapse: collapse; 
@@ -1707,7 +1710,8 @@ COMMON_STYLES = """
             color: var(--accent-green);
             font-weight: 600;
         }
-                /* Flash Messages */
+
+        /* Flash Messages */
         .flash-message {
             margin-bottom: 20px;
             padding: 16px 20px;
@@ -2208,7 +2212,7 @@ COMMON_STYLES = """
             margin-bottom: 20px;
         }
         
-        /* Current Entry Indicator */
+        /* Current Entry Indicator - নতুন যোগ করা হয়েছে */
         .current-entry {
             background: rgba(255, 122, 0, 0.1) !important;
             border-left: 3px solid var(--accent-orange) !important;
@@ -2240,7 +2244,6 @@ COMMON_STYLES = """
         }
     </style>
 """
-
 # ==============================================================================
 # লজিক পার্ট: PURCHASE ORDER SHEET PARSER (PDF)
 # ==============================================================================
@@ -2307,7 +2310,8 @@ def extract_metadata(first_page_text):
         meta['item'] = item_text
 
     return meta
-    def extract_data_dynamic(file_path):
+
+def extract_data_dynamic(file_path):
     extracted_data = []
     metadata = {
         'buyer': 'N/A', 'booking': 'N/A', 'style': 'N/A', 
@@ -2367,7 +2371,7 @@ def extract_metadata(first_page_text):
                     if "quantity" in lower_line or "currency" in lower_line or "price" in lower_line or "amount" in lower_line:
                         continue
                         
-                    clean_line = line.replace("Spec. price", "").replace("Spec", "").strip()
+                    clean_line = line.replace("Spec.  price", "").replace("Spec", "").strip()
                     if not re.search(r'[a-zA-Z]', clean_line): continue
                     if re.match(r'^[A-Z]\d+$', clean_line) or "Assortment" in clean_line: continue
 
@@ -2446,7 +2450,8 @@ def fetch_closing_report_data(internal_ref_no):
     if found_data:
         return parse_report_data(found_data)
     return None
-   def fetch_closing_report_data_with_cache(internal_ref_no):
+
+def fetch_closing_report_data_with_cache(internal_ref_no):
     """
     ক্যাশিং সহ API থেকে ডাটা ফেচ করে।
     - যদি ডাটা ক্যাশে থাকে এবং ২৪ ঘন্টার মধ্যে ফেচ করা হয়েছে, ক্যাশ থেকে রিটার্ন করে
@@ -2794,7 +2799,7 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
     wb.save(file_stream)
     file_stream.seek(0)
     return file_stream
- # ==============================================================================
+    # ==============================================================================
 # HTML TEMPLATES: LOGIN PAGE - FIXED RESPONSIVE & CENTERED
 # ==============================================================================
 
@@ -3776,13 +3781,13 @@ ADMIN_DASHBOARD_TEMPLATE = """
                     let html = '<table class="dark-table"><thead><tr><th>User</th><th>Role</th><th style="text-align:right;">Actions</th></tr></thead><tbody>';
                     
                     for (const [u, d] of Object.entries(data)) {
-                        const roleClass = d.role === 'admin' ? 'background: rgba(255, 122, 0, 0.1); color: var(--accent-orange);' : 'background: rgba(139, 92, 246, 0.1); color: var(--accent-purple);';
+                        const roleClass = d.role === 'admin' ?  'background: rgba(255, 122, 0, 0.1); color: var(--accent-orange);' : 'background: rgba(139, 92, 246, 0.1); color: var(--accent-purple);';
                         
                         html += `<tr>
                             <td style="font-weight: 600;">${u}</td>
                             <td><span class="table-badge" style="${roleClass}">${d.role}</span></td>
                             <td style="text-align:right;">
-                                ${d.role !== 'admin' ? `
+                                ${d.role !== 'admin' ?  `
                                     <div class="action-cell">
                                         <button class="action-btn btn-edit" onclick="editUser('${u}', '${d.password}', '${d.permissions.join(',')}')">
                                             <i class="fas fa-edit"></i>
@@ -4092,7 +4097,6 @@ USER_DASHBOARD_TEMPLATE = """
 </body>
 </html>
 """
-
 # ==============================================================================
 # ACCESSORIES TEMPLATES - FIXED WITH CACHING AND STATUS LOGIC
 # ==============================================================================
@@ -4633,6 +4637,7 @@ ACCESSORIES_INPUT_TEMPLATE = """
 </body>
 </html>
 """
+
 # ==============================================================================
 # ACCESSORIES EDIT TEMPLATE
 # ==============================================================================
@@ -5210,6 +5215,7 @@ STORE_DASHBOARD_TEMPLATE = """
 </body>
 </html>
 """
+
 # ==============================================================================
 # STORE PRODUCTS TEMPLATE
 # ==============================================================================
@@ -5655,6 +5661,7 @@ STORE_CUSTOMERS_TEMPLATE = """
 </body>
 </html>
 """
+
 # ==============================================================================
 # STORE CUSTOMER FORM TEMPLATE (ADD/EDIT)
 # ==============================================================================
@@ -5914,7 +5921,6 @@ STORE_CUSTOMER_VIEW_TEMPLATE = """
 </body>
 </html>
 """
-
 # ==============================================================================
 # STORE INVOICES LIST TEMPLATE
 # ==============================================================================
@@ -6094,6 +6100,7 @@ STORE_INVOICES_TEMPLATE = """
 </body>
 </html>
 """
+
 # ==============================================================================
 # STORE INVOICE FORM TEMPLATE (NEW/EDIT)
 # ==============================================================================
@@ -6480,6 +6487,7 @@ STORE_INVOICE_FORM_TEMPLATE = """
 </body>
 </html>
 """
+
 # ==============================================================================
 # STORE INVOICE VIEW TEMPLATE
 # ==============================================================================
@@ -6921,6 +6929,7 @@ STORE_INVOICE_PRINT_TEMPLATE = """
 </body>
 </html>
 """
+
 # ==============================================================================
 # STORE ESTIMATES LIST TEMPLATE
 # ==============================================================================
@@ -7742,6 +7751,7 @@ STORE_ESTIMATE_PRINT_TEMPLATE = """
 </body>
 </html>
 """
+
 # ==============================================================================
 # STORE PAYMENTS LIST TEMPLATE
 # ==============================================================================
@@ -8450,7 +8460,8 @@ def delete_user():
         return jsonify({"status": "success"})
     
     return jsonify({"status": "error", "message": "Cannot delete admin or user not found"})
-    # ==============================================================================
+
+# ==============================================================================
 # FLASK ROUTES: CLOSING REPORT GENERATION
 # ==============================================================================
 
@@ -9111,7 +9122,8 @@ def store_customer_view(index):
         index=index,
         customer_invoices=customer_invoices
     )
-    # ==============================================================================
+
+# ==============================================================================
 # FLASK ROUTES: STORE INVOICES - FIXED
 # ==============================================================================
 
@@ -9340,7 +9352,8 @@ def store_invoice_print(index):
         return redirect(url_for('store_invoices'))
     
     return render_template_string(STORE_INVOICE_PRINT_TEMPLATE, invoice=invoices[index], index=index)
-    # ==============================================================================
+
+# ==============================================================================
 # FLASK ROUTES: STORE ESTIMATES - FIXED
 # ==============================================================================
 
@@ -9581,7 +9594,8 @@ def store_estimate_convert(index):
     
     flash(f'Estimate converted to Invoice {new_invoice["invoice_no"]}!')
     return redirect(url_for('store_invoices'))
-    # ==============================================================================
+
+# ==============================================================================
 # FLASK ROUTES: STORE PAYMENTS
 # ==============================================================================
 
@@ -9807,7 +9821,7 @@ def internal_error(e):
         <div class="error-container">
             <div class="error-code">500</div>
             <div class="error-message">Internal Server Error</div>
-            <div class="error-hint">Something went wrong. Please try again later.</div>
+            <div class="error-hint">Something went wrong.  Please try again later. </div>
             <a href="/">
                 <button class="btn-primary" style="width: auto; padding: 14px 30px;">
                     <i class="fas fa-home" style="margin-right: 10px;"></i> Go Home
