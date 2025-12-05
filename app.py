@@ -2446,7 +2446,7 @@ def fetch_closing_report_data(internal_ref_no):
     if found_data:
         return parse_report_data(found_data)
     return None
-    def fetch_closing_report_data_with_cache(internal_ref_no):
+   def fetch_closing_report_data_with_cache(internal_ref_no):
     """
     ক্যাশিং সহ API থেকে ডাটা ফেচ করে।
     - যদি ডাটা ক্যাশে থাকে এবং ২৪ ঘন্টার মধ্যে ফেচ করা হয়েছে, ক্যাশ থেকে রিটার্ন করে
@@ -2794,7 +2794,7 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
     wb.save(file_stream)
     file_stream.seek(0)
     return file_stream
-    # ==============================================================================
+ # ==============================================================================
 # HTML TEMPLATES: LOGIN PAGE - FIXED RESPONSIVE & CENTERED
 # ==============================================================================
 
