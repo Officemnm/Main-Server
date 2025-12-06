@@ -17,6 +17,8 @@ import shutil
 import numpy as np
 from pymongo import MongoClient 
 from collections import defaultdict
+
+# --- Flask লাইব্রেরি ইম্পোর্ট ---
 from flask import Flask, request, render_template_string, send_file, flash, session, redirect, url_for, make_response, jsonify
 
 app = Flask(__name__)
@@ -63,17 +65,17 @@ try:
     client = MongoClient(MONGO_URI)
     db = client['office_db']
     
-    # Existing Collections
     users_col = db['users']
     stats_col = db['stats']
     accessories_col = db['accessories']
-
-    # --- NEW STORE PANEL COLLECTIONS ---
+    
+    # --- NEW: Store Panel Collections ---
     store_products_col = db['store_products']
     store_customers_col = db['store_customers']
     store_invoices_col = db['store_invoices']
+    store_users_col = db['store_users'] # For store-specific users if needed separate, or use main users
     
-    print("MongoDB Connected Successfully! (Store Modules Loaded)")
+    print("MongoDB Connected Successfully!")
 except Exception as e:
     print(f"MongoDB Connection Error: {e}")
 
@@ -590,7 +592,7 @@ COMMON_STYLES = """
             letter-spacing: 1.5px;
         }
 
-        input, select, textarea { 
+        input, select { 
             width: 100%;
             padding: 14px 18px; 
             background: rgba(255, 255, 255, 0.03);
@@ -603,12 +605,12 @@ COMMON_STYLES = """
             transition: var(--transition-smooth);
         }
 
-        input::placeholder, textarea::placeholder {
+        input::placeholder {
             color: var(--text-secondary);
             opacity: 0.5;
         }
 
-        input:focus, select:focus, textarea:focus { 
+        input:focus, select:focus { 
             border-color: var(--accent-orange);
             background: rgba(255, 122, 0, 0.05);
             box-shadow: 0 0 0 4px var(--accent-orange-glow), 0 0 20px var(--accent-orange-glow);
@@ -1445,7 +1447,2625 @@ COMMON_STYLES = """
     </style>
 """
 # ==============================================================================
-# STORE MODULE TEMPLATES
+# হেল্পার ফাংশন: পরিসংখ্যান ও হিস্ট্রি (MongoDB ব্যবহার করে)
+# ==============================================================================
+
+def load_users():
+    record = users_col.find_one({"_id": "global_users"})
+    default_users = {
+        "Admin": {
+            "password": "@Nijhum@12", 
+            "role": "admin", 
+            "permissions": ["closing", "po_sheet", "user_manage", "view_history", "accessories"],
+            "created_at": "N/A",
+            "last_login": "Never",
+            "last_duration": "N/A"
+        }
+    }
+    if record:
+        return record['data']
+    else:
+        users_col.insert_one({"_id": "global_users", "data": default_users})
+        return default_users
+
+def save_users(users_data):
+    users_col.replace_one(
+        {"_id": "global_users"}, 
+        {"_id": "global_users", "data": users_data}, 
+        upsert=True
+    )
+
+def load_stats():
+    record = stats_col.find_one({"_id": "dashboard_stats"})
+    if record:
+        return record['data']
+    else:
+        default_stats = {"downloads": [], "last_booking": "None"}
+        stats_col.insert_one({"_id": "dashboard_stats", "data": default_stats})
+        return default_stats
+
+def save_stats(data):
+    stats_col.replace_one(
+        {"_id": "dashboard_stats"},
+        {"_id": "dashboard_stats", "data": data},
+        upsert=True
+    )
+def update_stats(ref_no, username):
+    data = load_stats()
+    now = get_bd_time() # BD Time
+    new_record = {
+        "ref": ref_no,
+        "user": username,
+        "date": now.strftime('%d-%m-%Y'),
+        "time": now.strftime('%I:%M %p'),
+        "type": "Closing Report",
+        "iso_time": now.isoformat()
+    }
+    data['downloads'].insert(0, new_record)
+    # Analytics এর জন্য ডাটা লিমিট বাড়ানো হয়েছে
+    if len(data['downloads']) > 3000:
+        data['downloads'] = data['downloads'][:3000]
+        
+    data['last_booking'] = ref_no
+    save_stats(data)
+
+def update_po_stats(username, file_count):
+    data = load_stats()
+    now = get_bd_time()
+    new_record = {
+        "user": username,
+        "file_count": file_count,
+        "date": now.strftime('%d-%m-%Y'),
+        "time": now.strftime('%I:%M %p'),
+        "type": "PO Sheet",
+        "iso_time": now.isoformat()
+    }
+    if 'downloads' not in data: data['downloads'] = []
+    data['downloads'].insert(0, new_record)
+    if len(data['downloads']) > 3000:
+        data['downloads'] = data['downloads'][:3000]
+    save_stats(data)
+
+def load_accessories_db():
+    record = accessories_col.find_one({"_id": "accessories_data"})
+    if record:
+        return record['data']
+    else:
+        return {}
+
+def save_accessories_db(data):
+    accessories_col.replace_one(
+        {"_id": "accessories_data"},
+        {"_id": "accessories_data", "data": data},
+        upsert=True
+    )
+
+# --- NEW: Store Panel Helper Functions ---
+
+def load_store_products():
+    record = store_products_col.find_one({"_id": "store_products_data"})
+    if record:
+        return record['data']
+    else:
+        return []
+
+def save_store_products(data):
+    store_products_col.replace_one(
+        {"_id": "store_products_data"},
+        {"_id": "store_products_data", "data": data},
+        upsert=True
+    )
+
+def load_store_customers():
+    record = store_customers_col.find_one({"_id": "store_customers_data"})
+    if record:
+        return record['data']
+    else:
+        return []
+
+def save_store_customers(data):
+    store_customers_col.replace_one(
+        {"_id": "store_customers_data"},
+        {"_id": "store_customers_data", "data": data},
+        upsert=True
+    )
+
+def load_store_invoices():
+    record = store_invoices_col.find_one({"_id": "store_invoices_data"})
+    if record:
+        return record['data']
+    else:
+        return []
+
+def save_store_invoices(data):
+    store_invoices_col.replace_one(
+        {"_id": "store_invoices_data"},
+        {"_id": "store_invoices_data", "data": data},
+        upsert=True
+    )
+    # --- আপডেটেড: রিয়েল-টাইম ড্যাশবোর্ড সামারি এবং এনালিটিক্স ---
+def get_dashboard_summary_v2():
+    stats_data = load_stats()
+    acc_db = load_accessories_db()
+    users_data = load_users()
+    
+    now = get_bd_time()
+    today_str = now.strftime('%d-%m-%Y')
+    
+    # 1. User Stats
+    user_details = []
+    for u, d in users_data.items():
+        user_details.append({
+            "username": u,
+            "role": d.get('role', 'user'),
+            "created_at": d.get('created_at', 'N/A'),
+            "last_login": d.get('last_login', 'Never'),
+            "last_duration": d.get('last_duration', 'N/A')
+        })
+
+    # 2. Accessories Today & Analytics - LIFETIME COUNT
+    acc_lifetime_count = 0
+    acc_today_list = []
+    
+    # Analytics Container: {'YYYY-MM-DD': {'label': '01-Dec', 'closing': 0, 'po': 0, 'acc': 0}}
+    daily_data = defaultdict(lambda: {'closing': 0, 'po': 0, 'acc': 0})
+
+    for ref, data in acc_db.items():
+        for challan in data.get('challans', []):
+            acc_lifetime_count += 1  # LIFETIME COUNT
+            c_date = challan.get('date')
+            if c_date == today_str:
+                acc_today_list.append({
+                    "ref": ref,
+                    "buyer": data.get('buyer'),
+                    "style": data.get('style'),
+                    "time": "Today", 
+                    "qty": challan.get('qty')
+                })
+            
+            # Analytics Calculation - Daily basis
+            try:
+                dt_obj = datetime.strptime(c_date, '%d-%m-%Y')
+                sort_key = dt_obj.strftime('%Y-%m-%d')
+                daily_data[sort_key]['acc'] += 1
+                daily_data[sort_key]['label'] = dt_obj.strftime('%d-%b')
+            except: pass
+
+    # 3. Closing & PO - LIFETIME COUNT & Analytics
+    closing_lifetime_count = 0
+    po_lifetime_count = 0
+    closing_list = []
+    po_list = []
+    
+    history = stats_data.get('downloads', [])
+    for item in history:
+        item_date = item.get('date', '')
+        if item.get('type') == 'PO Sheet':
+            po_lifetime_count += 1  # LIFETIME COUNT
+            if item_date == today_str:
+                po_list.append(item)
+        else: 
+            closing_lifetime_count += 1  # LIFETIME COUNT
+            if item_date == today_str:
+                closing_list.append(item)
+        
+        # Analytics Calculation - Daily basis
+        try:
+            dt_obj = datetime.strptime(item_date, '%d-%m-%Y')
+            sort_key = dt_obj.strftime('%Y-%m-%d')
+            
+            if item.get('type') == 'PO Sheet':
+                daily_data[sort_key]['po'] += 1
+            else:
+                daily_data[sort_key]['closing'] += 1
+            daily_data[sort_key]['label'] = dt_obj.strftime('%d-%b')
+        except: pass
+    # Get last month's 1st date to today
+    first_of_last_month = (now.replace(day=1) - timedelta(days=1)).replace(day=1)
+    start_date = first_of_last_month.strftime('%Y-%m-%d')
+    end_date = now.strftime('%Y-%m-%d')
+    
+    # Filter and sort data from start_date to end_date
+    sorted_keys = sorted([k for k in daily_data.keys() if start_date <= k <= end_date])
+    
+    chart_labels = []
+    chart_closing = []
+    chart_po = []
+    chart_acc = []
+
+    if not sorted_keys:
+        curr_d = now.strftime('%d-%b')
+        chart_labels = [curr_d]
+        chart_closing = [0]
+        chart_po = [0]
+        chart_acc = [0]
+    else:
+        for k in sorted_keys:
+            d = daily_data[k]
+            chart_labels.append(d.get('label', k))
+            chart_closing.append(d['closing'])
+            chart_po.append(d['po'])
+            chart_acc.append(d['acc'])
+
+    return {
+        "users": { "count": len(users_data), "details": user_details },
+        "accessories": { "count": acc_lifetime_count, "details": acc_today_list },
+        "closing": { "count": closing_lifetime_count, "details": closing_list },
+        "po": { "count": po_lifetime_count, "details": po_list },
+        "chart": {
+            "labels": chart_labels,
+            "closing": chart_closing,
+            "po": chart_po,
+            "acc": chart_acc
+        },
+        "history": history
+    }
+
+# ==============================================================================
+# লজিক পার্ট: PURCHASE ORDER SHEET PARSER (PDF)
+# ==============================================================================
+
+def is_potential_size(header):
+    h = header.strip().upper()
+    if h in ["COLO", "SIZE", "TOTAL", "QUANTITY", "PRICE", "AMOUNT", "CURRENCY", "ORDER NO", "P.O NO"]:
+        return False
+    if re.match(r'^\d+$', h): return True
+    if re.match(r'^\d+[AMYT]$', h): return True
+    if re.match(r'^(XXS|XS|S|M|L|XL|XXL|XXXL|TU|ONE\s*SIZE)$', h): return True
+    if re.match(r'^[A-Z]\d{2,}$', h): return False
+    return False
+
+def sort_sizes(size_list):
+    STANDARD_ORDER = [
+        '0M', '1M', '3M', '6M', '9M', '12M', '18M', '24M', '36M',
+        '2A', '3A', '4A', '5A', '6A', '8A', '10A', '12A', '14A', '16A', '18A',
+        'XXS', 'XS', 'S', 'M', 'L', 'XL', 'XXL', '3XL', '4XL', '5XL',
+        'TU', 'One Size'
+    ]
+    def sort_key(s):
+        s = s.strip()
+        if s in STANDARD_ORDER: return (0, STANDARD_ORDER.index(s))
+        if s.isdigit(): return (1, int(s))
+        match = re.match(r'^(\d+)([A-Z]+)$', s)
+        if match: return (2, int(match.group(1)), match.group(2))
+        return (3, s)
+    return sorted(size_list, key=sort_key)
+
+def extract_metadata(first_page_text):
+    meta = {
+        'buyer': 'N/A', 'booking': 'N/A', 'style': 'N/A', 
+        'season': 'N/A', 'dept': 'N/A', 'item': 'N/A'
+    }
+    if "KIABI" in first_page_text.upper():
+        meta['buyer'] = "KIABI"
+    else:
+        buyer_match = re.search(r"Buyer.*?Name[\s\S]*?([\w\s&]+)(?:\n|$)", first_page_text)
+        if buyer_match: meta['buyer'] = buyer_match.group(1).strip()
+
+    booking_block_match = re.search(r"(?:Internal )?Booking NO\. ?[:\s]*([\s\S]*?)(?:System NO|Control No|Buyer)", first_page_text, re.IGNORECASE)
+    if booking_block_match: 
+        raw_booking = booking_block_match.group(1).strip()
+        clean_booking = raw_booking.replace('\n', '').replace('\r', '').replace(' ', '')
+        if "System" in clean_booking: clean_booking = clean_booking.split("System")[0]
+        meta['booking'] = clean_booking
+
+    style_match = re.search(r"Style Ref\. ?[:\s]*([\w-]+)", first_page_text, re.IGNORECASE)
+    if style_match: meta['style'] = style_match.group(1).strip()
+    else:
+        style_match = re.search(r"Style Des\. ?[\s\S]*?([\w-]+)", first_page_text, re.IGNORECASE)
+        if style_match: meta['style'] = style_match.group(1).strip()
+
+    season_match = re.search(r"Season\s*[:\n\"]*([\w\d-]+)", first_page_text, re.IGNORECASE)
+    if season_match: meta['season'] = season_match.group(1).strip()
+    dept_match = re.search(r"Dept\. ?[\s\n:]*([A-Za-z]+)", first_page_text, re.IGNORECASE)
+    if dept_match: meta['dept'] = dept_match.group(1).strip()
+
+    item_match = re.search(r"Garments?   Item[\s\n:]*([^\n\r]+)", first_page_text, re.IGNORECASE)
+    if item_match: 
+        item_text = item_match.group(1).strip()
+        if "Style" in item_text: item_text = item_text.split("Style")[0].strip()
+        meta['item'] = item_text
+
+    return meta
+
+def extract_data_dynamic(file_path):
+    extracted_data = []
+    metadata = {
+        'buyer': 'N/A', 'booking': 'N/A', 'style': 'N/A', 
+        'season': 'N/A', 'dept': 'N/A', 'item': 'N/A'
+    }
+    order_no = "Unknown"
+    
+    try:
+        reader = pypdf.PdfReader(file_path)
+        first_page_text = reader.pages[0].extract_text()
+        
+        if "Main Fabric Booking" in first_page_text or "Fabric Booking Sheet" in first_page_text:
+            metadata = extract_metadata(first_page_text)
+            return [], metadata 
+
+        order_match = re.search(r"Order no\D*(\d+)", first_page_text, re.IGNORECASE)
+        if order_match: order_no = order_match.group(1)
+        else:
+            alt_match = re.search(r"Order\s*[:\.]?\s*(\d+)", first_page_text, re.IGNORECASE)
+            if alt_match: order_no = alt_match.group(1)
+        
+        order_no = str(order_no).strip()
+        if order_no.endswith("00"): order_no = order_no[:-2]
+
+        for page in reader.pages:
+            text = page.extract_text()
+            lines = text.split('\n')
+            sizes = []
+            capturing_data = False
+            
+            for i, line in enumerate(lines):
+                line = line.strip()
+                if not line: continue
+
+                if ("Colo" in line or "Size" in line) and "Total" in line:
+                    parts = line.split()
+                    try:
+                        total_idx = [idx for idx, x in enumerate(parts) if 'Total' in x][0]
+                        raw_sizes = parts[:total_idx]
+                        temp_sizes = [s for s in raw_sizes if s not in ["Colo", "/", "Size", "Colo/Size", "Colo/", "Size's"]]
+                        
+                        valid_size_count = sum(1 for s in temp_sizes if is_potential_size(s))
+                        if temp_sizes and valid_size_count >= len(temp_sizes) / 2:
+                            sizes = temp_sizes
+                            capturing_data = True
+                        else:
+                            sizes = []
+                            capturing_data = False
+                    except: pass
+                    continue
+                
+                if capturing_data:
+                    if line.startswith("Total Quantity") or line.startswith("Total Amount"):
+                        capturing_data = False
+                        continue
+                    lower_line = line.lower()
+                    if "quantity" in lower_line or "currency" in lower_line or "price" in lower_line or "amount" in lower_line:
+                        continue
+                        
+                    clean_line = line.replace("Spec. price", "").replace("Spec", "").strip()
+                    if not re.search(r'[a-zA-Z]', clean_line): continue
+                    if re.match(r'^[A-Z]\d+$', clean_line) or "Assortment" in clean_line: continue
+
+                    numbers_in_line = re.findall(r'\b\d+\b', line)
+                    quantities = [int(n) for n in numbers_in_line]
+                    color_name = clean_line
+                    final_qtys = []
+
+                    if len(quantities) >= len(sizes):
+                        if len(quantities) == len(sizes) + 1: final_qtys = quantities[:-1] 
+                        else: final_qtys = quantities[:len(sizes)]
+                        color_name = re.sub(r'\s\d+$', '', color_name).strip()
+                    elif len(quantities) < len(sizes): 
+                        vertical_qtys = []
+                        for next_line in lines[i+1:]:
+                            next_line = next_line.strip()
+                            if "Total" in next_line or re.search(r'[a-zA-Z]', next_line.replace("Spec", "").replace("price", "")): break
+                            if re.match(r'^\d+$', next_line): vertical_qtys.append(int(next_line))
+                        
+                        if len(vertical_qtys) >= len(sizes): final_qtys = vertical_qtys[:len(sizes)]
+                    
+                    if final_qtys and color_name:
+                         for idx, size in enumerate(sizes):
+                            extracted_data.append({
+                                'P.O NO': order_no,
+                                'Color': color_name,
+                                'Size': size,
+                                'Quantity': final_qtys[idx]
+                            })
+    except Exception as e: print(f"Error processing file: {e}")
+    return extracted_data, metadata
+# ==============================================================================
+# লজিক পার্ট: CLOSING REPORT API & EXCEL GENERATION
+# ==============================================================================
+def get_authenticated_session(username, password):
+    login_url = 'http://180.92.235.190:8022/erp/login.php'
+    login_payload = {'txt_userid': username, 'txt_password': password, 'submit': 'Login'}
+    session_req = requests.Session()
+    session_req.headers.update({
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+    })
+    try:
+        response = session_req.post(login_url, data=login_payload, timeout=300)
+        if "dashboard.php" in response.url or "Invalid" not in response.text:
+            return session_req
+        else:
+            return None
+    except requests.exceptions.RequestException as e:
+        print(f"Connection Error: {e}")
+        return None
+
+def fetch_closing_report_data(internal_ref_no):
+    active_session = get_authenticated_session("input2.clothing-cutting", "123456")
+    if not active_session: return None
+
+    report_url = 'http://180.92.235.190:8022/erp/prod_planning/reports/requires/cutting_lay_production_report_controller.php'
+    payload_template = {'action': 'report_generate', 'cbo_wo_company_name': '2', 'cbo_location_name': '2', 'cbo_floor_id': '0', 'cbo_buyer_name': '0', 'txt_internal_ref_no': internal_ref_no, 'reportType': '3'}
+    found_data = None
+   
+    for year in ['2025', '2024']:
+        for company_id in range(1, 6):
+            payload = payload_template.copy()
+            payload['cbo_year_selection'] = year
+            payload['cbo_company_name'] = str(company_id)
+            try:
+                response = active_session.post(report_url, data=payload, timeout=300)
+                if response.status_code == 200 and "Data not Found" not in response.text:
+                    found_data = response.text
+                    break
+            except: continue
+        if found_data: break
+    
+    if found_data:
+        return parse_report_data(found_data)
+    return None
+
+def parse_report_data(html_content):
+    all_report_data = []
+    try:
+        soup = BeautifulSoup(html_content, 'lxml')
+        header_row = soup.select_one('thead tr:nth-of-type(2)')
+        if not header_row: return None
+        all_th = header_row.find_all('th')
+        headers = [th.get_text(strip=True) for th in all_th if 'total' not in th.get_text(strip=True).lower()]
+        data_rows = soup.select('div#scroll_body table tbody tr')
+        item_blocks = []
+        current_block = []
+        for row in data_rows:
+            if row.get('bgcolor') == '#cddcdc':
+                if current_block: item_blocks.append(current_block)
+                current_block = []
+            else:
+                current_block.append(row)
+        if current_block: item_blocks.append(current_block)
+        
+        for block in item_blocks:
+            style, color, buyer_name, gmts_qty_data, sewing_input_data, cutting_qc_data = "N/A", "N/A", "N/A", None, None, None
+            for row in block:
+                cells = row.find_all('td')
+                if len(cells) > 2:
+                    criteria_main = cells[0].get_text(strip=True)
+                    criteria_sub = cells[2].get_text(strip=True)
+                    main_lower, sub_lower = criteria_main.lower(), criteria_sub.lower()
+                    
+                    if main_lower == "style": style = cells[1].get_text(strip=True)
+                    elif main_lower == "color & gmts. item": color = cells[1].get_text(strip=True)
+                    elif "buyer" in main_lower: buyer_name = cells[1].get_text(strip=True)
+                    
+                    if sub_lower == "gmts. color /country qty": gmts_qty_data = [cell.get_text(strip=True) for cell in cells[3:len(headers)+3]]
+                    
+                    if "sewing input" in main_lower: sewing_input_data = [cell.get_text(strip=True) for cell in cells[1:len(headers)+1]]
+                    elif "sewing input" in sub_lower: sewing_input_data = [cell.get_text(strip=True) for cell in cells[3:len(headers)+3]]
+    
+                    if "cutting qc" in main_lower and "balance" not in main_lower:
+                        cutting_qc_data = [cell.get_text(strip=True) for cell in cells[1:len(headers)+1]]
+                    elif "cutting qc" in sub_lower and "balance" not in sub_lower:
+                        cutting_qc_data = [cell.get_text(strip=True) for cell in cells[3:len(headers)+3]]
+            if gmts_qty_data:
+                plus_3_percent_data = []
+                for value in gmts_qty_data:
+                    try:
+                        new_qty = round(int(value.replace(',', '')) * 1.03)
+                        plus_3_percent_data.append(str(new_qty))
+                    except (ValueError, TypeError):
+                        plus_3_percent_data.append(value)
+                all_report_data.append({
+                    'style': style, 'buyer': buyer_name, 'color': color, 
+                    'headers': headers, 'gmts_qty': gmts_qty_data, 
+                    'plus_3_percent': plus_3_percent_data, 
+                    'sewing_input': sewing_input_data if sewing_input_data else [], 
+                    'cutting_qc': cutting_qc_data if cutting_qc_data else []
+                })
+        return all_report_data
+    except Exception as e:
+        return None
+
+def create_formatted_excel_report(report_data, internal_ref_no=""):
+    if not report_data: return None
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.title = "Closing Report"
+    # Styles
+    bold_font = Font(bold=True)
+    title_font = Font(size=32, bold=True, color="7B261A") 
+    white_bold_font = Font(size=16.5, bold=True, color="FFFFFF")
+    center_align = Alignment(horizontal='center', vertical='center')
+    left_align = Alignment(horizontal='left', vertical='center')
+    color_align = Alignment(horizontal='center', vertical='center', wrap_text=True)
+    thin_border = Border(left=Side(style='thin'), right=Side(style='thin'), top=Side(style='thin'), bottom=Side(style='thin'))
+    medium_border = Border(left=Side(style='medium'), right=Side(style='medium'), top=Side(style='medium'), bottom=Side(style='medium'))
+    
+    ir_ib_fill = PatternFill(start_color="7B261A", end_color="7B261A", fill_type="solid") 
+    header_row_fill = PatternFill(start_color="DE7465", end_color="DE7465", fill_type="solid") 
+    light_brown_fill = PatternFill(start_color="DE7465", end_color="DE7465", fill_type="solid") 
+    light_blue_fill = PatternFill(start_color="B9C2DF", end_color="B9C2DF", fill_type="solid") 
+    light_green_fill = PatternFill(start_color="C4D09D", end_color="C4D09D", fill_type="solid") 
+    dark_green_fill = PatternFill(start_color="f1f2e8", end_color="f1f2e8", fill_type="solid") 
+
+    NUM_COLUMNS, TABLE_START_ROW = 9, 8
+    ws.merge_cells(start_row=1, start_column=1, end_row=1, end_column=NUM_COLUMNS)
+    # UPDATED BRANDING
+    ws['A1'].value = "COTTON CLOTHING BD LTD"
+    ws['A1'].font = title_font 
+    ws['A1'].alignment = center_align
+
+    ws.merge_cells(start_row=2, start_column=1, end_row=2, end_column=NUM_COLUMNS)
+    ws['A2'].value = "CLOSING REPORT [ INPUT SECTION ]"
+    ws['A2'].font = Font(size=15, bold=True) 
+    ws['A2'].alignment = center_align
+    ws.row_dimensions[3].height = 6
+
+    formatted_ref_no = internal_ref_no.upper()
+    current_date = get_bd_time().strftime("%d/%m/%Y")
+    
+    left_sub_headers = {
+        'A4': 'BUYER', 'B4': report_data[0].get('buyer', ''), 
+        'A5': 'IR/IB NO', 'B5': formatted_ref_no, 
+        'A6': 'STYLE NO', 'B6': report_data[0].get('style', '')
+    }
+    
+    for cell_ref, value in left_sub_headers.items():
+        cell = ws[cell_ref]
+        cell.value = value
+        cell.font = bold_font
+        cell.alignment = left_align
+        cell.border = thin_border
+        if cell_ref == 'B5':
+            cell.fill = ir_ib_fill 
+            cell.font = white_bold_font 
+        else:
+            cell.fill = dark_green_fill 
+
+    ws.merge_cells('B4:G4'); ws.merge_cells('B5:G5'); ws.merge_cells('B6:G6')
+    
+    right_sub_headers = {'H4': 'CLOSING DATE', 'I4': current_date, 'H5': 'SHIPMENT', 'I5': 'ALL', 'H6': 'PO NO', 'I6': 'ALL'}
+    for cell_ref, value in right_sub_headers.items():
+        cell = ws[cell_ref]
+        cell.value = value
+        cell.font = bold_font
+        cell.alignment = left_align
+        cell.border = thin_border
+        cell.fill = dark_green_fill 
+
+    for row in range(4, 7):
+        for col in range(3, 8): 
+            cell = ws.cell(row=row, column=col)
+            cell.border = thin_border
+       
+    current_row = TABLE_START_ROW
+    for block in report_data:
+        table_headers = ["COLOUR NAME", "SIZE", "ORDER QTY 3%", "ACTUAL QTY", "CUTTING QC", "INPUT QTY", "BALANCE", "SHORT/PLUS QTY", "Percentage %"]
+        for col_idx, header in enumerate(table_headers, 1):
+            cell = ws.cell(row=current_row, column=col_idx, value=header)
+            cell.font = bold_font
+            cell.alignment = center_align
+            cell.border = medium_border
+            cell.fill = header_row_fill 
+
+        current_row += 1
+        start_merge_row = current_row
+        full_color_name = block.get('color', 'N/A')
+
+        for i, size in enumerate(block['headers']):
+            color_to_write = full_color_name if i == 0 else ""
+            actual_qty = int(block['gmts_qty'][i].replace(',', '') or 0)
+            input_qty = int(block['sewing_input'][i].replace(',', '') or 0) if i < len(block['sewing_input']) else 0
+            cutting_qc_val = int(block.get('cutting_qc', [])[i].replace(',', '') or 0) if i < len(block.get('cutting_qc', [])) else 0
+            
+            ws.cell(row=current_row, column=1, value=color_to_write)
+            ws.cell(row=current_row, column=2, value=size)
+            ws.cell(row=current_row, column=4, value=actual_qty)
+            ws.cell(row=current_row, column=5, value=cutting_qc_val)
+            ws.cell(row=current_row, column=6, value=input_qty)
+            
+            ws.cell(row=current_row, column=3, value=f"=ROUND(D{current_row}*1.03, 0)")      
+            ws.cell(row=current_row, column=7, value=f"=E{current_row}-F{current_row}")      
+            ws.cell(row=current_row, column=8, value=f"=F{current_row}-C{current_row}")      
+            ws.cell(row=current_row, column=9, value=f'=IF(C{current_row}<>0, H{current_row}/C{current_row}, 0)') 
+            
+            for col_idx in range(1, NUM_COLUMNS + 1):
+                cell = ws.cell(row=current_row, column=col_idx)
+                cell.border = medium_border if col_idx == 2 else thin_border
+                cell.alignment = center_align
+    
+                if col_idx in [1, 2, 3, 6, 9]: cell.font = bold_font
+                
+                if col_idx == 3: cell.fill = light_blue_fill      
+                elif col_idx == 6: cell.fill = light_green_fill   
+                else: cell.fill = dark_green_fill 
+
+                if col_idx == 9:
+                    cell.number_format = '0.00%' 
+            current_row += 1
+            
+        end_merge_row = current_row - 1
+        if start_merge_row <= end_merge_row:
+            ws.merge_cells(start_row=start_merge_row, start_column=1, end_row=end_merge_row, end_column=1)
+            merged_cell = ws.cell(row=start_merge_row, column=1)
+            merged_cell.alignment = color_align
+            if not merged_cell.font.bold: merged_cell.font = bold_font
+        
+        total_row_str = str(current_row)
+        ws.merge_cells(start_row=current_row, start_column=1, end_row=current_row, end_column=2)
+        
+        totals_formulas = {
+            "A": "TOTAL",
+            "C": f"=SUM(C{start_merge_row}:C{end_merge_row})",
+            "D": f"=SUM(D{start_merge_row}:D{end_merge_row})",
+            "E": f"=SUM(E{start_merge_row}:E{end_merge_row})",
+            "F": f"=SUM(F{start_merge_row}:F{end_merge_row})",
+            "G": f"=SUM(G{start_merge_row}:G{end_merge_row})",
+            "H": f"=SUM(H{start_merge_row}:H{end_merge_row})",
+            "I": f"=IF(C{total_row_str}<>0, H{total_row_str}/C{total_row_str}, 0)"
+        }
+        
+        for col_letter, value_or_formula in totals_formulas.items():
+            cell = ws[f"{col_letter}{current_row}"]
+            cell.value = value_or_formula
+            cell.font = bold_font
+            cell.border = medium_border
+            cell.alignment = center_align
+            cell.fill = light_brown_fill 
+            if col_letter == 'I':
+                cell.number_format = '0.00%'
+        
+        for col_idx in range(2, NUM_COLUMNS + 1):
+            cell = ws.cell(row=current_row, column=col_idx)
+            if not cell.value: 
+                cell.fill = dark_green_fill 
+                cell.border = medium_border
+        current_row += 2
+    image_row = current_row + 1
+   
+    try:
+        direct_image_url = 'https://i.ibb.co/v6bp0jQW/rockybilly-regular.webp'
+        image_response = requests.get(direct_image_url)
+        image_response.raise_for_status()
+        original_img = PILImage.open(BytesIO(image_response.content))
+        padded_img = PILImage.new('RGBA', (original_img.width + 400, original_img.height), (0, 0, 0, 0))
+        padded_img.paste(original_img, (400, 0))
+        padded_image_io = BytesIO()
+        padded_img.save(padded_image_io, format='PNG')
+        img = Image(padded_image_io)
+        aspect_ratio = padded_img.height / padded_img.width
+        img.width = 95
+        img.height = int(img.width * aspect_ratio)
+        ws.row_dimensions[image_row].height = img.height * 0.90
+        ws.add_image(img, f'A{image_row}')
+    except Exception:
+        pass
+
+    signature_row = image_row + 1
+    ws.merge_cells(start_row=signature_row, start_column=1, end_row=signature_row, end_column=NUM_COLUMNS)
+    titles = ["Prepared By", "Input Incharge", "Cutting Incharge", "IE & Planning", "Sewing Manager", "Cutting Manager"]
+    signature_cell = ws.cell(row=signature_row, column=1)
+    signature_cell.value = "                 ".join(titles)
+    signature_cell.font = Font(bold=True, size=15)
+    signature_cell.alignment = Alignment(horizontal='center', vertical='center')
+
+    last_data_row = current_row - 2
+    for row in ws.iter_rows(min_row=4, max_row=last_data_row):
+        for cell in row:
+            if cell.coordinate == 'B5': continue
+            if cell.font:
+                existing_font = cell.font
+                if cell.row != 1: 
+                    new_font = Font(name=existing_font.name, size=16.5, bold=existing_font.bold, italic=existing_font.italic, vertAlign=existing_font.vertAlign, underline=existing_font.underline, strike=existing_font.strike, color=existing_font.color)
+                    cell.font = new_font
+    ws.column_dimensions['A'].width = 23
+    ws.column_dimensions['B'].width = 8.5
+    ws.column_dimensions['C'].width = 20
+    ws.column_dimensions['D'].width = 17
+    ws.column_dimensions['E'].width = 17
+    ws.column_dimensions['F'].width = 15
+    ws.column_dimensions['G'].width = 13.5
+    ws.column_dimensions['H'].width = 23
+    ws.column_dimensions['I'].width = 18
+   
+    ws.page_setup.orientation = ws.ORIENTATION_PORTRAIT
+    ws.page_setup.fitToPage = True
+    ws.page_setup.fitToWidth = 1
+    ws.page_setup.fitToHeight = 1 
+    ws.page_setup.horizontalCentered = True
+    ws.page_setup.verticalCentered = False 
+    ws.page_setup.left = 0.25
+    ws.page_setup.right = 0.25
+    ws.page_setup.top = 0.45
+    ws.page_setup.bottom = 0.45
+    ws.page_setup.header = 0
+    ws.page_setup.footer = 0
+   
+    file_stream = BytesIO()
+    wb.save(file_stream)
+    file_stream.seek(0)
+    return file_stream
+
+# ==============================================================================
+# HTML TEMPLATES: LOGIN PAGE - FIXED RESPONSIVE & CENTERED
+# ==============================================================================
+
+LOGIN_TEMPLATE = f"""
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Login - MNM Software</title>
+    {COMMON_STYLES}
+    <style>
+        html, body {{
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+        }}
+        
+        body {{
+            background: var(--bg-body);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            overflow-y: auto;
+        }}
+        
+        /* Animated Background Orbs */
+        .bg-orb {{
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.4;
+            animation: orbFloat 20s ease-in-out infinite;
+            pointer-events: none;
+        }}
+        
+        .orb-1 {{
+            width: 300px;
+            height: 300px;
+            background: var(--accent-orange);
+            top: -100px;
+            left: -100px;
+            animation-delay: 0s;
+        }}
+        
+        .orb-2 {{
+            width: 250px;
+            height: 250px;
+            background: var(--accent-purple);
+            bottom: -50px;
+            right: -50px;
+            animation-delay: -5s;
+        }}
+        
+        .orb-3 {{
+            width: 150px;
+            height: 150px;
+            background: var(--accent-green);
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            animation-delay: -10s;
+        }}
+        
+        @keyframes orbFloat {{
+            0%, 100% {{ transform: translate(0, 0) scale(1); }}
+            25% {{ transform: translate(30px, -30px) scale(1.05); }}
+            50% {{ transform: translate(-20px, 20px) scale(0.95); }}
+            75% {{ transform: translate(15px, 30px) scale(1.02); }}
+        }}
+        
+        .login-container {{
+            position: relative;
+            z-index: 10;
+            width: 100%;
+            max-width: 420px;
+            padding: 20px;
+            margin: auto;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            min-height: 100vh;
+        }}
+        
+        .login-card {{
+            background: var(--gradient-card);
+            border: 1px solid var(--border-color);
+            border-radius: 24px;
+            padding: 40px 35px;
+            backdrop-filter: blur(20px);
+            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.5), 0 0 60px var(--accent-orange-glow);
+            animation: loginCardAppear 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }}
+        @keyframes loginCardAppear {{
+            from {{
+                opacity: 0;
+                transform: translateY(30px) scale(0.95);
+            }}
+            to {{
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }}
+        }}
+        
+        .brand-section {{
+            text-align: center;
+            margin-bottom: 35px;
+        }}
+        
+        .brand-icon {{
+            width: 70px;
+            height: 70px;
+            background: var(--gradient-orange);
+            border-radius: 18px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            color: white;
+            margin-bottom: 18px;
+            box-shadow: 0 15px 40px var(--accent-orange-glow);
+            animation: brandIconPulse 3s ease-in-out infinite;
+        }}
+        
+        @keyframes brandIconPulse {{
+            0%, 100% {{ transform: scale(1) rotate(0deg); box-shadow: 0 15px 40px var(--accent-orange-glow); }}
+            50% {{ transform: scale(1.05) rotate(5deg); box-shadow: 0 20px 50px var(--accent-orange-glow); }}
+        }}
+        
+        .brand-name {{
+            font-size: 28px;
+            font-weight: 900;
+            color: white;
+            letter-spacing: -1px;
+        }}
+        
+        .brand-name span {{
+            background: var(--gradient-orange);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }}
+        
+        .brand-tagline {{
+            color: var(--text-secondary);
+            font-size: 11px;
+            letter-spacing: 2px;
+            margin-top: 6px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }}
+        
+        .login-form .input-group {{
+            margin-bottom: 20px;
+        }}
+        
+        .login-form .input-group label {{
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+        }}
+        
+        .login-form .input-group label i {{
+            color: var(--accent-orange);
+            font-size: 13px;
+        }}
+        
+        .login-form input {{
+            padding: 14px 18px;
+            font-size: 14px;
+            border-radius: 12px;
+        }}
+        
+        .login-btn {{
+            margin-top: 8px;
+            padding: 14px 24px;
+            font-size: 15px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }}
+        
+        .login-btn i {{
+            transition: transform 0.3s;
+        }}
+        
+        .login-btn:hover i {{
+            transform: translateX(5px);
+        }}
+        
+        .error-box {{
+            margin-top: 20px;
+            padding: 14px 18px;
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            border-radius: 10px;
+            color: #F87171;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            animation: errorShake 0.5s ease-out;
+        }}
+        
+        @keyframes errorShake {{
+            0%, 100% {{ transform: translateX(0); }}
+            20%, 60% {{ transform: translateX(-5px); }}
+            40%, 80% {{ transform: translateX(5px); }}
+        }}
+        
+        .footer-credit {{
+            text-align: center;
+            margin-top: 25px;
+            color: var(--text-secondary);
+            font-size: 11px;
+            opacity: 0.5;
+            font-weight: 500;
+        }}
+        
+        .footer-credit a {{
+            color: var(--accent-orange);
+            text-decoration: none;
+        }}
+        
+        /* Responsive Fixes */
+        @media (max-width: 480px) {{
+            .login-container {{
+                padding: 15px;
+            }}
+            
+            .login-card {{
+                padding: 30px 25px;
+                border-radius: 20px;
+            }}
+            
+            .brand-icon {{
+                width: 60px;
+                height: 60px;
+                font-size: 28px;
+            }}
+            
+            .brand-name {{
+                font-size: 24px;
+            }}
+            
+            .brand-tagline {{
+                font-size: 10px;
+            }}
+            
+            .login-form input {{
+                padding: 12px 16px;
+                font-size: 14px;
+            }}
+            
+            .login-btn {{
+                padding: 12px 20px;
+                font-size: 14px;
+            }}
+        }}
+        
+        @media (max-height: 700px) {{
+            .login-container {{
+                min-height: auto;
+                padding-top: 30px;
+                padding-bottom: 30px;
+            }}
+            
+            .brand-section {{
+                margin-bottom: 25px;
+            }}
+            
+            .brand-icon {{
+                width: 60px;
+                height: 60px;
+                font-size: 26px;
+                margin-bottom: 12px;
+            }}
+        }}
+    </style>
+</head>
+<body>
+    <div class="bg-orb orb-1"></div>
+    <div class="bg-orb orb-2"></div>
+    <div class="bg-orb orb-3"></div>
+    
+    <div class="login-container">
+        <div class="login-card">
+            <div class="brand-section">
+                <div class="brand-icon">
+                    <i class="fas fa-layer-group"></i>
+                </div>
+                <div class="brand-name">MNM<span>Software</span></div>
+                <div class="brand-tagline">Secure Access Portal</div>
+            </div>
+            
+            <form action="/login" method="post" class="login-form">
+                <div class="input-group">
+                    <label><i class="fas fa-user"></i> USERNAME</label>
+                    <input type="text" name="username" required placeholder="Enter your ID" autocomplete="off">
+                </div>
+                <div class="input-group">
+                    <label><i class="fas fa-lock"></i> PASSWORD</label>
+                    <input type="password" name="password" required placeholder="Enter your Password">
+                </div>
+                <button type="submit" class="login-btn">
+                    Sign In <i class="fas fa-arrow-right"></i>
+                </button>
+            </form>
+            
+            {{% with messages = get_flashed_messages() %}}
+                {{% if messages %}}
+                    <div class="error-box">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <span>{{{{ messages[0] }}}}</span>
+                    </div>
+                {{% endif %}}
+            {{% endwith %}}
+            
+            <div class="footer-credit">
+                © 2025 <a href="#">Mehedi Hasan</a> • All Rights Reserved
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Add ripple effect to button
+        document.querySelector('.login-btn').addEventListener('click', function(e) {{
+            const ripple = document.createElement('span');
+            ripple.classList.add('ripple-effect');
+            const rect = this.getBoundingClientRect();
+            ripple.style.left = (e.clientX - rect.left) + 'px';
+            ripple.style.top = (e.clientY - rect.top) + 'px';
+            this.appendChild(ripple);
+            setTimeout(() => ripple.remove(), 600);
+        }});
+    </script>
+</body>
+</html>
+"""
+ # ==============================================================================
+# ADMIN DASHBOARD TEMPLATE - MODERN UI WITH DEW STYLE CHART
+# ==============================================================================
+
+ADMIN_DASHBOARD_TEMPLATE = f"""
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Admin Dashboard - MNM Software</title>
+    {COMMON_STYLES}
+</head>
+<body>
+    <div class="animated-bg"></div>
+    <div id="particles-js"></div>
+
+    <div class="welcome-modal" id="welcomeModal">
+        <div class="welcome-content">
+            <div class="welcome-icon" id="welcomeIcon"><i class="fas fa-hand-sparkles"></i></div>
+            <div class="welcome-greeting" id="greetingText">Good Morning</div>
+            <div class="welcome-title">Welcome Back, <span>{{{{ session.user }}}}</span>!</div>
+            <div class="welcome-message">
+                You're now logged into the MNM Software Dashboard.
+                All systems are operational and ready for your commands.
+            </div>
+            <button class="welcome-close" onclick="closeWelcome()">
+                <i class="fas fa-rocket" style="margin-right: 8px;"></i> Let's Go!
+            </button>
+        </div>
+    </div>
+
+    <div id="loading-overlay">
+        <div class="spinner-container">
+            <div class="spinner" id="spinner-anim"></div>
+            <div class="spinner-inner"></div>
+        </div>
+        
+        <div class="checkmark-container" id="success-anim">
+            <div class="checkmark-circle"></div>
+            <div class="anim-text">Successful!</div>
+        </div>
+
+        <div class="fail-container" id="fail-anim">
+            <div class="fail-circle"></div>
+            <div class="anim-text">Action Failed!</div>
+            <div style="font-size:13px; color:#F87171; margin-top:8px;">Please check server or inputs</div>
+        </div>
+        
+        <div class="loading-text" id="loading-text">Processing Request...</div>
+    </div>
+
+    <div class="mobile-toggle" onclick="document.querySelector('.sidebar').classList.toggle('active')">
+        <i class="fas fa-bars"></i>
+    </div>
+
+    <div class="sidebar">
+        <div class="brand-logo">
+            <i class="fas fa-layer-group"></i> 
+            MNM<span>Software</span>
+        </div>
+        <div class="nav-menu">
+            <div class="nav-link active" onclick="showSection('dashboard', this)">
+                <i class="fas fa-home"></i> Dashboard
+                <span class="nav-badge">Live</span>
+            </div>
+            <div class="nav-link" onclick="showSection('analytics', this)">
+                <i class="fas fa-chart-pie"></i> Closing Report
+            </div>
+            <a href="/admin/accessories" class="nav-link">
+                <i class="fas fa-database"></i> Accessories Challan
+            </a>
+            <div class="nav-link" onclick="showSection('help', this)">
+                <i class="fas fa-file-invoice"></i> PO Generator
+            </div>
+            <div class="nav-link" onclick="showSection('settings', this)">
+                <i class="fas fa-users-cog"></i> User Manage
+            </div>
+            <a href="/store/dashboard" class="nav-link">
+                <i class="fas fa-store"></i> Store Panel
+            </a>
+            <a href="/logout" class="nav-link" style="color: var(--accent-red); margin-top: 20px;">
+                <i class="fas fa-sign-out-alt"></i> Sign Out
+            </a>
+        </div>
+        <div class="sidebar-footer">
+            <i class="fas fa-code" style="margin-right: 5px;"></i> Powered by Mehedi Hasan
+        </div>
+    </div>
+
+    <div class="main-content">
+        
+        <div id="section-dashboard">
+            <div class="header-section">
+                <div>
+                    <div class="page-title">Main Dashboard</div>
+                    <div class="page-subtitle">Lifetime Overview & Analytics</div>
+                </div>
+                <div class="status-badge">
+                    <div class="status-dot"></div>
+                    <span>System Online</span>
+                </div>
+            </div>
+            
+            {{% with messages = get_flashed_messages() %}}
+                {{% if messages %}}
+                    <div class="flash-message flash-error">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <span>{{{{ messages[0] }}}}</span>
+                    </div>
+                {{% endif %}}
+            {{% endwith %}}
+
+            <div class="stats-grid">
+                <div class="card stat-card" style="animation-delay: 0.1s;">
+                    <div class="stat-icon"><i class="fas fa-file-export"></i></div>
+                    <div class="stat-info">
+                        <h3 class="count-up" data-target="{{{{ stats.closing.count }}}}">0</h3>
+                        <p>Lifetime Closing</p>
+                    </div>
+                </div>
+                <div class="card stat-card" style="animation-delay: 0.2s;">
+                    <div class="stat-icon" style="background: linear-gradient(145deg, rgba(139, 92, 246, 0.15), rgba(139, 92, 246, 0.05));">
+                        <i class="fas fa-boxes" style="color: var(--accent-purple);"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 class="count-up" data-target="{{{{ stats.accessories.count }}}}">0</h3>
+                        <p>Lifetime Accessories</p>
+                    </div>
+                </div>
+                <div class="card stat-card" style="animation-delay: 0.3s;">
+                    <div class="stat-icon" style="background: linear-gradient(145deg, rgba(16, 185, 129, 0.15), rgba(16, 185, 129, 0.05));">
+                        <i class="fas fa-file-pdf" style="color: var(--accent-green);"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 class="count-up" data-target="{{{{ stats.po.count }}}}">0</h3>
+                        <p>Lifetime PO Sheets</p>
+                    </div>
+                </div>
+                <div class="card stat-card" style="animation-delay: 0.4s;">
+                    <div class="stat-icon" style="background: linear-gradient(145deg, rgba(59, 130, 246, 0.15), rgba(59, 130, 246, 0.05));">
+                        <i class="fas fa-users" style="color: var(--accent-blue);"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 class="count-up" data-target="{{{{ stats.users.count }}}}">0</h3>
+                        <p>Total Users</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="dashboard-grid-2">
+                <div class="card">
+                    <div class="section-header">
+                        <span>Daily Activity Chart</span>
+                        <div class="realtime-indicator">
+                            <div class="realtime-dot"></div>
+                            <span>Real-time</span>
+                        </div>
+                    </div>
+                    <div class="chart-container" style="height: 320px;">
+                        <canvas id="mainChart"></canvas>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="section-header">
+                        <span>Module Usage</span>
+                        <i class="fas fa-chart-bar" style="color: var(--accent-orange);"></i>
+                    </div>
+                    
+                    <div class="progress-item">
+                        <div class="progress-header">
+                            <span>Closing Report</span>
+                            <span class="progress-value">{{{{ stats.closing.count }}}} Lifetime</span>
+                        </div>
+                        <div class="progress-bar-container">
+                            <div class="progress-bar-fill progress-orange" style="width: 85%;"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="progress-item">
+                        <div class="progress-header">
+                            <span>Accessories</span>
+                            <span class="progress-value">{{{{ stats.accessories.count }}}} Challans</span>
+                        </div>
+                        <div class="progress-bar-container">
+                            <div class="progress-bar-fill progress-purple" style="width: 65%;"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="progress-item">
+                        <div class="progress-header">
+                            <span>PO Generator</span>
+                            <span class="progress-value">{{{{ stats.po.count }}}} Files</span>
+                        </div>
+                        <div class="progress-bar-container">
+                            <div class="progress-bar-fill progress-green" style="width: 45%;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="section-header">
+                    <span>Recent Activity Log</span>
+                    <i class="fas fa-history" style="color: var(--text-secondary);"></i>
+                </div>
+                <div style="overflow-x: auto;">
+                    <table class="dark-table">
+                        <thead>
+                            <tr>
+                                <th>Time</th>
+                                <th>User</th>
+                                <th>Action</th>
+                                <th>Reference</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {{% for log in stats.history[:10] %}}
+                            <tr style="animation: fadeInUp 0.5s ease-out {{{{ loop.index * 0.05 }}}}s backwards;">
+                                <td>
+                                    <div class="time-badge">
+                                        <i class="far fa-clock"></i>
+                                        {{{{ log.time }}}}
+                                    </div>
+                                </td>
+                                <td style="font-weight: 600; color: white;">{{{{ log.user }}}}</td>
+                                <td>
+                                    <span class="table-badge" style="
+                                        {{% if log.type == 'Closing Report' %}}
+                                        background: rgba(255, 122, 0, 0.1); color: var(--accent-orange);
+                                        {{% elif log.type == 'PO Sheet' %}}
+                                        background: rgba(16, 185, 129, 0.1); color: var(--accent-green);
+                                        {{% else %}}
+                                        background: rgba(139, 92, 246, 0.1); color: var(--accent-purple);
+                                        {{% endif %}}
+                                    ">{{{{ log.type }}}}</span>
+                                </td>
+                                <td style="color: var(--text-secondary);">{{{{ log.ref if log.ref else '-' }}}}</td>
+                            </tr>
+                            {{% else %}}
+                            <tr>
+                                <td colspan="4" style="text-align: center; padding: 40px; color: var(--text-secondary);">
+                                    <i class="fas fa-inbox" style="font-size: 40px; opacity: 0.3; margin-bottom: 15px; display: block;"></i>
+                                    No activity recorded yet. 
+                                </td>
+                            </tr>
+                            {{% endfor %}}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div id="section-analytics" style="display:none;">
+            <div class="header-section">
+                <div>
+                    <div class="page-title">Closing Report</div>
+                    <div class="page-subtitle">Generate production closing reports</div>
+                </div>
+            </div>
+            <div class="card" style="max-width: 550px; margin: 0 auto; margin-top: 30px;">
+                <div class="section-header">
+                    <span><i class="fas fa-magic" style="margin-right: 10px; color: var(--accent-orange);"></i>Generate Report</span>
+                </div>
+                <form action="/generate-report" method="post" onsubmit="return showLoading()">
+                    <div class="input-group">
+                        <label><i class="fas fa-bookmark" style="margin-right: 5px;"></i> INTERNAL REF NO</label>
+                        <input type="text" name="ref_no" placeholder="e.g. IB-12345 or Booking-123" required>
+                    </div>
+                    <button type="submit">
+                        <i class="fas fa-bolt" style="margin-right: 10px;"></i> Generate Report
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <div id="section-help" style="display:none;">
+            <div class="header-section">
+                <div>
+                    <div class="page-title">PO Sheet Generator</div>
+                    <div class="page-subtitle">Process and generate PO summary sheets</div>
+                </div>
+            </div>
+            <div class="card" style="max-width: 650px; margin: 0 auto; margin-top: 30px;">
+                <div class="section-header">
+                    <span><i class="fas fa-file-pdf" style="margin-right: 10px; color: var(--accent-green);"></i>Upload PDF Files</span>
+                </div>
+                <form action="/generate-po-report" method="post" enctype="multipart/form-data" onsubmit="return showLoading()">
+                    <div class="upload-zone" id="uploadZone" onclick="document.getElementById('file-upload').click()">
+                        <input type="file" name="pdf_files" multiple accept=".pdf" required style="display: none;" id="file-upload">
+                        <div class="upload-icon">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                        </div>
+                        <div class="upload-text">Click or Drag to Upload PDF Files</div>
+                        <div class="upload-hint">Supports multiple PDF files</div>
+                        <div id="file-count">No files selected</div>
+                    </div>
+                    <button type="submit" style="margin-top: 25px; background: linear-gradient(135deg, #10B981 0%, #34D399 100%);">
+                        <i class="fas fa-cogs" style="margin-right: 10px;"></i> Process Files
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <div id="section-settings" style="display:none;">
+            <div class="header-section">
+                <div>
+                    <div class="page-title">User Management</div>
+                    <div class="page-subtitle">Manage user accounts and permissions</div>
+                </div>
+            </div>
+            <div class="dashboard-grid-2">
+                <div class="card">
+                    <div class="section-header">
+                        <span>User Directory</span>
+                        <span class="table-badge" style="background: var(--accent-orange); color: white;">{{{{ stats.users.count }}}} Users</span>
+                    </div>
+                    <div id="userTableContainer" style="max-height: 450px; overflow-y: auto;">
+                        <div class="skeleton" style="height: 50px; margin-bottom: 10px;"></div>
+                        <div class="skeleton" style="height: 50px; margin-bottom: 10px;"></div>
+                        <div class="skeleton" style="height: 50px;"></div>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="section-header">
+                        <span>Create / Edit User</span>
+                        <i class="fas fa-user-plus" style="color: var(--accent-orange);"></i>
+                    </div>
+                    <form id="userForm">
+                        <input type="hidden" id="action_type" value="create">
+                        <div class="input-group">
+                            <label><i class="fas fa-user" style="margin-right: 5px;"></i> USERNAME</label>
+                            <input type="text" id="new_username" required placeholder="Enter username">
+                        </div>
+                        <div class="input-group">
+                            <label><i class="fas fa-key" style="margin-right: 5px;"></i> PASSWORD</label>
+                            <input type="text" id="new_password" required placeholder="Enter password">
+                        </div>
+                        <div class="input-group">
+                            <label><i class="fas fa-shield-alt" style="margin-right: 5px;"></i> PERMISSIONS</label>
+                            <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 5px;">
+                                <label class="perm-checkbox">
+                                    <input type="checkbox" id="perm_closing" checked>
+                                    <span>Closing</span>
+                                </label>
+                                <label class="perm-checkbox">
+                                    <input type="checkbox" id="perm_po">
+                                    <span>PO Sheet</span>
+                                </label>
+                                <label class="perm-checkbox">
+                                    <input type="checkbox" id="perm_acc">
+                                    <span>Accessories</span>
+                                </label>
+                                <label class="perm-checkbox">
+                                    <input type="checkbox" id="perm_store">
+                                    <span>Store Panel</span>
+                                </label>
+                            </div>
+                        </div>
+                        <button type="button" onclick="handleUserSubmit()" id="saveUserBtn">
+                            <i class="fas fa-save" style="margin-right: 10px;"></i> Save User
+                        </button>
+                        <button type="button" onclick="resetForm()" style="margin-top: 12px; background: rgba(255,255,255,0.05); border: 1px solid var(--border-color);">
+                            <i class="fas fa-undo" style="margin-right: 10px;"></i> Reset Form
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        // ===== WELCOME POPUP WITH TIME-BASED GREETING =====
+        function showWelcomePopup() {{
+            const hour = new Date().getHours();
+            let greeting, icon;
+            
+            if (hour >= 5 && hour < 12) {{
+                greeting = "Good Morning";
+                icon = '<i class="fas fa-sun"></i>';
+            }} else if (hour >= 12 && hour < 17) {{
+                greeting = "Good Afternoon";
+                icon = '<i class="fas fa-sun"></i>';
+            }} else if (hour >= 17 && hour < 21) {{
+                greeting = "Good Evening";
+                icon = '<i class="fas fa-city"></i>';
+            }} else {{
+                greeting = "Good Night";
+                icon = '<i class="fas fa-moon"></i>';
+            }}
+            
+            document.getElementById('greetingText').textContent = greeting;
+            document.getElementById('welcomeIcon').innerHTML = icon;
+            document.getElementById('welcomeModal').style.display = 'flex';
+        }}
+        
+        function closeWelcome() {{
+            const modal = document.getElementById('welcomeModal');
+            modal.style.animation = 'modalFadeOut 0.3s ease-out forwards';
+            setTimeout(() => {{
+                modal.style.display = 'none';
+                sessionStorage.setItem('welcomeShown', 'true');
+            }}, 300);
+        }}
+        
+        if (!sessionStorage.getItem('welcomeShown')) {{
+            setTimeout(showWelcomePopup, 500);
+        }}
+        
+        // ===== SECTION NAVIGATION =====
+        function showSection(id, element) {{
+            ['dashboard', 'analytics', 'help', 'settings'].forEach(sid => {{
+                document.getElementById('section-' + sid).style.display = 'none';
+            }});
+            document.getElementById('section-' + id).style.display = 'block';
+            
+            if (element) {{
+                document.querySelectorAll('.nav-link').forEach(el => el.classList.remove('active'));
+                element.classList.add('active');
+            }}
+            
+            if (id === 'settings') loadUsers();
+            if (window.innerWidth < 1024) document.querySelector('.sidebar').classList.remove('active');
+        }}
+        
+        // ===== FILE UPLOAD HANDLER =====
+        const fileUpload = document.getElementById('file-upload');
+        const uploadZone = document.getElementById('uploadZone');
+        
+        if (fileUpload) {{
+            fileUpload.addEventListener('change', function() {{
+                const count = this.files.length;
+                document.getElementById('file-count').innerHTML = count > 0 
+                    ? `<i class="fas fa-check-circle" style="margin-right: 5px;"></i>${{count}} file(s) selected`
+                    : 'No files selected';
+            }});
+            uploadZone.addEventListener('dragover', (e) => {{
+                e.preventDefault();
+                uploadZone.classList.add('dragover');
+            }});
+            uploadZone.addEventListener('dragleave', () => {{
+                uploadZone.classList.remove('dragover');
+            }});
+            uploadZone.addEventListener('drop', (e) => {{
+                e.preventDefault();
+                uploadZone.classList.remove('dragover');
+                fileUpload.files = e.dataTransfer.files;
+                fileUpload.dispatchEvent(new Event('change'));
+            }});
+        }}
+        
+        // ===== DEW STYLE DAILY CHART =====
+        const ctx = document.getElementById('mainChart').getContext('2d');
+        const gradientOrange = ctx.createLinearGradient(0, 0, 0, 300);
+        gradientOrange.addColorStop(0, 'rgba(255, 122, 0, 0.5)');
+        gradientOrange.addColorStop(1, 'rgba(255, 122, 0, 0.0)');
+        const gradientPurple = ctx.createLinearGradient(0, 0, 0, 300);
+        gradientPurple.addColorStop(0, 'rgba(139, 92, 246, 0.5)');
+        gradientPurple.addColorStop(1, 'rgba(139, 92, 246, 0.0)');
+        const gradientGreen = ctx.createLinearGradient(0, 0, 0, 300);
+        gradientGreen.addColorStop(0, 'rgba(16, 185, 129, 0.5)');
+        gradientGreen.addColorStop(1, 'rgba(16, 185, 129, 0.0)');
+        new Chart(ctx, {{
+            type: 'line',
+            data: {{
+                labels: {{{{ stats.chart.labels | tojson }}}},
+                datasets: [
+                    {{
+                        label: 'Closing',
+                        data: {{{{ stats.chart.closing | tojson }}}},
+                        borderColor: '#FF7A00',
+                        backgroundColor: gradientOrange,
+                        tension: 0.4,
+                        fill: true,
+                        pointBackgroundColor: '#FF7A00',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2,
+                        pointRadius: 4,
+                        pointHoverRadius: 7,
+                        borderWidth: 3
+                    }},
+                    {{
+                        label: 'Accessories',
+                        data: {{{{ stats.chart.acc | tojson }}}},
+                        borderColor: '#8B5CF6',
+                        backgroundColor: gradientPurple,
+                        tension: 0.4,
+                        fill: true,
+                        pointBackgroundColor: '#8B5CF6',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2,
+                        pointRadius: 4,
+                        pointHoverRadius: 7,
+                        borderWidth: 3
+                    }},
+                    {{
+                        label: 'PO Sheets',
+                        data: {{{{ stats.chart.po | tojson }}}},
+                        borderColor: '#10B981',
+                        backgroundColor: gradientGreen,
+                        tension: 0.4,
+                        fill: true,
+                        pointBackgroundColor: '#10B981',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2,
+                        pointRadius: 4,
+                        pointHoverRadius: 7,
+                        borderWidth: 3
+                    }}
+                ]
+            }},
+            options: {{
+                plugins: {{
+                    legend: {{
+                        display: true,
+                        position: 'top',
+                        labels: {{
+                            color: '#8b8b9e',
+                            font: {{ size: 11, weight: 500 }},
+                            usePointStyle: true,
+                            padding: 15,
+                            boxWidth: 8
+                        }}
+                    }},
+                    tooltip: {{
+                        mode: 'index',
+                        intersect: false,
+                        backgroundColor: 'rgba(22, 22, 31, 0.95)',
+                        titleColor: '#fff',
+                        bodyColor: '#8b8b9e',
+                        borderColor: 'rgba(255, 122, 0, 0.3)',
+                        borderWidth: 1,
+                        padding: 12,
+                        cornerRadius: 10,
+                        displayColors: true
+                    }}
+                }},
+                scales: {{
+                    x: {{
+                        grid: {{ 
+                            display: false 
+                        }},
+                        ticks: {{ 
+                            color: '#8b8b9e', 
+                            font: {{ size: 10 }},
+                            maxRotation: 45,
+                            minRotation: 45
+                        }}
+                    }},
+                    y: {{
+                        grid: {{ 
+                            color: 'rgba(255,255,255,0.03)',
+                            drawBorder: false
+                        }},
+                        ticks: {{ 
+                            color: '#8b8b9e', 
+                            font: {{ size: 10 }},
+                            stepSize: 1
+                        }},
+                        beginAtZero: true
+                    }}
+                }},
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: {{
+                    intersect: false,
+                    mode: 'index'
+                }},
+                animation: {{
+                    duration: 2000,
+                    easing: 'easeOutQuart'
+                }}
+            }}
+        }});
+
+        // ===== COUNT UP ANIMATION =====
+        function animateCountUp() {{
+            document.querySelectorAll('.count-up').forEach(counter => {{
+                const target = parseInt(counter.getAttribute('data-target'));
+                const duration = 2000;
+                const step = target / (duration / 16);
+                let current = 0;
+                
+                const updateCounter = () => {{
+                    current += step;
+                    if (current < target) {{
+                        counter.textContent = Math.floor(current);
+                        requestAnimationFrame(updateCounter);
+                    }} else {{
+                        counter.textContent = target;
+                    }}
+                }};
+                
+                updateCounter();
+            }});
+        }}
+        
+        setTimeout(animateCountUp, 500);
+
+        // ===== LOADING ANIMATION =====
+        function showLoading() {{
+            const overlay = document.getElementById('loading-overlay');
+            const spinner = document.getElementById('spinner-anim').parentElement;
+            const success = document.getElementById('success-anim');
+            const fail = document.getElementById('fail-anim');
+            const text = document.getElementById('loading-text');
+            
+            overlay.style.display = 'flex';
+            spinner.style.display = 'block';
+            success.style.display = 'none';
+            fail.style.display = 'none';
+            text.style.display = 'block';
+            text.textContent = 'Processing Request...';
+            
+            return true;
+        }}
+
+        function showSuccess() {{
+            const overlay = document.getElementById('loading-overlay');
+            const spinner = document.getElementById('spinner-anim').parentElement;
+            const success = document.getElementById('success-anim');
+            const text = document.getElementById('loading-text');
+            
+            spinner.style.display = 'none';
+            success.style.display = 'block';
+            text.style.display = 'none';
+            
+            setTimeout(() => {{ overlay.style.display = 'none'; }}, 1500);
+        }}
+
+        // ===== USER MANAGEMENT =====
+        function loadUsers() {{
+            fetch('/admin/get-users')
+                .then(res => res.json())
+                .then(data => {{
+                    let html = '<table class="dark-table"><thead><tr><th>User</th><th>Role</th><th style="text-align:right;">Actions</th></tr></thead><tbody>';
+                    
+                    for (const [u, d] of Object.entries(data)) {{
+                        const roleClass = d.role === 'admin' ? 'background: rgba(255, 122, 0, 0.1); color: var(--accent-orange);' : 'background: rgba(139, 92, 246, 0.1); color: var(--accent-purple);';
+                        
+                        html += `<tr>
+                            <td style="font-weight: 600;">${{u}}</td>
+                            <td><span class="table-badge" style="${{roleClass}}">${{d.role}}</span></td>
+                            <td style="text-align:right;">
+                                ${{d.role !== 'admin' ? `
+                                    <div class="action-cell">
+                                        <button class="action-btn btn-edit" onclick="editUser('${{u}}', '${{d.password}}', '${{d.permissions.join(',')}}')">
+                                            <i class="fas fa-edit"></i>
+                                        </button> 
+                                        <button class="action-btn btn-del" onclick="deleteUser('${{u}}')">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                ` : '<i class="fas fa-shield-alt" style="color: var(--accent-orange); opacity: 0.5;"></i>'}}
+                            </td>
+                        </tr>`;
+                    }}
+                    
+                    document.getElementById('userTableContainer').innerHTML = html + '</tbody></table>';
+                }});
+        }}
+        
+        function handleUserSubmit() {{
+            const u = document.getElementById('new_username').value;
+            const p = document.getElementById('new_password').value;
+            const a = document.getElementById('action_type').value;
+            
+            let perms = [];
+            if (document.getElementById('perm_closing').checked) perms.push('closing');
+            if (document.getElementById('perm_po').checked) perms.push('po_sheet');
+            if (document.getElementById('perm_acc').checked) perms.push('accessories');
+            if (document.getElementById('perm_store').checked) perms.push('store_panel');
+            
+            showLoading();
+            
+            fetch('/admin/save-user', {{
+                method: 'POST',
+                headers: {{'Content-Type': 'application/json'}},
+                body: JSON.stringify({{ username: u, password: p, permissions: perms, action_type: a }})
+            }})
+            .then(r => r.json())
+            .then(d => {{
+                if (d.status === 'success') {{
+                    showSuccess();
+                    loadUsers();
+                    resetForm();
+                }} else {{
+                    alert(d.message);
+                    document.getElementById('loading-overlay').style.display = 'none';
+                }}
+            }});
+        }}
+        
+        function editUser(u, p, permsStr) {{
+            document.getElementById('new_username').value = u;
+            document.getElementById('new_username').readOnly = true;
+            document.getElementById('new_password').value = p;
+            document.getElementById('action_type').value = 'update';
+            document.getElementById('saveUserBtn').innerHTML = '<i class="fas fa-sync" style="margin-right: 10px;"></i> Update User';
+            const pArr = permsStr.split(',');
+            document.getElementById('perm_closing').checked = pArr.includes('closing');
+            document.getElementById('perm_po').checked = pArr.includes('po_sheet');
+            document.getElementById('perm_acc').checked = pArr.includes('accessories');
+            document.getElementById('perm_store').checked = pArr.includes('store_panel');
+        }}
+        
+        function resetForm() {{
+            document.getElementById('userForm').reset();
+            document.getElementById('action_type').value = 'create';
+            document.getElementById('saveUserBtn').innerHTML = '<i class="fas fa-save" style="margin-right: 10px;"></i> Save User';
+            document.getElementById('new_username').readOnly = false;
+            document.getElementById('perm_closing').checked = true;
+        }}
+        
+        function deleteUser(u) {{
+            if (confirm('Are you sure you want to delete "' + u + '"?')) {{
+                fetch('/admin/delete-user', {{
+                    method: 'POST',
+                    headers: {{'Content-Type': 'application/json'}},
+                    body: JSON.stringify({{ username: u }})
+                }}).then(() => loadUsers());
+            }}
+        }}
+        
+        // ===== PARTICLES.JS INITIALIZATION =====
+        if (typeof particlesJS !== 'undefined') {{
+            particlesJS('particles-js', {{
+                particles: {{
+                    number: {{ value: 50, density: {{ enable: true, value_area: 800 }} }},
+                    color: {{ value: '#FF7A00' }},
+                    shape: {{ type: 'circle' }},
+                    opacity: {{ value: 0.3, random: true }},
+                    size: {{ value: 3, random: true }},
+                    line_linked: {{ enable: true, distance: 150, color: '#FF7A00', opacity: 0.1, width: 1 }},
+                    move: {{ enable: true, speed: 1, direction: 'none', random: true, out_mode: 'out' }}
+                }},
+                interactivity: {{
+                    events: {{ onhover: {{ enable: true, mode: 'grab' }} }},
+                    modes: {{ grab: {{ distance: 140, line_linked: {{ opacity: 0.3 }} }} }}
+                }}
+            }});
+        }}
+        
+        // Add CSS for fadeInUp animation
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes fadeInUp {{
+                from {{ opacity: 0; transform: translateY(20px); }}
+                to {{ opacity: 1; transform: translateY(0); }}
+            }}
+            @keyframes modalFadeOut {{
+                to {{ opacity: 0; }}
+            }}
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>
+"""
+# ==============================================================================
+# USER DASHBOARD TEMPLATE - MODERN UI
+# ==============================================================================
+
+USER_DASHBOARD_TEMPLATE = f"""
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Dashboard - MNM Software</title>
+    {COMMON_STYLES}
+</head>
+<body>
+    <div class="animated-bg"></div>
+    
+    <div class="welcome-modal" id="welcomeModal">
+        <div class="welcome-content">
+            <div class="welcome-icon" id="welcomeIcon"><i class="fas fa-hand-sparkles"></i></div>
+            <div class="welcome-greeting" id="greetingText">Good Morning</div>
+            <div class="welcome-title">Welcome, <span>{{{{ session.user }}}}</span>!</div>
+            <div class="welcome-message">
+                Your workspace is ready.
+                Access your assigned modules below.
+            </div>
+            <button class="welcome-close" onclick="closeWelcome()">
+                <i class="fas fa-rocket" style="margin-right: 8px;"></i> Get Started
+            </button>
+        </div>
+    </div>
+    
+    <div id="loading-overlay">
+        <div class="spinner-container">
+            <div class="spinner"></div>
+            <div class="spinner-inner"></div>
+        </div>
+        <div class="loading-text">Processing...</div>
+    </div>
+    
+    <div class="sidebar">
+        <div class="brand-logo">
+            <i class="fas fa-layer-group"></i> 
+            MNM<span>Software</span>
+        </div>
+        <div class="nav-menu">
+            <div class="nav-link active">
+                <i class="fas fa-home"></i> Home
+            </div>
+            <a href="/logout" class="nav-link" style="color: var(--accent-red); margin-top: auto;">
+                <i class="fas fa-sign-out-alt"></i> Sign Out
+            </a>
+        </div>
+        <div class="sidebar-footer">
+            <i class="fas fa-code" style="margin-right: 5px;"></i> Powered by Mehedi Hasan
+        </div>
+    </div>
+    
+    <div class="main-content">
+        <div class="header-section">
+            <div>
+                <div class="page-title">Welcome, {{{{ session.user }}}}!</div>
+                <div class="page-subtitle">Your assigned production modules</div>
+            </div>
+            <div class="status-badge">
+                <div class="status-dot"></div>
+                <span>Online</span>
+            </div>
+        </div>
+
+        {{% with messages = get_flashed_messages() %}}
+            {{% if messages %}}
+                <div class="flash-message flash-error">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <span>{{{{ messages[0] }}}}</span>
+                </div>
+            {{% endif %}}
+        {{% endwith %}}
+
+        <div class="stats-grid">
+            {{% if 'closing' in session.permissions %}}
+            <div class="card" style="animation: fadeInUp 0.5s ease-out 0.1s backwards;">
+                <div class="section-header">
+                    <span><i class="fas fa-file-export" style="margin-right: 10px; color: var(--accent-orange);"></i>Closing Report</span>
+                </div>
+                <p style="color: var(--text-secondary); margin-bottom: 20px; font-size: 14px; line-height: 1.6;">
+                    Generate production closing reports with real-time data.  
+                </p>
+                <form action="/generate-report" method="post" onsubmit="showLoading()">
+                    <div class="input-group">
+                        <label>BOOKING REF NO</label>
+                        <input type="text" name="ref_no" required placeholder="Enter Booking Reference">
+                    </div>
+                    <button type="submit">
+                        <i class="fas fa-magic" style="margin-right: 8px;"></i> Generate
+                    </button>
+                </form>
+            </div>
+            {{% endif %}}
+            
+            {{% if 'po_sheet' in session.permissions %}}
+            <div class="card" style="animation: fadeInUp 0.5s ease-out 0.2s backwards;">
+                <div class="section-header">
+                    <span><i class="fas fa-file-pdf" style="margin-right: 10px; color: var(--accent-green);"></i>PO Sheet</span>
+                </div>
+                <p style="color: var(--text-secondary); margin-bottom: 20px; font-size: 14px; line-height: 1.6;">
+                    Process PDF files and generate PO summary reports.
+                </p>
+                <form action="/generate-po-report" method="post" enctype="multipart/form-data" onsubmit="showLoading()">
+                    <div class="input-group">
+                        <label>PDF FILES</label>
+                        <input type="file" name="pdf_files" multiple accept=".pdf" required style="padding: 12px;">
+                    </div>
+                    <button type="submit" style="background: linear-gradient(135deg, #10B981 0%, #34D399 100%);">
+                        <i class="fas fa-cogs" style="margin-right: 8px;"></i> Process Files
+                    </button>
+                </form>
+            </div>
+            {{% endif %}}
+            
+            {{% if 'accessories' in session.permissions %}}
+            <div class="card" style="animation: fadeInUp 0.5s ease-out 0.3s backwards;">
+                <div class="section-header">
+                    <span><i class="fas fa-boxes" style="margin-right: 10px; color: var(--accent-purple);"></i>Accessories</span>
+                </div>
+                <p style="color: var(--text-secondary); margin-bottom: 20px; font-size: 14px; line-height: 1.6;">
+                    Manage challans, entries and delivery history for accessories.
+                </p>
+                <a href="/admin/accessories">
+                    <button style="background: linear-gradient(135deg, #8B5CF6 0%, #A78BFA 100%);">
+                        <i class="fas fa-external-link-alt" style="margin-right: 8px;"></i> Open Dashboard
+                    </button>
+                </a>
+            </div>
+            {{% endif %}}
+            
+             {{% if 'store_panel' in session.permissions %}}
+            <div class="card" style="animation: fadeInUp 0.5s ease-out 0.4s backwards;">
+                <div class="section-header">
+                    <span><i class="fas fa-store" style="margin-right: 10px; color: var(--accent-orange);"></i>Store Panel</span>
+                </div>
+                <p style="color: var(--text-secondary); margin-bottom: 20px; font-size: 14px; line-height: 1.6;">
+                    Manage Store Inventory, Invoices, and Customers.
+                </p>
+                <a href="/store/dashboard">
+                    <button style="background: linear-gradient(135deg, #FF7A00 0%, #FF9A40 100%);">
+                        <i class="fas fa-external-link-alt" style="margin-right: 8px;"></i> Enter Store
+                    </button>
+                </a>
+            </div>
+            {{% endif %}}
+        </div>
+    </div>
+    
+    <script>
+        // Welcome Popup
+        function showWelcomePopup() {{
+            const hour = new Date().getHours();
+            let greeting, icon;
+            
+            if (hour >= 5 && hour < 12) {{
+                greeting = "Good Morning";
+                icon = '<i class="fas fa-sun"></i>';
+            }} else if (hour >= 12 && hour < 17) {{
+                greeting = "Good Afternoon";
+                icon = '<i class="fas fa-sun"></i>';
+            }} else if (hour >= 17 && hour < 21) {{
+                greeting = "Good Evening";
+                icon = '<i class="fas fa-city"></i>';
+            }} else {{
+                greeting = "Good Night";
+                icon = '<i class="fas fa-moon"></i>';
+            }}
+            
+            document.getElementById('greetingText').textContent = greeting;
+            document.getElementById('welcomeIcon').innerHTML = icon;
+            document.getElementById('welcomeModal').style.display = 'flex';
+        }}
+        
+        function closeWelcome() {{
+            const modal = document.getElementById('welcomeModal');
+            modal.style.opacity = '0';
+            setTimeout(() => {{
+                modal.style.display = 'none';
+                sessionStorage.setItem('welcomeShown', 'true');
+            }}, 300);
+        }}
+        
+        if (!sessionStorage.getItem('welcomeShown')) {{
+            setTimeout(showWelcomePopup, 500);
+        }}
+        
+        function showLoading() {{
+            document.getElementById('loading-overlay').style.display = 'flex';
+            return true;
+        }}
+        
+        // Add fadeInUp animation
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes fadeInUp {{
+                from {{ opacity: 0; transform: translateY(20px); }}
+                to {{ opacity: 1; transform: translateY(0); }}
+            }}
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>
+"""
+
+ACCESSORIES_SEARCH_TEMPLATE = f"""
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Accessories Search - MNM Software</title>
+    {COMMON_STYLES}
+    <style>
+        body {{
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }}
+        
+        .search-container {{
+            position: relative;
+            z-index: 10;
+            width: 100%;
+            max-width: 480px;
+            padding: 20px;
+        }}
+        
+        .search-card {{
+            background: var(--gradient-card);
+            border: 1px solid var(--border-color);
+            border-radius: 24px;
+            padding: 50px 45px;
+            backdrop-filter: blur(20px);
+            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.5), 0 0 60px var(--accent-orange-glow);
+            animation: cardAppear 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }}
+        
+        @keyframes cardAppear {{
+            from {{ opacity: 0; transform: translateY(20px) scale(0.95); }}
+            to {{ opacity: 1; transform: translateY(0) scale(1); }}
+        }}
+        
+        .search-header {{
+            text-align: center;
+            margin-bottom: 40px;
+        }}
+        
+        .search-icon {{
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(145deg, rgba(139, 92, 246, 0.2), rgba(139, 92, 246, 0.05));
+            border-radius: 20px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
+            color: var(--accent-purple);
+            margin-bottom: 20px;
+            animation: iconFloat 3s ease-in-out infinite;
+        }}
+        
+        @keyframes iconFloat {{
+            0%, 100% {{ transform: translateY(0); }}
+            50% {{ transform: translateY(-10px); }}
+        }}
+        
+        .search-title {{
+            font-size: 28px;
+            font-weight: 800;
+            color: white;
+            margin-bottom: 8px;
+        }}
+        
+        .search-subtitle {{
+            color: var(--text-secondary);
+            font-size: 14px;
+        }}
+        
+        .nav-links {{
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border-color);
+        }}
+        
+        .nav-links a {{
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: var(--transition-smooth);
+        }}
+        
+        .nav-links a:hover {{
+            color: var(--accent-orange);
+        }}
+        
+        .nav-links a.logout {{
+            color: var(--accent-red);
+        }}
+        
+        .nav-links a.logout:hover {{
+            color: #ff6b6b;
+        }}
+    </style>
+</head>
+<body>
+    <div class="animated-bg"></div>
+    
+    <div class="search-container">
+        <div class="search-card">
+            <div class="search-header">
+                <div class="search-icon">
+                    <i class="fas fa-boxes"></i>
+                </div>
+                <div class="search-title">Accessories Challan</div>
+                <div class="search-subtitle">Enter booking reference to continue</div>
+            </div>
+            
+            <form action="/admin/accessories/input" method="post">
+                <div class="input-group">
+                    <label><i class="fas fa-search" style="margin-right: 5px;"></i> BOOKING REFERENCE</label>
+                    <input type="text" name="ref_no" required placeholder="e.g. IB-12345" autocomplete="off">
+                </div>
+                <button type="submit" style="background: linear-gradient(135deg, #8B5CF6 0%, #A78BFA 100%);">
+                    Proceed to Entry <i class="fas fa-arrow-right" style="margin-left: 10px;"></i>
+                </button>
+            </form>
+            
+            {{% with messages = get_flashed_messages() %}}
+                {{% if messages %}}
+                    <div class="flash-message flash-error" style="margin-top: 20px;">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <span>{{{{ messages[0] }}}}</span>
+                    </div>
+                {{% endif %}}
+            {{% endwith %}}
+            
+            <div class="nav-links">
+                <a href="/"><i class="fas fa-arrow-left"></i> Back to Dashboard</a>
+                <a href="/logout" class="logout">Sign Out <i class="fas fa-sign-out-alt"></i></a>
+            </div>
+        </div>
+        
+        <div style="text-align: center; margin-top: 25px; color: var(--text-secondary); font-size: 11px; opacity: 0.4;">
+            © 2025 Mehedi Hasan
+        </div>
+    </div>
+</body>
+</html>
+"""
+
+ACCESSORIES_INPUT_TEMPLATE = f"""
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Accessories Entry - MNM Software</title>
+    {COMMON_STYLES}
+    <style>
+        .ref-badge {{
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(255, 122, 0, 0.1);
+            border: 1px solid rgba(255, 122, 0, 0.2);
+            padding: 10px 20px;
+            border-radius: 12px;
+            margin-top: 10px;
+        }}
+        
+        .ref-badge .ref-no {{
+            font-size: 18px;
+            font-weight: 800;
+            color: var(--accent-orange);
+        }}
+        
+        .ref-badge .ref-info {{
+            color: var(--text-secondary);
+            font-size: 13px;
+            font-weight: 500;
+        }}
+        
+        .history-scroll {{
+            max-height: 500px;
+            overflow-y: auto;
+            padding-right: 5px;
+        }}
+        
+        .challan-row {{
+            display: grid;
+            grid-template-columns: 60px 1fr 80px 60px 80px;
+            gap: 10px;
+            padding: 14px;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 10px;
+            margin-bottom: 8px;
+            align-items: center;
+            transition: var(--transition-smooth);
+            border: 1px solid transparent;
+        }}
+        
+        .challan-row:hover {{
+            background: rgba(255, 122, 0, 0.05);
+            border-color: var(--border-glow);
+        }}
+        
+        .line-badge {{
+            background: var(--gradient-orange);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 13px;
+            text-align: center;
+        }}
+        
+        .qty-value {{
+            font-size: 18px;
+            font-weight: 800;
+            color: var(--accent-green);
+        }}
+        
+        .status-check {{
+            color: var(--accent-green);
+            font-size: 20px;
+        }}
+        
+        .print-btn {{
+            background: linear-gradient(135deg, #10B981 0%, #34D399 100%) !important;
+        }}
+        
+        .empty-state {{
+            text-align: center;
+            padding: 50px 20px;
+            color: var(--text-secondary);
+        }}
+        
+        .empty-state i {{
+            font-size: 50px;
+            opacity: 0.2;
+            margin-bottom: 15px;
+        }}
+        
+        .grid-2-cols {{
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }}
+        
+        .count-badge {{
+            background: var(--accent-purple);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+            margin-left: 10px;
+        }}
+        
+        /* Fixed Select Styling */
+        select {{
+            background-color: #1a1a25 !important;
+            color: white !important;
+        }}
+        
+        select option {{
+            background-color: #1a1a25 !important;
+            color: white !important;
+            padding: 10px;
+        }}
+    </style>
+</head>
+<body>
+    <div class="animated-bg"></div>
+    
+    <div id="loading-overlay">
+        <div class="spinner-container">
+            <div class="spinner" id="spinner-anim"></div>
+            <div class="spinner-inner"></div>
+        </div>
+        <div class="checkmark-container" id="success-anim">
+            <div class="checkmark-circle"></div>
+            <div class="anim-text">Saved!</div>
+        </div>
+        <div class="loading-text" id="loading-text">Saving Entry...</div>
+    </div>
+
+    <div class="sidebar">
+        <div class="brand-logo">
+            <i class="fas fa-boxes"></i> 
+            Accessories
+        </div>
+        <div class="nav-menu">
+            <a href="/" class="nav-link"><i class="fas fa-home"></i> Dashboard</a>
+            <a href="/admin/accessories" class="nav-link active"><i class="fas fa-search"></i> Search</a>
+            <a href="/logout" class="nav-link" style="color: var(--accent-red); margin-top: 20px;">
+                <i class="fas fa-sign-out-alt"></i> Sign Out
+            </a>
+        </div>
+        <div class="sidebar-footer">© 2025 Mehedi Hasan</div>
+    </div>
+    
+    <div class="main-content">
+        <div class="header-section">
+            <div>
+                <div class="page-title">Accessories Entry</div>
+                <div class="ref-badge">
+                    <span class="ref-no">{{{{ ref }}}}</span>
+                    <span class="ref-info">{{{{ buyer }}}} • {{{{ style }}}}</span>
+                </div>
+            </div>
+            <a href="/admin/accessories/print?ref={{{{ ref }}}}" target="_blank">
+                <button class="print-btn" style="width: auto; padding: 14px 30px;">
+                    <i class="fas fa-print" style="margin-right: 10px;"></i> Print Report
+                </button>
+            </a>
+        </div>
+
+        <div class="dashboard-grid-2">
+            <div class="card">
+                <div class="section-header">
+                    <span><i class="fas fa-plus-circle" style="margin-right: 10px; color: var(--accent-orange);"></i>New Challan Entry</span>
+                </div>
+                <form action="/admin/accessories/save" method="post" onsubmit="return showLoading()">
+                    <input type="hidden" name="ref" value="{{{{ ref }}}}">
+                    
+                    <div class="grid-2-cols">
+                        <div class="input-group">
+                            <label><i class="fas fa-tag" style="margin-right: 5px;"></i> TYPE</label>
+                            <select name="item_type">
+                                <option value="Top">Top</option>
+                                <option value="Bottom">Bottom</option>
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <label><i class="fas fa-palette" style="margin-right: 5px;"></i> COLOR</label>
+                            <select name="color" required>
+                                <option value="" disabled selected>Select Color</option>
+                                {{% for c in colors %}}
+                                <option value="{{{{ c }}}}">{{{{ c }}}}</option>
+                                {{% endfor %}}
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="grid-2-cols">
+                        <div class="input-group">
+                            <label><i class="fas fa-industry" style="margin-right: 5px;"></i> LINE NO</label>
+                            <input type="text" name="line_no" required placeholder="e.g. L-01">
+                        </div>
+                        <div class="input-group">
+                            <label><i class="fas fa-ruler" style="margin-right: 5px;"></i> SIZE</label>
+                            <input type="text" name="size" value="ALL" placeholder="Size">
+                        </div>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label><i class="fas fa-sort-numeric-up" style="margin-right: 5px;"></i> QUANTITY</label>
+                        <input type="number" name="qty" required placeholder="Enter Quantity" min="1">
+                    </div>
+                    
+                    <button type="submit">
+                        <i class="fas fa-save" style="margin-right: 10px;"></i> Save Entry
+                    </button>
+                </form>
+            </div>
+
+            <div class="card">
+                <div class="section-header">
+                    <span>Recent History</span>
+                    <span class="count-badge">{{{{ challans|length }}}}</span>
+                </div>
+                <div class="history-scroll">
+                    {{% if challans %}}
+                        {{% for item in challans|reverse %}}
+                        <div class="challan-row" style="animation: fadeInUp 0.3s ease-out {{{{ loop.index * 0.05 }}}}s backwards;">
+                            <div class="line-badge">{{{{ item.line }}}}</div>
+                            <div style="color: white; font-weight: 500; font-size: 13px;">{{{{ item.color }}}}</div>
+                            <div class="qty-value">{{{{ item.qty }}}}</div>
+                            <div class="status-check">{{{{ item.status if item.status else '●' }}}}</div>
+                            <div class="action-cell">
+                                {{% if session.role == 'admin' %}}
+                                <a href="/admin/accessories/edit?ref={{{{ ref }}}}&index={{{{ (challans|length) - loop.index }}}}" class="action-btn btn-edit">
+                                    <i class="fas fa-pen"></i>
+                                </a>
+                                <form action="/admin/accessories/delete" method="POST" style="display: inline;" onsubmit="return confirm('Delete this entry?');">
+                                    <input type="hidden" name="ref" value="{{{{ ref }}}}">
+                                    <input type="hidden" name="index" value="{{{{ (challans|length) - loop.index }}}}">
+                                    <button type="submit" class="action-btn btn-del"><i class="fas fa-trash"></i></button>
+                                </form>
+                                {{% else %}}
+                                <span style="font-size: 10px; color: var(--text-secondary); opacity: 0.5;">🔒</span>
+                                {{% endif %}}
+                            </div>
+                        </div>
+                        {{% endfor %}}
+                    {{% else %}}
+                        <div class="empty-state">
+                            <i class="fas fa-inbox"></i>
+                            <div>No challans added yet</div>
+                            <div style="font-size: 12px; margin-top: 5px;">Add your first entry using the form</div>
+                        </div>
+                    {{% endif %}}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function showLoading() {{
+            const overlay = document.getElementById('loading-overlay');
+            const spinner = document.getElementById('spinner-anim').parentElement;
+            const success = document.getElementById('success-anim');
+            const text = document.getElementById('loading-text');
+            
+            overlay.style.display = 'flex';
+            spinner.style.display = 'block';
+            success.style.display = 'none';
+            text.style.display = 'block';
+            text.textContent = 'Saving Entry...';
+            
+            return true;
+        }}
+        
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes fadeInUp {{
+                from {{ opacity: 0; transform: translateY(10px); }}
+                to {{ opacity: 1; transform: translateY(0); }}
+            }}
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>
+"""
+
+ACCESSORIES_EDIT_TEMPLATE = f"""
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Edit Entry - MNM Software</title>
+    {COMMON_STYLES}
+    <style>
+        body {{
+            justify-content: center;
+            align-items: center;
+        }}
+        
+        .edit-container {{
+            position: relative;
+            z-index: 10;
+            width: 100%;
+            max-width: 450px;
+            padding: 20px;
+        }}
+        
+        .edit-card {{
+            background: var(--gradient-card);
+            border: 1px solid var(--border-color);
+            border-radius: 24px;
+            padding: 45px;
+            backdrop-filter: blur(20px);
+            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.5);
+            animation: cardAppear 0.5s ease-out;
+        }}
+        
+        @keyframes cardAppear {{
+            from {{ opacity: 0; transform: scale(0.95); }}
+            to {{ opacity: 1; transform: scale(1); }}
+        }}
+        
+        .edit-header {{
+            text-align: center;
+            margin-bottom: 35px;
+        }}
+        
+        .edit-icon {{
+            width: 70px;
+            height: 70px;
+            background: linear-gradient(145deg, rgba(139, 92, 246, 0.2), rgba(139, 92, 246, 0.05));
+            border-radius: 16px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            color: var(--accent-purple);
+            margin-bottom: 15px;
+        }}
+        
+        .edit-title {{
+            font-size: 24px;
+            font-weight: 800;
+            color: white;
+        }}
+        
+        .cancel-link {{
+            display: block;
+            text-align: center;
+            margin-top: 20px;
+            color: var(--text-secondary);
+            font-size: 13px;
+            text-decoration: none;
+            transition: var(--transition-smooth);
+        }}
+        
+        .cancel-link:hover {{
+            color: var(--accent-orange);
+        }}
+    </style>
+</head>
+<body>
+    <div class="animated-bg"></div>
+    
+    <div class="edit-container">
+        <div class="edit-card">
+            <div class="edit-header">
+                <div class="edit-icon">
+                    <i class="fas fa-edit"></i>
+                </div>
+                <div class="edit-title">Edit Entry</div>
+            </div>
+            
+            <form action="/admin/accessories/update" method="post">
+                <input type="hidden" name="ref" value="{{{{ ref }}}}">
+                <input type="hidden" name="index" value="{{{{ index }}}}">
+                
+                <div class="input-group">
+                    <label><i class="fas fa-industry" style="margin-right: 5px;"></i> LINE NO</label>
+                    <input type="text" name="line_no" value="{{{{ item.line }}}}" required>
+                </div>
+                
+                <div class="input-group">
+                    <label><i class="fas fa-palette" style="margin-right: 5px;"></i> COLOR</label>
+                    <input type="text" name="color" value="{{{{ item.color }}}}" required>
+                </div>
+                
+                <div class="input-group">
+                    <label><i class="fas fa-ruler" style="margin-right: 5px;"></i> SIZE</label>
+                    <input type="text" name="size" value="{{{{ item.size }}}}" required>
+                </div>
+                
+                <div class="input-group">
+                    <label><i class="fas fa-sort-numeric-up" style="margin-right: 5px;"></i> QUANTITY</label>
+                    <input type="number" name="qty" value="{{{{ item.qty }}}}" required>
+                </div>
+                
+                <button type="submit" style="background: linear-gradient(135deg, #8B5CF6 0%, #A78BFA 100%);">
+                    <i class="fas fa-sync-alt" style="margin-right: 10px;"></i> Update Entry
+                </button>
+            </form>
+            
+            <a href="/admin/accessories/input_direct?ref={{{{ ref }}}}" class="cancel-link">
+                <i class="fas fa-times" style="margin-right: 5px;"></i> Cancel
+            </a>
+        </div>
+    </div>
+</body>
+</html>
+"""
+# ==============================================================================
+# STORE PANEL TEMPLATES - NEW (ALUMINIUM SHOP)
 # ==============================================================================
 
 STORE_DASHBOARD_TEMPLATE = f"""
@@ -1456,152 +4076,197 @@ STORE_DASHBOARD_TEMPLATE = f"""
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Store Dashboard - MNM Software</title>
     {COMMON_STYLES}
+    <style>
+        .store-stat-card {{
+            background: var(--gradient-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 24px;
+            position: relative;
+            overflow: hidden;
+            transition: var(--transition-smooth);
+        }}
+        .store-stat-card:hover {{ transform: translateY(-5px); border-color: var(--accent-orange); }}
+        .stat-val {{ font-size: 28px; font-weight: 800; color: white; margin: 10px 0; }}
+        .stat-label {{ color: var(--text-secondary); font-size: 12px; text-transform: uppercase; letter-spacing: 1px; }}
+        .stat-icon-bg {{
+            position: absolute;
+            right: -10px;
+            bottom: -10px;
+            font-size: 80px;
+            opacity: 0.05;
+            transform: rotate(-15deg);
+        }}
+        .recent-badge {{
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 700;
+        }}
+        .badge-paid {{ background: rgba(16, 185, 129, 0.15); color: #34D399; }}
+        .badge-due {{ background: rgba(239, 68, 68, 0.15); color: #F87171; }}
+        .badge-quote {{ background: rgba(59, 130, 246, 0.15); color: #60A5FA; }}
+    </style>
 </head>
 <body>
+    <div class="animated-bg"></div>
+
     <div class="mobile-toggle" onclick="document.querySelector('.sidebar').classList.toggle('active')">
-        <i class="fas fa-bars" style="color:white;"></i>
+        <i class="fas fa-bars"></i>
     </div>
 
     <div class="sidebar">
         <div class="brand-logo">
             <i class="fas fa-store"></i> 
-            Store<span>Panel</span>
+            Alu<span>Store</span>
         </div>
         <div class="nav-menu">
+            {{% if session.role == 'admin' %}}
             <a href="/" class="nav-link">
-                <i class="fas fa-arrow-left"></i> Back to Main
+                <i class="fas fa-arrow-left"></i> Main Panel
             </a>
+            {{% endif %}}
             <a href="/store/dashboard" class="nav-link active">
                 <i class="fas fa-th-large"></i> Dashboard
             </a>
             <a href="/store/products" class="nav-link">
-                <i class="fas fa-box"></i> Products
+                <i class="fas fa-box-open"></i> Inventory
             </a>
             <a href="/store/customers" class="nav-link">
                 <i class="fas fa-users"></i> Customers
             </a>
-            <a href="/store/invoices/create" class="nav-link">
-                <i class="fas fa-file-invoice-dollar"></i> New Invoice
-            </a>
-             <a href="/store/invoices/list" class="nav-link">
-                <i class="fas fa-list-alt"></i> Invoice List
+            <a href="/store/invoices" class="nav-link">
+                <i class="fas fa-file-invoice-dollar"></i> Invoices
             </a>
             <a href="/store/quotations" class="nav-link">
-                <i class="fas fa-file-contract"></i> Quotations
+                <i class="fas fa-file-alt"></i> Quotations
             </a>
-             <a href="/store/users" class="nav-link">
-                <i class="fas fa-user-cog"></i> User Manage
+            {{% if session.role == 'admin' %}}
+            <a href="/store/users" class="nav-link">
+                <i class="fas fa-user-shield"></i> Store Users
             </a>
+            {{% endif %}}
             <a href="/logout" class="nav-link" style="color: var(--accent-red); margin-top: 20px;">
                 <i class="fas fa-sign-out-alt"></i> Sign Out
             </a>
+        </div>
+        <div class="sidebar-footer">
+            Store Panel v2.0
         </div>
     </div>
 
     <div class="main-content">
         <div class="header-section">
             <div>
-                <div class="page-title">Store Dashboard</div>
-                <div class="page-subtitle">Aluminum Shop Management System</div>
+                <div class="page-title">Store Overview</div>
+                <div class="page-subtitle">Aluminium Shop Management</div>
             </div>
-            <div class="status-badge">
-                <div class="status-dot"></div>
-                <span>Store Active</span>
+            <a href="/store/invoice/new" style="text-decoration: none;">
+                <button style="width: auto;">
+                    <i class="fas fa-plus" style="margin-right: 8px;"></i> New Invoice
+                </button>
+            </a>
+        </div>
+
+        <div class="stats-grid">
+            <div class="store-stat-card">
+                <div class="stat-label">Today's Sales</div>
+                <div class="stat-val">৳{{{{ stats.today_sales }}}}</div>
+                <div class="stat-icon-bg"><i class="fas fa-cash-register"></i></div>
+            </div>
+            <div class="store-stat-card">
+                <div class="stat-label">Total Receivables (Due)</div>
+                <div class="stat-val" style="color: var(--accent-red);">৳{{{{ stats.total_due }}}}</div>
+                <div class="stat-icon-bg"><i class="fas fa-hand-holding-usd"></i></div>
+            </div>
+            <div class="store-stat-card">
+                <div class="stat-label">Total Products</div>
+                <div class="stat-val" style="color: var(--accent-purple);">{{{{ stats.product_count }}}}</div>
+                <div class="stat-icon-bg"><i class="fas fa-boxes"></i></div>
+            </div>
+            <div class="store-stat-card">
+                <div class="stat-label">Total Customers</div>
+                <div class="stat-val" style="color: var(--accent-blue);">{{{{ stats.customer_count }}}}</div>
+                <div class="stat-icon-bg"><i class="fas fa-users"></i></div>
             </div>
         </div>
 
-        <div class="store-grid">
+        <div class="dashboard-grid-2">
             <div class="card">
-                <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <div>
-                        <div style="font-size:13px; color:var(--text-secondary);">TOTAL SALES</div>
-                        <div style="font-size:28px; font-weight:800; color:white; margin-top:5px;">
-                            ৳{{{{ "{:,.0f}".format(stats.total_sales) }}}}
-                        </div>
-                    </div>
-                    <div style="width:50px; height:50px; background:rgba(16, 185, 129, 0.1); color:var(--accent-green); border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:20px;">
-                        <i class="fas fa-chart-line"></i>
-                    </div>
+                <div class="section-header">
+                    <span>Recent Invoices</span>
+                    <a href="/store/invoices" style="font-size: 12px; color: var(--accent-orange);">View All</a>
                 </div>
+                <table class="dark-table">
+                    <thead>
+                        <tr>
+                            <th>Inv No</th>
+                            <th>Customer</th>
+                            <th>Amount</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {{% for inv in recent_invoices %}}
+                        <tr>
+                            <td style="color: var(--accent-orange);">#{{{{ inv.inv_no }}}}</td>
+                            <td>{{{{ inv.customer_name }}}}</td>
+                            <td>৳{{{{ inv.grand_total }}}}</td>
+                            <td>
+                                {{% if inv.due_amount > 0 %}}
+                                <span class="recent-badge badge-due">Due: {{ inv.due_amount }}</span>
+                                {{% else %}}
+                                <span class="recent-badge badge-paid">Paid</span>
+                                {{% endif %}}
+                            </td>
+                        </tr>
+                        {{% else %}}
+                        <tr><td colspan="4" style="text-align:center; opacity:0.5;">No recent invoices</td></tr>
+                        {{% endfor %}}
+                    </tbody>
+                </table>
             </div>
 
             <div class="card">
-                <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <div>
-                        <div style="font-size:13px; color:var(--text-secondary);">TOTAL DUE</div>
-                        <div style="font-size:28px; font-weight:800; color:var(--accent-red); margin-top:5px;">
-                            ৳{{{{ "{:,.0f}".format(stats.total_due) }}}}
+                <div class="section-header">
+                    <span>Quick Actions</span>
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 15px;">
+                    <a href="/store/customers" style="text-decoration: none;">
+                        <div style="background: rgba(255,255,255,0.03); padding: 15px; border-radius: 12px; display: flex; align-items: center; gap: 15px; border: 1px solid var(--border-color);">
+                            <div style="background: rgba(239, 68, 68, 0.1); padding: 10px; border-radius: 8px; color: var(--accent-red);">
+                                <i class="fas fa-money-bill-wave"></i>
+                            </div>
+                            <div>
+                                <div style="color: white; font-weight: 600;">Due Collection</div>
+                                <div style="font-size: 12px; color: var(--text-secondary);">Collect payment from customer</div>
+                            </div>
                         </div>
-                    </div>
-                    <div style="width:50px; height:50px; background:rgba(239, 68, 68, 0.1); color:var(--accent-red); border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:20px;">
-                        <i class="fas fa-exclamation-circle"></i>
-                    </div>
-                </div>
-            </div>
-
-            <div class="card">
-                <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <div>
-                        <div style="font-size:13px; color:var(--text-secondary);">TODAY'S SALES</div>
-                        <div style="font-size:28px; font-weight:800; color:var(--accent-orange); margin-top:5px;">
-                            ৳{{{{ "{:,.0f}".format(stats.today_sales) }}}}
-                        </div>
-                    </div>
-                    <div style="width:50px; height:50px; background:rgba(255, 122, 0, 0.1); color:var(--accent-orange); border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:20px;">
-                        <i class="fas fa-sun"></i>
-                    </div>
-                </div>
-            </div>
-
-            <div class="card">
-                <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <div>
-                        <div style="font-size:13px; color:var(--text-secondary);">CUSTOMERS</div>
-                        <div style="font-size:28px; font-weight:800; color:var(--accent-purple); margin-top:5px;">
-                            {{{{ stats.customers }}}}
-                        </div>
-                    </div>
-                     <div style="width:50px; height:50px; background:rgba(139, 92, 246, 0.1); color:var(--accent-purple); border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:20px;">
-                        <i class="fas fa-users"></i>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="dashboard-grid-2" style="margin-top:30px;">
-            <div class="card">
-                <div class="header-section">
-                    <span style="font-weight:700;">Quick Actions</span>
-                </div>
-                <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(150px, 1fr)); gap:15px;">
-                    <a href="/store/invoices/create" style="text-decoration:none;">
-                        <button style="width:100%; height:100%; padding:20px; background:rgba(255,255,255,0.03); border:1px solid var(--border-color);">
-                            <i class="fas fa-plus-circle" style="font-size:24px; color:var(--accent-green); margin-bottom:10px; display:block;"></i>
-                            New Invoice
-                        </button>
                     </a>
-                     <a href="/store/customers" style="text-decoration:none;">
-                        <button style="width:100%; height:100%; padding:20px; background:rgba(255,255,255,0.03); border:1px solid var(--border-color);">
-                            <i class="fas fa-user-plus" style="font-size:24px; color:var(--accent-purple); margin-bottom:10px; display:block;"></i>
-                            Add Customer
-                        </button>
+                    
+                    <a href="/store/quotations" style="text-decoration: none;">
+                        <div style="background: rgba(255,255,255,0.03); padding: 15px; border-radius: 12px; display: flex; align-items: center; gap: 15px; border: 1px solid var(--border-color);">
+                            <div style="background: rgba(59, 130, 246, 0.1); padding: 10px; border-radius: 8px; color: var(--accent-blue);">
+                                <i class="fas fa-file-contract"></i>
+                            </div>
+                            <div>
+                                <div style="color: white; font-weight: 600;">Create Estimate</div>
+                                <div style="font-size: 12px; color: var(--text-secondary);">Make a quotation for client</div>
+                            </div>
+                        </div>
                     </a>
-                     <a href="/store/products" style="text-decoration:none;">
-                        <button style="width:100%; height:100%; padding:20px; background:rgba(255,255,255,0.03); border:1px solid var(--border-color);">
-                            <i class="fas fa-box-open" style="font-size:24px; color:var(--accent-orange); margin-bottom:10px; display:block;"></i>
-                            Add Product
-                        </button>
+
+                    <a href="/store/products" style="text-decoration: none;">
+                        <div style="background: rgba(255,255,255,0.03); padding: 15px; border-radius: 12px; display: flex; align-items: center; gap: 15px; border: 1px solid var(--border-color);">
+                            <div style="background: rgba(16, 185, 129, 0.1); padding: 10px; border-radius: 8px; color: var(--accent-green);">
+                                <i class="fas fa-plus-circle"></i>
+                            </div>
+                            <div>
+                                <div style="color: white; font-weight: 600;">Add Product</div>
+                                <div style="font-size: 12px; color: var(--text-secondary);">Update inventory stock</div>
+                            </div>
+                        </div>
                     </a>
-                </div>
-            </div>
-             <div class="card">
-                <div class="header-section">
-                    <span style="font-weight:700;">System Status</span>
-                </div>
-                <div style="font-size:14px; color:var(--text-secondary); line-height:1.6;">
-                    <p><i class="fas fa-server" style="color:var(--accent-green); width:20px;"></i> Database: Online</p>
-                    <p><i class="fas fa-clock" style="color:var(--accent-orange); width:20px;"></i> Server Time: {{{{ server_time }}}}</p>
-                    <p><i class="fas fa-user-shield" style="color:var(--accent-purple); width:20px;"></i> Logged in as: {{{{ session.user }}}}</p>
                 </div>
             </div>
         </div>
@@ -1615,23 +4280,22 @@ STORE_PRODUCTS_TEMPLATE = f"""
 <html lang="en">
 <head>
     <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Products - Store Panel</title>
     {COMMON_STYLES}
 </head>
 <body>
-    <div class="mobile-toggle" onclick="document.querySelector('.sidebar').classList.toggle('active')">
-        <i class="fas fa-bars" style="color:white;"></i>
-    </div>
-    
+    <div class="animated-bg"></div>
     <div class="sidebar">
-        <div class="brand-logo"><i class="fas fa-store"></i> Store<span>Panel</span></div>
+        <div class="brand-logo"><i class="fas fa-store"></i> Alu<span>Store</span></div>
         <div class="nav-menu">
+            {{% if session.role == 'admin' %}}<a href="/" class="nav-link"><i class="fas fa-arrow-left"></i> Main Panel</a>{{% endif %}}
             <a href="/store/dashboard" class="nav-link"><i class="fas fa-th-large"></i> Dashboard</a>
-            <a href="/store/products" class="nav-link active"><i class="fas fa-box"></i> Products</a>
+            <a href="/store/products" class="nav-link active"><i class="fas fa-box-open"></i> Inventory</a>
             <a href="/store/customers" class="nav-link"><i class="fas fa-users"></i> Customers</a>
-            <a href="/store/invoices/create" class="nav-link"><i class="fas fa-file-invoice-dollar"></i> New Invoice</a>
-            <a href="/store/invoices/list" class="nav-link"><i class="fas fa-list-alt"></i> Invoice List</a>
-            <a href="/logout" class="nav-link" style="color: var(--accent-red); margin-top: auto;"><i class="fas fa-sign-out-alt"></i> Sign Out</a>
+            <a href="/store/invoices" class="nav-link"><i class="fas fa-file-invoice-dollar"></i> Invoices</a>
+            <a href="/store/quotations" class="nav-link"><i class="fas fa-file-alt"></i> Quotations</a>
+            <a href="/logout" class="nav-link" style="color: var(--accent-red); margin-top: 20px;"><i class="fas fa-sign-out-alt"></i> Sign Out</a>
         </div>
     </div>
 
@@ -1639,160 +4303,179 @@ STORE_PRODUCTS_TEMPLATE = f"""
         <div class="header-section">
             <div>
                 <div class="page-title">Product Inventory</div>
-                <div class="page-subtitle">Manage aluminum profiles and accessories</div>
+                <div class="page-subtitle">Manage aluminium profiles, glass, and accessories</div>
             </div>
-            <button onclick="document.getElementById('addProductModal').style.display='flex'">
+            <button onclick="document.getElementById('addProductModal').style.display='flex'" style="width: auto;">
                 <i class="fas fa-plus"></i> Add Product
             </button>
         </div>
 
-        {{% with messages = get_flashed_messages() %}}
-            {{% if messages %}}
-                <div class="status-badge status-pending" style="margin-bottom:20px; padding:10px 20px; width:100%;">
-                    {{{{ messages[0] }}}}
-                </div>
-            {{% endif %}}
-        {{% endwith %}}
-
         <div class="card">
-            <div style="overflow-x: auto;">
-                <table class="dark-table">
-                    <thead>
-                        <tr>
-                            <th>Product Name</th>
-                            <th>Category</th>
-                            <th>Unit</th>
-                            <th>Price (Tk)</th>
-                            <th>Stock</th>
-                            <th style="text-align:right;">Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {{% for p in products %}}
-                        <tr>
-                            <td style="font-weight:600; color:white;">{{{{ p.name }}}}</td>
-                            <td><span class="status-badge">{{{{ p.category }}}}</span></td>
-                            <td>{{{{ p.unit }}}}</td>
-                            <td style="color:var(--accent-green); font-weight:700;">{{{{ p.price }}}}</td>
-                            <td>{{{{ p.stock }}}}</td>
-                            <td style="text-align:right;">
-                                <button onclick="editProduct('{{{{ p._id }}}}', '{{{{ p.name }}}}', '{{{{ p.category }}}}', '{{{{ p.price }}}}', '{{{{ p.stock }}}}', '{{{{ p.unit }}}}')" 
-                                        style="padding:6px 12px; font-size:12px; background:var(--accent-purple); margin-right:5px;">
-                                    <i class="fas fa-edit"></i>
-                                </button>
-                                <form action="/store/products/delete" method="POST" style="display:inline;" onsubmit="return confirm('Delete product?');">
-                                    <input type="hidden" name="product_id" value="{{{{ p._id }}}}">
-                                    <button type="submit" style="padding:6px 12px; font-size:12px; background:var(--accent-red);">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                </form>
-                            </td>
-                        </tr>
-                        {{% else %}}
-                        <tr>
-                            <td colspan="6" style="text-align:center; padding:30px; color:var(--text-secondary);">
-                                No products found. Add your first product!
-                            </td>
-                        </tr>
-                        {{% endfor %}}
-                    </tbody>
-                </table>
+            <div class="input-group" style="max-width: 300px;">
+                <input type="text" id="searchInput" placeholder="Search products..." onkeyup="filterTable()">
             </div>
+            <table class="dark-table" id="productTable">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Category</th>
+                        <th>Unit</th>
+                        <th>Buy Price</th>
+                        <th>Sell Price</th>
+                        <th>Stock</th>
+                        <th style="text-align: right;">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{% for p in products %}}
+                    <tr>
+                        <td style="font-weight: 600;">{{{{ p.name }}}}</td>
+                        <td><span class="table-badge">{{{{ p.category }}}}</span></td>
+                        <td>{{{{ p.unit }}}}</td>
+                        <td style="color: var(--text-secondary);">{{{{ p.cost_price }}}}</td>
+                        <td style="color: var(--accent-green); font-weight: 700;">{{{{ p.sell_price }}}}</td>
+                        <td>
+                            {{% if p.stock|int < 10 %}}
+                            <span style="color: var(--accent-red);"><i class="fas fa-exclamation-triangle"></i> {{{{ p.stock }}}}</span>
+                            {{% else %}}
+                            {{{{ p.stock }}}}
+                            {{% endif %}}
+                        </td>
+                        <td class="action-cell">
+                            <button class="action-btn btn-edit" onclick='editProduct({{{{ p|tojson }}}})'>
+                                <i class="fas fa-pen"></i>
+                            </button>
+                            <form action="/store/product/delete" method="POST" onsubmit="return confirm('Delete this product?')" style="display:inline;">
+                                <input type="hidden" name="id" value="{{{{ p.id }}}}">
+                                <button class="action-btn btn-del"><i class="fas fa-trash"></i></button>
+                            </form>
+                        </td>
+                    </tr>
+                    {{% else %}}
+                    <tr><td colspan="7" style="text-align:center; padding: 30px; opacity: 0.5;">No products found. Add one!</td></tr>
+                    {{% endfor %}}
+                </tbody>
+            </table>
         </div>
     </div>
 
-    <!-- Add/Edit Modal -->
-    <div id="addProductModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:2000; justify-content:center; align-items:center;">
-        <div class="card" style="width:400px; max-width:90%;">
-            <div style="margin-bottom:20px; font-size:20px; font-weight:700; color:white;">Product Details</div>
-            <form action="/store/products/save" method="POST">
-                <input type="hidden" name="product_id" id="modal_product_id">
+    <!-- ADD/EDIT MODAL -->
+    <div id="addProductModal" class="welcome-modal">
+        <div class="welcome-content" style="max-width: 500px; padding: 30px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                <h3 style="color: white; margin:0;">Product Details</h3>
+                <button onclick="closeModal()" style="width:auto; padding:5px 10px; background:none;"><i class="fas fa-times"></i></button>
+            </div>
+            <form action="/store/product/save" method="POST">
+                <input type="hidden" name="id" id="prodId">
                 <div class="input-group">
                     <label>Product Name</label>
-                    <input type="text" name="name" id="modal_name" required>
+                    <input type="text" name="name" id="prodName" required placeholder="e.g. Kai 4 inch section">
                 </div>
-                <div class="input-group">
-                    <label>Category</label>
-                    <select name="category" id="modal_category">
-                        <option value="Aluminum Profile">Aluminum Profile</option>
-                        <option value="Glass">Glass</option>
-                        <option value="Accessories">Accessories</option>
-                        <option value="Sheet">Sheet</option>
-                        <option value="Other">Other</option>
-                    </select>
-                </div>
-                <div class="input-group">
-                    <label>Unit</label>
-                    <select name="unit" id="modal_unit">
-                        <option value="Pcs">Pcs</option>
-                        <option value="Feet">Feet</option>
-                        <option value="Kg">Kg</option>
-                        <option value="Sq.Ft">Sq.Ft</option>
-                    </select>
-                </div>
-                <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                <div class="grid-2-cols" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
                     <div class="input-group">
-                        <label>Price (Tk)</label>
-                        <input type="number" step="0.01" name="price" id="modal_price" required>
+                        <label>Category</label>
+                        <select name="category" id="prodCat">
+                            <option value="Profile">Profile</option>
+                            <option value="Glass">Glass</option>
+                            <option value="Sheet">Sheet</option>
+                            <option value="Accessories">Accessories</option>
+                            <option value="Thai">Thai Aluminium</option>
+                            <option value="SS">SS Pipe/Fittings</option>
+                        </select>
                     </div>
                     <div class="input-group">
-                        <label>Stock</label>
-                        <input type="number" name="stock" id="modal_stock" value="0">
+                        <label>Unit</label>
+                        <select name="unit" id="prodUnit">
+                            <option value="ft">Feet (ft)</option>
+                            <option value="kg">Kg</option>
+                            <option value="pcs">Pieces</option>
+                            <option value="sft">Sq. Feet</option>
+                            <option value="inch">Inch</option>
+                        </select>
                     </div>
                 </div>
-                <div style="display:flex; gap:10px; margin-top:10px;">
-                    <button type="submit" style="flex:1;">Save Product</button>
-                    <button type="button" onclick="closeModal()" style="background:var(--bg-body); border:1px solid var(--border-color); flex:1;">Cancel</button>
+                <div class="grid-2-cols" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <div class="input-group">
+                        <label>Cost Price</label>
+                        <input type="number" name="cost_price" id="prodCost" step="0.01" required>
+                    </div>
+                    <div class="input-group">
+                        <label>Sell Price</label>
+                        <input type="number" name="sell_price" id="prodSell" step="0.01" required>
+                    </div>
                 </div>
+                <div class="input-group">
+                    <label>Initial Stock</label>
+                    <input type="number" name="stock" id="prodStock" value="0">
+                </div>
+                <button type="submit">Save Product</button>
             </form>
         </div>
     </div>
 
     <script>
-        function editProduct(id, name, cat, price, stock, unit) {{
-            document.getElementById('modal_product_id').value = id;
-            document.getElementById('modal_name').value = name;
-            document.getElementById('modal_category').value = cat;
-            document.getElementById('modal_price').value = price;
-            document.getElementById('modal_stock').value = stock;
-            document.getElementById('modal_unit').value = unit;
+        function closeModal() {{
+            document.getElementById('addProductModal').style.display = 'none';
+            document.getElementById('prodId').value = '';
+            document.getElementById('prodName').value = '';
+            document.getElementById('prodStock').value = '0';
+        }}
+        
+        function editProduct(p) {{
+            document.getElementById('prodId').value = p.id;
+            document.getElementById('prodName').value = p.name;
+            document.getElementById('prodCat').value = p.category;
+            document.getElementById('prodUnit').value = p.unit;
+            document.getElementById('prodCost').value = p.cost_price;
+            document.getElementById('prodSell').value = p.sell_price;
+            document.getElementById('prodStock').value = p.stock;
             document.getElementById('addProductModal').style.display = 'flex';
         }}
         
-        function closeModal() {{
-            document.getElementById('addProductModal').style.display = 'none';
-            // Reset form
-            document.getElementById('modal_product_id').value = '';
-            document.getElementsByName('name')[0].value = '';
-            document.getElementsByName('price')[0].value = '';
-            document.getElementsByName('stock')[0].value = '0';
+        function filterTable() {{
+            let input = document.getElementById("searchInput");
+            let filter = input.value.toUpperCase();
+            let table = document.getElementById("productTable");
+            let tr = table.getElementsByTagName("tr");
+            for (let i = 1; i < tr.length; i++) {{
+                let td = tr[i].getElementsByTagName("td")[0];
+                if (td) {{
+                    let txtValue = td.textContent || td.innerText;
+                    if (txtValue.toUpperCase().indexOf(filter) > -1) {{
+                        tr[i].style.display = "";
+                    }} else {{
+                        tr[i].style.display = "none";
+                    }}
+                }}
+            }}
         }}
     </script>
 </body>
 </html>
 """
+
 STORE_CUSTOMERS_TEMPLATE = f"""
 <!doctype html>
 <html lang="en">
 <head>
     <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Customers - Store Panel</title>
     {COMMON_STYLES}
 </head>
 <body>
-    <div class="mobile-toggle" onclick="document.querySelector('.sidebar').classList.toggle('active')">
-        <i class="fas fa-bars" style="color:white;"></i>
-    </div>
-    
+    <div class="animated-bg"></div>
     <div class="sidebar">
-        <div class="brand-logo"><i class="fas fa-store"></i> Store<span>Panel</span></div>
+        <div class="brand-logo"><i class="fas fa-store"></i> Alu<span>Store</span></div>
         <div class="nav-menu">
+            {{% if session.role == 'admin' %}}<a href="/" class="nav-link"><i class="fas fa-arrow-left"></i> Main Panel</a>{{% endif %}}
             <a href="/store/dashboard" class="nav-link"><i class="fas fa-th-large"></i> Dashboard</a>
-            <a href="/store/products" class="nav-link"><i class="fas fa-box"></i> Products</a>
+            <a href="/store/products" class="nav-link"><i class="fas fa-box-open"></i> Inventory</a>
             <a href="/store/customers" class="nav-link active"><i class="fas fa-users"></i> Customers</a>
-            <a href="/store/invoices/create" class="nav-link"><i class="fas fa-file-invoice-dollar"></i> New Invoice</a>
-            <a href="/store/invoices/list" class="nav-link"><i class="fas fa-list-alt"></i> Invoice List</a>
-            <a href="/logout" class="nav-link" style="color: var(--accent-red); margin-top: auto;"><i class="fas fa-sign-out-alt"></i> Sign Out</a>
+            <a href="/store/invoices" class="nav-link"><i class="fas fa-file-invoice-dollar"></i> Invoices</a>
+            <a href="/store/quotations" class="nav-link"><i class="fas fa-file-alt"></i> Quotations</a>
+            <a href="/logout" class="nav-link" style="color: var(--accent-red); margin-top: 20px;"><i class="fas fa-sign-out-alt"></i> Sign Out</a>
         </div>
     </div>
 
@@ -1800,330 +4483,156 @@ STORE_CUSTOMERS_TEMPLATE = f"""
         <div class="header-section">
             <div>
                 <div class="page-title">Customer Management</div>
-                <div class="page-subtitle">Manage client details and dues</div>
+                <div class="page-subtitle">Track customer balances and history</div>
             </div>
-            <button onclick="document.getElementById('addCustomerModal').style.display='flex'">
+            <button onclick="document.getElementById('addCustModal').style.display='flex'" style="width: auto;">
                 <i class="fas fa-user-plus"></i> Add Customer
             </button>
         </div>
 
-        {{% with messages = get_flashed_messages() %}}
-            {{% if messages %}}
-                <div class="status-badge status-pending" style="margin-bottom:20px; padding:10px 20px; width:100%;">
-                    {{{{ messages[0] }}}}
-                </div>
-            {{% endif %}}
-        {{% endwith %}}
-
         <div class="card">
-            <div style="overflow-x: auto;">
-                <table class="dark-table">
-                    <thead>
-                        <tr>
-                            <th>Name</th>
-                            <th>Phone</th>
-                            <th>Address</th>
-                            <th>Total Due</th>
-                            <th style="text-align:right;">Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {{% for c in customers %}}
-                        <tr>
-                            <td style="font-weight:600; color:white;">{{{{ c.name }}}}</td>
-                            <td>{{{{ c.phone }}}}</td>
-                            <td style="font-size:12px; color:var(--text-secondary);">{{{{ c.address }}}}</td>
-                            <td>
-                                {{% if c.total_due > 0 %}}
-                                <span style="color:var(--accent-red); font-weight:700;">৳{{{{ "{:,.0f}".format(c.total_due) }}}}</span>
-                                {{% else %}}
-                                <span style="color:var(--accent-green);">Paid</span>
-                                {{% endif %}}
-                            </td>
-                            <td style="text-align:right;">
-                                <button onclick="editCustomer('{{{{ c._id }}}}', '{{{{ c.name }}}}', '{{{{ c.phone }}}}', '{{{{ c.address }}}}')" 
-                                        style="padding:6px 12px; font-size:12px; background:var(--accent-purple); margin-right:5px;">
-                                    <i class="fas fa-edit"></i>
-                                </button>
-                                <a href="/store/invoices/create?customer_id={{{{ c._id }}}}" style="text-decoration:none;">
-                                    <button style="padding:6px 12px; font-size:12px; background:var(--accent-green);">
-                                        <i class="fas fa-file-invoice"></i> Inv
-                                    </button>
-                                </a>
-                            </td>
-                        </tr>
-                        {{% else %}}
-                        <tr>
-                            <td colspan="5" style="text-align:center; padding:30px; color:var(--text-secondary);">
-                                No customers found.
-                            </td>
-                        </tr>
-                        {{% endfor %}}
-                    </tbody>
-                </table>
+            <div class="input-group" style="max-width: 300px;">
+                <input type="text" id="searchInput" placeholder="Search customers..." onkeyup="filterTable()">
             </div>
+            <table class="dark-table" id="custTable">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Phone</th>
+                        <th>Address</th>
+                        <th>Total Due</th>
+                        <th style="text-align: right;">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{% for c in customers %}}
+                    <tr>
+                        <td style="font-weight: 600;">{{{{ c.name }}}}</td>
+                        <td>{{{{ c.phone }}}}</td>
+                        <td style="color: var(--text-secondary); font-size: 13px;">{{{{ c.address }}}}</td>
+                        <td>
+                            {{% if c.total_due > 0 %}}
+                            <span class="table-badge" style="background: rgba(239, 68, 68, 0.15); color: #F87171;">৳{{{{ c.total_due }}}}</span>
+                            {{% else %}}
+                            <span class="table-badge" style="background: rgba(16, 185, 129, 0.15); color: #34D399;">Clear</span>
+                            {{% endif %}}
+                        </td>
+                        <td class="action-cell">
+                            <button class="action-btn" style="background: rgba(16, 185, 129, 0.2); color: #34D399;" onclick='openCollection({{{{ c|tojson }}}})' title="Collect Due">
+                                <i class="fas fa-hand-holding-usd"></i>
+                            </button>
+                            <button class="action-btn btn-edit" onclick='editCust({{{{ c|tojson }}}})'>
+                                <i class="fas fa-pen"></i>
+                            </button>
+                            <form action="/store/customer/delete" method="POST" onsubmit="return confirm('Delete customer?')" style="display:inline;">
+                                <input type="hidden" name="id" value="{{{{ c.id }}}}">
+                                <button class="action-btn btn-del"><i class="fas fa-trash"></i></button>
+                            </form>
+                        </td>
+                    </tr>
+                    {{% else %}}
+                    <tr><td colspan="5" style="text-align:center; padding: 30px; opacity: 0.5;">No customers found.</td></tr>
+                    {{% endfor %}}
+                </tbody>
+            </table>
         </div>
     </div>
 
-    <!-- Add/Edit Customer Modal -->
-    <div id="addCustomerModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:2000; justify-content:center; align-items:center;">
-        <div class="card" style="width:400px; max-width:90%;">
-            <div style="margin-bottom:20px; font-size:20px; font-weight:700; color:white;">Customer Details</div>
-            <form action="/store/customers/save" method="POST">
-                <input type="hidden" name="customer_id" id="modal_customer_id">
+    <!-- ADD/EDIT MODAL -->
+    <div id="addCustModal" class="welcome-modal">
+        <div class="welcome-content" style="max-width: 500px; padding: 30px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                <h3 style="color: white; margin:0;">Customer Details</h3>
+                <button onclick="closeModal('addCustModal')" style="width:auto; padding:5px 10px; background:none;"><i class="fas fa-times"></i></button>
+            </div>
+            <form action="/store/customer/save" method="POST">
+                <input type="hidden" name="id" id="custId">
                 <div class="input-group">
-                    <label>Full Name</label>
-                    <input type="text" name="name" id="modal_name" required>
+                    <label>Customer Name</label>
+                    <input type="text" name="name" id="custName" required>
                 </div>
                 <div class="input-group">
                     <label>Phone Number</label>
-                    <input type="text" name="phone" id="modal_phone" required>
+                    <input type="text" name="phone" id="custPhone" required>
                 </div>
                 <div class="input-group">
                     <label>Address</label>
-                    <textarea name="address" id="modal_address" rows="3"></textarea>
+                    <input type="text" name="address" id="custAddr">
                 </div>
-                <div style="display:flex; gap:10px; margin-top:10px;">
-                    <button type="submit" style="flex:1;">Save Customer</button>
-                    <button type="button" onclick="closeCustomerModal()" style="background:var(--bg-body); border:1px solid var(--border-color); flex:1;">Cancel</button>
+                <div class="input-group">
+                    <label>Opening Due (If any)</label>
+                    <input type="number" name="opening_due" id="custDue" value="0">
                 </div>
+                <button type="submit">Save Customer</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- DUE COLLECTION MODAL -->
+    <div id="collectionModal" class="welcome-modal">
+        <div class="welcome-content" style="max-width: 400px; padding: 30px;">
+             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                <h3 style="color: white; margin:0;">Collect Due</h3>
+                <button onclick="closeModal('collectionModal')" style="width:auto; padding:5px 10px; background:none;"><i class="fas fa-times"></i></button>
+            </div>
+            <div style="text-align: left; margin-bottom: 20px; background: rgba(255,255,255,0.05); padding: 15px; border-radius: 10px;">
+                <div style="font-size: 13px; color: var(--text-secondary);">Customer: <span id="colCustName" style="color: white; font-weight: bold;"></span></div>
+                <div style="font-size: 13px; color: var(--text-secondary); margin-top: 5px;">Current Due: <span id="colCustDue" style="color: var(--accent-red); font-weight: bold;"></span></div>
+            </div>
+            <form action="/store/customer/collect" method="POST">
+                <input type="hidden" name="id" id="colCustId">
+                <div class="input-group">
+                    <label>Collection Amount</label>
+                    <input type="number" name="amount" required placeholder="Enter amount">
+                </div>
+                <div class="input-group">
+                    <label>Note</label>
+                    <input type="text" name="note" placeholder="e.g. Bkash payment">
+                </div>
+                <button type="submit" style="background: var(--accent-green);">Confirm Payment</button>
             </form>
         </div>
     </div>
 
     <script>
-        function editCustomer(id, name, phone, address) {{
-            document.getElementById('modal_customer_id').value = id;
-            document.getElementById('modal_name').value = name;
-            document.getElementById('modal_phone').value = phone;
-            document.getElementById('modal_address').value = address;
-            document.getElementById('addCustomerModal').style.display = 'flex';
+        function closeModal(id) {{
+            document.getElementById(id).style.display = 'none';
         }}
         
-        function closeCustomerModal() {{
-            document.getElementById('addCustomerModal').style.display = 'none';
-            document.getElementById('modal_customer_id').value = '';
-            document.getElementsByName('name')[0].value = '';
-            document.getElementsByName('phone')[0].value = '';
-            document.getElementsByName('address')[0].value = '';
+        function editCust(c) {{
+            document.getElementById('custId').value = c.id;
+            document.getElementById('custName').value = c.name;
+            document.getElementById('custPhone').value = c.phone;
+            document.getElementById('custAddr').value = c.address;
+            document.getElementById('custDue').value = c.opening_due || 0;
+            document.getElementById('addCustModal').style.display = 'flex';
         }}
-    </script>
-</body>
-</html>
-"""
 
-STORE_CREATE_INVOICE_TEMPLATE = f"""
-<!doctype html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <title>Create Invoice - Store Panel</title>
-    {COMMON_STYLES}
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-    <style>
-        .select2-container--default .select2-selection--single {{ background-color: rgba(255, 255, 255, 0.05); border: 1px solid var(--border-color); height: 45px; border-radius: 10px; }}
-        .select2-container--default .select2-selection--single .select2-selection__rendered {{ color: white; line-height: 45px; padding-left: 15px; }}
-        .select2-dropdown {{ background-color: #1a1a25; border: 1px solid var(--border-color); color: white; }}
-        .select2-results__option[aria-selected=true] {{ background-color: var(--accent-orange); }}
+        function openCollection(c) {{
+            document.getElementById('colCustId').value = c.id;
+            document.getElementById('colCustName').textContent = c.name;
+            document.getElementById('colCustDue').textContent = '৳' + c.total_due;
+            document.getElementById('collectionModal').style.display = 'flex';
+        }}
         
-        .product-row {{ display: grid; grid-template-columns: 3fr 1fr 1fr 1fr 40px; gap: 10px; margin-bottom: 10px; align-items: center; }}
-        .summary-box {{ background: rgba(0,0,0,0.2); padding: 15px; border-radius: 10px; margin-top: 20px; }}
-        .summary-row {{ display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 14px; }}
-        .summary-total {{ font-size: 18px; font-weight: 800; color: var(--accent-orange); border-top: 1px solid var(--border-color); padding-top: 10px; margin-top: 10px; }}
-    </style>
-</head>
-<body>
-    <div class="mobile-toggle" onclick="document.querySelector('.sidebar').classList.toggle('active')">
-        <i class="fas fa-bars" style="color:white;"></i>
-    </div>
-    
-    <div class="sidebar">
-        <div class="brand-logo"><i class="fas fa-store"></i> Store<span>Panel</span></div>
-        <div class="nav-menu">
-            <a href="/store/dashboard" class="nav-link"><i class="fas fa-th-large"></i> Dashboard</a>
-            <a href="/store/invoices/create" class="nav-link active"><i class="fas fa-file-invoice-dollar"></i> New Invoice</a>
-            <a href="/store/invoices/list" class="nav-link"><i class="fas fa-list-alt"></i> Invoice List</a>
-        </div>
-    </div>
-
-    <div class="main-content">
-        <form action="/store/invoices/save" method="POST" id="invoiceForm">
-            <div class="header-section">
-                <div>
-                    <div class="page-title">New Invoice</div>
-                    <div class="page-subtitle">Create sales invoice or quotation</div>
-                </div>
-                <div style="display:flex; gap:10px;">
-                    <select name="type" style="width:150px; background:var(--accent-purple);">
-                        <option value="Invoice">Sales Invoice</option>
-                        <option value="Quotation">Quotation</option>
-                    </select>
-                    <button type="submit"><i class="fas fa-save"></i> Save Invoice</button>
-                </div>
-            </div>
-
-            <div class="dashboard-grid-2">
-                <!-- Left: Products & Customer -->
-                <div style="display:flex; flex-direction:column; gap:20px;">
-                    <!-- Customer Selection -->
-                    <div class="card">
-                        <div style="margin-bottom:15px; font-weight:700;">Customer Details</div>
-                        <div style="display:flex; gap:15px;">
-                            <div style="flex:2;">
-                                <select name="customer_id" id="customerSelect" style="width:100%;">
-                                    <option value="">Select Existing Customer</option>
-                                    {{% for c in customers %}}
-                                    <option value="{{{{ c._id }}}}" {{% if pre_customer == c._id|string %}}selected{{% endif %}}>{{{{ c.name }}}} - {{{{ c.phone }}}}</option>
-                                    {{% endfor %}}
-                                </select>
-                            </div>
-                            <div style="flex:1;">
-                                <input type="text" name="customer_name" id="new_cus_name" placeholder="Or New Customer Name">
-                            </div>
-                            <div style="flex:1;">
-                                <input type="text" name="customer_phone" id="new_cus_phone" placeholder="Phone">
-                            </div>
-                        </div>
-                        <div style="margin-top:10px;">
-                            <input type="text" name="customer_address" id="new_cus_address" placeholder="Address (Optional)">
-                        </div>
-                    </div>
-
-                    <!-- Product List -->
-                    <div class="card">
-                        <div style="margin-bottom:15px; font-weight:700; display:flex; justify-content:space-between;">
-                            <span>Items</span>
-                            <button type="button" onclick="addProductRow()" style="padding:5px 10px; font-size:12px; width:auto;">+ Add Item</button>
-                        </div>
-                        
-                        <div id="productContainer">
-                            <!-- Headers -->
-                            <div class="product-row" style="font-size:12px; color:var(--text-secondary); border-bottom:1px solid var(--border-color); padding-bottom:5px;">
-                                <div>Product</div>
-                                <div>Price</div>
-                                <div>Qty</div>
-                                <div>Total</div>
-                                <div></div>
-                            </div>
-                            <!-- Dynamic Rows will be added here -->
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Right: Totals -->
-                <div class="card" style="height:fit-content;">
-                    <div style="font-weight:700; margin-bottom:15px;">Payment Details</div>
-                    
-                    <div class="input-group">
-                        <label>Discount (Tk)</label>
-                        <input type="number" name="discount" id="discount" value="0" oninput="calculateGrandTotal()">
-                    </div>
-
-                    <div class="summary-box">
-                        <div class="summary-row">
-                            <span>Sub Total:</span>
-                            <span id="subTotal">0.00</span>
-                        </div>
-                        <div class="summary-row" style="color:var(--accent-red);">
-                            <span>Discount:</span>
-                            <span id="discountDisplay">0.00</span>
-                        </div>
-                        <div class="summary-row summary-total">
-                            <span>Grand Total:</span>
-                            <span id="grandTotal">0.00</span>
-                        </div>
-                    </div>
-
-                    <div class="input-group" style="margin-top:20px;">
-                        <label>Paid Amount</label>
-                        <input type="number" name="paid_amount" id="paidAmount" value="0" oninput="calculateDue()">
-                    </div>
-                    
-                    <div style="text-align:center; margin-top:10px; font-size:14px;">
-                        Due: <span id="dueAmount" style="font-weight:800; color:var(--accent-red);">0.00</span>
-                    </div>
-                </div>
-            </div>
-        </form>
-    </div>
-
-    <!-- Hidden Template for JS -->
-    <select id="productMasterList" style="display:none;">
-        <option value="">Select Product</option>
-        {{% for p in products %}}
-        <option value="{{{{ p._id }}}}" data-price="{{{{ p.price }}}}">{{{{ p.name }}}} ({{{{ p.stock }}}} {{{{ p.unit }}}})</option>
-        {{% endfor %}}
-    </select>
-
-    <script>
-        $(document).ready(function() {{
-            $('#customerSelect').select2();
-            addProductRow(); // Add initial row
-        }});
-
-        function addProductRow() {{
-            const rowId = Date.now();
-            const options = $('#productMasterList').html();
-            
-            const html = `
-                <div class="product-row" id="row_${{rowId}}">
-                    <select name="product_ids[]" class="p-select" onchange="updatePrice(this, ${{rowId}})" required>
-                        ${{options}}
-                    </select>
-                    <input type="number" name="prices[]" id="price_${{rowId}}" step="0.01" oninput="updateRowTotal(${{rowId}})" required placeholder="0.00">
-                    <input type="number" name="quantities[]" id="qty_${{rowId}}" step="0.01" value="1" oninput="updateRowTotal(${{rowId}})" required>
-                    <input type="number" class="row-total" id="total_${{rowId}}" readonly value="0.00" style="background:rgba(0,0,0,0.3); border:none;">
-                    <button type="button" onclick="removeRow(${{rowId}})" style="padding:5px; background:var(--accent-red); color:white; width:30px; height:30px; display:flex; align-items:center; justify-content:center;">
-                        <i class="fas fa-times"></i>
-                    </button>
-                </div>
-            `;
-            $('#productContainer').append(html);
-            $(`#row_${{rowId}} .p-select`).select2();
-        }}
-
-        function removeRow(id) {{
-            $(`#row_${{id}}`).remove();
-            calculateGrandTotal();
-        }}
-
-        function updatePrice(select, id) {{
-            const price = $(select).find(':selected').data('price');
-            $(`#price_${{id}}`).val(price);
-            updateRowTotal(id);
-        }}
-
-        function updateRowTotal(id) {{
-            const price = parseFloat($(`#price_${{id}}`).val()) || 0;
-            const qty = parseFloat($(`#qty_${{id}}`).val()) || 0;
-            const total = price * qty;
-            $(`#total_${{id}}`).val(total.toFixed(2));
-            calculateGrandTotal();
-        }}
-
-        function calculateGrandTotal() {{
-            let subTotal = 0;
-            $('.row-total').each(function() {{
-                subTotal += parseFloat($(this).val()) || 0;
-            }});
-            
-            const discount = parseFloat($('#discount').val()) || 0;
-            const grandTotal = subTotal - discount;
-
-            $('#subTotal').text(subTotal.toFixed(2));
-            $('#discountDisplay').text(discount.toFixed(2));
-            $('#grandTotal').text(grandTotal.toFixed(2));
-            
-            calculateDue();
-        }}
-
-        function calculateDue() {{
-            const grandTotal = parseFloat($('#grandTotal').text()) || 0;
-            const paid = parseFloat($('#paidAmount').val()) || 0;
-            const due = grandTotal - paid;
-            $('#dueAmount').text(due.toFixed(2));
+        function filterTable() {{
+            let input = document.getElementById("searchInput");
+            let filter = input.value.toUpperCase();
+            let table = document.getElementById("custTable");
+            let tr = table.getElementsByTagName("tr");
+            for (let i = 1; i < tr.length; i++) {{
+                let td = tr[i].getElementsByTagName("td")[0];
+                let td2 = tr[i].getElementsByTagName("td")[1];
+                if (td || td2) {{
+                    let txt1 = td.textContent || td.innerText;
+                    let txt2 = td2.textContent || td2.innerText;
+                    if (txt1.toUpperCase().indexOf(filter) > -1 || txt2.toUpperCase().indexOf(filter) > -1) {{
+                        tr[i].style.display = "";
+                    }} else {{
+                        tr[i].style.display = "none";
+                    }}
+                }}
+            }}
         }}
     </script>
 </body>
@@ -2134,138 +4643,405 @@ STORE_INVOICE_LIST_TEMPLATE = f"""
 <html lang="en">
 <head>
     <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Invoices - Store Panel</title>
     {COMMON_STYLES}
 </head>
 <body>
-    <div class="mobile-toggle" onclick="document.querySelector('.sidebar').classList.toggle('active')">
-        <i class="fas fa-bars" style="color:white;"></i>
-    </div>
-    
+    <div class="animated-bg"></div>
     <div class="sidebar">
-        <div class="brand-logo"><i class="fas fa-store"></i> Store<span>Panel</span></div>
+        <div class="brand-logo"><i class="fas fa-store"></i> Alu<span>Store</span></div>
         <div class="nav-menu">
+            {{% if session.role == 'admin' %}}<a href="/" class="nav-link"><i class="fas fa-arrow-left"></i> Main Panel</a>{{% endif %}}
             <a href="/store/dashboard" class="nav-link"><i class="fas fa-th-large"></i> Dashboard</a>
-            <a href="/store/invoices/create" class="nav-link"><i class="fas fa-file-invoice-dollar"></i> New Invoice</a>
-            <a href="/store/invoices/list" class="nav-link active"><i class="fas fa-list-alt"></i> Invoice List</a>
+            <a href="/store/products" class="nav-link"><i class="fas fa-box-open"></i> Inventory</a>
+            <a href="/store/customers" class="nav-link"><i class="fas fa-users"></i> Customers</a>
+            <a href="/store/invoices" class="nav-link active"><i class="fas fa-file-invoice-dollar"></i> Invoices</a>
+            <a href="/store/quotations" class="nav-link"><i class="fas fa-file-alt"></i> Quotations</a>
+            <a href="/logout" class="nav-link" style="color: var(--accent-red); margin-top: 20px;"><i class="fas fa-sign-out-alt"></i> Sign Out</a>
         </div>
     </div>
 
     <div class="main-content">
         <div class="header-section">
             <div>
-                <div class="page-title">Invoice History</div>
-                <div class="page-subtitle">Track sales and payments</div>
+                <div class="page-title">Invoices</div>
+                <div class="page-subtitle">Sales history and billing</div>
             </div>
-            <div class="input-group" style="width: 300px; margin-bottom:0;">
-                <input type="text" placeholder="Search Invoice or Customer..." onkeyup="searchTable(this.value)">
-            </div>
+            <a href="/store/invoice/new">
+                <button style="width: auto;">
+                    <i class="fas fa-plus"></i> Create Invoice
+                </button>
+            </a>
         </div>
 
         <div class="card">
-            <div style="overflow-x: auto;">
-                <table class="dark-table" id="invoiceTable">
-                    <thead>
-                        <tr>
-                            <th>Date</th>
-                            <th>Invoice No</th>
-                            <th>Customer</th>
-                            <th>Total</th>
-                            <th>Paid</th>
-                            <th>Due</th>
-                            <th>Status</th>
-                            <th style="text-align:right;">Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {{% for inv in invoices %}}
-                        <tr>
-                            <td>
-                                <div class="time-badge">{{{{ inv.date }}}}</div>
-                            </td>
-                            <td style="font-weight:700; color:white;">{{{{ inv.invoice_no }}}}</td>
-                            <td>{{{{ inv.customer_name }}}}</td>
-                            <td style="font-weight:700;">{{{{ "{:,.2f}".format(inv.grand_total) }}}}</td>
-                            <td style="color:var(--accent-green);">{{{{ "{:,.2f}".format(inv.paid_amount) }}}}</td>
-                            <td style="color:var(--accent-red);">{{{{ "{:,.2f}".format(inv.due_amount) }}}}</td>
-                            <td>
-                                {{% if inv.due_amount <= 0 %}}
-                                <span class="status-badge" style="background:rgba(16, 185, 129, 0.1); color:var(--accent-green);">Paid</span>
-                                {{% else %}}
-                                <span class="status-badge status-pending">Due</span>
-                                {{% endif %}}
-                            </td>
-                            <td style="text-align:right;">
-                                <a href="/store/invoices/print/{{{{ inv.invoice_no }}}}" target="_blank" class="action-btn" style="background:var(--accent-blue); color:white; margin-right:5px;">
-                                    <i class="fas fa-print"></i>
-                                </a>
-                                <a href="/store/invoices/edit/{{{{ inv.invoice_no }}}}" class="action-btn btn-edit">
-                                    <i class="fas fa-edit"></i>
-                                </a>
-                            </td>
-                        </tr>
-                        {{% else %}}
-                        <tr>
-                            <td colspan="8" style="text-align:center; padding:40px; color:var(--text-secondary);">
-                                <i class="fas fa-file-invoice" style="font-size:30px; margin-bottom:10px; display:block; opacity:0.3;"></i>
-                                No invoices found.
-                            </td>
-                        </tr>
-                        {{% endfor %}}
-                    </tbody>
-                </table>
+            <div class="input-group" style="max-width: 300px;">
+                <input type="text" id="searchInput" placeholder="Search invoices..." onkeyup="filterTable()">
             </div>
+            <table class="dark-table" id="invTable">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Inv No</th>
+                        <th>Customer</th>
+                        <th>Total</th>
+                        <th>Paid</th>
+                        <th>Due</th>
+                        <th style="text-align: right;">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{% for inv in invoices %}}
+                    <tr>
+                        <td style="color: var(--text-secondary);">{{{{ inv.date }}}}</td>
+                        <td style="font-weight: 700; color: var(--accent-orange);">#{{{{ inv.inv_no }}}}</td>
+                        <td>{{{{ inv.customer_name }}}}</td>
+                        <td>৳{{{{ inv.grand_total }}}}</td>
+                        <td style="color: var(--accent-green);">৳{{{{ inv.paid_amount }}}}</td>
+                        <td>
+                            {{% if inv.due_amount > 0 %}}
+                            <span class="table-badge" style="background: rgba(239, 68, 68, 0.15); color: #F87171;">৳{{{{ inv.due_amount }}}}</span>
+                            {{% else %}}
+                            <span class="table-badge" style="background: rgba(16, 185, 129, 0.15); color: #34D399;">Paid</span>
+                            {{% endif %}}
+                        </td>
+                        <td class="action-cell">
+                            <a href="/store/invoice/print/{{{{ inv.inv_no }}}}" target="_blank" class="action-btn" style="background: rgba(59, 130, 246, 0.2); color: #60A5FA;">
+                                <i class="fas fa-print"></i>
+                            </a>
+                            <a href="/store/invoice/edit/{{{{ inv.inv_no }}}}" class="action-btn btn-edit">
+                                <i class="fas fa-pen"></i>
+                            </a>
+                            <form action="/store/invoice/delete" method="POST" onsubmit="return confirm('Delete invoice? This will adjust stock.')" style="display:inline;">
+                                <input type="hidden" name="inv_no" value="{{{{ inv.inv_no }}}}">
+                                <button class="action-btn btn-del"><i class="fas fa-trash"></i></button>
+                            </form>
+                        </td>
+                    </tr>
+                    {{% else %}}
+                    <tr><td colspan="7" style="text-align:center; padding: 30px; opacity: 0.5;">No invoices created yet.</td></tr>
+                    {{% endfor %}}
+                </tbody>
+            </table>
         </div>
     </div>
     <script>
-        function searchTable(val) {{
-            val = val.toLowerCase();
-            const rows = document.querySelectorAll('#invoiceTable tbody tr');
-            rows.forEach(row => {{
-                const text = row.innerText.toLowerCase();
-                row.style.display = text.includes(val) ? '' : 'none';
-            }});
+        function filterTable() {{
+            let input = document.getElementById("searchInput");
+            let filter = input.value.toUpperCase();
+            let table = document.getElementById("invTable");
+            let tr = table.getElementsByTagName("tr");
+            for (let i = 1; i < tr.length; i++) {{
+                let td = tr[i].getElementsByTagName("td")[1];
+                let td2 = tr[i].getElementsByTagName("td")[2];
+                if (td || td2) {{
+                    let txt1 = td.textContent || td.innerText;
+                    let txt2 = td2.textContent || td2.innerText;
+                    if (txt1.toUpperCase().indexOf(filter) > -1 || txt2.toUpperCase().indexOf(filter) > -1) {{
+                        tr[i].style.display = "";
+                    }} else {{
+                        tr[i].style.display = "none";
+                    }}
+                }}
+            }}
         }}
     </script>
 </body>
 </html>
 """
 
-STORE_PRINT_INVOICE_TEMPLATE = """
+STORE_INVOICE_FORM_TEMPLATE = f"""
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{{{ mode }}}} Invoice - Store Panel</title>
+    {COMMON_STYLES}
+    <style>
+        .inv-container {{
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 20px;
+        }}
+        .item-row {{
+            display: grid;
+            grid-template-columns: 3fr 1fr 1fr 1fr 40px;
+            gap: 10px;
+            margin-bottom: 10px;
+            align-items: center;
+        }}
+        .summary-row {{
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }}
+        .summary-val {{
+            font-weight: 700;
+            color: white;
+        }}
+        .btn-add-row {{
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--accent-orange);
+            border: 1px dashed var(--border-color);
+        }}
+        .btn-add-row:hover {{
+            background: rgba(255, 122, 0, 0.1);
+            border-color: var(--accent-orange);
+        }}
+    </style>
+</head>
+<body>
+    <div class="animated-bg"></div>
+    <div class="main-content" style="margin-left: 0; width: 100%;">
+        <form action="/store/invoice/save" method="POST" id="invoiceForm">
+            <input type="hidden" name="mode" value="{{{{ mode }}}}"> <input type="hidden" name="existing_inv_no" value="{{{{ invoice.inv_no if invoice else '' }}}}">
+
+            <div class="header-section">
+                <div>
+                    <div class="page-title">
+                        {{% if mode == 'Quote' %}}New Quotation{{% else %}}New Invoice{{% endif %}}
+                    </div>
+                    <div class="page-subtitle">Create a new sale record</div>
+                </div>
+                <div style="display: flex; gap: 10px;">
+                    <a href="/store/invoices" style="text-decoration: none;">
+                        <button type="button" style="background: rgba(255,255,255,0.1); width: auto;">Cancel</button>
+                    </a>
+                    <button type="submit" style="width: auto;">
+                        <i class="fas fa-save" style="margin-right: 8px;"></i> Save & Print
+                    </button>
+                </div>
+            </div>
+
+            <div class="inv-container">
+                <div class="card">
+                    <div class="section-header">
+                        <span>Items Details</span>
+                    </div>
+                    
+                    <div style="margin-bottom: 10px; display: grid; grid-template-columns: 3fr 1fr 1fr 1fr 40px; gap: 10px; color: var(--text-secondary); font-size: 12px; font-weight: 700; text-transform: uppercase;">
+                        <div>Product</div>
+                        <div>Price</div>
+                        <div>Qty</div>
+                        <div>Total</div>
+                        <div></div>
+                    </div>
+
+                    <div id="itemsContainer">
+                        {{% if invoice %}}
+                            {{% for item in invoice.items %}}
+                            <div class="item-row">
+                                <select name="product_id[]" class="prod-select" onchange="updateRow(this)" required>
+                                    <option value="" disabled>Select Product</option>
+                                    {{% for p in products %}}
+                                    <option value="{{{{ p.id }}}}" data-price="{{{{ p.sell_price }}}}" {{% if p.id == item.product_id %}}selected{{% endif %}}>{{{{ p.name }}}} (Stock: {{{{ p.stock }}}})</option>
+                                    {{% endfor %}}
+                                </select>
+                                <input type="number" name="price[]" class="row-price" step="0.01" value="{{{{ item.price }}}}" oninput="calcTotal()">
+                                <input type="number" name="qty[]" class="row-qty" step="0.01" value="{{{{ item.qty }}}}" oninput="calcTotal()" required>
+                                <input type="text" class="row-total" value="{{{{ item.total }}}}" readonly style="background: rgba(0,0,0,0.2); border: none;">
+                                <button type="button" class="action-btn btn-del" onclick="removeRow(this)"><i class="fas fa-times"></i></button>
+                            </div>
+                            {{% endfor %}}
+                        {{% else %}}
+                            <div class="item-row">
+                                <select name="product_id[]" class="prod-select" onchange="updateRow(this)" required>
+                                    <option value="" disabled selected>Select Product</option>
+                                    {{% for p in products %}}
+                                    <option value="{{{{ p.id }}}}" data-price="{{{{ p.sell_price }}}}">{{{{ p.name }}}} (Stock: {{{{ p.stock }}}})</option>
+                                    {{% endfor %}}
+                                </select>
+                                <input type="number" name="price[]" class="row-price" step="0.01" placeholder="0.00" oninput="calcTotal()">
+                                <input type="number" name="qty[]" class="row-qty" step="0.01" placeholder="1" oninput="calcTotal()" required>
+                                <input type="text" class="row-total" readonly style="background: rgba(0,0,0,0.2); border: none;">
+                                <button type="button" class="action-btn btn-del" onclick="removeRow(this)"><i class="fas fa-times"></i></button>
+                            </div>
+                        {{% endif %}}
+                    </div>
+
+                    <button type="button" class="btn-add-row" onclick="addRow()">
+                        <i class="fas fa-plus"></i> Add Item
+                    </button>
+                </div>
+
+                <div>
+                    <div class="card" style="margin-bottom: 20px;">
+                        <div class="section-header"><span>Customer Info</span></div>
+                        <div class="input-group">
+                            <label>Select Customer</label>
+                            <select name="customer_id" id="custSelect" onchange="updateCustomer()" required>
+                                <option value="Walk-in">Walk-in Customer</option>
+                                {{% for c in customers %}}
+                                <option value="{{{{ c.id }}}}" {{% if invoice and invoice.customer_id == c.id %}}selected{{% endif %}}>{{{{ c.name }}}} - {{{{ c.phone }}}}</option>
+                                {{% endfor %}}
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <label>Customer Name</label>
+                            <input type="text" name="customer_name" id="custName" value="{{{{ invoice.customer_name if invoice else 'Walk-in Customer' }}}}" required>
+                        </div>
+                        <div class="input-group">
+                            <label>Phone / Address</label>
+                            <input type="text" name="customer_details" id="custDetails" value="{{{{ invoice.customer_details if invoice else '' }}}}">
+                        </div>
+                        <div class="input-group">
+                            <label>Invoice Date</label>
+                            <input type="text" name="date" value="{{{{ invoice.date if invoice else today }}}}" readonly>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="section-header"><span>Payment Details</span></div>
+                        
+                        <div class="summary-row">
+                            <span>Subtotal</span>
+                            <span class="summary-val" id="subTotal">0.00</span>
+                        </div>
+                        
+                        <div class="input-group" style="margin-bottom: 10px;">
+                            <label>Discount</label>
+                            <input type="number" name="discount" id="discount" value="{{{{ invoice.discount if invoice else 0 }}}}" oninput="calcTotal()">
+                        </div>
+
+                        <div class="summary-row" style="font-size: 18px; border-top: 1px solid var(--border-color); padding-top: 10px;">
+                            <span>Grand Total</span>
+                            <span class="summary-val" id="grandTotal" style="color: var(--accent-orange);">0.00</span>
+                        </div>
+
+                        {{% if mode != 'Quote' %}}
+                        <div class="input-group" style="margin-top: 15px;">
+                            <label>Paid Amount</label>
+                            <input type="number" name="paid_amount" id="paidAmount" value="{{{{ invoice.paid_amount if invoice else 0 }}}}" oninput="calcTotal()">
+                        </div>
+
+                        <div class="summary-row" style="margin-top: 10px;">
+                            <span>Due Amount</span>
+                            <span class="summary-val" id="dueAmount" style="color: var(--accent-red);">0.00</span>
+                        </div>
+                        {{% endif %}}
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        function addRow() {{
+            const container = document.getElementById('itemsContainer');
+            const row = container.firstElementChild.cloneNode(true);
+            
+            // Reset values
+            row.querySelector('select').value = "";
+            row.querySelector('.row-price').value = "";
+            row.querySelector('.row-qty').value = "";
+            row.querySelector('.row-total').value = "";
+            
+            container.appendChild(row);
+        }}
+
+        function removeRow(btn) {{
+            const container = document.getElementById('itemsContainer');
+            if (container.children.length > 1) {{
+                btn.parentElement.remove();
+                calcTotal();
+            }}
+        }}
+
+        function updateRow(select) {{
+            const row = select.parentElement;
+            const priceInput = row.querySelector('.row-price');
+            const selectedOption = select.options[select.selectedIndex];
+            const price = selectedOption.getAttribute('data-price');
+            
+            if (price) {{
+                priceInput.value = price;
+                calcTotal();
+            }}
+        }}
+
+        function calcTotal() {{
+            let subtotal = 0;
+            const rows = document.querySelectorAll('.item-row');
+            
+            rows.forEach(row => {{
+                const price = parseFloat(row.querySelector('.row-price').value) || 0;
+                const qty = parseFloat(row.querySelector('.row-qty').value) || 0;
+                const total = price * qty;
+                
+                row.querySelector('.row-total').value = total.toFixed(2);
+                subtotal += total;
+            }});
+
+            document.getElementById('subTotal').innerText = subtotal.toFixed(2);
+            
+            const discount = parseFloat(document.getElementById('discount').value) || 0;
+            const grandTotal = subtotal - discount;
+            
+            document.getElementById('grandTotal').innerText = grandTotal.toFixed(2);
+
+            const paidInput = document.getElementById('paidAmount');
+            if (paidInput) {{
+                const paid = parseFloat(paidInput.value) || 0;
+                const due = grandTotal - paid;
+                document.getElementById('dueAmount').innerText = due.toFixed(2);
+            }}
+        }}
+
+        function updateCustomer() {{
+            const select = document.getElementById('custSelect');
+            const nameInput = document.getElementById('custName');
+            const detailsInput = document.getElementById('custDetails');
+            
+            if (select.value === 'Walk-in') {{
+                nameInput.value = 'Walk-in Customer';
+                detailsInput.value = '';
+            }} else {{
+                const text = select.options[select.selectedIndex].text;
+                const name = text.split(' - ')[0];
+                const phone = text.split(' - ')[1];
+                nameInput.value = name;
+                detailsInput.value = phone;
+            }}
+        }}
+
+        // Initial Calc
+        calcTotal();
+    </script>
+</body>
+</html>
+"""
+
+STORE_INVOICE_PRINT_TEMPLATE = """
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Invoice {{ inv.invoice_no }}</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <title>Invoice #{{ invoice.inv_no }}</title>
     <style>
-        body { font-family: 'Inter', sans-serif; color: #333; padding: 40px; max-width: 800px; margin: 0 auto; background: white; }
-        .header { display: flex; justify-content: space-between; border-bottom: 2px solid #eee; padding-bottom: 20px; margin-bottom: 30px; }
-        .company-info h1 { margin: 0; color: #FF7A00; font-size: 28px; text-transform: uppercase; }
-        .company-info p { margin: 5px 0; color: #666; font-size: 13px; }
-        .invoice-details { text-align: right; }
-        .invoice-details h2 { margin: 0; font-size: 24px; color: #333; }
-        .meta { margin-top: 10px; font-size: 14px; color: #555; }
-        
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 40px; color: #333; max-width: 800px; margin: 0 auto; }
+        .header { display: flex; justify-content: space-between; border-bottom: 2px solid #333; padding-bottom: 20px; margin-bottom: 30px; }
+        .company-info h1 { margin: 0; color: #FF7A00; text-transform: uppercase; }
+        .company-info p { margin: 5px 0; font-size: 14px; color: #666; }
+        .invoice-info { text-align: right; }
+        .invoice-info h2 { margin: 0; color: #333; text-transform: uppercase; }
         .bill-to { margin-bottom: 30px; background: #f9f9f9; padding: 20px; border-radius: 8px; }
-        .bill-to h3 { margin: 0 0 10px 0; font-size: 12px; text-transform: uppercase; color: #888; letter-spacing: 1px; }
-        .customer-name { font-size: 18px; font-weight: 700; margin-bottom: 5px; }
-        
+        .bill-to h3 { margin-top: 0; font-size: 14px; text-transform: uppercase; color: #888; }
+        .bill-to p { margin: 5px 0; font-weight: 600; font-size: 16px; }
         table { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
-        th { text-align: left; padding: 12px; border-bottom: 2px solid #333; font-size: 12px; text-transform: uppercase; }
-        td { padding: 12px; border-bottom: 1px solid #eee; font-size: 14px; }
-        .total-row td { border-bottom: none; font-weight: 700; text-align: right; }
-        
+        th { background: #333; color: white; text-align: left; padding: 12px; font-size: 14px; text-transform: uppercase; }
+        td { border-bottom: 1px solid #eee; padding: 12px; font-size: 14px; }
         .totals { float: right; width: 300px; }
         .totals-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #eee; }
-        .totals-row.final { border-top: 2px solid #333; border-bottom: none; font-size: 18px; font-weight: 800; margin-top: 10px; padding-top: 15px; }
+        .grand-total { font-weight: bold; font-size: 18px; border-top: 2px solid #333; border-bottom: none; color: #FF7A00; }
+        .footer { clear: both; margin-top: 80px; text-align: center; font-size: 12px; color: #888; border-top: 1px solid #eee; padding-top: 20px; }
+        .signature { margin-top: 50px; display: flex; justify-content: space-between; }
+        .sig-box { border-top: 1px solid #333; width: 200px; text-align: center; padding-top: 10px; font-size: 14px; font-weight: 600; }
         
-        .footer { clear: both; margin-top: 80px; padding-top: 20px; border-top: 1px solid #eee; font-size: 12px; color: #888; text-align: center; }
-        .status-stamp { position: absolute; top: 200px; right: 50px; font-size: 40px; font-weight: 900; color: rgba(255, 0, 0, 0.1); border: 4px solid rgba(255, 0, 0, 0.1); padding: 10px 20px; text-transform: uppercase; transform: rotate(-20deg); pointer-events: none; }
-        .status-paid { color: rgba(16, 185, 129, 0.1); border-color: rgba(16, 185, 129, 0.1); }
-
         @media print {
-            body { padding: 0; margin: 0; }
+            body { padding: 0; }
             .no-print { display: none; }
         }
     </style>
@@ -2273,50 +5049,45 @@ STORE_PRINT_INVOICE_TEMPLATE = """
 <body>
     <div class="no-print" style="margin-bottom: 20px; text-align: right;">
         <button onclick="window.print()" style="padding: 10px 20px; background: #333; color: white; border: none; cursor: pointer;">Print Invoice</button>
+        <a href="/store/invoices" style="padding: 10px 20px; background: #eee; color: #333; text-decoration: none; margin-left: 10px;">Back</a>
     </div>
-
-    {% if inv.due_amount <= 0 %}
-        <div class="status-stamp status-paid">PAID</div>
-    {% else %}
-        <div class="status-stamp">DUE</div>
-    {% endif %}
 
     <div class="header">
         <div class="company-info">
-            <h1>AluStore Panel</h1>
-            <p>Kazi Tower, Tongi, Gazipur</p>
-            <p>Phone: +880 1234 567890</p>
+            <h1>AluStore</h1>
+            <p>Quality Aluminium & Glass</p>
+            <p>Tongi, Gazipur, Dhaka</p>
+            <p>Phone: +880 1700-000000</p>
         </div>
-        <div class="invoice-details">
-            <h2>{{ inv.type|upper }}</h2>
-            <div class="meta"># {{ inv.invoice_no }}</div>
-            <div class="meta">Date: {{ inv.date }}</div>
+        <div class="invoice-info">
+            <h2>{{ invoice.type }}</h2>
+            <p>#{{ invoice.inv_no }}</p>
+            <p>Date: {{ invoice.date }}</p>
         </div>
     </div>
 
     <div class="bill-to">
-        <h3>Bill To</h3>
-        <div class="customer-name">{{ inv.customer_name }}</div>
-        <div>{{ inv.customer_phone }}</div>
-        {% if inv.customer_address %}<div>{{ inv.customer_address }}</div>{% endif %}
+        <h3>Bill To:</h3>
+        <p>{{ invoice.customer_name }}</p>
+        <p style="font-size: 14px; font-weight: 400;">{{ invoice.customer_details }}</p>
     </div>
 
     <table>
         <thead>
             <tr>
-                <th>Item Description</th>
-                <th style="text-align: center;">Unit Price</th>
-                <th style="text-align: center;">Qty</th>
-                <th style="text-align: right;">Total</th>
+                <th width="50%">Item Description</th>
+                <th width="15%">Price</th>
+                <th width="15%">Qty</th>
+                <th width="20%" style="text-align: right;">Total</th>
             </tr>
         </thead>
         <tbody>
-            {% for item in inv.items %}
+            {% for item in invoice.items %}
             <tr>
                 <td>{{ item.product_name }}</td>
-                <td style="text-align: center;">{{ item.price }}</td>
-                <td style="text-align: center;">{{ item.qty }}</td>
-                <td style="text-align: right;">{{ "{:,.2f}".format(item.total) }}</td>
+                <td>{{ item.price }}</td>
+                <td>{{ item.qty }}</td>
+                <td style="text-align: right;">{{ item.total }}</td>
             </tr>
             {% endfor %}
         </tbody>
@@ -2324,181 +5095,123 @@ STORE_PRINT_INVOICE_TEMPLATE = """
 
     <div class="totals">
         <div class="totals-row">
-            <span>Sub Total:</span>
-            <span>{{ "{:,.2f}".format(inv.sub_total) }}</span>
+            <span>Subtotal</span>
+            <span>{{ invoice.subtotal }}</span>
         </div>
-        {% if inv.discount > 0 %}
         <div class="totals-row">
-            <span>Discount:</span>
-            <span>-{{ "{:,.2f}".format(inv.discount) }}</span>
+            <span>Discount</span>
+            <span>-{{ invoice.discount }}</span>
+        </div>
+        <div class="totals-row grand-total">
+            <span>Grand Total</span>
+            <span>{{ invoice.grand_total }}</span>
+        </div>
+        {% if invoice.type == 'INVOICE' %}
+        <div class="totals-row">
+            <span>Paid Amount</span>
+            <span>{{ invoice.paid_amount }}</span>
+        </div>
+        <div class="totals-row">
+            <span>Due Amount</span>
+            <span style="color: red;">{{ invoice.due_amount }}</span>
         </div>
         {% endif %}
-        <div class="totals-row final">
-            <span>Grand Total:</span>
-            <span>{{ "{:,.2f}".format(inv.grand_total) }}</span>
-        </div>
-        <div class="totals-row">
-            <span>Paid Amount:</span>
-            <span>{{ "{:,.2f}".format(inv.paid_amount) }}</span>
-        </div>
-        <div class="totals-row" style="color: #e74c3c; font-weight: 700;">
-            <span>Due Amount:</span>
-            <span>{{ "{:,.2f}".format(inv.due_amount) }}</span>
-        </div>
     </div>
 
     <div class="footer">
-        <p>Thank you for your business!</p>
-        <p>This is a computer generated invoice.</p>
-    </div>
-</body>
-</html>
-"""
-
-STORE_USER_MANAGE_TEMPLATE = f"""
-<!doctype html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <title>Store Users - Store Panel</title>
-    {COMMON_STYLES}
-</head>
-<body>
-    <div class="mobile-toggle" onclick="document.querySelector('.sidebar').classList.toggle('active')">
-        <i class="fas fa-bars" style="color:white;"></i>
-    </div>
-    
-    <div class="sidebar">
-        <div class="brand-logo"><i class="fas fa-store"></i> Store<span>Panel</span></div>
-        <div class="nav-menu">
-            <a href="/store/dashboard" class="nav-link"><i class="fas fa-th-large"></i> Dashboard</a>
-            <a href="/store/users" class="nav-link active"><i class="fas fa-user-cog"></i> User Manage</a>
+        <div class="signature">
+            <div class="sig-box">Customer Signature</div>
+            <div class="sig-box">Authorized Signature</div>
         </div>
-    </div>
-
-    <div class="main-content">
-        <div class="header-section">
-            <div>
-                <div class="page-title">Store User Management</div>
-                <div class="page-subtitle">Manage staff access for store panel</div>
-            </div>
-        </div>
-
-        <div class="dashboard-grid-2">
-            <!-- User List -->
-            <div class="card">
-                <div class="section-header"><span>Store Staff</span></div>
-                <table class="dark-table">
-                    <thead>
-                        <tr>
-                            <th>Username</th>
-                            <th>Role</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {{% for u, d in users.items() %}}
-                            {{% if 'store_panel' in d.permissions and d.role != 'admin' %}}
-                            <tr>
-                                <td style="font-weight:600;">{{{{ u }}}}</td>
-                                <td><span class="status-badge">Staff</span></td>
-                                <td>
-                                    <form action="/store/users/delete" method="POST" onsubmit="return confirm('Remove user?');">
-                                        <input type="hidden" name="username" value="{{{{ u }}}}">
-                                        <button type="submit" class="btn-del action-btn"><i class="fas fa-trash"></i></button>
-                                    </form>
-                                </td>
-                            </tr>
-                            {{% endif %}}
-                        {{% endfor %}}
-                    </tbody>
-                </table>
-            </div>
-
-            <!-- Add User -->
-            <div class="card">
-                <div class="section-header"><span>Add Staff</span></div>
-                <form action="/store/users/add" method="POST">
-                    <div class="input-group">
-                        <label>Username</label>
-                        <input type="text" name="username" required>
-                    </div>
-                    <div class="input-group">
-                        <label>Password</label>
-                        <input type="text" name="password" required>
-                    </div>
-                    <div class="input-group">
-                         <label style="display:flex; align-items:center; gap:10px;">
-                            <input type="checkbox" name="can_delete" style="width:auto;">
-                            Allow Delete Permissions
-                        </label>
-                    </div>
-                    <button type="submit">Create Staff Account</button>
-                </form>
-            </div>
-        </div>
+        <p style="margin-top: 30px;">Thank you for your business!</p>
+        <p>Software Generated Invoice - MNM Software</p>
     </div>
 </body>
 </html>
 """
 # ==============================================================================
-# FLASK ROUTES (STORE CONTROLLERS)
+# STORE PANEL ROUTES (CONTROLLER LOGIC)
 # ==============================================================================
 
-# --- Store Dashboard ---
+# --- Dashboard ---
 @app.route('/store/dashboard')
 def store_dashboard_view():
     if not session.get('logged_in'): return redirect(url_for('index'))
-    # Check if user has store permission
-    if 'store_panel' not in session.get('permissions', []):
+    # Check permission
+    if 'store_panel' not in session.get('permissions', []) and session.get('role') != 'admin':
         flash("Access Denied: Store Panel permission required.")
         return redirect(url_for('index'))
+
+    products = load_store_products()
+    customers = load_store_customers()
+    invoices = load_store_invoices()
+
+    today = get_bd_date_str()
     
-    stats = get_store_stats()
-    server_time = get_bd_time().strftime("%d-%b-%Y %I:%M %p")
-    return render_template_string(STORE_DASHBOARD_TEMPLATE, stats=stats, server_time=server_time)
+    # Calculate Stats
+    today_sales = sum(float(inv['grand_total']) for inv in invoices if inv['date'] == today and inv['type'] == 'INVOICE')
+    total_due = sum(float(c.get('total_due', 0)) for c in customers)
+    
+    stats = {
+        'today_sales': f"{today_sales:,.2f}",
+        'total_due': f"{total_due:,.2f}",
+        'product_count': len(products),
+        'customer_count': len(customers)
+    }
+    
+    # Get 5 most recent invoices
+    recent_invoices = sorted(invoices, key=lambda x: str(x['inv_no']), reverse=True)[:5]
+    
+    return render_template_string(STORE_DASHBOARD_TEMPLATE, stats=stats, recent_invoices=recent_invoices)
 
 # --- Product Management ---
 @app.route('/store/products')
 def store_products_list():
     if not session.get('logged_in'): return redirect(url_for('index'))
-    products = list(store_products_col.find({}))
+    products = load_store_products()
     return render_template_string(STORE_PRODUCTS_TEMPLATE, products=products)
 
-@app.route('/store/products/save', methods=['POST'])
+@app.route('/store/product/save', methods=['POST'])
 def store_product_save():
     if not session.get('logged_in'): return redirect(url_for('index'))
     
-    p_id = request.form.get('product_id')
-    name = request.form.get('name')
-    category = request.form.get('category')
-    unit = request.form.get('unit')
-    price = float(request.form.get('price') or 0)
-    stock = float(request.form.get('stock') or 0)
+    products = load_store_products()
+    prod_id = request.form.get('id')
     
-    data = {
-        "name": name,
-        "category": category,
-        "unit": unit,
-        "price": price,
-        "stock": stock,
-        "updated_at": get_bd_time()
+    new_data = {
+        "name": request.form.get('name'),
+        "category": request.form.get('category'),
+        "unit": request.form.get('unit'),
+        "cost_price": request.form.get('cost_price'),
+        "sell_price": request.form.get('sell_price'),
+        "stock": request.form.get('stock')
     }
 
-    if p_id:
-        store_products_col.update_one({"_id": ObjectId(p_id)}, {"$set": data})
-        flash("Product updated successfully!")
+    if prod_id:
+        # Update existing
+        for p in products:
+            if str(p['id']) == prod_id:
+                p.update(new_data)
+                break
     else:
-        store_products_col.insert_one(data)
-        flash("Product added successfully!")
-        
+        # Create new (Simple ID generation)
+        new_id = 1001
+        if products:
+            new_id = max(int(p['id']) for p in products) + 1
+        new_data['id'] = new_id
+        products.append(new_data)
+    
+    save_store_products(products)
+    flash("Product saved successfully!")
     return redirect(url_for('store_products_list'))
 
-@app.route('/store/products/delete', methods=['POST'])
+@app.route('/store/product/delete', methods=['POST'])
 def store_product_delete():
     if not session.get('logged_in'): return redirect(url_for('index'))
-    p_id = request.form.get('product_id')
-    store_products_col.delete_one({"_id": ObjectId(p_id)})
+    prod_id = request.form.get('id')
+    products = load_store_products()
+    products = [p for p in products if str(p['id']) != prod_id]
+    save_store_products(products)
     flash("Product deleted.")
     return redirect(url_for('store_products_list'))
 
@@ -2506,203 +5219,451 @@ def store_product_delete():
 @app.route('/store/customers')
 def store_customers_list():
     if not session.get('logged_in'): return redirect(url_for('index'))
-    customers = list(store_customers_col.find({}))
+    customers = load_store_customers()
     return render_template_string(STORE_CUSTOMERS_TEMPLATE, customers=customers)
 
-@app.route('/store/customers/save', methods=['POST'])
+@app.route('/store/customer/save', methods=['POST'])
 def store_customer_save():
     if not session.get('logged_in'): return redirect(url_for('index'))
     
-    c_id = request.form.get('customer_id')
-    name = request.form.get('name')
-    phone = request.form.get('phone')
-    address = request.form.get('address')
+    customers = load_store_customers()
+    cust_id = request.form.get('id')
     
-    data = {
-        "name": name,
-        "phone": phone,
-        "address": address,
-        "updated_at": get_bd_time()
+    new_data = {
+        "name": request.form.get('name'),
+        "phone": request.form.get('phone'),
+        "address": request.form.get('address'),
     }
     
-    if c_id:
-        store_customers_col.update_one({"_id": ObjectId(c_id)}, {"$set": data})
-        flash("Customer updated.")
+    # Handle Opening Due
+    opening_due = float(request.form.get('opening_due', 0))
+
+    if cust_id:
+        # Update
+        for c in customers:
+            if str(c['id']) == cust_id:
+                # If editing, we generally don't overwrite total_due with opening_due unless it's a specific correction logic.
+                # Here we just update contact info to be safe, or logic needs to be complex.
+                # For simplicity in this project: Update info only.
+                c.update(new_data)
+                break
     else:
-        data["total_due"] = 0 # Initialize due for new customer
-        store_customers_col.insert_one(data)
-        flash("Customer added.")
-        
+        # New
+        new_id = 1
+        if customers:
+            new_id = max(int(c['id']) for c in customers) + 1
+        new_data['id'] = new_id
+        new_data['total_due'] = opening_due # Set initial due
+        customers.append(new_data)
+    
+    save_store_customers(customers)
+    flash("Customer saved!")
     return redirect(url_for('store_customers_list'))
 
-# --- Invoice Management ---
-@app.route('/store/invoices/create')
-def store_invoice_create():
+@app.route('/store/customer/delete', methods=['POST'])
+def store_customer_delete():
+    if not session.get('logged_in'): return redirect(url_for('index'))
+    cust_id = request.form.get('id')
+    customers = load_store_customers()
+    customers = [c for c in customers if str(c['id']) != cust_id]
+    save_store_customers(customers)
+    flash("Customer deleted.")
+    return redirect(url_for('store_customers_list'))
+
+@app.route('/store/customer/collect', methods=['POST'])
+def store_customer_collect():
     if not session.get('logged_in'): return redirect(url_for('index'))
     
-    # Pre-select customer if passed via query param
-    pre_customer = request.args.get('customer_id', '')
+    cust_id = request.form.get('id')
+    amount = float(request.form.get('amount', 0))
+    note = request.form.get('note', '')
     
-    customers = list(store_customers_col.find({}))
-    products = list(store_products_col.find({}))
-    
-    return render_template_string(STORE_CREATE_INVOICE_TEMPLATE, customers=customers, products=products, pre_customer=pre_customer)
+    if amount <= 0:
+        flash("Invalid amount.")
+        return redirect(url_for('store_customers_list'))
 
-@app.route('/store/invoices/save', methods=['POST'])
+    customers = load_store_customers()
+    for c in customers:
+        if str(c['id']) == cust_id:
+            current_due = float(c.get('total_due', 0))
+            c['total_due'] = current_due - amount
+            
+            # Optional: Record this transaction in a separate Ledger if needed.
+            # For now, we update the master due.
+            break
+            
+    save_store_customers(customers)
+    flash(f"Collected ৳{amount} successfully!")
+    return redirect(url_for('store_customers_list'))
+
+# --- Invoice & Quotation Management ---
+@app.route('/store/invoices')
+def store_invoices_list():
+    if not session.get('logged_in'): return redirect(url_for('index'))
+    invoices = load_store_invoices()
+    # Sort by ID desc
+    invoices.sort(key=lambda x: int(x['inv_no']), reverse=True)
+    return render_template_string(STORE_INVOICE_LIST_TEMPLATE, invoices=invoices)
+
+@app.route('/store/quotations')
+def store_quotations_list():
+    if not session.get('logged_in'): return redirect(url_for('index'))
+    # Reuse Invoice List Template but filter only Quotes
+    all_invoices = load_store_invoices()
+    quotes = [i for i in all_invoices if i['type'] == 'QUOTE']
+    quotes.sort(key=lambda x: int(x['inv_no']), reverse=True)
+    
+    # We can create a separate template or reuse. Reusing for simplicity with a flag.
+    # But strictly, let's just render the invoice list template with these data.
+    return render_template_string(STORE_INVOICE_LIST_TEMPLATE, invoices=quotes)
+
+@app.route('/store/invoice/new')
+def store_invoice_new():
+    if not session.get('logged_in'): return redirect(url_for('index'))
+    products = load_store_products()
+    customers = load_store_customers()
+    today = get_bd_date_str()
+    return render_template_string(STORE_INVOICE_FORM_TEMPLATE, mode="Invoice", products=products, customers=customers, invoice=None, today=today)
+
+@app.route('/store/quotation/new')
+def store_quotation_new():
+    if not session.get('logged_in'): return redirect(url_for('index'))
+    products = load_store_products()
+    customers = load_store_customers()
+    today = get_bd_date_str()
+    return render_template_string(STORE_INVOICE_FORM_TEMPLATE, mode="Quote", products=products, customers=customers, invoice=None, today=today)
+
+@app.route('/store/invoice/save', methods=['POST'])
 def store_invoice_save():
     if not session.get('logged_in'): return redirect(url_for('index'))
     
-    try:
-        # 1. Handle Customer
-        customer_id = request.form.get('customer_id')
-        
-        if not customer_id:
-            # Create new customer on the fly
-            new_cus_data = {
-                "name": request.form.get('customer_name'),
-                "phone": request.form.get('customer_phone'),
-                "address": request.form.get('customer_address'),
-                "total_due": 0,
-                "created_at": get_bd_time()
-            }
-            res = store_customers_col.insert_one(new_cus_data)
-            customer_id = str(res.inserted_id)
-            customer_name = new_cus_data['name']
-            customer_phone = new_cus_data['phone']
-            customer_address = new_cus_data['address']
-        else:
-            # Get existing customer details
-            cus = store_customers_col.find_one({"_id": ObjectId(customer_id)})
-            customer_name = cus['name']
-            customer_phone = cus['phone']
-            customer_address = cus.get('address', '')
-
-        # 2. Process Invoice Items
-        product_ids = request.form.getlist('product_ids[]')
-        prices = request.form.getlist('prices[]')
-        quantities = request.form.getlist('quantities[]')
-        
-        items = []
-        sub_total = 0
-        
-        for i in range(len(product_ids)):
-            p_id = product_ids[i]
-            if not p_id: continue
-            
-            price = float(prices[i])
-            qty = float(quantities[i])
-            total = price * qty
-            sub_total += total
-            
-            # Get Product Name for Invoice Record
-            prod = store_products_col.find_one({"_id": ObjectId(p_id)})
-            items.append({
-                "product_id": p_id,
-                "product_name": prod['name'],
-                "price": price,
-                "qty": qty,
-                "total": total
-            })
-            
-            # Update Stock
-            new_stock = float(prod.get('stock', 0)) - qty
-            store_products_col.update_one({"_id": ObjectId(p_id)}, {"$set": {"stock": new_stock}})
-
-        # 3. Calculate Totals
-        discount = float(request.form.get('discount') or 0)
-        paid_amount = float(request.form.get('paid_amount') or 0)
-        grand_total = sub_total - discount
-        due_amount = grand_total - paid_amount
-        
-        # 4. Create Invoice Record
-        invoice_data = {
-            "invoice_no": generate_invoice_id(),
-            "date": get_bd_date_str(),
-            "iso_date": get_bd_time(),
-            "type": request.form.get('type'), # Invoice or Quotation
-            "customer_id": customer_id,
-            "customer_name": customer_name,
-            "customer_phone": customer_phone,
-            "customer_address": customer_address,
-            "items": items,
-            "sub_total": sub_total,
-            "discount": discount,
-            "grand_total": grand_total,
-            "paid_amount": paid_amount,
-            "due_amount": due_amount,
-            "created_by": session.get('user')
-        }
-        
-        store_invoices_col.insert_one(invoice_data)
-        
-        # 5. Update Customer Due
-        if request.form.get('type') == 'Invoice': # Only update due for actual Invoices, not Quotations
-            store_customers_col.update_one(
-                {"_id": ObjectId(customer_id)}, 
-                {"$inc": {"total_due": due_amount}}
-            )
-
-        flash("Invoice saved successfully!")
-        return redirect(url_for('store_invoices_list'))
-
-    except Exception as e:
-        flash(f"Error saving invoice: {str(e)}")
-        return redirect(url_for('store_invoices_list'))
-
-@app.route('/store/invoices/list')
-def store_invoices_list():
-    if not session.get('logged_in'): return redirect(url_for('index'))
-    invoices = list(store_invoices_col.find({}).sort("iso_date", -1))
-    return render_template_string(STORE_INVOICE_LIST_TEMPLATE, invoices=invoices)
-
-@app.route('/store/invoices/print/<invoice_no>')
-def store_invoice_print(invoice_no):
-    if not session.get('logged_in'): return redirect(url_for('index'))
-    inv = store_invoices_col.find_one({"invoice_no": invoice_no})
-    if not inv: return "Invoice Not Found"
-    return render_template_string(STORE_PRINT_INVOICE_TEMPLATE, inv=inv)
-
-# --- Store User Management ---
-@app.route('/store/users')
-def store_users_list():
-    if not session.get('logged_in') or session.get('role') != 'admin': return redirect(url_for('index'))
-    users = load_users()
-    return render_template_string(STORE_USER_MANAGE_TEMPLATE, users=users)
-
-@app.route('/store/users/add', methods=['POST'])
-def store_user_add():
-    if not session.get('logged_in') or session.get('role') != 'admin': return redirect(url_for('index'))
+    # Form Data
+    mode = request.form.get('mode') # Invoice or Quote
+    existing_inv_no = request.form.get('existing_inv_no')
     
-    username = request.form.get('username')
-    password = request.form.get('password')
+    customer_id = request.form.get('customer_id')
+    customer_name = request.form.get('customer_name')
+    customer_details = request.form.get('customer_details')
     
-    users = load_users()
-    if username in users:
-        flash("User already exists")
-        return redirect(url_for('store_users_list'))
+    prod_ids = request.form.getlist('product_id[]')
+    prices = request.form.getlist('price[]')
+    qtys = request.form.getlist('qty[]')
+    
+    discount = float(request.form.get('discount', 0))
+    paid_amount = float(request.form.get('paid_amount', 0))
+    
+    # Load DBs
+    products = load_store_products()
+    customers = load_store_customers()
+    invoices = load_store_invoices()
+    
+    # Process Items
+    items = []
+    subtotal = 0
+    
+    for i in range(len(prod_ids)):
+        pid = prod_ids[i]
+        price = float(prices[i])
+        qty = float(qtys[i])
+        total = price * qty
+        subtotal += total
         
-    users[username] = {
-        "password": password,
-        "role": "user",
-        "permissions": ["store_panel"], # Store only permission
-        "created_at": get_bd_date_str()
+        # Find product name
+        p_name = "Unknown"
+        for p in products:
+            if str(p['id']) == pid:
+                p_name = p['name']
+                # UPDATE STOCK (Only if INVOICE, not Quote)
+                if mode == 'Invoice' and not existing_inv_no:
+                    current_stock = float(p.get('stock', 0))
+                    p['stock'] = current_stock - qty
+                break
+        
+        items.append({
+            "product_id": pid,
+            "product_name": p_name,
+            "price": price,
+            "qty": qty,
+            "total": total
+        })
+
+    grand_total = subtotal - discount
+    due_amount = grand_total - paid_amount
+    
+    # Generate ID
+    if existing_inv_no:
+        inv_no = existing_inv_no
+        # Logic to remove old stock deduction if editing would go here (complex), 
+        # for this simplified version, we assume edits don't re-adjust stock automatically to prevent errors,
+        # or we block stock editing. 
+        # To keep it safe: We will just update the Record, NOT the stock on Edit for now.
+        
+        # Find and remove old invoice to replace
+        invoices = [inv for inv in invoices if str(inv['inv_no']) != inv_no]
+    else:
+        inv_no = 1001
+        if invoices:
+            inv_no = max(int(inv['inv_no']) for inv in invoices) + 1
+    
+    # Update Customer Due (Only if Invoice)
+    if mode == 'Invoice':
+        if customer_id != 'Walk-in':
+            for c in customers:
+                if str(c['id']) == customer_id:
+                    current_due = float(c.get('total_due', 0))
+                    # Add new due
+                    c['total_due'] = current_due + due_amount
+                    break
+
+    # Construct Record
+    new_invoice = {
+        "inv_no": inv_no,
+        "date": get_bd_date_str(),
+        "type": "INVOICE" if mode == 'Invoice' else "QUOTE",
+        "customer_id": customer_id,
+        "customer_name": customer_name,
+        "customer_details": customer_details,
+        "items": items,
+        "subtotal": round(subtotal, 2),
+        "discount": round(discount, 2),
+        "grand_total": round(grand_total, 2),
+        "paid_amount": round(paid_amount, 2),
+        "due_amount": round(due_amount, 2)
     }
-    save_users(users)
-    flash("Store Staff Added")
-    return redirect(url_for('store_users_list'))
+    
+    invoices.append(new_invoice)
+    
+    # Save All
+    save_store_products(products)
+    save_store_customers(customers)
+    save_store_invoices(invoices)
+    
+    return redirect(url_for('store_invoice_print', inv_no=inv_no))
 
-@app.route('/store/users/delete', methods=['POST'])
-def store_user_delete():
-    if not session.get('logged_in') or session.get('role') != 'admin': return redirect(url_for('index'))
-    username = request.form.get('username')
-    users = load_users()
-    if username in users:
-        del users[username]
-        save_users(users)
-    return redirect(url_for('store_users_list'))
-    # ==============================================================================
-# APPLICATION ENTRY POINT
+@app.route('/store/invoice/print/<inv_no>')
+def store_invoice_print(inv_no):
+    if not session.get('logged_in'): return redirect(url_for('index'))
+    invoices = load_store_invoices()
+    invoice = next((inv for inv in invoices if str(inv['inv_no']) == str(inv_no)), None)
+    
+    if not invoice:
+        flash("Invoice not found")
+        return redirect(url_for('store_invoices_list'))
+        
+    return render_template_string(STORE_INVOICE_PRINT_TEMPLATE, invoice=invoice)
+
+@app.route('/store/invoice/edit/<inv_no>')
+def store_invoice_edit(inv_no):
+    if not session.get('logged_in'): return redirect(url_for('index'))
+    invoices = load_store_invoices()
+    invoice = next((inv for inv in invoices if str(inv['inv_no']) == str(inv_no)), None)
+    
+    if not invoice:
+        flash("Invoice not found")
+        return redirect(url_for('store_invoices_list'))
+
+    products = load_store_products()
+    customers = load_store_customers()
+    today = get_bd_date_str()
+    mode = "Invoice" if invoice['type'] == 'INVOICE' else "Quote"
+    
+    return render_template_string(STORE_INVOICE_FORM_TEMPLATE, mode=mode, products=products, customers=customers, invoice=invoice, today=today)
+
+@app.route('/store/invoice/delete', methods=['POST'])
+def store_invoice_delete():
+    if not session.get('logged_in'): return redirect(url_for('index'))
+    inv_no = request.form.get('inv_no')
+    
+    invoices = load_store_invoices()
+    products = load_store_products()
+    customers = load_store_customers()
+    
+    target_inv = next((inv for inv in invoices if str(inv['inv_no']) == str(inv_no)), None)
+    
+    if target_inv:
+        # 1. Restore Stock (If it was an invoice)
+        if target_inv['type'] == 'INVOICE':
+            for item in target_inv['items']:
+                for p in products:
+                    if str(p['id']) == str(item['product_id']):
+                        p['stock'] = float(p.get('stock', 0)) + float(item['qty'])
+                        break
+            
+            # 2. Revert Customer Due
+            cust_id = target_inv.get('customer_id')
+            if cust_id != 'Walk-in':
+                for c in customers:
+                    if str(c['id']) == cust_id:
+                        c['total_due'] = float(c.get('total_due', 0)) - float(target_inv['due_amount'])
+                        break
+        
+        # 3. Remove Invoice
+        invoices = [inv for inv in invoices if str(inv['inv_no']) != str(inv_no)]
+        
+        save_store_products(products)
+        save_store_customers(customers)
+        save_store_invoices(invoices)
+        flash("Invoice deleted and stock/due adjusted.")
+    
+    return redirect(url_for('store_invoices_list'))
+STORE_USERS_TEMPLATE = f"""
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Store Users - Store Panel</title>
+    {COMMON_STYLES}
+</head>
+<body>
+    <div class="animated-bg"></div>
+    <div class="sidebar">
+        <div class="brand-logo"><i class="fas fa-store"></i> Alu<span>Store</span></div>
+        <div class="nav-menu">
+            {{% if session.role == 'admin' %}}<a href="/" class="nav-link"><i class="fas fa-arrow-left"></i> Main Panel</a>{{% endif %}}
+            <a href="/store/dashboard" class="nav-link"><i class="fas fa-th-large"></i> Dashboard</a>
+            <a href="/store/products" class="nav-link"><i class="fas fa-box-open"></i> Inventory</a>
+            <a href="/store/customers" class="nav-link"><i class="fas fa-users"></i> Customers</a>
+            <a href="/store/invoices" class="nav-link"><i class="fas fa-file-invoice-dollar"></i> Invoices</a>
+            <a href="/store/quotations" class="nav-link"><i class="fas fa-file-alt"></i> Quotations</a>
+            <a href="/store/users" class="nav-link active"><i class="fas fa-user-shield"></i> Store Users</a>
+            <a href="/logout" class="nav-link" style="color: var(--accent-red); margin-top: 20px;"><i class="fas fa-sign-out-alt"></i> Sign Out</a>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="header-section">
+            <div>
+                <div class="page-title">Store User Management</div>
+                <div class="page-subtitle">Manage access for shopkeepers</div>
+            </div>
+            <div class="status-badge">Admin Access Only</div>
+        </div>
+
+        <div class="dashboard-grid-2">
+            <div class="card">
+                <div class="section-header">
+                    <span>Existing Users</span>
+                </div>
+                <table class="dark-table">
+                    <thead>
+                        <tr>
+                            <th>Username</th>
+                            <th>Role</th>
+                            <th>Access</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {{% for u, d in users.items() %}}
+                        {{% if 'store_panel' in d.permissions or d.role == 'admin' %}}
+                        <tr>
+                            <td style="font-weight: 600;">{{{{ u }}}}</td>
+                            <td>
+                                {{% if d.role == 'admin' %}}
+                                <span class="table-badge" style="background: rgba(255, 122, 0, 0.15); color: var(--accent-orange);">Admin</span>
+                                {{% else %}}
+                                <span class="table-badge" style="background: rgba(139, 92, 246, 0.15); color: var(--accent-purple);">Staff</span>
+                                {{% endif %}}
+                            </td>
+                            <td>
+                                {{% if 'store_panel' in d.permissions %}}
+                                <span style="color: var(--accent-green); font-size: 12px;">Store Active</span>
+                                {{% else %}}
+                                <span style="color: var(--text-secondary); font-size: 12px;">Admin Override</span>
+                                {{% endif %}}
+                            </td>
+                            <td class="action-cell">
+                                {{% if d.role != 'admin' %}}
+                                <form action="/admin/delete-user" method="POST" onsubmit="return confirm('Remove this user?')" style="display:inline;">
+                                    <input type="hidden" name="username" value="{{{{ u }}}}"> 
+                                    <button class="action-btn btn-del"><i class="fas fa-trash"></i></button>
+                                </form>
+                                {{% endif %}}
+                            </td>
+                        </tr>
+                        {{% endif %}}
+                        {{% endfor %}}
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="card">
+                <div class="section-header">
+                    <span>Add Shop User</span>
+                </div>
+                <form id="storeUserForm">
+                    <div class="input-group">
+                        <label>Username</label>
+                        <input type="text" id="store_user" required placeholder="Name">
+                    </div>
+                    <div class="input-group">
+                        <label>Password</label>
+                        <input type="text" id="store_pass" required placeholder="Password">
+                    </div>
+                    <div class="input-group">
+                        <label>Permissions</label>
+                        <div style="background: rgba(255,255,255,0.05); padding: 10px; border-radius: 8px;">
+                            <label class="perm-checkbox">
+                                <input type="checkbox" checked disabled>
+                                <span>Store Panel Access (Default)</span>
+                            </label>
+                        </div>
+                    </div>
+                    <button type="button" onclick="createStoreUser()">
+                        <i class="fas fa-user-plus" style="margin-right: 8px;"></i> Create User
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function createStoreUser() {{
+            const u = document.getElementById('store_user').value;
+            const p = document.getElementById('store_pass').value;
+            
+            if(!u || !p) {{ alert("Please fill all fields"); return; }}
+
+            // Use the main Admin API but enforce Store Permission
+            fetch('/admin/save-user', {{
+                method: 'POST',
+                headers: {{'Content-Type': 'application/json'}},
+                body: JSON.stringify({{ 
+                    username: u, 
+                    password: p, 
+                    permissions: ['store_panel'], 
+                    action_type: 'create' 
+                }})
+            }})
+            .then(r => r.json())
+            .then(d => {{
+                if (d.status === 'success') {{
+                    alert("Store User Created Successfully!");
+                    location.reload();
+                }} else {{
+                    alert(d.message);
+                }}
+            }});
+        }}
+    </script>
+</body>
+</html>
+"""
+
 # ==============================================================================
+# FINAL ROUTES & MAIN BLOCK
+# ==============================================================================
+
+@app.route('/store/users')
+def store_users_view():
+    if not session.get('logged_in'): return redirect(url_for('index'))
+    if session.get('role') != 'admin':
+        flash("Admin access required for User Management.")
+        return redirect(url_for('store_dashboard_view'))
+        
+    users = load_users()
+    return render_template_string(STORE_USERS_TEMPLATE, users=users)
 
 if __name__ == '__main__':
     # Render requires binding to 0.0.0.0 and the PORT env variable
