@@ -69,11 +69,11 @@ try:
     stats_col = db['stats']
     accessories_col = db['accessories']
     
-    # --- NEW: Store Panel Collections ---
+    # --- STORE PANEL COLLECTIONS (NEW) ---
     store_products_col = db['store_products']
     store_customers_col = db['store_customers']
     store_invoices_col = db['store_invoices']
-    store_users_col = db['store_users'] # For store-specific users if needed separate, or use main users
+    store_users_col = db['store_users']
     
     print("MongoDB Connected Successfully!")
 except Exception as e:
@@ -322,7 +322,6 @@ COMMON_STYLES = """
             opacity: 0.5;
             letter-spacing: 1px;
         }
-
         /* Main Content */
         .main-content { 
             margin-left: 280px;
@@ -592,7 +591,7 @@ COMMON_STYLES = """
             letter-spacing: 1.5px;
         }
 
-        input, select { 
+        input, select, textarea { 
             width: 100%;
             padding: 14px 18px; 
             background: rgba(255, 255, 255, 0.03);
@@ -605,12 +604,12 @@ COMMON_STYLES = """
             transition: var(--transition-smooth);
         }
 
-        input::placeholder {
+        input::placeholder, textarea::placeholder {
             color: var(--text-secondary);
             opacity: 0.5;
         }
 
-        input:focus, select:focus { 
+        input:focus, select:focus, textarea:focus { 
             border-color: var(--accent-orange);
             background: rgba(255, 122, 0, 0.05);
             box-shadow: 0 0 0 4px var(--accent-orange-glow), 0 0 20px var(--accent-orange-glow);
@@ -1456,7 +1455,7 @@ def load_users():
         "Admin": {
             "password": "@Nijhum@12", 
             "role": "admin", 
-            "permissions": ["closing", "po_sheet", "user_manage", "view_history", "accessories"],
+            "permissions": ["closing", "po_sheet", "user_manage", "view_history", "accessories", "store_access"],
             "created_at": "N/A",
             "last_login": "Never",
             "last_duration": "N/A"
@@ -1474,8 +1473,7 @@ def save_users(users_data):
         {"_id": "global_users", "data": users_data}, 
         upsert=True
     )
-
-def load_stats():
+    def load_stats():
     record = stats_col.find_one({"_id": "dashboard_stats"})
     if record:
         return record['data']
@@ -1490,6 +1488,7 @@ def save_stats(data):
         {"_id": "dashboard_stats", "data": data},
         upsert=True
     )
+
 def update_stats(ref_no, username):
     data = load_stats()
     now = get_bd_time() # BD Time
@@ -1540,50 +1539,58 @@ def save_accessories_db(data):
         upsert=True
     )
 
-# --- NEW: Store Panel Helper Functions ---
+# --- STORE PANEL DATABASE FUNCTIONS (NEW) ---
 
 def load_store_products():
-    record = store_products_col.find_one({"_id": "store_products_data"})
-    if record:
-        return record['data']
-    else:
-        return []
+    return list(store_products_col.find({}, {'_id': 0}))
 
-def save_store_products(data):
+def save_store_product(product_data):
     store_products_col.replace_one(
-        {"_id": "store_products_data"},
-        {"_id": "store_products_data", "data": data},
+        {"code": product_data['code']},
+        product_data,
         upsert=True
     )
 
-def load_store_customers():
-    record = store_customers_col.find_one({"_id": "store_customers_data"})
-    if record:
-        return record['data']
-    else:
-        return []
+def delete_store_product(code):
+    store_products_col.delete_one({"code": code})
 
-def save_store_customers(data):
+def load_store_customers():
+    return list(store_customers_col.find({}, {'_id': 0}))
+
+def get_store_customer(phone):
+    return store_customers_col.find_one({"phone": phone}, {'_id': 0})
+
+def save_store_customer(customer_data):
     store_customers_col.replace_one(
-        {"_id": "store_customers_data"},
-        {"_id": "store_customers_data", "data": data},
+        {"phone": customer_data['phone']},
+        customer_data,
         upsert=True
     )
 
 def load_store_invoices():
-    record = store_invoices_col.find_one({"_id": "store_invoices_data"})
-    if record:
-        return record['data']
-    else:
-        return []
+    return list(store_invoices_col.find({}, {'_id': 0}))
 
-def save_store_invoices(data):
+def get_store_invoice(invoice_no):
+    return store_invoices_col.find_one({"invoice_no": invoice_no}, {'_id': 0})
+
+def save_store_invoice(invoice_data):
     store_invoices_col.replace_one(
-        {"_id": "store_invoices_data"},
-        {"_id": "store_invoices_data", "data": data},
+        {"invoice_no": invoice_data['invoice_no']},
+        invoice_data,
         upsert=True
     )
-    # --- আপডেটেড: রিয়েল-টাইম ড্যাশবোর্ড সামারি এবং এনালিটিক্স ---
+
+def load_store_users():
+    return list(store_users_col.find({}, {'_id': 0}))
+
+def save_store_user(user_data):
+    store_users_col.replace_one(
+        {"username": user_data['username']},
+        user_data,
+        upsert=True
+    )
+
+# --- আপডেটেড: রিয়েল-টাইম ড্যাশবোর্ড সামারি এবং এনালিটিক্স ---
 def get_dashboard_summary_v2():
     stats_data = load_stats()
     acc_db = load_accessories_db()
@@ -1700,8 +1707,7 @@ def get_dashboard_summary_v2():
         },
         "history": history
     }
-
-# ==============================================================================
+    # ==============================================================================
 # লজিক পার্ট: PURCHASE ORDER SHEET PARSER (PDF)
 # ==============================================================================
 
@@ -1860,7 +1866,7 @@ def extract_data_dynamic(file_path):
                             })
     except Exception as e: print(f"Error processing file: {e}")
     return extracted_data, metadata
-# ==============================================================================
+    # ==============================================================================
 # লজিক পার্ট: CLOSING REPORT API & EXCEL GENERATION
 # ==============================================================================
 def get_authenticated_session(username, password):
@@ -2184,8 +2190,7 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
     wb.save(file_stream)
     file_stream.seek(0)
     return file_stream
-
-# ==============================================================================
+    # ==============================================================================
 # HTML TEMPLATES: LOGIN PAGE - FIXED RESPONSIVE & CENTERED
 # ==============================================================================
 
@@ -2531,7 +2536,8 @@ LOGIN_TEMPLATE = f"""
 </body>
 </html>
 """
- # ==============================================================================
+
+# ==============================================================================
 # ADMIN DASHBOARD TEMPLATE - MODERN UI WITH DEW STYLE CHART
 # ==============================================================================
 
@@ -2609,8 +2615,8 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
             <div class="nav-link" onclick="showSection('settings', this)">
                 <i class="fas fa-users-cog"></i> User Manage
             </div>
-            <a href="/store/dashboard" class="nav-link">
-                <i class="fas fa-store"></i> Store Panel
+            <a href="/admin/store" class="nav-link">
+                <i class="fas fa-store"></i> Store
             </a>
             <a href="/logout" class="nav-link" style="color: var(--accent-red); margin-top: 20px;">
                 <i class="fas fa-sign-out-alt"></i> Sign Out
@@ -2902,6 +2908,7 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
         </div>
     </div>
     <script>
+        // ... (Same JS as before, with updated user handling for store permission) ...
         // ===== WELCOME POPUP WITH TIME-BASED GREETING =====
         function showWelcomePopup() {{
             const hour = new Date().getHours();
@@ -3201,7 +3208,7 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
             if (document.getElementById('perm_closing').checked) perms.push('closing');
             if (document.getElementById('perm_po').checked) perms.push('po_sheet');
             if (document.getElementById('perm_acc').checked) perms.push('accessories');
-            if (document.getElementById('perm_store').checked) perms.push('store_panel');
+            if (document.getElementById('perm_store').checked) perms.push('store_access');
             
             showLoading();
             
@@ -3233,7 +3240,7 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
             document.getElementById('perm_closing').checked = pArr.includes('closing');
             document.getElementById('perm_po').checked = pArr.includes('po_sheet');
             document.getElementById('perm_acc').checked = pArr.includes('accessories');
-            document.getElementById('perm_store').checked = pArr.includes('store_panel');
+            document.getElementById('perm_store').checked = pArr.includes('store_access');
         }}
         
         function resetForm() {{
@@ -3423,18 +3430,18 @@ USER_DASHBOARD_TEMPLATE = f"""
                 </a>
             </div>
             {{% endif %}}
-            
-             {{% if 'store_panel' in session.permissions %}}
+
+            {{% if 'store_access' in session.permissions %}}
             <div class="card" style="animation: fadeInUp 0.5s ease-out 0.4s backwards;">
                 <div class="section-header">
-                    <span><i class="fas fa-store" style="margin-right: 10px; color: var(--accent-orange);"></i>Store Panel</span>
+                    <span><i class="fas fa-store" style="margin-right: 10px; color: var(--accent-cyan);"></i>Store Panel</span>
                 </div>
                 <p style="color: var(--text-secondary); margin-bottom: 20px; font-size: 14px; line-height: 1.6;">
-                    Manage Store Inventory, Invoices, and Customers.
+                    Access Aluminum Shop Management System (Sales, Inventory, Invoices).
                 </p>
-                <a href="/store/dashboard">
-                    <button style="background: linear-gradient(135deg, #FF7A00 0%, #FF9A40 100%);">
-                        <i class="fas fa-external-link-alt" style="margin-right: 8px;"></i> Enter Store
+                <a href="/admin/store">
+                    <button style="background: linear-gradient(135deg, #06B6D4 0%, #3B82F6 100%);">
+                        <i class="fas fa-store-alt" style="margin-right: 8px;"></i> Enter Store
                     </button>
                 </a>
             </div>
@@ -3938,7 +3945,6 @@ ACCESSORIES_INPUT_TEMPLATE = f"""
 </body>
 </html>
 """
-
 ACCESSORIES_EDIT_TEMPLATE = f"""
 <!doctype html>
 <html lang="en">
@@ -4064,8 +4070,9 @@ ACCESSORIES_EDIT_TEMPLATE = f"""
 </body>
 </html>
 """
+
 # ==============================================================================
-# STORE PANEL TEMPLATES - NEW (ALUMINIUM SHOP)
+# STORE DASHBOARD TEMPLATE - FULLY FUNCTIONAL SINGLE PAGE APP (SPA)
 # ==============================================================================
 
 STORE_DASHBOARD_TEMPLATE = f"""
@@ -4074,1596 +4081,1583 @@ STORE_DASHBOARD_TEMPLATE = f"""
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Store Dashboard - MNM Software</title>
+    <title>Store Management - MNM Software</title>
     {COMMON_STYLES}
     <style>
-        .store-stat-card {{
-            background: var(--gradient-card);
-            border: 1px solid var(--border-color);
-            border-radius: 16px;
-            padding: 24px;
-            position: relative;
-            overflow: hidden;
-            transition: var(--transition-smooth);
+        /* Store Specific Overrides */
+        .store-sidebar {{
+            background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%);
+            border-right: 1px solid rgba(255,255,255,0.05);
         }}
-        .store-stat-card:hover {{ transform: translateY(-5px); border-color: var(--accent-orange); }}
-        .stat-val {{ font-size: 28px; font-weight: 800; color: white; margin: 10px 0; }}
-        .stat-label {{ color: var(--text-secondary); font-size: 12px; text-transform: uppercase; letter-spacing: 1px; }}
-        .stat-icon-bg {{
-            position: absolute;
-            right: -10px;
-            bottom: -10px;
-            font-size: 80px;
-            opacity: 0.05;
-            transform: rotate(-15deg);
+        .store-nav-link.active {{
+            background: rgba(6, 182, 212, 0.1);
+            border-left: 3px solid var(--accent-cyan);
+            color: var(--accent-cyan);
         }}
-        .recent-badge {{
-            padding: 4px 10px;
-            border-radius: 6px;
-            font-size: 11px;
-            font-weight: 700;
-        }}
-        .badge-paid {{ background: rgba(16, 185, 129, 0.15); color: #34D399; }}
-        .badge-due {{ background: rgba(239, 68, 68, 0.15); color: #F87171; }}
-        .badge-quote {{ background: rgba(59, 130, 246, 0.15); color: #60A5FA; }}
-    </style>
-</head>
-<body>
-    <div class="animated-bg"></div>
-
-    <div class="mobile-toggle" onclick="document.querySelector('.sidebar').classList.toggle('active')">
-        <i class="fas fa-bars"></i>
-    </div>
-
-    <div class="sidebar">
-        <div class="brand-logo">
-            <i class="fas fa-store"></i> 
-            Alu<span>Store</span>
-        </div>
-        <div class="nav-menu">
-            {{% if session.role == 'admin' %}}
-            <a href="/" class="nav-link">
-                <i class="fas fa-arrow-left"></i> Main Panel
-            </a>
-            {{% endif %}}
-            <a href="/store/dashboard" class="nav-link active">
-                <i class="fas fa-th-large"></i> Dashboard
-            </a>
-            <a href="/store/products" class="nav-link">
-                <i class="fas fa-box-open"></i> Inventory
-            </a>
-            <a href="/store/customers" class="nav-link">
-                <i class="fas fa-users"></i> Customers
-            </a>
-            <a href="/store/invoices" class="nav-link">
-                <i class="fas fa-file-invoice-dollar"></i> Invoices
-            </a>
-            <a href="/store/quotations" class="nav-link">
-                <i class="fas fa-file-alt"></i> Quotations
-            </a>
-            {{% if session.role == 'admin' %}}
-            <a href="/store/users" class="nav-link">
-                <i class="fas fa-user-shield"></i> Store Users
-            </a>
-            {{% endif %}}
-            <a href="/logout" class="nav-link" style="color: var(--accent-red); margin-top: 20px;">
-                <i class="fas fa-sign-out-alt"></i> Sign Out
-            </a>
-        </div>
-        <div class="sidebar-footer">
-            Store Panel v2.0
-        </div>
-    </div>
-
-    <div class="main-content">
-        <div class="header-section">
-            <div>
-                <div class="page-title">Store Overview</div>
-                <div class="page-subtitle">Aluminium Shop Management</div>
-            </div>
-            <a href="/store/invoice/new" style="text-decoration: none;">
-                <button style="width: auto;">
-                    <i class="fas fa-plus" style="margin-right: 8px;"></i> New Invoice
-                </button>
-            </a>
-        </div>
-
-        <div class="stats-grid">
-            <div class="store-stat-card">
-                <div class="stat-label">Today's Sales</div>
-                <div class="stat-val">৳{{{{ stats.today_sales }}}}</div>
-                <div class="stat-icon-bg"><i class="fas fa-cash-register"></i></div>
-            </div>
-            <div class="store-stat-card">
-                <div class="stat-label">Total Receivables (Due)</div>
-                <div class="stat-val" style="color: var(--accent-red);">৳{{{{ stats.total_due }}}}</div>
-                <div class="stat-icon-bg"><i class="fas fa-hand-holding-usd"></i></div>
-            </div>
-            <div class="store-stat-card">
-                <div class="stat-label">Total Products</div>
-                <div class="stat-val" style="color: var(--accent-purple);">{{{{ stats.product_count }}}}</div>
-                <div class="stat-icon-bg"><i class="fas fa-boxes"></i></div>
-            </div>
-            <div class="store-stat-card">
-                <div class="stat-label">Total Customers</div>
-                <div class="stat-val" style="color: var(--accent-blue);">{{{{ stats.customer_count }}}}</div>
-                <div class="stat-icon-bg"><i class="fas fa-users"></i></div>
-            </div>
-        </div>
-
-        <div class="dashboard-grid-2">
-            <div class="card">
-                <div class="section-header">
-                    <span>Recent Invoices</span>
-                    <a href="/store/invoices" style="font-size: 12px; color: var(--accent-orange);">View All</a>
-                </div>
-                <table class="dark-table">
-                    <thead>
-                        <tr>
-                            <th>Inv No</th>
-                            <th>Customer</th>
-                            <th>Amount</th>
-                            <th>Status</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {{% for inv in recent_invoices %}}
-                        <tr>
-                            <td style="color: var(--accent-orange);">#{{{{ inv.inv_no }}}}</td>
-                            <td>{{{{ inv.customer_name }}}}</td>
-                            <td>৳{{{{ inv.grand_total }}}}</td>
-                            <td>
-                                {{% if inv.due_amount > 0 %}}
-                                <span class="recent-badge badge-due">Due: {{ inv.due_amount }}</span>
-                                {{% else %}}
-                                <span class="recent-badge badge-paid">Paid</span>
-                                {{% endif %}}
-                            </td>
-                        </tr>
-                        {{% else %}}
-                        <tr><td colspan="4" style="text-align:center; opacity:0.5;">No recent invoices</td></tr>
-                        {{% endfor %}}
-                    </tbody>
-                </table>
-            </div>
-
-            <div class="card">
-                <div class="section-header">
-                    <span>Quick Actions</span>
-                </div>
-                <div style="display: flex; flex-direction: column; gap: 15px;">
-                    <a href="/store/customers" style="text-decoration: none;">
-                        <div style="background: rgba(255,255,255,0.03); padding: 15px; border-radius: 12px; display: flex; align-items: center; gap: 15px; border: 1px solid var(--border-color);">
-                            <div style="background: rgba(239, 68, 68, 0.1); padding: 10px; border-radius: 8px; color: var(--accent-red);">
-                                <i class="fas fa-money-bill-wave"></i>
-                            </div>
-                            <div>
-                                <div style="color: white; font-weight: 600;">Due Collection</div>
-                                <div style="font-size: 12px; color: var(--text-secondary);">Collect payment from customer</div>
-                            </div>
-                        </div>
-                    </a>
-                    
-                    <a href="/store/quotations" style="text-decoration: none;">
-                        <div style="background: rgba(255,255,255,0.03); padding: 15px; border-radius: 12px; display: flex; align-items: center; gap: 15px; border: 1px solid var(--border-color);">
-                            <div style="background: rgba(59, 130, 246, 0.1); padding: 10px; border-radius: 8px; color: var(--accent-blue);">
-                                <i class="fas fa-file-contract"></i>
-                            </div>
-                            <div>
-                                <div style="color: white; font-weight: 600;">Create Estimate</div>
-                                <div style="font-size: 12px; color: var(--text-secondary);">Make a quotation for client</div>
-                            </div>
-                        </div>
-                    </a>
-
-                    <a href="/store/products" style="text-decoration: none;">
-                        <div style="background: rgba(255,255,255,0.03); padding: 15px; border-radius: 12px; display: flex; align-items: center; gap: 15px; border: 1px solid var(--border-color);">
-                            <div style="background: rgba(16, 185, 129, 0.1); padding: 10px; border-radius: 8px; color: var(--accent-green);">
-                                <i class="fas fa-plus-circle"></i>
-                            </div>
-                            <div>
-                                <div style="color: white; font-weight: 600;">Add Product</div>
-                                <div style="font-size: 12px; color: var(--text-secondary);">Update inventory stock</div>
-                            </div>
-                        </div>
-                    </a>
-                </div>
-            </div>
-        </div>
-    </div>
-</body>
-</html>
-"""
-
-STORE_PRODUCTS_TEMPLATE = f"""
-<!doctype html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Products - Store Panel</title>
-    {COMMON_STYLES}
-</head>
-<body>
-    <div class="animated-bg"></div>
-    <div class="sidebar">
-        <div class="brand-logo"><i class="fas fa-store"></i> Alu<span>Store</span></div>
-        <div class="nav-menu">
-            {{% if session.role == 'admin' %}}<a href="/" class="nav-link"><i class="fas fa-arrow-left"></i> Main Panel</a>{{% endif %}}
-            <a href="/store/dashboard" class="nav-link"><i class="fas fa-th-large"></i> Dashboard</a>
-            <a href="/store/products" class="nav-link active"><i class="fas fa-box-open"></i> Inventory</a>
-            <a href="/store/customers" class="nav-link"><i class="fas fa-users"></i> Customers</a>
-            <a href="/store/invoices" class="nav-link"><i class="fas fa-file-invoice-dollar"></i> Invoices</a>
-            <a href="/store/quotations" class="nav-link"><i class="fas fa-file-alt"></i> Quotations</a>
-            <a href="/logout" class="nav-link" style="color: var(--accent-red); margin-top: 20px;"><i class="fas fa-sign-out-alt"></i> Sign Out</a>
-        </div>
-    </div>
-
-    <div class="main-content">
-        <div class="header-section">
-            <div>
-                <div class="page-title">Product Inventory</div>
-                <div class="page-subtitle">Manage aluminium profiles, glass, and accessories</div>
-            </div>
-            <button onclick="document.getElementById('addProductModal').style.display='flex'" style="width: auto;">
-                <i class="fas fa-plus"></i> Add Product
-            </button>
-        </div>
-
-        <div class="card">
-            <div class="input-group" style="max-width: 300px;">
-                <input type="text" id="searchInput" placeholder="Search products..." onkeyup="filterTable()">
-            </div>
-            <table class="dark-table" id="productTable">
-                <thead>
-                    <tr>
-                        <th>Name</th>
-                        <th>Category</th>
-                        <th>Unit</th>
-                        <th>Buy Price</th>
-                        <th>Sell Price</th>
-                        <th>Stock</th>
-                        <th style="text-align: right;">Action</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {{% for p in products %}}
-                    <tr>
-                        <td style="font-weight: 600;">{{{{ p.name }}}}</td>
-                        <td><span class="table-badge">{{{{ p.category }}}}</span></td>
-                        <td>{{{{ p.unit }}}}</td>
-                        <td style="color: var(--text-secondary);">{{{{ p.cost_price }}}}</td>
-                        <td style="color: var(--accent-green); font-weight: 700;">{{{{ p.sell_price }}}}</td>
-                        <td>
-                            {{% if p.stock|int < 10 %}}
-                            <span style="color: var(--accent-red);"><i class="fas fa-exclamation-triangle"></i> {{{{ p.stock }}}}</span>
-                            {{% else %}}
-                            {{{{ p.stock }}}}
-                            {{% endif %}}
-                        </td>
-                        <td class="action-cell">
-                            <button class="action-btn btn-edit" onclick='editProduct({{{{ p|tojson }}}})'>
-                                <i class="fas fa-pen"></i>
-                            </button>
-                            <form action="/store/product/delete" method="POST" onsubmit="return confirm('Delete this product?')" style="display:inline;">
-                                <input type="hidden" name="id" value="{{{{ p.id }}}}">
-                                <button class="action-btn btn-del"><i class="fas fa-trash"></i></button>
-                            </form>
-                        </td>
-                    </tr>
-                    {{% else %}}
-                    <tr><td colspan="7" style="text-align:center; padding: 30px; opacity: 0.5;">No products found. Add one!</td></tr>
-                    {{% endfor %}}
-                </tbody>
-            </table>
-        </div>
-    </div>
-
-    <!-- ADD/EDIT MODAL -->
-    <div id="addProductModal" class="welcome-modal">
-        <div class="welcome-content" style="max-width: 500px; padding: 30px;">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-                <h3 style="color: white; margin:0;">Product Details</h3>
-                <button onclick="closeModal()" style="width:auto; padding:5px 10px; background:none;"><i class="fas fa-times"></i></button>
-            </div>
-            <form action="/store/product/save" method="POST">
-                <input type="hidden" name="id" id="prodId">
-                <div class="input-group">
-                    <label>Product Name</label>
-                    <input type="text" name="name" id="prodName" required placeholder="e.g. Kai 4 inch section">
-                </div>
-                <div class="grid-2-cols" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-                    <div class="input-group">
-                        <label>Category</label>
-                        <select name="category" id="prodCat">
-                            <option value="Profile">Profile</option>
-                            <option value="Glass">Glass</option>
-                            <option value="Sheet">Sheet</option>
-                            <option value="Accessories">Accessories</option>
-                            <option value="Thai">Thai Aluminium</option>
-                            <option value="SS">SS Pipe/Fittings</option>
-                        </select>
-                    </div>
-                    <div class="input-group">
-                        <label>Unit</label>
-                        <select name="unit" id="prodUnit">
-                            <option value="ft">Feet (ft)</option>
-                            <option value="kg">Kg</option>
-                            <option value="pcs">Pieces</option>
-                            <option value="sft">Sq. Feet</option>
-                            <option value="inch">Inch</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="grid-2-cols" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-                    <div class="input-group">
-                        <label>Cost Price</label>
-                        <input type="number" name="cost_price" id="prodCost" step="0.01" required>
-                    </div>
-                    <div class="input-group">
-                        <label>Sell Price</label>
-                        <input type="number" name="sell_price" id="prodSell" step="0.01" required>
-                    </div>
-                </div>
-                <div class="input-group">
-                    <label>Initial Stock</label>
-                    <input type="number" name="stock" id="prodStock" value="0">
-                </div>
-                <button type="submit">Save Product</button>
-            </form>
-        </div>
-    </div>
-
-    <script>
-        function closeModal() {{
-            document.getElementById('addProductModal').style.display = 'none';
-            document.getElementById('prodId').value = '';
-            document.getElementById('prodName').value = '';
-            document.getElementById('prodStock').value = '0';
+        .store-nav-link:hover {{
+            color: var(--accent-cyan);
         }}
         
-        function editProduct(p) {{
-            document.getElementById('prodId').value = p.id;
-            document.getElementById('prodName').value = p.name;
-            document.getElementById('prodCat').value = p.category;
-            document.getElementById('prodUnit').value = p.unit;
-            document.getElementById('prodCost').value = p.cost_price;
-            document.getElementById('prodSell').value = p.sell_price;
-            document.getElementById('prodStock').value = p.stock;
-            document.getElementById('addProductModal').style.display = 'flex';
-        }}
-        
-        function filterTable() {{
-            let input = document.getElementById("searchInput");
-            let filter = input.value.toUpperCase();
-            let table = document.getElementById("productTable");
-            let tr = table.getElementsByTagName("tr");
-            for (let i = 1; i < tr.length; i++) {{
-                let td = tr[i].getElementsByTagName("td")[0];
-                if (td) {{
-                    let txtValue = td.textContent || td.innerText;
-                    if (txtValue.toUpperCase().indexOf(filter) > -1) {{
-                        tr[i].style.display = "";
-                    }} else {{
-                        tr[i].style.display = "none";
-                    }}
-                }}
-            }}
-        }}
-    </script>
-</body>
-</html>
-"""
-
-STORE_CUSTOMERS_TEMPLATE = f"""
-<!doctype html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Customers - Store Panel</title>
-    {COMMON_STYLES}
-</head>
-<body>
-    <div class="animated-bg"></div>
-    <div class="sidebar">
-        <div class="brand-logo"><i class="fas fa-store"></i> Alu<span>Store</span></div>
-        <div class="nav-menu">
-            {{% if session.role == 'admin' %}}<a href="/" class="nav-link"><i class="fas fa-arrow-left"></i> Main Panel</a>{{% endif %}}
-            <a href="/store/dashboard" class="nav-link"><i class="fas fa-th-large"></i> Dashboard</a>
-            <a href="/store/products" class="nav-link"><i class="fas fa-box-open"></i> Inventory</a>
-            <a href="/store/customers" class="nav-link active"><i class="fas fa-users"></i> Customers</a>
-            <a href="/store/invoices" class="nav-link"><i class="fas fa-file-invoice-dollar"></i> Invoices</a>
-            <a href="/store/quotations" class="nav-link"><i class="fas fa-file-alt"></i> Quotations</a>
-            <a href="/logout" class="nav-link" style="color: var(--accent-red); margin-top: 20px;"><i class="fas fa-sign-out-alt"></i> Sign Out</a>
-        </div>
-    </div>
-
-    <div class="main-content">
-        <div class="header-section">
-            <div>
-                <div class="page-title">Customer Management</div>
-                <div class="page-subtitle">Track customer balances and history</div>
-            </div>
-            <button onclick="document.getElementById('addCustModal').style.display='flex'" style="width: auto;">
-                <i class="fas fa-user-plus"></i> Add Customer
-            </button>
-        </div>
-
-        <div class="card">
-            <div class="input-group" style="max-width: 300px;">
-                <input type="text" id="searchInput" placeholder="Search customers..." onkeyup="filterTable()">
-            </div>
-            <table class="dark-table" id="custTable">
-                <thead>
-                    <tr>
-                        <th>Name</th>
-                        <th>Phone</th>
-                        <th>Address</th>
-                        <th>Total Due</th>
-                        <th style="text-align: right;">Action</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {{% for c in customers %}}
-                    <tr>
-                        <td style="font-weight: 600;">{{{{ c.name }}}}</td>
-                        <td>{{{{ c.phone }}}}</td>
-                        <td style="color: var(--text-secondary); font-size: 13px;">{{{{ c.address }}}}</td>
-                        <td>
-                            {{% if c.total_due > 0 %}}
-                            <span class="table-badge" style="background: rgba(239, 68, 68, 0.15); color: #F87171;">৳{{{{ c.total_due }}}}</span>
-                            {{% else %}}
-                            <span class="table-badge" style="background: rgba(16, 185, 129, 0.15); color: #34D399;">Clear</span>
-                            {{% endif %}}
-                        </td>
-                        <td class="action-cell">
-                            <button class="action-btn" style="background: rgba(16, 185, 129, 0.2); color: #34D399;" onclick='openCollection({{{{ c|tojson }}}})' title="Collect Due">
-                                <i class="fas fa-hand-holding-usd"></i>
-                            </button>
-                            <button class="action-btn btn-edit" onclick='editCust({{{{ c|tojson }}}})'>
-                                <i class="fas fa-pen"></i>
-                            </button>
-                            <form action="/store/customer/delete" method="POST" onsubmit="return confirm('Delete customer?')" style="display:inline;">
-                                <input type="hidden" name="id" value="{{{{ c.id }}}}">
-                                <button class="action-btn btn-del"><i class="fas fa-trash"></i></button>
-                            </form>
-                        </td>
-                    </tr>
-                    {{% else %}}
-                    <tr><td colspan="5" style="text-align:center; padding: 30px; opacity: 0.5;">No customers found.</td></tr>
-                    {{% endfor %}}
-                </tbody>
-            </table>
-        </div>
-    </div>
-
-    <!-- ADD/EDIT MODAL -->
-    <div id="addCustModal" class="welcome-modal">
-        <div class="welcome-content" style="max-width: 500px; padding: 30px;">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-                <h3 style="color: white; margin:0;">Customer Details</h3>
-                <button onclick="closeModal('addCustModal')" style="width:auto; padding:5px 10px; background:none;"><i class="fas fa-times"></i></button>
-            </div>
-            <form action="/store/customer/save" method="POST">
-                <input type="hidden" name="id" id="custId">
-                <div class="input-group">
-                    <label>Customer Name</label>
-                    <input type="text" name="name" id="custName" required>
-                </div>
-                <div class="input-group">
-                    <label>Phone Number</label>
-                    <input type="text" name="phone" id="custPhone" required>
-                </div>
-                <div class="input-group">
-                    <label>Address</label>
-                    <input type="text" name="address" id="custAddr">
-                </div>
-                <div class="input-group">
-                    <label>Opening Due (If any)</label>
-                    <input type="number" name="opening_due" id="custDue" value="0">
-                </div>
-                <button type="submit">Save Customer</button>
-            </form>
-        </div>
-    </div>
-
-    <!-- DUE COLLECTION MODAL -->
-    <div id="collectionModal" class="welcome-modal">
-        <div class="welcome-content" style="max-width: 400px; padding: 30px;">
-             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-                <h3 style="color: white; margin:0;">Collect Due</h3>
-                <button onclick="closeModal('collectionModal')" style="width:auto; padding:5px 10px; background:none;"><i class="fas fa-times"></i></button>
-            </div>
-            <div style="text-align: left; margin-bottom: 20px; background: rgba(255,255,255,0.05); padding: 15px; border-radius: 10px;">
-                <div style="font-size: 13px; color: var(--text-secondary);">Customer: <span id="colCustName" style="color: white; font-weight: bold;"></span></div>
-                <div style="font-size: 13px; color: var(--text-secondary); margin-top: 5px;">Current Due: <span id="colCustDue" style="color: var(--accent-red); font-weight: bold;"></span></div>
-            </div>
-            <form action="/store/customer/collect" method="POST">
-                <input type="hidden" name="id" id="colCustId">
-                <div class="input-group">
-                    <label>Collection Amount</label>
-                    <input type="number" name="amount" required placeholder="Enter amount">
-                </div>
-                <div class="input-group">
-                    <label>Note</label>
-                    <input type="text" name="note" placeholder="e.g. Bkash payment">
-                </div>
-                <button type="submit" style="background: var(--accent-green);">Confirm Payment</button>
-            </form>
-        </div>
-    </div>
-
-    <script>
-        function closeModal(id) {{
-            document.getElementById(id).style.display = 'none';
-        }}
-        
-        function editCust(c) {{
-            document.getElementById('custId').value = c.id;
-            document.getElementById('custName').value = c.name;
-            document.getElementById('custPhone').value = c.phone;
-            document.getElementById('custAddr').value = c.address;
-            document.getElementById('custDue').value = c.opening_due || 0;
-            document.getElementById('addCustModal').style.display = 'flex';
-        }}
-
-        function openCollection(c) {{
-            document.getElementById('colCustId').value = c.id;
-            document.getElementById('colCustName').textContent = c.name;
-            document.getElementById('colCustDue').textContent = '৳' + c.total_due;
-            document.getElementById('collectionModal').style.display = 'flex';
-        }}
-        
-        function filterTable() {{
-            let input = document.getElementById("searchInput");
-            let filter = input.value.toUpperCase();
-            let table = document.getElementById("custTable");
-            let tr = table.getElementsByTagName("tr");
-            for (let i = 1; i < tr.length; i++) {{
-                let td = tr[i].getElementsByTagName("td")[0];
-                let td2 = tr[i].getElementsByTagName("td")[1];
-                if (td || td2) {{
-                    let txt1 = td.textContent || td.innerText;
-                    let txt2 = td2.textContent || td2.innerText;
-                    if (txt1.toUpperCase().indexOf(filter) > -1 || txt2.toUpperCase().indexOf(filter) > -1) {{
-                        tr[i].style.display = "";
-                    }} else {{
-                        tr[i].style.display = "none";
-                    }}
-                }}
-            }}
-        }}
-    </script>
-</body>
-</html>
-"""
-STORE_INVOICE_LIST_TEMPLATE = f"""
-<!doctype html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Invoices - Store Panel</title>
-    {COMMON_STYLES}
-</head>
-<body>
-    <div class="animated-bg"></div>
-    <div class="sidebar">
-        <div class="brand-logo"><i class="fas fa-store"></i> Alu<span>Store</span></div>
-        <div class="nav-menu">
-            {{% if session.role == 'admin' %}}<a href="/" class="nav-link"><i class="fas fa-arrow-left"></i> Main Panel</a>{{% endif %}}
-            <a href="/store/dashboard" class="nav-link"><i class="fas fa-th-large"></i> Dashboard</a>
-            <a href="/store/products" class="nav-link"><i class="fas fa-box-open"></i> Inventory</a>
-            <a href="/store/customers" class="nav-link"><i class="fas fa-users"></i> Customers</a>
-            <a href="/store/invoices" class="nav-link active"><i class="fas fa-file-invoice-dollar"></i> Invoices</a>
-            <a href="/store/quotations" class="nav-link"><i class="fas fa-file-alt"></i> Quotations</a>
-            <a href="/logout" class="nav-link" style="color: var(--accent-red); margin-top: 20px;"><i class="fas fa-sign-out-alt"></i> Sign Out</a>
-        </div>
-    </div>
-
-    <div class="main-content">
-        <div class="header-section">
-            <div>
-                <div class="page-title">Invoices</div>
-                <div class="page-subtitle">Sales history and billing</div>
-            </div>
-            <a href="/store/invoice/new">
-                <button style="width: auto;">
-                    <i class="fas fa-plus"></i> Create Invoice
-                </button>
-            </a>
-        </div>
-
-        <div class="card">
-            <div class="input-group" style="max-width: 300px;">
-                <input type="text" id="searchInput" placeholder="Search invoices..." onkeyup="filterTable()">
-            </div>
-            <table class="dark-table" id="invTable">
-                <thead>
-                    <tr>
-                        <th>Date</th>
-                        <th>Inv No</th>
-                        <th>Customer</th>
-                        <th>Total</th>
-                        <th>Paid</th>
-                        <th>Due</th>
-                        <th style="text-align: right;">Action</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {{% for inv in invoices %}}
-                    <tr>
-                        <td style="color: var(--text-secondary);">{{{{ inv.date }}}}</td>
-                        <td style="font-weight: 700; color: var(--accent-orange);">#{{{{ inv.inv_no }}}}</td>
-                        <td>{{{{ inv.customer_name }}}}</td>
-                        <td>৳{{{{ inv.grand_total }}}}</td>
-                        <td style="color: var(--accent-green);">৳{{{{ inv.paid_amount }}}}</td>
-                        <td>
-                            {{% if inv.due_amount > 0 %}}
-                            <span class="table-badge" style="background: rgba(239, 68, 68, 0.15); color: #F87171;">৳{{{{ inv.due_amount }}}}</span>
-                            {{% else %}}
-                            <span class="table-badge" style="background: rgba(16, 185, 129, 0.15); color: #34D399;">Paid</span>
-                            {{% endif %}}
-                        </td>
-                        <td class="action-cell">
-                            <a href="/store/invoice/print/{{{{ inv.inv_no }}}}" target="_blank" class="action-btn" style="background: rgba(59, 130, 246, 0.2); color: #60A5FA;">
-                                <i class="fas fa-print"></i>
-                            </a>
-                            <a href="/store/invoice/edit/{{{{ inv.inv_no }}}}" class="action-btn btn-edit">
-                                <i class="fas fa-pen"></i>
-                            </a>
-                            <form action="/store/invoice/delete" method="POST" onsubmit="return confirm('Delete invoice? This will adjust stock.')" style="display:inline;">
-                                <input type="hidden" name="inv_no" value="{{{{ inv.inv_no }}}}">
-                                <button class="action-btn btn-del"><i class="fas fa-trash"></i></button>
-                            </form>
-                        </td>
-                    </tr>
-                    {{% else %}}
-                    <tr><td colspan="7" style="text-align:center; padding: 30px; opacity: 0.5;">No invoices created yet.</td></tr>
-                    {{% endfor %}}
-                </tbody>
-            </table>
-        </div>
-    </div>
-    <script>
-        function filterTable() {{
-            let input = document.getElementById("searchInput");
-            let filter = input.value.toUpperCase();
-            let table = document.getElementById("invTable");
-            let tr = table.getElementsByTagName("tr");
-            for (let i = 1; i < tr.length; i++) {{
-                let td = tr[i].getElementsByTagName("td")[1];
-                let td2 = tr[i].getElementsByTagName("td")[2];
-                if (td || td2) {{
-                    let txt1 = td.textContent || td.innerText;
-                    let txt2 = td2.textContent || td2.innerText;
-                    if (txt1.toUpperCase().indexOf(filter) > -1 || txt2.toUpperCase().indexOf(filter) > -1) {{
-                        tr[i].style.display = "";
-                    }} else {{
-                        tr[i].style.display = "none";
-                    }}
-                }}
-            }}
-        }}
-    </script>
-</body>
-</html>
-"""
-
-STORE_INVOICE_FORM_TEMPLATE = f"""
-<!doctype html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{{{{ mode }}}} Invoice - Store Panel</title>
-    {COMMON_STYLES}
-    <style>
-        .inv-container {{
+        /* POS Grid */
+        .pos-container {{
             display: grid;
             grid-template-columns: 2fr 1fr;
             gap: 20px;
+            height: calc(100vh - 100px);
         }}
-        .item-row {{
+        
+        .product-grid {{
             display: grid;
-            grid-template-columns: 3fr 1fr 1fr 1fr 40px;
-            gap: 10px;
-            margin-bottom: 10px;
-            align-items: center;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 15px;
+            overflow-y: auto;
+            padding-right: 5px;
+            max-height: calc(100vh - 180px);
         }}
-        .summary-row {{
+        
+        .product-card {{
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 15px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }}
+        
+        .product-card:hover {{
+            border-color: var(--accent-cyan);
+            background: rgba(6, 182, 212, 0.05);
+            transform: translateY(-2px);
+        }}
+        
+        .prod-price {{
+            font-weight: 700;
+            color: var(--accent-cyan);
+            margin-top: 5px;
+        }}
+        
+        .prod-stock {{
+            font-size: 11px;
+            color: var(--text-secondary);
+        }}
+        
+        /* Cart Section */
+        .cart-panel {{
+            background: var(--bg-card);
+            border-radius: 16px;
+            display: flex;
+            flex-direction: column;
+            border: 1px solid var(--border-color);
+            height: 100%;
+        }}
+        
+        .cart-items {{
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 10px;
+        }}
+        
+        .cart-item {{
             display: flex;
             justify-content: space-between;
-            margin-bottom: 10px;
+            align-items: center;
+            padding: 10px;
+            background: rgba(255,255,255,0.02);
+            margin-bottom: 8px;
+            border-radius: 8px;
+            border-left: 3px solid var(--accent-cyan);
+        }}
+        
+        .cart-total-section {{
+            padding: 20px;
+            background: rgba(0,0,0,0.2);
+            border-top: 1px solid var(--border-color);
+        }}
+        
+        .total-row {{
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
             font-size: 14px;
+            color: var(--text-secondary);
         }}
-        .summary-val {{
-            font-weight: 700;
+        
+        .grand-total {{
+            font-size: 20px;
+            font-weight: 800;
             color: white;
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px dashed rgba(255,255,255,0.1);
         }}
-        .btn-add-row {{
-            background: rgba(255, 255, 255, 0.05);
-            color: var(--accent-orange);
-            border: 1px dashed var(--border-color);
+        
+        /* Modal Styles */
+        .modal {{
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(5px);
         }}
-        .btn-add-row:hover {{
-            background: rgba(255, 122, 0, 0.1);
-            border-color: var(--accent-orange);
+        
+        .modal-content {{
+            background: var(--bg-card);
+            padding: 30px;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 600px;
+            border: 1px solid var(--border-color);
+            position: relative;
+            animation: modalPop 0.3s ease-out;
+        }}
+        
+        @keyframes modalPop {{
+            from {{ transform: scale(0.9); opacity: 0; }}
+            to {{ transform: scale(1); opacity: 1; }}
+        }}
+        
+        .close-modal {{
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 20px;
+        }}
+        
+        /* Search Bar */
+        .search-bar {{
+            background: rgba(255,255,255,0.05);
+            border: 1px solid var(--border-color);
+            padding: 10px 15px;
+            border-radius: 50px;
+            display: flex;
+            align-items: center;
+            width: 100%;
+            margin-bottom: 20px;
+        }}
+        .search-bar input {{
+            background: transparent;
+            border: none;
+            padding: 5px;
+            height: auto;
+        }}
+        .search-bar input:focus {{
+            box-shadow: none;
+            background: transparent;
+        }}
+        
+        .badge-due {{
+            background: rgba(239, 68, 68, 0.15);
+            color: var(--accent-red);
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 700;
+        }}
+        
+        .badge-paid {{
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--accent-green);
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 700;
         }}
     </style>
 </head>
 <body>
-    <div class="animated-bg"></div>
-    <div class="main-content" style="margin-left: 0; width: 100%;">
-        <form action="/store/invoice/save" method="POST" id="invoiceForm">
-            <input type="hidden" name="mode" value="{{{{ mode }}}}"> <input type="hidden" name="existing_inv_no" value="{{{{ invoice.inv_no if invoice else '' }}}}">
-
-            <div class="header-section">
-                <div>
-                    <div class="page-title">
-                        {{% if mode == 'Quote' %}}New Quotation{{% else %}}New Invoice{{% endif %}}
-                    </div>
-                    <div class="page-subtitle">Create a new sale record</div>
-                </div>
-                <div style="display: flex; gap: 10px;">
-                    <a href="/store/invoices" style="text-decoration: none;">
-                        <button type="button" style="background: rgba(255,255,255,0.1); width: auto;">Cancel</button>
-                    </a>
-                    <button type="submit" style="width: auto;">
-                        <i class="fas fa-save" style="margin-right: 8px;"></i> Save & Print
-                    </button>
-                </div>
-            </div>
-
-            <div class="inv-container">
-                <div class="card">
-                    <div class="section-header">
-                        <span>Items Details</span>
-                    </div>
-                    
-                    <div style="margin-bottom: 10px; display: grid; grid-template-columns: 3fr 1fr 1fr 1fr 40px; gap: 10px; color: var(--text-secondary); font-size: 12px; font-weight: 700; text-transform: uppercase;">
-                        <div>Product</div>
-                        <div>Price</div>
-                        <div>Qty</div>
-                        <div>Total</div>
-                        <div></div>
-                    </div>
-
-                    <div id="itemsContainer">
-                        {{% if invoice %}}
-                            {{% for item in invoice.items %}}
-                            <div class="item-row">
-                                <select name="product_id[]" class="prod-select" onchange="updateRow(this)" required>
-                                    <option value="" disabled>Select Product</option>
-                                    {{% for p in products %}}
-                                    <option value="{{{{ p.id }}}}" data-price="{{{{ p.sell_price }}}}" {{% if p.id == item.product_id %}}selected{{% endif %}}>{{{{ p.name }}}} (Stock: {{{{ p.stock }}}})</option>
-                                    {{% endfor %}}
-                                </select>
-                                <input type="number" name="price[]" class="row-price" step="0.01" value="{{{{ item.price }}}}" oninput="calcTotal()">
-                                <input type="number" name="qty[]" class="row-qty" step="0.01" value="{{{{ item.qty }}}}" oninput="calcTotal()" required>
-                                <input type="text" class="row-total" value="{{{{ item.total }}}}" readonly style="background: rgba(0,0,0,0.2); border: none;">
-                                <button type="button" class="action-btn btn-del" onclick="removeRow(this)"><i class="fas fa-times"></i></button>
-                            </div>
-                            {{% endfor %}}
-                        {{% else %}}
-                            <div class="item-row">
-                                <select name="product_id[]" class="prod-select" onchange="updateRow(this)" required>
-                                    <option value="" disabled selected>Select Product</option>
-                                    {{% for p in products %}}
-                                    <option value="{{{{ p.id }}}}" data-price="{{{{ p.sell_price }}}}">{{{{ p.name }}}} (Stock: {{{{ p.stock }}}})</option>
-                                    {{% endfor %}}
-                                </select>
-                                <input type="number" name="price[]" class="row-price" step="0.01" placeholder="0.00" oninput="calcTotal()">
-                                <input type="number" name="qty[]" class="row-qty" step="0.01" placeholder="1" oninput="calcTotal()" required>
-                                <input type="text" class="row-total" readonly style="background: rgba(0,0,0,0.2); border: none;">
-                                <button type="button" class="action-btn btn-del" onclick="removeRow(this)"><i class="fas fa-times"></i></button>
-                            </div>
-                        {{% endif %}}
-                    </div>
-
-                    <button type="button" class="btn-add-row" onclick="addRow()">
-                        <i class="fas fa-plus"></i> Add Item
-                    </button>
-                </div>
-
-                <div>
-                    <div class="card" style="margin-bottom: 20px;">
-                        <div class="section-header"><span>Customer Info</span></div>
-                        <div class="input-group">
-                            <label>Select Customer</label>
-                            <select name="customer_id" id="custSelect" onchange="updateCustomer()" required>
-                                <option value="Walk-in">Walk-in Customer</option>
-                                {{% for c in customers %}}
-                                <option value="{{{{ c.id }}}}" {{% if invoice and invoice.customer_id == c.id %}}selected{{% endif %}}>{{{{ c.name }}}} - {{{{ c.phone }}}}</option>
-                                {{% endfor %}}
-                            </select>
-                        </div>
-                        <div class="input-group">
-                            <label>Customer Name</label>
-                            <input type="text" name="customer_name" id="custName" value="{{{{ invoice.customer_name if invoice else 'Walk-in Customer' }}}}" required>
-                        </div>
-                        <div class="input-group">
-                            <label>Phone / Address</label>
-                            <input type="text" name="customer_details" id="custDetails" value="{{{{ invoice.customer_details if invoice else '' }}}}">
-                        </div>
-                        <div class="input-group">
-                            <label>Invoice Date</label>
-                            <input type="text" name="date" value="{{{{ invoice.date if invoice else today }}}}" readonly>
-                        </div>
-                    </div>
-
-                    <div class="card">
-                        <div class="section-header"><span>Payment Details</span></div>
-                        
-                        <div class="summary-row">
-                            <span>Subtotal</span>
-                            <span class="summary-val" id="subTotal">0.00</span>
-                        </div>
-                        
-                        <div class="input-group" style="margin-bottom: 10px;">
-                            <label>Discount</label>
-                            <input type="number" name="discount" id="discount" value="{{{{ invoice.discount if invoice else 0 }}}}" oninput="calcTotal()">
-                        </div>
-
-                        <div class="summary-row" style="font-size: 18px; border-top: 1px solid var(--border-color); padding-top: 10px;">
-                            <span>Grand Total</span>
-                            <span class="summary-val" id="grandTotal" style="color: var(--accent-orange);">0.00</span>
-                        </div>
-
-                        {{% if mode != 'Quote' %}}
-                        <div class="input-group" style="margin-top: 15px;">
-                            <label>Paid Amount</label>
-                            <input type="number" name="paid_amount" id="paidAmount" value="{{{{ invoice.paid_amount if invoice else 0 }}}}" oninput="calcTotal()">
-                        </div>
-
-                        <div class="summary-row" style="margin-top: 10px;">
-                            <span>Due Amount</span>
-                            <span class="summary-val" id="dueAmount" style="color: var(--accent-red);">0.00</span>
-                        </div>
-                        {{% endif %}}
-                    </div>
-                </div>
-            </div>
-        </form>
+    <div id="loading-overlay">
+        <div class="spinner-container">
+            <div class="spinner"></div>
+            <div class="spinner-inner"></div>
+        </div>
+        <div class="loading-text">Processing...</div>
     </div>
 
+    <!-- SIDEBAR -->
+    <div class="sidebar store-sidebar">
+        <div class="brand-logo">
+            <i class="fas fa-store"></i> 
+            Store<span>Panel</span>
+        </div>
+        <div class="nav-menu">
+            <div class="nav-link store-nav-link active" onclick="switchView('dashboard')">
+                <i class="fas fa-th-large"></i> Dashboard
+            </div>
+            <div class="nav-link store-nav-link" onclick="switchView('pos')">
+                <i class="fas fa-cash-register"></i> Invoice / POS
+            </div>
+            <div class="nav-link store-nav-link" onclick="switchView('products')">
+                <i class="fas fa-box"></i> Products
+            </div>
+            <div class="nav-link store-nav-link" onclick="switchView('customers')">
+                <i class="fas fa-users"></i> Customers
+            </div>
+            <div class="nav-link store-nav-link" onclick="switchView('invoices')">
+                <i class="fas fa-file-invoice"></i> Sales History
+            </div>
+            <div class="nav-link store-nav-link" onclick="switchView('users')">
+                <i class="fas fa-user-shield"></i> Users & Roles
+            </div>
+            <a href="/" class="nav-link" style="margin-top: auto;">
+                <i class="fas fa-arrow-left"></i> Main Panel
+            </a>
+        </div>
+        <div class="sidebar-footer">
+            Logged as {{{{ session.user }}}}
+        </div>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div class="main-content">
+        
+        <!-- VIEW: DASHBOARD -->
+        <div id="view-dashboard" class="view-section">
+            <div class="header-section">
+                <div>
+                    <div class="page-title">Store Overview</div>
+                    <div class="page-subtitle">Real-time business insights</div>
+                </div>
+                <div class="time-badge"><i class="far fa-clock"></i> <span id="clock-display"></span></div>
+            </div>
+
+            <div class="stats-grid">
+                <div class="card stat-card">
+                    <div class="stat-icon" style="color: var(--accent-green);"><i class="fas fa-shopping-cart"></i></div>
+                    <div class="stat-info">
+                        <h3 id="dash-today-sales">0</h3>
+                        <p>Today's Sales</p>
+                    </div>
+                </div>
+                <div class="card stat-card">
+                    <div class="stat-icon" style="color: var(--accent-red);"><i class="fas fa-hand-holding-usd"></i></div>
+                    <div class="stat-info">
+                        <h3 id="dash-total-due">0</h3>
+                        <p>Total Due</p>
+                    </div>
+                </div>
+                <div class="card stat-card">
+                    <div class="stat-icon" style="color: var(--accent-cyan);"><i class="fas fa-box-open"></i></div>
+                    <div class="stat-info">
+                        <h3 id="dash-low-stock">0</h3>
+                        <p>Low Stock Items</p>
+                    </div>
+                </div>
+                <div class="card stat-card">
+                    <div class="stat-icon" style="color: var(--accent-purple);"><i class="fas fa-users"></i></div>
+                    <div class="stat-info">
+                        <h3 id="dash-total-customers">0</h3>
+                        <p>Total Customers</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="dashboard-grid-2">
+                <div class="card">
+                    <div class="section-header">
+                        <span>Recent Invoices</span>
+                        <button onclick="switchView('pos')" class="action-btn" style="background: var(--accent-cyan); color: #000;">
+                            <i class="fas fa-plus"></i> New Sale
+                        </button>
+                    </div>
+                    <div id="dash-recent-invoices">Loading...</div>
+                </div>
+                <div class="card">
+                    <div class="section-header">
+                        <span>Quick Actions</span>
+                    </div>
+                    <button onclick="openModal('customerModal')" style="margin-bottom: 10px;">
+                        <i class="fas fa-user-plus"></i> Add Customer
+                    </button>
+                    <button onclick="openModal('productModal')" style="margin-bottom: 10px; background: #333; border: 1px solid #555;">
+                        <i class="fas fa-box"></i> Add Product
+                    </button>
+                    <button onclick="switchView('invoices')" style="background: #333; border: 1px solid #555;">
+                        <i class="fas fa-list"></i> View All Sales
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- VIEW: PRODUCTS -->
+        <div id="view-products" class="view-section" style="display:none;">
+            <div class="header-section">
+                <div>
+                    <div class="page-title">Product Inventory</div>
+                </div>
+                <button onclick="openModal('productModal')" style="width: auto;">
+                    <i class="fas fa-plus"></i> Add Product
+                </button>
+            </div>
+            
+            <div class="card">
+                <div class="search-bar">
+                    <i class="fas fa-search" style="color: var(--text-secondary); margin-right: 10px;"></i>
+                    <input type="text" id="prod-search" placeholder="Search products by name or code..." onkeyup="filterProducts()">
+                </div>
+                <div style="overflow-x: auto;">
+                    <table class="dark-table" id="products-table">
+                        <thead>
+                            <tr>
+                                <th>Code</th>
+                                <th>Name</th>
+                                <th>Category</th>
+                                <th>Stock</th>
+                                <th>Unit Price</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="products-list">
+                            <!-- JS will populate -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <!-- VIEW: CUSTOMERS -->
+        <div id="view-customers" class="view-section" style="display:none;">
+            <div class="header-section">
+                <div>
+                    <div class="page-title">Customer Management</div>
+                </div>
+                <button onclick="openModal('customerModal')" style="width: auto;">
+                    <i class="fas fa-user-plus"></i> Add Customer
+                </button>
+            </div>
+            <div class="card">
+                <div class="search-bar">
+                    <i class="fas fa-search" style="color: var(--text-secondary); margin-right: 10px;"></i>
+                    <input type="text" id="cust-search" placeholder="Search customers..." onkeyup="filterCustomers()">
+                </div>
+                <div style="overflow-x: auto;">
+                    <table class="dark-table">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Phone</th>
+                                <th>Address</th>
+                                <th>Total Due</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="customers-list">
+                            <!-- JS will populate -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- VIEW: INVOICES (SALES HISTORY) -->
+        <div id="view-invoices" class="view-section" style="display:none;">
+            <div class="header-section">
+                <div>
+                    <div class="page-title">Sales History</div>
+                </div>
+                <div class="input-group" style="width: 200px; margin-bottom: 0;">
+                    <input type="date" id="invoice-date-filter" onchange="loadInvoices()">
+                </div>
+            </div>
+            <div class="card">
+                <div class="search-bar">
+                    <i class="fas fa-search" style="color: var(--text-secondary); margin-right: 10px;"></i>
+                    <input type="text" id="inv-search" placeholder="Search invoice no..." onkeyup="filterInvoices()">
+                </div>
+                <div style="overflow-x: auto;">
+                    <table class="dark-table">
+                        <thead>
+                            <tr>
+                                <th>Invoice #</th>
+                                <th>Date</th>
+                                <th>Customer</th>
+                                <th>Total</th>
+                                <th>Paid</th>
+                                <th>Due</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="invoices-list">
+                            <!-- JS will populate -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- VIEW: POS / INVOICE CREATION -->
+        <div id="view-pos" class="view-section" style="display:none;">
+            <div class="pos-container">
+                <!-- Left: Products -->
+                <div style="display: flex; flex-direction: column; gap: 15px;">
+                    <div class="search-bar" style="margin-bottom: 0;">
+                        <i class="fas fa-search" style="color: var(--text-secondary); margin-right: 10px;"></i>
+                        <input type="text" id="pos-search" placeholder="Scan barcode or search product..." onkeyup="filterPosProducts()">
+                    </div>
+                    
+                    <div style="display: flex; gap: 10px; overflow-x: auto; padding-bottom: 5px;">
+                        <button onclick="filterCategory('All')" class="category-btn active">All</button>
+                        <button onclick="filterCategory('Profile')" class="category-btn">Profile</button>
+                        <button onclick="filterCategory('Sheet')" class="category-btn">Sheet</button>
+                        <button onclick="filterCategory('Accessories')" class="category-btn">Accessories</button>
+                        <button onclick="filterCategory('Glass')" class="category-btn">Glass</button>
+                    </div>
+
+                    <div class="product-grid" id="pos-product-grid">
+                        <!-- JS will populate -->
+                    </div>
+                </div>
+
+                <!-- Right: Cart -->
+                <div class="cart-panel">
+                    <div style="padding: 15px; border-bottom: 1px solid var(--border-color);">
+                        <div class="input-group" style="margin-bottom: 10px;">
+                            <select id="pos-customer" style="padding: 10px;">
+                                <option value="">Select Walk-in Customer</option>
+                                <!-- JS populate -->
+                            </select>
+                        </div>
+                        <div style="display: flex; gap: 10px;">
+                            <button onclick="openModal('customerModal')" style="padding: 8px; font-size: 12px; background: #333;">
+                                <i class="fas fa-plus"></i> New Cust.
+                            </button>
+                            <select id="pos-type" style="padding: 8px; font-size: 12px; background: #333;">
+                                <option value="Invoice">Invoice</option>
+                                <option value="Quotation">Quotation</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="cart-items" id="cart-items">
+                        <div style="text-align: center; color: var(--text-secondary); margin-top: 50px;">
+                            <i class="fas fa-shopping-basket" style="font-size: 30px; opacity: 0.3;"></i>
+                            <p>Cart is empty</p>
+                        </div>
+                    </div>
+
+                    <div class="cart-total-section">
+                        <div class="total-row">
+                            <span>Subtotal</span>
+                            <span id="cart-subtotal">0.00</span>
+                        </div>
+                        <div class="total-row">
+                            <span>Discount</span>
+                            <input type="number" id="cart-discount" value="0" style="width: 80px; padding: 2px 5px; text-align: right;" onchange="calculateTotal()">
+                        </div>
+                        <div class="total-row">
+                            <span>Labor/Other</span>
+                            <input type="number" id="cart-labor" value="0" style="width: 80px; padding: 2px 5px; text-align: right;" onchange="calculateTotal()">
+                        </div>
+                        <div class="grand-total" style="display: flex; justify-content: space-between;">
+                            <span>Total</span>
+                            <span id="cart-total">0.00</span>
+                        </div>
+                        
+                        <button onclick="initiateCheckout()" style="margin-top: 15px; background: var(--gradient-orange);">
+                            <i class="fas fa-check-circle"></i> Complete Sale
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- VIEW: STORE USERS -->
+        <div id="view-users" class="view-section" style="display:none;">
+             <div class="header-section">
+                <div>
+                    <div class="page-title">Store Users</div>
+                    <div class="page-subtitle">Manage access to store panel</div>
+                </div>
+            </div>
+            <div class="dashboard-grid-2">
+                <div class="card">
+                     <div class="section-header"><span>Staff List</span></div>
+                     <table class="dark-table">
+                         <thead><tr><th>Username</th><th>Role</th><th>Action</th></tr></thead>
+                         <tbody id="store-users-list"></tbody>
+                     </table>
+                </div>
+                <div class="card">
+                    <div class="section-header"><span>Add/Edit User</span></div>
+                    <form id="storeUserForm">
+                        <div class="input-group">
+                            <label>Username</label>
+                            <input type="text" id="su-username" required>
+                        </div>
+                        <div class="input-group">
+                            <label>Password</label>
+                            <input type="text" id="su-password" required>
+                        </div>
+                        <div class="input-group">
+                            <label>Role</label>
+                            <select id="su-role">
+                                <option value="manager">Manager</option>
+                                <option value="sales">Salesman</option>
+                            </select>
+                        </div>
+                        <button type="button" onclick="saveStoreUser()">Save User</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODALS -->
+    
+    <!-- Product Modal -->
+    <div id="productModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeModal('productModal')">&times;</span>
+            <div class="section-header"><span>Product Details</span></div>
+            <form id="productForm">
+                <div class="input-group">
+                    <label>Product Name</label>
+                    <input type="text" id="p-name" required>
+                </div>
+                <div class="dashboard-grid-2" style="margin-bottom: 0; gap: 15px;">
+                    <div class="input-group">
+                        <label>Code/SKU</label>
+                        <input type="text" id="p-code" required>
+                    </div>
+                    <div class="input-group">
+                        <label>Category</label>
+                        <select id="p-category">
+                            <option value="Profile">Profile</option>
+                            <option value="Sheet">Sheet</option>
+                            <option value="Glass">Glass</option>
+                            <option value="Accessories">Accessories</option>
+                            <option value="Hardware">Hardware</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="dashboard-grid-2" style="margin-bottom: 0; gap: 15px;">
+                    <div class="input-group">
+                        <label>Stock Qty</label>
+                        <input type="number" id="p-stock" value="0">
+                    </div>
+                    <div class="input-group">
+                        <label>Unit Price</label>
+                        <input type="number" id="p-price" required>
+                    </div>
+                </div>
+                <button type="button" onclick="saveProduct()">Save Product</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Customer Modal -->
+    <div id="customerModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeModal('customerModal')">&times;</span>
+            <div class="section-header"><span>Customer Details</span></div>
+            <form id="customerForm">
+                <div class="input-group">
+                    <label>Full Name</label>
+                    <input type="text" id="c-name" required>
+                </div>
+                <div class="input-group">
+                    <label>Phone Number</label>
+                    <input type="text" id="c-phone" required>
+                </div>
+                <div class="input-group">
+                    <label>Address</label>
+                    <textarea id="c-address" rows="2"></textarea>
+                </div>
+                <button type="button" onclick="saveCustomer()">Save Customer</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Payment Modal -->
+    <div id="paymentModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeModal('paymentModal')">&times;</span>
+            <div class="section-header"><span>Payment & Checkout</span></div>
+            
+            <div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 10px; margin-bottom: 20px; text-align: center;">
+                <div style="font-size: 13px; color: var(--text-secondary);">Total Amount</div>
+                <div style="font-size: 32px; font-weight: 800; color: var(--accent-orange);" id="pay-total">0.00</div>
+            </div>
+            
+            <div class="input-group">
+                <label>Paid Amount</label>
+                <input type="number" id="pay-paid" onkeyup="calcDue()" style="font-size: 18px; font-weight: bold; color: var(--accent-green);">
+            </div>
+            
+            <div class="input-group">
+                <label>Due Amount</label>
+                <input type="text" id="pay-due" readonly style="background: transparent; border: none; font-size: 16px; color: var(--accent-red); padding-left: 0;">
+            </div>
+            
+            <div class="input-group">
+                <label>Payment Method</label>
+                <select id="pay-method">
+                    <option value="Cash">Cash</option>
+                    <option value="Bkash">Bkash</option>
+                    <option value="Card">Card</option>
+                </select>
+            </div>
+            
+            <button type="button" onclick="finalizeInvoice()" id="btn-finalize">
+                <i class="fas fa-print"></i> Generate Invoice
+            </button>
+        </div>
+    </div>
+
+    <!-- Invoice Details Modal (For Editing/Viewing) -->
+    <div id="invoiceModal" class="modal">
+        <div class="modal-content" style="max-width: 800px;">
+            <span class="close-modal" onclick="closeModal('invoiceModal')">&times;</span>
+            <div class="section-header">
+                <span>Invoice #<span id="inv-detail-id"></span></span>
+                <button onclick="printCurrentInvoice()" style="width: auto; padding: 5px 15px; font-size: 12px;">Print</button>
+            </div>
+            <div id="inv-detail-content" style="max-height: 400px; overflow-y: auto; margin-bottom: 20px;">
+                <!-- Content -->
+            </div>
+            
+            <div style="border-top: 1px solid var(--border-color); padding-top: 15px;">
+                <div class="dashboard-grid-2" style="margin-bottom: 0;">
+                    <div class="input-group">
+                        <label>Add Payment</label>
+                        <input type="number" id="inv-add-pay" placeholder="Amount">
+                    </div>
+                    <button onclick="updateInvoicePayment()" style="margin-top: 24px;">Update Payment</button>
+                </div>
+            </div>
+        </div>
+    </div>
     <script>
-        function addRow() {{
-            const container = document.getElementById('itemsContainer');
-            const row = container.firstElementChild.cloneNode(true);
+        // --- STORE PANEL LOGIC (SPA) ---
+        
+        let cart = [];
+        let allProducts = [];
+        let allCustomers = [];
+        let allInvoices = [];
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            // Initial Load
+            updateClock();
+            setInterval(updateClock, 1000);
             
-            // Reset values
-            row.querySelector('select').value = "";
-            row.querySelector('.row-price').value = "";
-            row.querySelector('.row-qty').value = "";
-            row.querySelector('.row-total').value = "";
+            // Load initial data
+            loadStoreStats();
+            loadProducts();
+            loadCustomers();
             
-            container.appendChild(row);
-        }}
+            // Set default view
+            switchView('dashboard');
+        });
 
-        function removeRow(btn) {{
-            const container = document.getElementById('itemsContainer');
-            if (container.children.length > 1) {{
-                btn.parentElement.remove();
-                calcTotal();
-            }}
-        }}
+        function updateClock() {
+            const now = new Date();
+            document.getElementById('clock-display').innerText = now.toLocaleTimeString('en-US', { hour: 'numeric', minute: 'numeric', hour12: true });
+        }
 
-        function updateRow(select) {{
-            const row = select.parentElement;
-            const priceInput = row.querySelector('.row-price');
-            const selectedOption = select.options[select.selectedIndex];
-            const price = selectedOption.getAttribute('data-price');
+        // --- NAVIGATION & UI ---
+        function switchView(viewId) {
+            document.querySelectorAll('.view-section').forEach(el => el.style.display = 'none');
+            document.querySelectorAll('.store-nav-link').forEach(el => el.classList.remove('active'));
             
-            if (price) {{
-                priceInput.value = price;
-                calcTotal();
-            }}
-        }}
+            document.getElementById('view-' + viewId).style.display = 'block';
+            
+            // Find nav link logic (simplified)
+            const navs = document.querySelectorAll('.store-nav-link');
+            if(viewId === 'dashboard') navs[0].classList.add('active');
+            if(viewId === 'pos') { navs[1].classList.add('active'); loadProducts(); loadCustomers(); }
+            if(viewId === 'products') { navs[2].classList.add('active'); loadProducts(); }
+            if(viewId === 'customers') { navs[3].classList.add('active'); loadCustomers(); }
+            if(viewId === 'invoices') { navs[4].classList.add('active'); loadInvoices(); }
+            if(viewId === 'users') { navs[5].classList.add('active'); loadStoreUsers(); }
+        }
 
-        function calcTotal() {{
-            let subtotal = 0;
-            const rows = document.querySelectorAll('.item-row');
-            
-            rows.forEach(row => {{
-                const price = parseFloat(row.querySelector('.row-price').value) || 0;
-                const qty = parseFloat(row.querySelector('.row-qty').value) || 0;
-                const total = price * qty;
+        function openModal(id) {
+            document.getElementById(id).style.display = 'flex';
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).style.display = 'none';
+        }
+
+        // --- DATA LOADING & API ---
+        
+        function showLoading() { document.getElementById('loading-overlay').style.display = 'flex'; }
+        function hideLoading() { document.getElementById('loading-overlay').style.display = 'none'; }
+
+        async function loadStoreStats() {
+            try {
+                const res = await fetch('/admin/store/api/stats');
+                const data = await res.json();
+                document.getElementById('dash-today-sales').innerText = '৳' + (data.today_sales || 0);
+                document.getElementById('dash-total-due').innerText = '৳' + (data.total_due || 0);
+                document.getElementById('dash-low-stock').innerText = data.low_stock || 0;
+                document.getElementById('dash-total-customers').innerText = data.total_customers || 0;
                 
-                row.querySelector('.row-total').value = total.toFixed(2);
+                // Recent invoices list
+                let invHtml = '<table class="dark-table"><thead><tr><th>Inv#</th><th>Amount</th><th>Status</th></tr></thead><tbody>';
+                (data.recent_invoices || []).forEach(inv => {
+                    let statusColor = inv.due > 0 ? 'var(--accent-red)' : 'var(--accent-green)';
+                    let statusText = inv.due > 0 ? 'Due' : 'Paid';
+                    invHtml += `<tr><td>#${inv.invoice_no}</td><td>৳${inv.total}</td><td style="color:${statusColor}">${statusText}</td></tr>`;
+                });
+                invHtml += '</tbody></table>';
+                document.getElementById('dash-recent-invoices').innerHTML = invHtml;
+            } catch (e) { console.error(e); }
+        }
+
+        // --- PRODUCTS ---
+        async function loadProducts() {
+            try {
+                const res = await fetch('/admin/store/api/products');
+                allProducts = await res.json();
+                renderProductsTable(allProducts);
+                renderPosProducts(allProducts);
+            } catch (e) { console.error(e); }
+        }
+
+        function renderProductsTable(products) {
+            let html = '';
+            products.forEach(p => {
+                html += `<tr>
+                    <td>${p.code}</td>
+                    <td style="font-weight:600">${p.name}</td>
+                    <td>${p.category}</td>
+                    <td style="color: ${p.stock < 5 ? 'red' : 'white'}">${p.stock}</td>
+                    <td>৳${p.price}</td>
+                    <td>
+                        <button onclick="deleteProduct('${p.code}')" class="action-btn btn-del"><i class="fas fa-trash"></i></button>
+                    </td>
+                </tr>`;
+            });
+            document.getElementById('products-list').innerHTML = html;
+        }
+
+        async function saveProduct() {
+            const data = {
+                name: document.getElementById('p-name').value,
+                code: document.getElementById('p-code').value,
+                category: document.getElementById('p-category').value,
+                stock: parseInt(document.getElementById('p-stock').value),
+                price: parseFloat(document.getElementById('p-price').value)
+            };
+            
+            if(!data.name || !data.code) return alert("Name and Code required");
+
+            showLoading();
+            await fetch('/admin/store/api/products', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(data)
+            });
+            hideLoading();
+            closeModal('productModal');
+            document.getElementById('productForm').reset();
+            loadProducts();
+            loadStoreStats();
+        }
+        
+        async function deleteProduct(code) {
+            if(!confirm("Delete this product?")) return;
+            await fetch('/admin/store/api/products', {
+                method: 'DELETE',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({code})
+            });
+            loadProducts();
+        }
+
+        function filterProducts() {
+            const term = document.getElementById('prod-search').value.toLowerCase();
+            const filtered = allProducts.filter(p => p.name.toLowerCase().includes(term) || p.code.toLowerCase().includes(term));
+            renderProductsTable(filtered);
+        }
+
+        // --- CUSTOMERS ---
+        async function loadCustomers() {
+            try {
+                const res = await fetch('/admin/store/api/customers');
+                allCustomers = await res.json();
+                renderCustomersTable(allCustomers);
+                
+                // Populate POS select
+                let opts = '<option value="">Walk-in Customer</option>';
+                allCustomers.forEach(c => {
+                    opts += `<option value="${c.phone}">${c.name} (${c.phone})</option>`;
+                });
+                document.getElementById('pos-customer').innerHTML = opts;
+            } catch (e) { console.error(e); }
+        }
+
+        function renderCustomersTable(customers) {
+            let html = '';
+            customers.forEach(c => {
+                html += `<tr>
+                    <td style="font-weight:600">${c.name}</td>
+                    <td>${c.phone}</td>
+                    <td>${c.address || '-'}</td>
+                    <td style="color: var(--accent-red)">৳${c.total_due || 0}</td>
+                    <td><button class="action-btn btn-edit"><i class="fas fa-eye"></i></button></td>
+                </tr>`;
+            });
+            document.getElementById('customers-list').innerHTML = html;
+        }
+
+        async function saveCustomer() {
+            const data = {
+                name: document.getElementById('c-name').value,
+                phone: document.getElementById('c-phone').value,
+                address: document.getElementById('c-address').value
+            };
+            if(!data.name || !data.phone) return alert("Name and Phone required");
+
+            showLoading();
+            await fetch('/admin/store/api/customers', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(data)
+            });
+            hideLoading();
+            closeModal('customerModal');
+            document.getElementById('customerForm').reset();
+            loadCustomers();
+            loadStoreStats();
+        }
+
+        function filterCustomers() {
+            const term = document.getElementById('cust-search').value.toLowerCase();
+            const filtered = allCustomers.filter(c => c.name.toLowerCase().includes(term) || c.phone.includes(term));
+            renderCustomersTable(filtered);
+        }
+
+        // --- POS & CART LOGIC ---
+        function renderPosProducts(products) {
+            let html = '';
+            products.forEach(p => {
+                html += `<div class="product-card" onclick="addToCart('${p.code}')">
+                    <div style="font-size: 13px; font-weight: 600; height: 36px; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;">${p.name}</div>
+                    <div class="prod-price">৳${p.price}</div>
+                    <div class="prod-stock">${p.stock} in stock</div>
+                </div>`;
+            });
+            document.getElementById('pos-product-grid').innerHTML = html;
+        }
+
+        function filterPosProducts() {
+            const term = document.getElementById('pos-search').value.toLowerCase();
+            const filtered = allProducts.filter(p => p.name.toLowerCase().includes(term) || p.code.toLowerCase().includes(term));
+            renderPosProducts(filtered);
+        }
+        
+        function filterCategory(cat) {
+            document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            if(cat === 'All') renderPosProducts(allProducts);
+            else {
+                const filtered = allProducts.filter(p => p.category === cat);
+                renderPosProducts(filtered);
+            }
+        }
+
+        function addToCart(code) {
+            const product = allProducts.find(p => p.code === code);
+            if(!product) return;
+
+            const existing = cart.find(i => i.code === code);
+            if(existing) {
+                existing.qty++;
+            } else {
+                cart.push({ ...product, qty: 1 });
+            }
+            renderCart();
+        }
+
+        function removeFromCart(code) {
+            cart = cart.filter(i => i.code !== code);
+            renderCart();
+        }
+        
+        function updateCartQty(code, qty) {
+            const item = cart.find(i => i.code === code);
+            if(item) {
+                item.qty = parseInt(qty);
+                if(item.qty <= 0) removeFromCart(code);
+                else renderCart();
+            }
+        }
+
+        function renderCart() {
+            let html = '';
+            let subtotal = 0;
+            
+            cart.forEach(item => {
+                const total = item.price * item.qty;
                 subtotal += total;
-            }});
-
-            document.getElementById('subTotal').innerText = subtotal.toFixed(2);
+                html += `<div class="cart-item">
+                    <div style="flex:1">
+                        <div style="font-weight:600; font-size:13px;">${item.name}</div>
+                        <div style="font-size:11px; color:#888;">৳${item.price} x ${item.qty}</div>
+                    </div>
+                    <div style="display:flex; align-items:center; gap:5px;">
+                        <input type="number" value="${item.qty}" onchange="updateCartQty('${item.code}', this.value)" style="width:40px; padding:2px;">
+                        <div style="font-weight:bold; width:60px; text-align:right;">৳${total}</div>
+                        <i class="fas fa-times" onclick="removeFromCart('${item.code}')" style="cursor:pointer; color:red; font-size:12px;"></i>
+                    </div>
+                </div>`;
+            });
             
-            const discount = parseFloat(document.getElementById('discount').value) || 0;
-            const grandTotal = subtotal - discount;
+            document.getElementById('cart-items').innerHTML = html;
+            document.getElementById('cart-subtotal').innerText = subtotal.toFixed(2);
+            calculateTotal();
+        }
+
+        function calculateTotal() {
+            const subtotal = parseFloat(document.getElementById('cart-subtotal').innerText || 0);
+            const discount = parseFloat(document.getElementById('cart-discount').value || 0);
+            const labor = parseFloat(document.getElementById('cart-labor').value || 0);
             
-            document.getElementById('grandTotal').innerText = grandTotal.toFixed(2);
+            const total = subtotal + labor - discount;
+            document.getElementById('cart-total').innerText = total.toFixed(2);
+            document.getElementById('pay-total').innerText = total.toFixed(2);
+        }
 
-            const paidInput = document.getElementById('paidAmount');
-            if (paidInput) {{
-                const paid = parseFloat(paidInput.value) || 0;
-                const due = grandTotal - paid;
-                document.getElementById('dueAmount').innerText = due.toFixed(2);
-            }}
-        }}
+        function initiateCheckout() {
+            if(cart.length === 0) return alert("Cart is empty!");
+            openModal('paymentModal');
+            document.getElementById('pay-paid').value = '';
+            document.getElementById('pay-due').value = document.getElementById('cart-total').innerText;
+        }
 
-        function updateCustomer() {{
-            const select = document.getElementById('custSelect');
-            const nameInput = document.getElementById('custName');
-            const detailsInput = document.getElementById('custDetails');
+        function calcDue() {
+            const total = parseFloat(document.getElementById('pay-total').innerText);
+            const paid = parseFloat(document.getElementById('pay-paid').value || 0);
+            const due = total - paid;
+            document.getElementById('pay-due').value = due > 0 ? due.toFixed(2) : 0;
+        }
+
+        async function finalizeInvoice() {
+            const custPhone = document.getElementById('pos-customer').value;
+            const type = document.getElementById('pos-type').value;
             
-            if (select.value === 'Walk-in') {{
-                nameInput.value = 'Walk-in Customer';
-                detailsInput.value = '';
-            }} else {{
-                const text = select.options[select.selectedIndex].text;
-                const name = text.split(' - ')[0];
-                const phone = text.split(' - ')[1];
-                nameInput.value = name;
-                detailsInput.value = phone;
-            }}
-        }}
+            const data = {
+                customer_phone: custPhone,
+                type: type,
+                items: cart,
+                subtotal: parseFloat(document.getElementById('cart-subtotal').innerText),
+                discount: parseFloat(document.getElementById('cart-discount').value),
+                labor: parseFloat(document.getElementById('cart-labor').value),
+                total: parseFloat(document.getElementById('pay-total').innerText),
+                paid: parseFloat(document.getElementById('pay-paid').value || 0),
+                due: parseFloat(document.getElementById('pay-due').value),
+                payment_method: document.getElementById('pay-method').value
+            };
 
-        // Initial Calc
-        calcTotal();
+            showLoading();
+            try {
+                const res = await fetch('/admin/store/api/invoices', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(data)
+                });
+                const result = await res.json();
+                
+                if(result.status === 'success') {
+                    cart = [];
+                    renderCart();
+                    closeModal('paymentModal');
+                    // Open print window
+                    window.open('/admin/store/print_invoice/' + result.invoice_no, '_blank');
+                    loadStoreStats();
+                    loadInvoices();
+                } else {
+                    alert('Error creating invoice');
+                }
+            } catch(e) { console.error(e); }
+            hideLoading();
+        }
+
+        // --- INVOICES HISTORY ---
+        async function loadInvoices() {
+            try {
+                const res = await fetch('/admin/store/api/invoices');
+                allInvoices = await res.json();
+                renderInvoicesTable(allInvoices);
+            } catch (e) { console.error(e); }
+        }
+
+        function renderInvoicesTable(invoices) {
+            let html = '';
+            invoices.forEach(inv => {
+                const statusBadge = inv.due <= 0 
+                    ? '<span class="badge-paid">Paid</span>' 
+                    : '<span class="badge-due">Due</span>';
+                
+                html += `<tr>
+                    <td>#${inv.invoice_no}</td>
+                    <td>${inv.date}</td>
+                    <td>${inv.customer_name || 'Walk-in'}</td>
+                    <td>৳${inv.total}</td>
+                    <td>৳${inv.paid}</td>
+                    <td>৳${inv.due}</td>
+                    <td>${statusBadge}</td>
+                    <td>
+                        <button class="action-btn btn-edit" onclick="viewInvoice('${inv.invoice_no}')"><i class="fas fa-eye"></i></button>
+                        <a href="/admin/store/print_invoice/${inv.invoice_no}" target="_blank" class="action-btn btn-edit" style="background:#333;color:white;"><i class="fas fa-print"></i></a>
+                    </td>
+                </tr>`;
+            });
+            document.getElementById('invoices-list').innerHTML = html;
+        }
+
+        function filterInvoices() {
+            const term = document.getElementById('inv-search').value.toLowerCase();
+            const date = document.getElementById('invoice-date-filter').value;
+            
+            let filtered = allInvoices.filter(i => i.invoice_no.toString().includes(term));
+            
+            if(date) {
+                // date format in DB is DD-MM-YYYY, input is YYYY-MM-DD
+                // Simple conversion or checking
+                // Ideally backend filtering is better, but frontend works for small datasets
+                // Let's assume standard format match for now or just skip complex date logic for simple demo
+            }
+            renderInvoicesTable(filtered);
+        }
+
+        async function viewInvoice(invNo) {
+            const inv = allInvoices.find(i => i.invoice_no == invNo);
+            if(!inv) return;
+            
+            document.getElementById('inv-detail-id').innerText = inv.invoice_no;
+            
+            let itemsHtml = '<table class="dark-table" style="margin-top:0;"><thead><tr><th>Item</th><th>Qty</th><th>Total</th></tr></thead><tbody>';
+            inv.items.forEach(item => {
+                itemsHtml += `<tr><td>${item.name}</td><td>${item.qty}</td><td>${item.qty * item.price}</td></tr>`;
+            });
+            itemsHtml += '</tbody></table>';
+            
+            const content = `
+                <div style="display:flex; justify-content:space-between; margin-bottom:15px;">
+                    <div>
+                        <div style="font-weight:bold; color:var(--accent-orange);">Customer</div>
+                        <div>${inv.customer_name || 'Walk-in'}</div>
+                        <div>${inv.customer_phone || ''}</div>
+                    </div>
+                    <div style="text-align:right;">
+                        <div style="font-weight:bold; color:var(--text-secondary);">Date</div>
+                        <div>${inv.date}</div>
+                        <div>${inv.time}</div>
+                    </div>
+                </div>
+                ${itemsHtml}
+                <div style="margin-top:15px; text-align:right;">
+                    <div>Subtotal: ৳${inv.subtotal}</div>
+                    <div>Discount: -৳${inv.discount}</div>
+                    <div>Labor: +৳${inv.labor}</div>
+                    <div style="font-weight:bold; font-size:18px; margin-top:5px;">Total: ৳${inv.total}</div>
+                    <div style="color:var(--accent-green);">Paid: ৳${inv.paid}</div>
+                    <div style="color:var(--accent-red);">Due: ৳${inv.due}</div>
+                </div>
+            `;
+            
+            document.getElementById('inv-detail-content').innerHTML = content;
+            document.getElementById('inv-add-pay').value = '';
+            
+            // Only show payment option if due exists
+            if(inv.due > 0) {
+                 document.querySelector('#invoiceModal .dashboard-grid-2').style.display = 'grid';
+            } else {
+                 document.querySelector('#invoiceModal .dashboard-grid-2').style.display = 'none';
+            }
+            
+            openModal('invoiceModal');
+        }
+
+        async function updateInvoicePayment() {
+            const invNo = document.getElementById('inv-detail-id').innerText;
+            const amount = parseFloat(document.getElementById('inv-add-pay').value);
+            
+            if(!amount || amount <= 0) return alert("Invalid amount");
+            
+            showLoading();
+            await fetch('/admin/store/api/invoices', {
+                method: 'PUT',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({invoice_no: invNo, payment: amount})
+            });
+            hideLoading();
+            closeModal('invoiceModal');
+            loadInvoices();
+            loadStoreStats();
+        }
+
+        // --- STORE USERS ---
+        async function loadStoreUsers() {
+            const res = await fetch('/admin/store/api/users');
+            const users = await res.json();
+            
+            let html = '';
+            users.forEach(u => {
+                html += `<tr><td>${u.username}</td><td>${u.role}</td><td><button class="action-btn btn-del">x</button></td></tr>`;
+            });
+            document.getElementById('store-users-list').innerHTML = html;
+        }
+
+        async function saveStoreUser() {
+            const data = {
+                username: document.getElementById('su-username').value,
+                password: document.getElementById('su-password').value,
+                role: document.getElementById('su-role').value
+            };
+            if(!data.username || !data.password) return;
+            
+            await fetch('/admin/store/api/users', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(data)
+            });
+            document.getElementById('storeUserForm').reset();
+            loadStoreUsers();
+        }
+
+        function printCurrentInvoice() {
+            const invNo = document.getElementById('inv-detail-id').innerText;
+            window.open('/admin/store/print_invoice/' + invNo, '_blank');
+        }
     </script>
 </body>
 </html>
 """
-
-STORE_INVOICE_PRINT_TEMPLATE = """
+STORE_INVOICE_TEMPLATE = """
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Invoice #{{ invoice.inv_no }}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Invoice</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 40px; color: #333; max-width: 800px; margin: 0 auto; }
-        .header { display: flex; justify-content: space-between; border-bottom: 2px solid #333; padding-bottom: 20px; margin-bottom: 30px; }
-        .company-info h1 { margin: 0; color: #FF7A00; text-transform: uppercase; }
-        .company-info p { margin: 5px 0; font-size: 14px; color: #666; }
-        .invoice-info { text-align: right; }
-        .invoice-info h2 { margin: 0; color: #333; text-transform: uppercase; }
-        .bill-to { margin-bottom: 30px; background: #f9f9f9; padding: 20px; border-radius: 8px; }
-        .bill-to h3 { margin-top: 0; font-size: 14px; text-transform: uppercase; color: #888; }
-        .bill-to p { margin: 5px 0; font-weight: 600; font-size: 16px; }
-        table { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
-        th { background: #333; color: white; text-align: left; padding: 12px; font-size: 14px; text-transform: uppercase; }
-        td { border-bottom: 1px solid #eee; padding: 12px; font-size: 14px; }
-        .totals { float: right; width: 300px; }
-        .totals-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #eee; }
-        .grand-total { font-weight: bold; font-size: 18px; border-top: 2px solid #333; border-bottom: none; color: #FF7A00; }
-        .footer { clear: both; margin-top: 80px; text-align: center; font-size: 12px; color: #888; border-top: 1px solid #eee; padding-top: 20px; }
-        .signature { margin-top: 50px; display: flex; justify-content: space-between; }
-        .sig-box { border-top: 1px solid #333; width: 200px; text-align: center; padding-top: 10px; font-size: 14px; font-weight: 600; }
-        
+        body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333; padding: 20px; background: #eee; }
+        .invoice-box { max-width: 800px; margin: auto; padding: 30px; border: 1px solid #eee; box-shadow: 0 0 10px rgba(0, 0, 0, 0.15); font-size: 16px; line-height: 24px; background: #fff; }
+        .invoice-box table { width: 100%; line-height: inherit; text-align: left; border-collapse: collapse; }
+        .invoice-box table td { padding: 5px; vertical-align: top; }
+        .invoice-box table tr td:nth-child(2) { text-align: right; }
+        .top-title { font-size: 45px; line-height: 45px; color: #333; font-weight: bold; text-transform: uppercase; }
+        .invoice-header { margin-bottom: 20px; border-bottom: 2px solid #eee; padding-bottom: 20px; }
+        .info-table td { padding-bottom: 20px; }
+        .heading td { background: #eee; border-bottom: 1px solid #ddd; font-weight: bold; }
+        .item td { border-bottom: 1px solid #eee; }
+        .total-row td { border-top: 2px solid #333; font-weight: bold; }
+        .footer { margin-top: 50px; text-align: center; font-size: 12px; color: #777; border-top: 1px solid #eee; padding-top: 10px; }
+        .status-paid { color: green; border: 2px solid green; padding: 5px 10px; display: inline-block; transform: rotate(-15deg); font-weight: bold; font-size: 20px; opacity: 0.7; }
+        .status-due { color: red; border: 2px solid red; padding: 5px 10px; display: inline-block; transform: rotate(-15deg); font-weight: bold; font-size: 20px; opacity: 0.7; }
         @media print {
-            body { padding: 0; }
+            body { background: #fff; padding: 0; }
+            .invoice-box { box-shadow: none; border: 0; width: 100%; padding: 0; }
             .no-print { display: none; }
         }
     </style>
 </head>
 <body>
-    <div class="no-print" style="margin-bottom: 20px; text-align: right;">
-        <button onclick="window.print()" style="padding: 10px 20px; background: #333; color: white; border: none; cursor: pointer;">Print Invoice</button>
-        <a href="/store/invoices" style="padding: 10px 20px; background: #eee; color: #333; text-decoration: none; margin-left: 10px;">Back</a>
+    <div style="text-align: center; margin-bottom: 20px;" class="no-print">
+        <button onclick="window.print()" style="padding: 10px 20px; cursor: pointer; background: #333; color: white; border: none; border-radius: 5px;">Print Invoice</button>
     </div>
 
-    <div class="header">
-        <div class="company-info">
-            <h1>AluStore</h1>
-            <p>Quality Aluminium & Glass</p>
-            <p>Tongi, Gazipur, Dhaka</p>
-            <p>Phone: +880 1700-000000</p>
-        </div>
-        <div class="invoice-info">
-            <h2>{{ invoice.type }}</h2>
-            <p>#{{ invoice.inv_no }}</p>
-            <p>Date: {{ invoice.date }}</p>
-        </div>
-    </div>
-
-    <div class="bill-to">
-        <h3>Bill To:</h3>
-        <p>{{ invoice.customer_name }}</p>
-        <p style="font-size: 14px; font-weight: 400;">{{ invoice.customer_details }}</p>
-    </div>
-
-    <table>
-        <thead>
-            <tr>
-                <th width="50%">Item Description</th>
-                <th width="15%">Price</th>
-                <th width="15%">Qty</th>
-                <th width="20%" style="text-align: right;">Total</th>
+    <div class="invoice-box">
+        <table cellpadding="0" cellspacing="0">
+            <tr class="top">
+                <td colspan="4">
+                    <table class="invoice-header">
+                        <tr>
+                            <td class="title">
+                                <div class="top-title">ALUMINUM SHOP</div>
+                                <div style="font-size: 14px; color: #555; margin-top: 5px;">Tongi, Gazipur, Bangladesh</div>
+                                <div style="font-size: 14px; color: #555;">Phone: +880 1XXXXXXXXX</div>
+                            </td>
+                            <td>
+                                <b>Invoice #: {{ invoice.invoice_no }}</b><br>
+                                Date: {{ invoice.date }}<br>
+                                Time: {{ invoice.time }}<br>
+                                <br>
+                                {% if invoice.due <= 0 %}
+                                <span class="status-paid">PAID</span>
+                                {% else %}
+                                <span class="status-due">DUE</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    </table>
+                </td>
             </tr>
-        </thead>
-        <tbody>
+            
+            <tr class="information">
+                <td colspan="4">
+                    <table class="info-table">
+                        <tr>
+                            <td>
+                                <b>Bill To:</b><br>
+                                {{ invoice.customer_name or 'Walk-in Customer' }}<br>
+                                {{ invoice.customer_phone }}<br>
+                                {{ invoice.customer_address }}
+                            </td>
+                            <td>
+                                <b>Served By:</b><br>
+                                {{ invoice.created_by }}<br>
+                                MNM Software
+                            </td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+            
+            <tr class="heading">
+                <td style="width: 50%;">Item</td>
+                <td style="text-align: center;">Price</td>
+                <td style="text-align: center;">Qty</td>
+                <td>Total</td>
+            </tr>
+            
             {% for item in invoice.items %}
-            <tr>
-                <td>{{ item.product_name }}</td>
-                <td>{{ item.price }}</td>
-                <td>{{ item.qty }}</td>
-                <td style="text-align: right;">{{ item.total }}</td>
+            <tr class="item">
+                <td>{{ item.name }}</td>
+                <td style="text-align: center;">{{ item.price }}</td>
+                <td style="text-align: center;">{{ item.qty }}</td>
+                <td>{{ item.price * item.qty }}</td>
             </tr>
             {% endfor %}
-        </tbody>
-    </table>
-
-    <div class="totals">
-        <div class="totals-row">
-            <span>Subtotal</span>
-            <span>{{ invoice.subtotal }}</span>
+            
+            <tr class="total">
+                <td colspan="3" style="text-align: right; padding-top: 20px;">Subtotal:</td>
+                <td style="padding-top: 20px;">{{ invoice.subtotal }}</td>
+            </tr>
+            <tr class="total">
+                <td colspan="3" style="text-align: right;">Labor/Other:</td>
+                <td>+{{ invoice.labor }}</td>
+            </tr>
+            <tr class="total">
+                <td colspan="3" style="text-align: right;">Discount:</td>
+                <td>-{{ invoice.discount }}</td>
+            </tr>
+            <tr class="total-row">
+                <td colspan="3" style="text-align: right; font-size: 18px;">Grand Total:</td>
+                <td style="font-size: 18px;">{{ invoice.total }}</td>
+            </tr>
+            <tr>
+                <td colspan="3" style="text-align: right; color: green; font-weight: bold;">Paid:</td>
+                <td style="color: green; font-weight: bold;">{{ invoice.paid }}</td>
+            </tr>
+            <tr>
+                <td colspan="3" style="text-align: right; color: red; font-weight: bold;">Due:</td>
+                <td style="color: red; font-weight: bold;">{{ invoice.due }}</td>
+            </tr>
+        </table>
+        
+        <div class="footer">
+            <p>Thank you for your business!</p>
+            <p>Software Developed by Mehedi Hasan</p>
         </div>
-        <div class="totals-row">
-            <span>Discount</span>
-            <span>-{{ invoice.discount }}</span>
-        </div>
-        <div class="totals-row grand-total">
-            <span>Grand Total</span>
-            <span>{{ invoice.grand_total }}</span>
-        </div>
-        {% if invoice.type == 'INVOICE' %}
-        <div class="totals-row">
-            <span>Paid Amount</span>
-            <span>{{ invoice.paid_amount }}</span>
-        </div>
-        <div class="totals-row">
-            <span>Due Amount</span>
-            <span style="color: red;">{{ invoice.due_amount }}</span>
-        </div>
-        {% endif %}
-    </div>
-
-    <div class="footer">
-        <div class="signature">
-            <div class="sig-box">Customer Signature</div>
-            <div class="sig-box">Authorized Signature</div>
-        </div>
-        <p style="margin-top: 30px;">Thank you for your business!</p>
-        <p>Software Generated Invoice - MNM Software</p>
     </div>
 </body>
 </html>
 """
+
 # ==============================================================================
-# STORE PANEL ROUTES (CONTROLLER LOGIC)
+# FLASK ROUTES (CONTROLLER LOGIC)
 # ==============================================================================
 
-# --- Dashboard ---
-@app.route('/store/dashboard')
-def store_dashboard_view():
-    if not session.get('logged_in'): return redirect(url_for('index'))
-    # Check permission
-    if 'store_panel' not in session.get('permissions', []) and session.get('role') != 'admin':
-        flash("Access Denied: Store Panel permission required.")
+@app.route('/')
+def index():
+    load_users()
+    if not session.get('logged_in'):
+        return render_template_string(LOGIN_TEMPLATE)
+    else:
+        if session.get('role') == 'admin':
+            stats = get_dashboard_summary_v2()
+            return render_template_string(ADMIN_DASHBOARD_TEMPLATE, stats=stats)
+        else:
+            perms = session.get('permissions', [])
+            # Store Permission Check
+            if len(perms) == 1 and 'store_access' in perms:
+                 return redirect(url_for('store_dashboard'))
+            elif len(perms) == 1 and 'accessories' in perms:
+                return redirect(url_for('accessories_search_page'))
+            else:
+                return render_template_string(USER_DASHBOARD_TEMPLATE)
+
+@app.route('/login', methods=['POST'])
+def login():
+    username = request.form.get('username')
+    password = request.form.get('password')
+
+    users_db = load_users()
+
+    if username in users_db and users_db[username]['password'] == password:
+        session.permanent = True
+        session['logged_in'] = True
+        session['user'] = username
+        session['role'] = users_db[username]['role']
+        session['permissions'] = users_db[username].get('permissions', [])
+        
+        now = get_bd_time()
+        session['login_start'] = now.isoformat()
+        
+        users_db[username]['last_login'] = now.strftime('%I:%M %p, %d %b')
+        save_users(users_db)
+        
+        return redirect(url_for('index'))
+    else:
+        flash('Invalid Username or Password.')
         return redirect(url_for('index'))
 
-    products = load_store_products()
-    customers = load_store_customers()
+@app.route('/logout')
+def logout():
+    if session.get('logged_in') and 'login_start' in session:
+        try:
+            start_time = datetime.fromisoformat(session['login_start'])
+            end_time = get_bd_time()
+            duration = end_time - start_time
+            minutes = int(duration.total_seconds() / 60)
+            dur_str = f"{minutes} mins" if minutes < 60 else f"{minutes // 60}h {minutes % 60}m"
+
+            username = session.get('user')
+            users_db = load_users()
+            if username in users_db:
+                users_db[username]['last_duration'] = dur_str
+                save_users(users_db)
+        except: pass
+
+    session.clear()
+    flash('Session terminated.')
+    return redirect(url_for('index'))
+
+@app.route('/admin/get-users', methods=['GET'])
+def get_users():
+    if not session.get('logged_in') or session.get('role') != 'admin': 
+        return jsonify({})
+    return jsonify(load_users())
+
+@app.route('/admin/save-user', methods=['POST'])
+def save_user():
+    if not session.get('logged_in') or session.get('role') != 'admin': 
+        return jsonify({'status': 'error', 'message': 'Unauthorized'})
+    
+    data = request.json
+    username = data.get('username', '').strip()
+    password = data.get('password', '').strip()
+    permissions = data.get('permissions', [])
+    action = data.get('action_type')
+    
+    if not username or not password: 
+        return jsonify({'status': 'error', 'message': 'Invalid Data'})
+
+    users_db = load_users()
+    
+    if action == 'create':
+        if username in users_db: 
+            return jsonify({'status': 'error', 'message': 'User already exists!'})
+        users_db[username] = {
+            "password": password, 
+            "role": "user", 
+            "permissions": permissions,
+            "created_at": get_bd_date_str(), 
+            "last_login": "Never", 
+            "last_duration": "N/A"
+        }
+    elif action == 'update':
+        if username not in users_db: 
+            return jsonify({'status': 'error', 'message': 'User not found!'})
+        users_db[username]['password'] = password
+        users_db[username]['permissions'] = permissions
+    
+    save_users(users_db)
+    return jsonify({'status': 'success', 'message': 'User saved successfully!'})
+
+@app.route('/admin/delete-user', methods=['POST'])
+def delete_user():
+    if not session.get('logged_in') or session.get('role') != 'admin': 
+        return jsonify({'status': 'error', 'message': 'Unauthorized'})
+    
+    username = request.json.get('username')
+    users_db = load_users()
+    
+    if username == 'Admin': 
+        return jsonify({'status': 'error', 'message': 'Cannot delete Main Admin!'})
+
+    if username in users_db:
+        del users_db[username]
+        save_users(users_db)
+        return jsonify({'status': 'success', 'message': 'User deleted!'})
+    
+    return jsonify({'status': 'error', 'message': 'User not found'})
+
+# ==============================================================================
+# STORE PANEL ROUTES & API (NEW)
+# ==============================================================================
+
+@app.route('/admin/store')
+def store_dashboard():
+    if not session.get('logged_in'):
+        return redirect(url_for('index'))
+    # Permission Check
+    if session.get('role') != 'admin' and 'store_access' not in session.get('permissions', []):
+        flash("You do not have access to Store Panel")
+        return redirect(url_for('index'))
+        
+    return render_template_string(STORE_DASHBOARD_TEMPLATE)
+
+@app.route('/admin/store/api/stats')
+def get_store_stats():
+    # Simple analytics
     invoices = load_store_invoices()
-
-    today = get_bd_date_str()
-    
-    # Calculate Stats
-    today_sales = sum(float(inv['grand_total']) for inv in invoices if inv['date'] == today and inv['type'] == 'INVOICE')
-    total_due = sum(float(c.get('total_due', 0)) for c in customers)
-    
-    stats = {
-        'today_sales': f"{today_sales:,.2f}",
-        'total_due': f"{total_due:,.2f}",
-        'product_count': len(products),
-        'customer_count': len(customers)
-    }
-    
-    # Get 5 most recent invoices
-    recent_invoices = sorted(invoices, key=lambda x: str(x['inv_no']), reverse=True)[:5]
-    
-    return render_template_string(STORE_DASHBOARD_TEMPLATE, stats=stats, recent_invoices=recent_invoices)
-
-# --- Product Management ---
-@app.route('/store/products')
-def store_products_list():
-    if not session.get('logged_in'): return redirect(url_for('index'))
     products = load_store_products()
-    return render_template_string(STORE_PRODUCTS_TEMPLATE, products=products)
-
-@app.route('/store/product/save', methods=['POST'])
-def store_product_save():
-    if not session.get('logged_in'): return redirect(url_for('index'))
-    
-    products = load_store_products()
-    prod_id = request.form.get('id')
-    
-    new_data = {
-        "name": request.form.get('name'),
-        "category": request.form.get('category'),
-        "unit": request.form.get('unit'),
-        "cost_price": request.form.get('cost_price'),
-        "sell_price": request.form.get('sell_price'),
-        "stock": request.form.get('stock')
-    }
-
-    if prod_id:
-        # Update existing
-        for p in products:
-            if str(p['id']) == prod_id:
-                p.update(new_data)
-                break
-    else:
-        # Create new (Simple ID generation)
-        new_id = 1001
-        if products:
-            new_id = max(int(p['id']) for p in products) + 1
-        new_data['id'] = new_id
-        products.append(new_data)
-    
-    save_store_products(products)
-    flash("Product saved successfully!")
-    return redirect(url_for('store_products_list'))
-
-@app.route('/store/product/delete', methods=['POST'])
-def store_product_delete():
-    if not session.get('logged_in'): return redirect(url_for('index'))
-    prod_id = request.form.get('id')
-    products = load_store_products()
-    products = [p for p in products if str(p['id']) != prod_id]
-    save_store_products(products)
-    flash("Product deleted.")
-    return redirect(url_for('store_products_list'))
-
-# --- Customer Management ---
-@app.route('/store/customers')
-def store_customers_list():
-    if not session.get('logged_in'): return redirect(url_for('index'))
     customers = load_store_customers()
-    return render_template_string(STORE_CUSTOMERS_TEMPLATE, customers=customers)
+    
+    today_str = get_bd_date_str()
+    today_sales = sum(inv.get('total', 0) for inv in invoices if inv.get('date') == today_str)
+    total_due = sum(inv.get('due', 0) for inv in invoices)
+    low_stock = sum(1 for p in products if p.get('stock', 0) < 5)
+    
+    recent = sorted(invoices, key=lambda x: x['invoice_no'], reverse=True)[:5]
+    
+    return jsonify({
+        'today_sales': round(today_sales, 2),
+        'total_due': round(total_due, 2),
+        'low_stock': low_stock,
+        'total_customers': len(customers),
+        'recent_invoices': recent
+    })
 
-@app.route('/store/customer/save', methods=['POST'])
-def store_customer_save():
-    if not session.get('logged_in'): return redirect(url_for('index'))
-    
-    customers = load_store_customers()
-    cust_id = request.form.get('id')
-    
-    new_data = {
-        "name": request.form.get('name'),
-        "phone": request.form.get('phone'),
-        "address": request.form.get('address'),
-    }
-    
-    # Handle Opening Due
-    opening_due = float(request.form.get('opening_due', 0))
+@app.route('/admin/store/api/products', methods=['GET', 'POST', 'DELETE'])
+def handle_products():
+    if request.method == 'GET':
+        return jsonify(load_store_products())
+        
+    elif request.method == 'POST':
+        data = request.json
+        save_store_product(data)
+        return jsonify({'status': 'success'})
+        
+    elif request.method == 'DELETE':
+        code = request.json.get('code')
+        delete_store_product(code)
+        return jsonify({'status': 'success'})
 
-    if cust_id:
-        # Update
+@app.route('/admin/store/api/customers', methods=['GET', 'POST'])
+def handle_customers():
+    if request.method == 'GET':
+        # Calculate due for each customer on the fly or load from DB
+        customers = load_store_customers()
+        invoices = load_store_invoices()
+        
         for c in customers:
-            if str(c['id']) == cust_id:
-                # If editing, we generally don't overwrite total_due with opening_due unless it's a specific correction logic.
-                # Here we just update contact info to be safe, or logic needs to be complex.
-                # For simplicity in this project: Update info only.
-                c.update(new_data)
-                break
-    else:
-        # New
-        new_id = 1
-        if customers:
-            new_id = max(int(c['id']) for c in customers) + 1
-        new_data['id'] = new_id
-        new_data['total_due'] = opening_due # Set initial due
-        customers.append(new_data)
-    
-    save_store_customers(customers)
-    flash("Customer saved!")
-    return redirect(url_for('store_customers_list'))
-
-@app.route('/store/customer/delete', methods=['POST'])
-def store_customer_delete():
-    if not session.get('logged_in'): return redirect(url_for('index'))
-    cust_id = request.form.get('id')
-    customers = load_store_customers()
-    customers = [c for c in customers if str(c['id']) != cust_id]
-    save_store_customers(customers)
-    flash("Customer deleted.")
-    return redirect(url_for('store_customers_list'))
-
-@app.route('/store/customer/collect', methods=['POST'])
-def store_customer_collect():
-    if not session.get('logged_in'): return redirect(url_for('index'))
-    
-    cust_id = request.form.get('id')
-    amount = float(request.form.get('amount', 0))
-    note = request.form.get('note', '')
-    
-    if amount <= 0:
-        flash("Invalid amount.")
-        return redirect(url_for('store_customers_list'))
-
-    customers = load_store_customers()
-    for c in customers:
-        if str(c['id']) == cust_id:
-            current_due = float(c.get('total_due', 0))
-            c['total_due'] = current_due - amount
+            c_due = sum(inv.get('due', 0) for inv in invoices if inv.get('customer_phone') == c['phone'])
+            c['total_due'] = round(c_due, 2)
             
-            # Optional: Record this transaction in a separate Ledger if needed.
-            # For now, we update the master due.
-            break
-            
-    save_store_customers(customers)
-    flash(f"Collected ৳{amount} successfully!")
-    return redirect(url_for('store_customers_list'))
-
-# --- Invoice & Quotation Management ---
-@app.route('/store/invoices')
-def store_invoices_list():
-    if not session.get('logged_in'): return redirect(url_for('index'))
-    invoices = load_store_invoices()
-    # Sort by ID desc
-    invoices.sort(key=lambda x: int(x['inv_no']), reverse=True)
-    return render_template_string(STORE_INVOICE_LIST_TEMPLATE, invoices=invoices)
-
-@app.route('/store/quotations')
-def store_quotations_list():
-    if not session.get('logged_in'): return redirect(url_for('index'))
-    # Reuse Invoice List Template but filter only Quotes
-    all_invoices = load_store_invoices()
-    quotes = [i for i in all_invoices if i['type'] == 'QUOTE']
-    quotes.sort(key=lambda x: int(x['inv_no']), reverse=True)
-    
-    # We can create a separate template or reuse. Reusing for simplicity with a flag.
-    # But strictly, let's just render the invoice list template with these data.
-    return render_template_string(STORE_INVOICE_LIST_TEMPLATE, invoices=quotes)
-
-@app.route('/store/invoice/new')
-def store_invoice_new():
-    if not session.get('logged_in'): return redirect(url_for('index'))
-    products = load_store_products()
-    customers = load_store_customers()
-    today = get_bd_date_str()
-    return render_template_string(STORE_INVOICE_FORM_TEMPLATE, mode="Invoice", products=products, customers=customers, invoice=None, today=today)
-
-@app.route('/store/quotation/new')
-def store_quotation_new():
-    if not session.get('logged_in'): return redirect(url_for('index'))
-    products = load_store_products()
-    customers = load_store_customers()
-    today = get_bd_date_str()
-    return render_template_string(STORE_INVOICE_FORM_TEMPLATE, mode="Quote", products=products, customers=customers, invoice=None, today=today)
-
-@app.route('/store/invoice/save', methods=['POST'])
-def store_invoice_save():
-    if not session.get('logged_in'): return redirect(url_for('index'))
-    
-    # Form Data
-    mode = request.form.get('mode') # Invoice or Quote
-    existing_inv_no = request.form.get('existing_inv_no')
-    
-    customer_id = request.form.get('customer_id')
-    customer_name = request.form.get('customer_name')
-    customer_details = request.form.get('customer_details')
-    
-    prod_ids = request.form.getlist('product_id[]')
-    prices = request.form.getlist('price[]')
-    qtys = request.form.getlist('qty[]')
-    
-    discount = float(request.form.get('discount', 0))
-    paid_amount = float(request.form.get('paid_amount', 0))
-    
-    # Load DBs
-    products = load_store_products()
-    customers = load_store_customers()
-    invoices = load_store_invoices()
-    
-    # Process Items
-    items = []
-    subtotal = 0
-    
-    for i in range(len(prod_ids)):
-        pid = prod_ids[i]
-        price = float(prices[i])
-        qty = float(qtys[i])
-        total = price * qty
-        subtotal += total
+        return jsonify(customers)
         
-        # Find product name
-        p_name = "Unknown"
-        for p in products:
-            if str(p['id']) == pid:
-                p_name = p['name']
-                # UPDATE STOCK (Only if INVOICE, not Quote)
-                if mode == 'Invoice' and not existing_inv_no:
-                    current_stock = float(p.get('stock', 0))
-                    p['stock'] = current_stock - qty
-                break
-        
-        items.append({
-            "product_id": pid,
-            "product_name": p_name,
-            "price": price,
-            "qty": qty,
-            "total": total
-        })
+    elif request.method == 'POST':
+        data = request.json
+        save_store_customer(data)
+        return jsonify({'status': 'success'})
 
-    grand_total = subtotal - discount
-    due_amount = grand_total - paid_amount
-    
-    # Generate ID
-    if existing_inv_no:
-        inv_no = existing_inv_no
-        # Logic to remove old stock deduction if editing would go here (complex), 
-        # for this simplified version, we assume edits don't re-adjust stock automatically to prevent errors,
-        # or we block stock editing. 
-        # To keep it safe: We will just update the Record, NOT the stock on Edit for now.
+@app.route('/admin/store/api/invoices', methods=['GET', 'POST', 'PUT'])
+def handle_invoices():
+    if request.method == 'GET':
+        return jsonify(sorted(load_store_invoices(), key=lambda x: x['invoice_no'], reverse=True))
         
-        # Find and remove old invoice to replace
-        invoices = [inv for inv in invoices if str(inv['inv_no']) != inv_no]
-    else:
-        inv_no = 1001
+    elif request.method == 'POST':
+        data = request.json
+        # Generate Invoice ID
+        invoices = load_store_invoices()
+        new_id = 1001
         if invoices:
-            inv_no = max(int(inv['inv_no']) for inv in invoices) + 1
-    
-    # Update Customer Due (Only if Invoice)
-    if mode == 'Invoice':
-        if customer_id != 'Walk-in':
-            for c in customers:
-                if str(c['id']) == customer_id:
-                    current_due = float(c.get('total_due', 0))
-                    # Add new due
-                    c['total_due'] = current_due + due_amount
-                    break
-
-    # Construct Record
-    new_invoice = {
-        "inv_no": inv_no,
-        "date": get_bd_date_str(),
-        "type": "INVOICE" if mode == 'Invoice' else "QUOTE",
-        "customer_id": customer_id,
-        "customer_name": customer_name,
-        "customer_details": customer_details,
-        "items": items,
-        "subtotal": round(subtotal, 2),
-        "discount": round(discount, 2),
-        "grand_total": round(grand_total, 2),
-        "paid_amount": round(paid_amount, 2),
-        "due_amount": round(due_amount, 2)
-    }
-    
-    invoices.append(new_invoice)
-    
-    # Save All
-    save_store_products(products)
-    save_store_customers(customers)
-    save_store_invoices(invoices)
-    
-    return redirect(url_for('store_invoice_print', inv_no=inv_no))
-
-@app.route('/store/invoice/print/<inv_no>')
-def store_invoice_print(inv_no):
-    if not session.get('logged_in'): return redirect(url_for('index'))
-    invoices = load_store_invoices()
-    invoice = next((inv for inv in invoices if str(inv['inv_no']) == str(inv_no)), None)
-    
-    if not invoice:
-        flash("Invoice not found")
-        return redirect(url_for('store_invoices_list'))
-        
-    return render_template_string(STORE_INVOICE_PRINT_TEMPLATE, invoice=invoice)
-
-@app.route('/store/invoice/edit/<inv_no>')
-def store_invoice_edit(inv_no):
-    if not session.get('logged_in'): return redirect(url_for('index'))
-    invoices = load_store_invoices()
-    invoice = next((inv for inv in invoices if str(inv['inv_no']) == str(inv_no)), None)
-    
-    if not invoice:
-        flash("Invoice not found")
-        return redirect(url_for('store_invoices_list'))
-
-    products = load_store_products()
-    customers = load_store_customers()
-    today = get_bd_date_str()
-    mode = "Invoice" if invoice['type'] == 'INVOICE' else "Quote"
-    
-    return render_template_string(STORE_INVOICE_FORM_TEMPLATE, mode=mode, products=products, customers=customers, invoice=invoice, today=today)
-
-@app.route('/store/invoice/delete', methods=['POST'])
-def store_invoice_delete():
-    if not session.get('logged_in'): return redirect(url_for('index'))
-    inv_no = request.form.get('inv_no')
-    
-    invoices = load_store_invoices()
-    products = load_store_products()
-    customers = load_store_customers()
-    
-    target_inv = next((inv for inv in invoices if str(inv['inv_no']) == str(inv_no)), None)
-    
-    if target_inv:
-        # 1. Restore Stock (If it was an invoice)
-        if target_inv['type'] == 'INVOICE':
-            for item in target_inv['items']:
-                for p in products:
-                    if str(p['id']) == str(item['product_id']):
-                        p['stock'] = float(p.get('stock', 0)) + float(item['qty'])
-                        break
+            new_id = max(inv['invoice_no'] for inv in invoices) + 1
             
-            # 2. Revert Customer Due
-            cust_id = target_inv.get('customer_id')
-            if cust_id != 'Walk-in':
-                for c in customers:
-                    if str(c['id']) == cust_id:
-                        c['total_due'] = float(c.get('total_due', 0)) - float(target_inv['due_amount'])
-                        break
+        now = get_bd_time()
         
-        # 3. Remove Invoice
-        invoices = [inv for inv in invoices if str(inv['inv_no']) != str(inv_no)]
+        invoice = {
+            'invoice_no': new_id,
+            'date': now.strftime('%d-%m-%Y'),
+            'time': now.strftime('%I:%M %p'),
+            'customer_phone': data.get('customer_phone'),
+            'type': data.get('type'),
+            'items': data.get('items'),
+            'subtotal': data.get('subtotal'),
+            'discount': data.get('discount'),
+            'labor': data.get('labor'),
+            'total': data.get('total'),
+            'paid': data.get('paid'),
+            'due': data.get('due'),
+            'payment_method': data.get('payment_method'),
+            'created_by': session.get('user'),
+            'customer_name': ''
+        }
         
-        save_store_products(products)
-        save_store_customers(customers)
-        save_store_invoices(invoices)
-        flash("Invoice deleted and stock/due adjusted.")
+        # Get Customer Name
+        cust = get_store_customer(data.get('customer_phone'))
+        if cust: 
+            invoice['customer_name'] = cust.get('name')
+            invoice['customer_address'] = cust.get('address')
+        
+        # Update Stock
+        products = load_store_products()
+        for item in invoice['items']:
+            prod = next((p for p in products if p['code'] == item['code']), None)
+            if prod:
+                prod['stock'] = max(0, prod.get('stock', 0) - item['qty'])
+                save_store_product(prod)
+                
+        save_store_invoice(invoice)
+        return jsonify({'status': 'success', 'invoice_no': new_id})
+
+    elif request.method == 'PUT':
+        # Update Payment
+        data = request.json
+        inv_no = int(data.get('invoice_no'))
+        amount = float(data.get('payment'))
+        
+        invoice = get_store_invoice(inv_no)
+        if invoice:
+            invoice['paid'] += amount
+            invoice['due'] = max(0, invoice['total'] - invoice['paid'])
+            save_store_invoice(invoice)
+            return jsonify({'status': 'success'})
+        return jsonify({'status': 'error', 'message': 'Invoice not found'})
+
+@app.route('/admin/store/print_invoice/<int:invoice_no>')
+def print_invoice(invoice_no):
+    invoice = get_store_invoice(invoice_no)
+    if not invoice: return "Invoice not found"
     
-    return redirect(url_for('store_invoices_list'))
-STORE_USERS_TEMPLATE = f"""
-<!doctype html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Store Users - Store Panel</title>
-    {COMMON_STYLES}
-</head>
-<body>
-    <div class="animated-bg"></div>
-    <div class="sidebar">
-        <div class="brand-logo"><i class="fas fa-store"></i> Alu<span>Store</span></div>
-        <div class="nav-menu">
-            {{% if session.role == 'admin' %}}<a href="/" class="nav-link"><i class="fas fa-arrow-left"></i> Main Panel</a>{{% endif %}}
-            <a href="/store/dashboard" class="nav-link"><i class="fas fa-th-large"></i> Dashboard</a>
-            <a href="/store/products" class="nav-link"><i class="fas fa-box-open"></i> Inventory</a>
-            <a href="/store/customers" class="nav-link"><i class="fas fa-users"></i> Customers</a>
-            <a href="/store/invoices" class="nav-link"><i class="fas fa-file-invoice-dollar"></i> Invoices</a>
-            <a href="/store/quotations" class="nav-link"><i class="fas fa-file-alt"></i> Quotations</a>
-            <a href="/store/users" class="nav-link active"><i class="fas fa-user-shield"></i> Store Users</a>
-            <a href="/logout" class="nav-link" style="color: var(--accent-red); margin-top: 20px;"><i class="fas fa-sign-out-alt"></i> Sign Out</a>
-        </div>
-    </div>
+    # Ensure customer details are present
+    if not invoice.get('customer_name') and invoice.get('customer_phone'):
+         cust = get_store_customer(invoice['customer_phone'])
+         if cust:
+             invoice['customer_name'] = cust.get('name')
+             invoice['customer_address'] = cust.get('address')
+             
+    return render_template_string(STORE_INVOICE_TEMPLATE, invoice=invoice)
 
-    <div class="main-content">
-        <div class="header-section">
-            <div>
-                <div class="page-title">Store User Management</div>
-                <div class="page-subtitle">Manage access for shopkeepers</div>
-            </div>
-            <div class="status-badge">Admin Access Only</div>
-        </div>
-
-        <div class="dashboard-grid-2">
-            <div class="card">
-                <div class="section-header">
-                    <span>Existing Users</span>
-                </div>
-                <table class="dark-table">
-                    <thead>
-                        <tr>
-                            <th>Username</th>
-                            <th>Role</th>
-                            <th>Access</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {{% for u, d in users.items() %}}
-                        {{% if 'store_panel' in d.permissions or d.role == 'admin' %}}
-                        <tr>
-                            <td style="font-weight: 600;">{{{{ u }}}}</td>
-                            <td>
-                                {{% if d.role == 'admin' %}}
-                                <span class="table-badge" style="background: rgba(255, 122, 0, 0.15); color: var(--accent-orange);">Admin</span>
-                                {{% else %}}
-                                <span class="table-badge" style="background: rgba(139, 92, 246, 0.15); color: var(--accent-purple);">Staff</span>
-                                {{% endif %}}
-                            </td>
-                            <td>
-                                {{% if 'store_panel' in d.permissions %}}
-                                <span style="color: var(--accent-green); font-size: 12px;">Store Active</span>
-                                {{% else %}}
-                                <span style="color: var(--text-secondary); font-size: 12px;">Admin Override</span>
-                                {{% endif %}}
-                            </td>
-                            <td class="action-cell">
-                                {{% if d.role != 'admin' %}}
-                                <form action="/admin/delete-user" method="POST" onsubmit="return confirm('Remove this user?')" style="display:inline;">
-                                    <input type="hidden" name="username" value="{{{{ u }}}}"> 
-                                    <button class="action-btn btn-del"><i class="fas fa-trash"></i></button>
-                                </form>
-                                {{% endif %}}
-                            </td>
-                        </tr>
-                        {{% endif %}}
-                        {{% endfor %}}
-                    </tbody>
-                </table>
-            </div>
-
-            <div class="card">
-                <div class="section-header">
-                    <span>Add Shop User</span>
-                </div>
-                <form id="storeUserForm">
-                    <div class="input-group">
-                        <label>Username</label>
-                        <input type="text" id="store_user" required placeholder="Name">
-                    </div>
-                    <div class="input-group">
-                        <label>Password</label>
-                        <input type="text" id="store_pass" required placeholder="Password">
-                    </div>
-                    <div class="input-group">
-                        <label>Permissions</label>
-                        <div style="background: rgba(255,255,255,0.05); padding: 10px; border-radius: 8px;">
-                            <label class="perm-checkbox">
-                                <input type="checkbox" checked disabled>
-                                <span>Store Panel Access (Default)</span>
-                            </label>
-                        </div>
-                    </div>
-                    <button type="button" onclick="createStoreUser()">
-                        <i class="fas fa-user-plus" style="margin-right: 8px;"></i> Create User
-                    </button>
-                </form>
-            </div>
-        </div>
-    </div>
-
-    <script>
-        function createStoreUser() {{
-            const u = document.getElementById('store_user').value;
-            const p = document.getElementById('store_pass').value;
-            
-            if(!u || !p) {{ alert("Please fill all fields"); return; }}
-
-            // Use the main Admin API but enforce Store Permission
-            fetch('/admin/save-user', {{
-                method: 'POST',
-                headers: {{'Content-Type': 'application/json'}},
-                body: JSON.stringify({{ 
-                    username: u, 
-                    password: p, 
-                    permissions: ['store_panel'], 
-                    action_type: 'create' 
-                }})
-            }})
-            .then(r => r.json())
-            .then(d => {{
-                if (d.status === 'success') {{
-                    alert("Store User Created Successfully!");
-                    location.reload();
-                }} else {{
-                    alert(d.message);
-                }}
-            }});
-        }}
-    </script>
-</body>
-</html>
-"""
-
+@app.route('/admin/store/api/users', methods=['GET', 'POST'])
+def handle_store_users():
+    if request.method == 'GET':
+        return jsonify(load_store_users())
+    elif request.method == 'POST':
+        save_store_user(request.json)
+        return jsonify({'status': 'success'})
+        # ==============================================================================
+# APPLICATION ENTRY POINT
 # ==============================================================================
-# FINAL ROUTES & MAIN BLOCK
-# ==============================================================================
-
-@app.route('/store/users')
-def store_users_view():
-    if not session.get('logged_in'): return redirect(url_for('index'))
-    if session.get('role') != 'admin':
-        flash("Admin access required for User Management.")
-        return redirect(url_for('store_dashboard_view'))
-        
-    users = load_users()
-    return render_template_string(STORE_USERS_TEMPLATE, users=users)
 
 if __name__ == '__main__':
     # Render requires binding to 0.0.0.0 and the PORT env variable
