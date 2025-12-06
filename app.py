@@ -1,11 +1,11 @@
 import requests
 import openpyxl
-from openpyxl. styles import Font, Alignment, Border, Side, PatternFill
+from openpyxl.styles import Font, Alignment, Border, Side, PatternFill
 from bs4 import BeautifulSoup
 from datetime import datetime, timedelta
 import pytz 
 from io import BytesIO
-from openpyxl. drawing.image import Image
+from openpyxl.drawing.image import Image
 from PIL import Image as PILImage
 import time
 import json
@@ -31,7 +31,7 @@ app.secret_key = 'super-secret-secure-key-bd'
 
 # PO ফাইলের জন্য আপলোড ফোল্ডার
 UPLOAD_FOLDER = 'uploads'
-if not os.path. exists(UPLOAD_FOLDER):
+if not os.path.exists(UPLOAD_FOLDER):
     os.makedirs(UPLOAD_FOLDER)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
@@ -39,13 +39,13 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=120) 
 
 # টাইমজোন কনফিগারেশন (বাংলাদেশ)
-bd_tz = pytz. timezone('Asia/Dhaka')
+bd_tz = pytz.timezone('Asia/Dhaka')
 
 def get_bd_time():
     return datetime.now(bd_tz)
 
 def get_bd_date_str():
-    return get_bd_time(). strftime('%d-%m-%Y')
+    return get_bd_time().strftime('%d-%m-%Y')
 
 # ==============================================================================
 # Browser Cache Control (ব্যাক বাটন ফিক্স)
@@ -60,7 +60,7 @@ def add_header(response):
 # ==============================================================================
 # MongoDB কানেকশন সেটআপ
 # ==============================================================================
-MONGO_URI = "mongodb+srv://Mehedi:Mehedi123@office.jxdnuaj.mongodb.net/? appName=Office"
+MONGO_URI = "mongodb+srv://Mehedi:Mehedi123@office.jxdnuaj.mongodb.net/?appName=Office"
 
 try:
     client = MongoClient(MONGO_URI)
@@ -90,10 +90,10 @@ except Exception as e:
 # ==============================================================================
 COMMON_STYLES = """
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all. min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4. 1.1/animate.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart. js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min. js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
     <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
     <style>
         :root {
@@ -115,12 +115,12 @@ COMMON_STYLES = """
             --border-color: rgba(255, 255, 255, 0.08);
             --border-glow: rgba(255, 122, 0, 0.2);
             --card-radius: 16px;
-            --transition-smooth: all 0. 4s cubic-bezier(0.4, 0, 0.2, 1);
+            --transition-smooth: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             --shadow-card: 0 4px 24px rgba(0, 0, 0, 0.4);
             --shadow-glow: 0 0 40px rgba(255, 122, 0, 0.15);
             --gradient-orange: linear-gradient(135deg, #FF7A00 0%, #FF9A40 100%);
             --gradient-dark: linear-gradient(180deg, #12121a 0%, #0a0a0f 100%);
-            --gradient-card: linear-gradient(145deg, rgba(22, 22, 31, 0.9) 0%, rgba(16, 16, 22, 0. 95) 100%);
+            --gradient-card: linear-gradient(145deg, rgba(22, 22, 31, 0.9) 0%, rgba(16, 16, 22, 0.95) 100%);
         }
 
         * { 
@@ -178,7 +178,7 @@ COMMON_STYLES = """
 
         /* Glassmorphism Effect */
         .glass {
-            background: rgba(22, 22, 31, 0. 7);
+            background: rgba(22, 22, 31, 0.7);
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
             border: 1px solid var(--border-color);
@@ -200,7 +200,7 @@ COMMON_STYLES = """
             transition: var(--transition-smooth);
             box-shadow: 4px 0 30px rgba(0, 0, 0, 0.3);
         }
-        . sidebar::before {
+        .sidebar::before {
             content: '';
             position: absolute;
             top: 0;
@@ -242,7 +242,7 @@ COMMON_STYLES = """
             50% { transform: translateY(-5px) rotate(5deg); }
         }
         
-        . nav-menu { 
+        .nav-menu { 
             flex-grow: 1; 
             display: flex; 
             flex-direction: column;
@@ -275,9 +275,9 @@ COMMON_STYLES = """
             transition: var(--transition-smooth);
             z-index: -1;
         }
-        . nav-link:hover::before, .nav-link. active::before { width: 100%; }
+        .nav-link:hover::before, .nav-link.active::before { width: 100%; }
 
-        .nav-link:hover, .nav-link. active { 
+        .nav-link:hover, .nav-link.active { 
             color: var(--accent-orange); 
             transform: translateX(5px);
         }
@@ -297,11 +297,11 @@ COMMON_STYLES = """
         }
 
         .nav-link:hover i {
-            transform: scale(1. 2);
+            transform: scale(1.2);
             filter: drop-shadow(0 0 8px var(--accent-orange));
         }
 
-        . nav-link . nav-badge {
+        .nav-link .nav-badge {
             margin-left: auto;
             background: var(--accent-orange);
             color: white;
@@ -338,7 +338,7 @@ COMMON_STYLES = """
             min-height: 100vh;
         }
 
-        . header-section { 
+        .header-section { 
             display: flex;
             justify-content: space-between; 
             align-items: flex-start; 
@@ -492,13 +492,13 @@ COMMON_STYLES = """
             box-shadow: 0 0 30px var(--accent-orange-glow);
         }
 
-        . stat-card:hover .stat-icon i {
+        .stat-card:hover .stat-icon i {
             animation: iconBounce 0.5s ease-out;
         }
 
         @keyframes iconBounce {
             0%, 100% { transform: scale(1); }
-            50% { transform: scale(1. 3); }
+            50% { transform: scale(1.3); }
         }
 
         .stat-info h3 { 
@@ -519,7 +519,7 @@ COMMON_STYLES = """
             color: var(--text-secondary); 
             margin: 6px 0 0 0; 
             text-transform: uppercase;
-            letter-spacing: 1. 5px;
+            letter-spacing: 1.5px;
             font-weight: 600;
         }
 
@@ -556,11 +556,11 @@ COMMON_STYLES = """
             height: 100%;
             border-radius: 10px;
             position: relative;
-            animation: progressFill 1. 5s ease-out forwards;
+            animation: progressFill 1.5s ease-out forwards;
             transform-origin: left;
         }
 
-        . progress-bar-fill::after {
+        .progress-bar-fill::after {
             content: '';
             position: absolute;
             top: 0;
@@ -581,9 +581,9 @@ COMMON_STYLES = """
             100% { transform: translateX(100%); }
         }
 
-        . progress-orange { background: var(--gradient-orange); }
+        .progress-orange { background: var(--gradient-orange); }
         .progress-purple { background: linear-gradient(135deg, #8B5CF6 0%, #A78BFA 100%); }
-        . progress-green { background: linear-gradient(135deg, #10B981 0%, #34D399 100%); }
+        .progress-green { background: linear-gradient(135deg, #10B981 0%, #34D399 100%); }
         /* Enhanced Forms */
         .input-group { margin-bottom: 20px; }
 
@@ -629,7 +629,7 @@ COMMON_STYLES = """
         select {
             cursor: pointer;
             appearance: none;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3. org/2000/svg' fill='%23FF7A00' viewBox='0 0 24 24'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%23FF7A00' viewBox='0 0 24 24'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
             background-repeat: no-repeat;
             background-position: right 12px center;
             background-size: 24px;
@@ -745,8 +745,8 @@ COMMON_STYLES = """
             overflow: hidden;
         }
 
-        . btn-edit { 
-            background: rgba(139, 92, 246, 0. 15);
+        .btn-edit { 
+            background: rgba(139, 92, 246, 0.15);
             color: #A78BFA; 
         }
 
@@ -758,7 +758,7 @@ COMMON_STYLES = """
         }
 
         .btn-del { 
-            background: rgba(239, 68, 68, 0. 15);
+            background: rgba(239, 68, 68, 0.15);
             color: #F87171; 
         }
 
@@ -769,24 +769,24 @@ COMMON_STYLES = """
             box-shadow: 0 0 20px rgba(239, 68, 68, 0.4);
         }
 
-        . btn-view {
-            background: rgba(16, 185, 129, 0. 15);
+        .btn-view {
+            background: rgba(16, 185, 129, 0.15);
             color: #34D399;
         }
 
         .btn-view:hover {
             background: var(--accent-green);
             color: white;
-            transform: scale(1. 1);
+            transform: scale(1.1);
             box-shadow: 0 0 20px rgba(16, 185, 129, 0.4);
         }
 
         .btn-pay {
-            background: rgba(59, 130, 246, 0. 15);
+            background: rgba(59, 130, 246, 0.15);
             color: #60A5FA;
         }
 
-        . btn-pay:hover {
+        .btn-pay:hover {
             background: var(--accent-blue);
             color: white;
             transform: scale(1.1);
@@ -827,18 +827,18 @@ COMMON_STYLES = """
             box-shadow: 0 0 30px var(--accent-orange-glow);
         }
 
-        . spinner-inner {
+        .spinner-inner {
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
             width: 50px;
             height: 50px;
-            border: 3px solid rgba(139, 92, 246, 0. 1);
+            border: 3px solid rgba(139, 92, 246, 0.1);
             border-bottom: 3px solid var(--accent-purple);
             border-left: 3px solid var(--accent-purple);
             border-radius: 50%;
-            animation: spin 1. 2s linear infinite reverse;
+            animation: spin 1.2s linear infinite reverse;
         }
 
         @keyframes spin { 
@@ -861,7 +861,7 @@ COMMON_STYLES = """
             border: 3px solid var(--accent-green);
             margin-bottom: 24px;
             animation: success-anim 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-            box-shadow: 0 0 40px rgba(16, 185, 129, 0. 3);
+            box-shadow: 0 0 40px rgba(16, 185, 129, 0.3);
         }
 
         .checkmark-circle::before {
@@ -876,10 +876,10 @@ COMMON_STYLES = """
             left: 35px;
             transform: rotate(45deg); 
             opacity: 0;
-            animation: checkmark-anim 0.4s 0. 4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+            animation: checkmark-anim 0.4s 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
         }
         /* Fail Cross Animation */
-        . fail-container { 
+        .fail-container { 
             display: none; 
             text-align: center;
         }
@@ -892,7 +892,7 @@ COMMON_STYLES = """
             border-radius: 50%; 
             border: 3px solid var(--accent-red);
             margin-bottom: 24px;
-            animation: fail-anim 0.6s cubic-bezier(0.4, 0, 0. 2, 1) forwards;
+            animation: fail-anim 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
             box-shadow: 0 0 40px rgba(239, 68, 68, 0.3);
         }
 
@@ -909,12 +909,12 @@ COMMON_STYLES = """
             opacity: 0;
         }
 
-        . fail-circle::before { transform: rotate(45deg); }
+        .fail-circle::before { transform: rotate(45deg); }
         .fail-circle::after { transform: rotate(-45deg); }
 
         @keyframes success-anim { 
             0% { transform: scale(0); opacity: 0; } 
-            50% { transform: scale(1. 2); } 
+            50% { transform: scale(1.2); } 
             100% { transform: scale(1); opacity: 1; } 
         }
 
@@ -934,7 +934,7 @@ COMMON_STYLES = """
             100% { opacity: 1; transform: rotate(45deg) scale(1); }
         }
 
-        . anim-text { 
+        .anim-text { 
             font-size: 24px; 
             font-weight: 800; 
             color: white;
@@ -949,11 +949,11 @@ COMMON_STYLES = """
             font-weight: 500;
             letter-spacing: 2px;
             text-transform: uppercase;
-            animation: textPulse 1. 5s ease-in-out infinite;
+            animation: textPulse 1.5s ease-in-out infinite;
         }
 
         @keyframes textPulse {
-            0%, 100% { opacity: 0. 5; }
+            0%, 100% { opacity: 0.5; }
             50% { opacity: 1; }
         }
 
@@ -965,7 +965,7 @@ COMMON_STYLES = """
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(10, 10, 15, 0. 9);
+            background: rgba(10, 10, 15, 0.9);
             backdrop-filter: blur(10px);
             -webkit-backdrop-filter: blur(10px);
             z-index: 10000;
@@ -978,7 +978,7 @@ COMMON_STYLES = """
             from { opacity: 0; }
             to { opacity: 1; }
         }
-        . welcome-content {
+        .welcome-content {
             background: var(--gradient-card);
             border: 1px solid var(--border-color);
             border-radius: 24px;
@@ -986,13 +986,13 @@ COMMON_STYLES = """
             text-align: center;
             max-width: 500px;
             width: 90%;
-            animation: welcomeSlideIn 0. 5s cubic-bezier(0.4, 0, 0.2, 1);
+            animation: welcomeSlideIn 0.5s cubic-bezier(0.4, 0, 0.2, 1);
             box-shadow: 0 25px 80px rgba(0, 0, 0, 0.5), 0 0 60px var(--accent-orange-glow);
             position: relative;
             overflow: hidden;
         }
 
-        . welcome-content::before {
+        .welcome-content::before {
             content: '';
             position: absolute;
             top: -50%;
@@ -1001,7 +1001,7 @@ COMMON_STYLES = """
             height: 200%;
             background: radial-gradient(circle, var(--accent-orange-glow) 0%, transparent 60%);
             animation: welcomeGlow 3s ease-in-out infinite;
-            opacity: 0. 3;
+            opacity: 0.3;
         }
         @keyframes welcomeSlideIn {
             from { 
@@ -1032,7 +1032,7 @@ COMMON_STYLES = """
             100% { transform: scale(1) rotate(0deg); }
         }
 
-        . welcome-greeting {
+        .welcome-greeting {
             font-size: 16px;
             color: var(--accent-orange);
             font-weight: 600;
@@ -1123,7 +1123,7 @@ COMMON_STYLES = """
             overflow: hidden;
         }
 
-        . upload-zone::before {
+        .upload-zone::before {
             content: '';
             position: absolute;
             top: 0;
@@ -1144,10 +1144,10 @@ COMMON_STYLES = """
             opacity: 0.03;
         }
 
-        .upload-zone. dragover {
+        .upload-zone.dragover {
             border-color: var(--accent-orange);
             background: rgba(255, 122, 0, 0.1);
-            transform: scale(1. 02);
+            transform: scale(1.02);
         }
 
         .upload-icon {
@@ -1183,7 +1183,7 @@ COMMON_STYLES = """
         }
 
         /* Flash Messages */
-        . flash-message {
+        .flash-message {
             margin-bottom: 20px;
             padding: 16px 20px;
             border-radius: 12px;
@@ -1206,14 +1206,14 @@ COMMON_STYLES = """
             }
         }
 
-        . flash-error {
-            background: rgba(239, 68, 68, 0. 1);
+        .flash-error {
+            background: rgba(239, 68, 68, 0.1);
             border: 1px solid rgba(239, 68, 68, 0.2);
             color: #F87171;
         }
 
         .flash-success {
-            background: rgba(16, 185, 129, 0. 1);
+            background: rgba(16, 185, 129, 0.1);
             border: 1px solid rgba(16, 185, 129, 0.2);
             color: #34D399;
         }
@@ -1240,7 +1240,7 @@ COMMON_STYLES = """
             }
         }
         /* Mobile */
-        . mobile-toggle { 
+        .mobile-toggle { 
             display: none; 
             position: fixed; 
             top: 20px;
@@ -1264,10 +1264,10 @@ COMMON_STYLES = """
                 transform: translateX(-100%);
                 width: 280px;
             } 
-            .sidebar. active { 
+            .sidebar.active { 
                 transform: translateX(0);
             }
-            . main-content { 
+            .main-content { 
                 margin-left: 0;
                 width: 100%; 
                 padding: 20px; 
@@ -1287,7 +1287,7 @@ COMMON_STYLES = """
         }
 
         @media (max-width: 768px) {
-            . stats-grid {
+            .stats-grid {
                 grid-template-columns: 1fr;
             }
             .page-title {
@@ -1302,7 +1302,7 @@ COMMON_STYLES = """
         }
 
         /* Skeleton Loading */
-        . skeleton {
+        .skeleton {
             background: linear-gradient(90deg, var(--bg-card) 25%, rgba(255,255,255,0.05) 50%, var(--bg-card) 75%);
             background-size: 200% 100%;
             animation: skeletonLoad 1.5s infinite;
@@ -1346,12 +1346,12 @@ COMMON_STYLES = """
             font-size: 12px;
             color: var(--text-secondary);
             padding: 6px 12px;
-            background: rgba(16, 185, 129, 0. 1);
+            background: rgba(16, 185, 129, 0.1);
             border-radius: 20px;
             border: 1px solid rgba(16, 185, 129, 0.2);
         }
 
-        . realtime-dot {
+        .realtime-dot {
             width: 8px;
             height: 8px;
             background: var(--accent-green);
@@ -1385,7 +1385,7 @@ COMMON_STYLES = """
         }
 
         .fab:hover {
-            transform: scale(1. 1) rotate(90deg);
+            transform: scale(1.1) rotate(90deg);
             box-shadow: 0 12px 40px var(--accent-orange-glow);
         }
         /* Glow Text */
@@ -1414,7 +1414,7 @@ COMMON_STYLES = """
             transition: opacity 0.3s;
         }
 
-        . animated-border:hover::after {
+        .animated-border:hover::after {
             opacity: 1;
         }
 
@@ -1442,7 +1442,7 @@ COMMON_STYLES = """
             background: rgba(255, 122, 0, 0.05);
         }
 
-        . perm-checkbox input {
+        .perm-checkbox input {
             width: auto;
             margin-right: 10px;
             accent-color: var(--accent-orange);
@@ -1454,12 +1454,12 @@ COMMON_STYLES = """
             color: var(--text-secondary);
         }
 
-        . perm-checkbox:has(input:checked) {
+        .perm-checkbox:has(input:checked) {
             border-color: var(--accent-orange);
             background: rgba(255, 122, 0, 0.1);
         }
 
-        . perm-checkbox:has(input:checked) span {
+        .perm-checkbox:has(input:checked) span {
             color: var(--accent-orange);
         }
 
@@ -1495,7 +1495,7 @@ COMMON_STYLES = """
         }
 
         .due-badge {
-            background: rgba(239, 68, 68, 0. 15);
+            background: rgba(239, 68, 68, 0.15);
             color: #F87171;
             padding: 4px 10px;
             border-radius: 6px;
@@ -1504,7 +1504,7 @@ COMMON_STYLES = """
         }
 
         .paid-badge {
-            background: rgba(16, 185, 129, 0. 15);
+            background: rgba(16, 185, 129, 0.15);
             color: #34D399;
             padding: 4px 10px;
             border-radius: 6px;
@@ -1529,7 +1529,7 @@ COMMON_STYLES = """
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(10, 10, 15, 0. 9);
+            background: rgba(10, 10, 15, 0.9);
             backdrop-filter: blur(10px);
             z-index: 10000;
             justify-content: center;
@@ -1545,7 +1545,7 @@ COMMON_STYLES = """
             width: 90%;
             max-height: 90vh;
             overflow-y: auto;
-            animation: modalSlideIn 0. 3s ease-out;
+            animation: modalSlideIn 0.3s ease-out;
         }
 
         @keyframes modalSlideIn {
@@ -1559,7 +1559,7 @@ COMMON_STYLES = """
             }
         }
 
-        . modal-header {
+        .modal-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -1568,7 +1568,7 @@ COMMON_STYLES = """
             border-bottom: 1px solid var(--border-color);
         }
 
-        . modal-title {
+        .modal-title {
             font-size: 20px;
             font-weight: 700;
             color: white;
@@ -1597,7 +1597,7 @@ COMMON_STYLES = """
             gap: 20px;
         }
 
-        . grid-3 {
+        .grid-3 {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
             gap: 20px;
@@ -1648,7 +1648,7 @@ COMMON_STYLES = """
         }
 
         /* Invoice Table Styles */
-        . invoice-items-table {
+        .invoice-items-table {
             width: 100%;
             border-collapse: collapse;
             margin: 20px 0;
@@ -1671,7 +1671,7 @@ COMMON_STYLES = """
             font-size: 14px;
         }
 
-        .invoice-items-table . item-remove {
+        .invoice-items-table .item-remove {
             color: var(--accent-red);
             cursor: pointer;
             font-size: 16px;
@@ -1715,7 +1715,7 @@ COMMON_STYLES = """
             transition: var(--transition-smooth);
         }
 
-        .filter-tab:hover, .filter-tab. active {
+        .filter-tab:hover, .filter-tab.active {
             background: rgba(255, 122, 0, 0.1);
             border-color: var(--accent-orange);
             color: var(--accent-orange);
@@ -1773,7 +1773,7 @@ def update_stats(ref_no, username):
     new_record = {
         "ref": ref_no,
         "user": username,
-        "date": now. strftime('%d-%m-%Y'),
+        "date": now.strftime('%d-%m-%Y'),
         "time": now.strftime('%I:%M %p'),
         "type": "Closing Report",
         "iso_time": now.isoformat()
@@ -1792,7 +1792,7 @@ def update_po_stats(username, file_count):
         "user": username,
         "file_count": file_count,
         "date": now.strftime('%d-%m-%Y'),
-        "time": now. strftime('%I:%M %p'),
+        "time": now.strftime('%I:%M %p'),
         "type": "PO Sheet",
         "iso_time": now.isoformat()
     }
@@ -1822,7 +1822,7 @@ def save_accessories_db(data):
 
 def load_store_settings():
     """স্টোর সেটিংস লোড করে"""
-    record = store_settings_col. find_one({"_id": "store_config"})
+    record = store_settings_col.find_one({"_id": "store_config"})
     default_settings = {
         "store_name": "MNM Aluminum Store",
         "store_address": "Dhaka, Bangladesh",
@@ -1859,7 +1859,7 @@ def generate_invoice_number():
     
     if last_invoice and 'invoice_number' in last_invoice:
         try:
-            last_num = int(last_invoice['invoice_number']. replace(prefix + "-", ""))
+            last_num = int(last_invoice['invoice_number'].replace(prefix + "-", ""))
             new_num = last_num + 1
         except:
             new_num = 1001
@@ -1893,7 +1893,7 @@ def get_store_dashboard_stats():
     today = get_bd_date_str()
     
     # মোট কাস্টমার
-    total_customers = store_customers_col. count_documents({})
+    total_customers = store_customers_col.count_documents({})
     
     # মোট প্রোডাক্ট
     total_products = store_products_col.count_documents({})
@@ -1934,10 +1934,10 @@ def get_store_dashboard_stats():
     total_paid = total_paid_result[0]['total'] if total_paid_result else 0
     
     # সাম্প্রতিক ইনভয়েস (শেষ ১০টি)
-    recent_invoices = list(store_invoices_col.find(). sort("created_at", -1).limit(10))
+    recent_invoices = list(store_invoices_col.find().sort("created_at", -1).limit(10))
     
     # সাম্প্রতিক পেমেন্ট (শেষ ১০টি)
-    recent_payments = list(store_payments_col.find(). sort("date", -1).limit(10))
+    recent_payments = list(store_payments_col.find().sort("date", -1).limit(10))
     
     # বাকিদার কাস্টমার লিস্ট
     due_customers = list(store_invoices_col.aggregate([
@@ -1968,7 +1968,7 @@ def get_store_dashboard_stats():
 
 def get_customer_details(customer_id):
     """কাস্টমারের সম্পূর্ণ তথ্য ও লেনদেন"""
-    customer = store_customers_col. find_one({"_id": ObjectId(customer_id)})
+    customer = store_customers_col.find_one({"_id": ObjectId(customer_id)})
     if not customer:
         return None
     
@@ -1976,10 +1976,10 @@ def get_customer_details(customer_id):
     invoices = list(store_invoices_col.find({"customer_id": str(customer_id)}).sort("created_at", -1))
     
     # কাস্টমারের সব পেমেন্ট
-    payments = list(store_payments_col. find({"customer_id": str(customer_id)}).sort("date", -1))
+    payments = list(store_payments_col.find({"customer_id": str(customer_id)}).sort("date", -1))
     
     # মোট ক্রয়
-    total_purchase = sum(inv. get('grand_total', 0) for inv in invoices)
+    total_purchase = sum(inv.get('grand_total', 0) for inv in invoices)
     
     # মোট পেমেন্ট
     total_paid = sum(inv.get('paid_amount', 0) for inv in invoices)
@@ -2005,29 +2005,29 @@ def get_dashboard_summary_v2():
     now = get_bd_time()
     today_str = now.strftime('%d-%m-%Y')
     
-    # 1. User Stats
+    # 1.User Stats
     user_details = []
-    for u, d in users_data. items():
+    for u, d in users_data.items():
         user_details.append({
             "username": u,
             "role": d.get('role', 'user'),
-            "created_at": d. get('created_at', 'N/A'),
+            "created_at": d.get('created_at', 'N/A'),
             "last_login": d.get('last_login', 'Never'),
-            "last_duration": d. get('last_duration', 'N/A')
+            "last_duration": d.get('last_duration', 'N/A')
         })
 
-    # 2.  Accessories Today & Analytics - LIFETIME COUNT
+    # 2. Accessories Today & Analytics - LIFETIME COUNT
     acc_lifetime_count = 0
     acc_today_list = []
     
     daily_data = defaultdict(lambda: {'closing': 0, 'po': 0, 'acc': 0})
 
-    for ref, data in acc_db. items():
+    for ref, data in acc_db.items():
         for challan in data.get('challans', []):
             acc_lifetime_count += 1
             c_date = challan.get('date')
             if c_date == today_str:
-                acc_today_list. append({
+                acc_today_list.append({
                     "ref": ref,
                     "buyer": data.get('buyer'),
                     "style": data.get('style'),
@@ -2037,12 +2037,12 @@ def get_dashboard_summary_v2():
             
             try:
                 dt_obj = datetime.strptime(c_date, '%d-%m-%Y')
-                sort_key = dt_obj. strftime('%Y-%m-%d')
+                sort_key = dt_obj.strftime('%Y-%m-%d')
                 daily_data[sort_key]['acc'] += 1
                 daily_data[sort_key]['label'] = dt_obj.strftime('%d-%b')
             except: pass
 
-    # 3.  Closing & PO - LIFETIME COUNT & Analytics
+    # 3. Closing & PO - LIFETIME COUNT & Analytics
     closing_lifetime_count = 0
     po_lifetime_count = 0
     closing_list = []
@@ -2050,8 +2050,8 @@ def get_dashboard_summary_v2():
     
     history = stats_data.get('downloads', [])
     for item in history:
-        item_date = item. get('date', '')
-        if item. get('type') == 'PO Sheet':
+        item_date = item.get('date', '')
+        if item.get('type') == 'PO Sheet':
             po_lifetime_count += 1
             if item_date == today_str:
                 po_list.append(item)
@@ -2071,9 +2071,9 @@ def get_dashboard_summary_v2():
             daily_data[sort_key]['label'] = dt_obj.strftime('%d-%b')
         except: pass
 
-    first_of_last_month = (now. replace(day=1) - timedelta(days=1)).replace(day=1)
+    first_of_last_month = (now.replace(day=1) - timedelta(days=1)).replace(day=1)
     start_date = first_of_last_month.strftime('%Y-%m-%d')
-    end_date = now. strftime('%Y-%m-%d')
+    end_date = now.strftime('%Y-%m-%d')
     
     sorted_keys = sorted([k for k in daily_data.keys() if start_date <= k <= end_date])
     
@@ -2091,10 +2091,10 @@ def get_dashboard_summary_v2():
     else:
         for k in sorted_keys:
             d = daily_data[k]
-            chart_labels.append(d. get('label', k))
+            chart_labels.append(d.get('label', k))
             chart_closing.append(d['closing'])
             chart_po.append(d['po'])
-            chart_acc. append(d['acc'])
+            chart_acc.append(d['acc'])
 
     return {
         "users": { "count": len(users_data), "details": user_details },
@@ -2115,7 +2115,7 @@ def get_dashboard_summary_v2():
 # ==============================================================================
 
 def is_potential_size(header):
-    h = header.strip(). upper()
+    h = header.strip().upper()
     if h in ["COLO", "SIZE", "TOTAL", "QUANTITY", "PRICE", "AMOUNT", "CURRENCY", "ORDER NO", "P.O NO"]:
         return False
     if re.match(r'^\d+$', h): return True
@@ -2145,34 +2145,34 @@ def extract_metadata(first_page_text):
         'buyer': 'N/A', 'booking': 'N/A', 'style': 'N/A', 
         'season': 'N/A', 'dept': 'N/A', 'item': 'N/A'
     }
-    if "KIABI" in first_page_text. upper():
+    if "KIABI" in first_page_text.upper():
         meta['buyer'] = "KIABI"
     else:
-        buyer_match = re. search(r"Buyer.*?Name[\s\S]*?([\w\s&]+)(? :\n|$)", first_page_text)
+        buyer_match = re.search(r"Buyer.*?Name[\s\S]*?([\w\s&]+)(? :\n|$)", first_page_text)
         if buyer_match: meta['buyer'] = buyer_match.group(1).strip()
 
-    booking_block_match = re.search(r"(? :Internal )?Booking NO\.  ? [:\s]*([\s\S]*?)(? :System NO|Control No|Buyer)", first_page_text, re.IGNORECASE)
+    booking_block_match = re.search(r"(? :Internal )?Booking NO\. ? [:\s]*([\s\S]*?)(? :System NO|Control No|Buyer)", first_page_text, re.IGNORECASE)
     if booking_block_match: 
         raw_booking = booking_block_match.group(1).strip()
         clean_booking = raw_booking.replace('\n', '').replace('\r', '').replace(' ', '')
         if "System" in clean_booking: clean_booking = clean_booking.split("System")[0]
         meta['booking'] = clean_booking
 
-    style_match = re.search(r"Style Ref\. ?[:\s]*([\w-]+)", first_page_text, re.IGNORECASE)
-    if style_match: meta['style'] = style_match.group(1). strip()
+    style_match = re.search(r"Style Ref\.?[:\s]*([\w-]+)", first_page_text, re.IGNORECASE)
+    if style_match: meta['style'] = style_match.group(1).strip()
     else:
-        style_match = re.search(r"Style Des\. ?[\s\S]*?([\w-]+)", first_page_text, re.IGNORECASE)
+        style_match = re.search(r"Style Des\.?[\s\S]*?([\w-]+)", first_page_text, re.IGNORECASE)
         if style_match: meta['style'] = style_match.group(1).strip()
 
-    season_match = re.search(r"Season\s*[:\n\"]*([\w\d-]+)", first_page_text, re. IGNORECASE)
-    if season_match: meta['season'] = season_match.group(1). strip()
-    dept_match = re. search(r"Dept\.  ?[\s\n:]*([A-Za-z]+)", first_page_text, re. IGNORECASE)
-    if dept_match: meta['dept'] = dept_match. group(1).strip()
+    season_match = re.search(r"Season\s*[:\n\"]*([\w\d-]+)", first_page_text, re.IGNORECASE)
+    if season_match: meta['season'] = season_match.group(1).strip()
+    dept_match = re.search(r"Dept\. ?[\s\n:]*([A-Za-z]+)", first_page_text, re.IGNORECASE)
+    if dept_match: meta['dept'] = dept_match.group(1).strip()
 
-    item_match = re.search(r"Garments?    Item[\s\n:]*([^\n\r]+)", first_page_text, re. IGNORECASE)
+    item_match = re.search(r"Garments?    Item[\s\n:]*([^\n\r]+)", first_page_text, re.IGNORECASE)
     if item_match: 
-        item_text = item_match.group(1). strip()
-        if "Style" in item_text: item_text = item_text.split("Style")[0]. strip()
+        item_text = item_match.group(1).strip()
+        if "Style" in item_text: item_text = item_text.split("Style")[0].strip()
         meta['item'] = item_text
 
     return meta
@@ -2196,11 +2196,11 @@ def extract_data_dynamic(file_path):
         order_match = re.search(r"Order no\D*(\d+)", first_page_text, re.IGNORECASE)
         if order_match: order_no = order_match.group(1)
         else:
-            alt_match = re. search(r"Order\s*[:\.]?\s*(\d+)", first_page_text, re. IGNORECASE)
-            if alt_match: order_no = alt_match. group(1)
+            alt_match = re.search(r"Order\s*[:\.]?\s*(\d+)", first_page_text, re.IGNORECASE)
+            if alt_match: order_no = alt_match.group(1)
         
         order_no = str(order_no).strip()
-        if order_no. endswith("00"): order_no = order_no[:-2]
+        if order_no.endswith("00"): order_no = order_no[:-2]
 
         for page in reader.pages:
             text = page.extract_text()
@@ -2233,15 +2233,15 @@ def extract_data_dynamic(file_path):
                     if line.startswith("Total Quantity") or line.startswith("Total Amount"):
                         capturing_data = False
                         continue
-                    lower_line = line. lower()
+                    lower_line = line.lower()
                     if "quantity" in lower_line or "currency" in lower_line or "price" in lower_line or "amount" in lower_line:
                         continue
                         
-                    clean_line = line. replace("Spec.  price", ""). replace("Spec", "").strip()
+                    clean_line = line.replace("Spec. price", "").replace("Spec", "").strip()
                     if not re.search(r'[a-zA-Z]', clean_line): continue
                     if re.match(r'^[A-Z]\d+$', clean_line) or "Assortment" in clean_line: continue
 
-                    numbers_in_line = re. findall(r'\b\d+\b', line)
+                    numbers_in_line = re.findall(r'\b\d+\b', line)
                     quantities = [int(n) for n in numbers_in_line]
                     color_name = clean_line
                     final_qtys = []
@@ -2249,12 +2249,12 @@ def extract_data_dynamic(file_path):
                     if len(quantities) >= len(sizes):
                         if len(quantities) == len(sizes) + 1: final_qtys = quantities[:-1] 
                         else: final_qtys = quantities[:len(sizes)]
-                        color_name = re.sub(r'\s\d+$', '', color_name). strip()
+                        color_name = re.sub(r'\s\d+$', '', color_name).strip()
                     elif len(quantities) < len(sizes): 
                         vertical_qtys = []
                         for next_line in lines[i+1:]:
                             next_line = next_line.strip()
-                            if "Total" in next_line or re.search(r'[a-zA-Z]', next_line. replace("Spec", "").replace("price", "")): break
+                            if "Total" in next_line or re.search(r'[a-zA-Z]', next_line.replace("Spec", "").replace("price", "")): break
                             if re.match(r'^\d+$', next_line): vertical_qtys.append(int(next_line))
                         
                         if len(vertical_qtys) >= len(sizes): final_qtys = vertical_qtys[:len(sizes)]
@@ -2273,27 +2273,27 @@ def extract_data_dynamic(file_path):
 # লজিক পার্ট: CLOSING REPORT API & EXCEL GENERATION
 # ==============================================================================
 def get_authenticated_session(username, password):
-    login_url = 'http://180.92.235.190:8022/erp/login. php'
+    login_url = 'http://180.92.235.190:8022/erp/login.php'
     login_payload = {'txt_userid': username, 'txt_password': password, 'submit': 'Login'}
     session_req = requests.Session()
     session_req.headers.update({
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
     })
     try:
-        response = session_req. post(login_url, data=login_payload, timeout=300)
-        if "dashboard. php" in response. url or "Invalid" not in response.text:
+        response = session_req.post(login_url, data=login_payload, timeout=300)
+        if "dashboard.php" in response.url or "Invalid" not in response.text:
             return session_req
         else:
             return None
-    except requests. exceptions.RequestException as e:
+    except requests.exceptions.RequestException as e:
         print(f"Connection Error: {e}")
         return None
 
 def fetch_closing_report_data(internal_ref_no):
-    active_session = get_authenticated_session("input2. clothing-cutting", "123456")
+    active_session = get_authenticated_session("input2.clothing-cutting", "123456")
     if not active_session: return None
 
-    report_url = 'http://180. 92.235.190:8022/erp/prod_planning/reports/requires/cutting_lay_production_report_controller.php'
+    report_url = 'http://180.92.235.190:8022/erp/prod_planning/reports/requires/cutting_lay_production_report_controller.php'
     payload_template = {'action': 'report_generate', 'cbo_wo_company_name': '2', 'cbo_location_name': '2', 'cbo_floor_id': '0', 'cbo_buyer_name': '0', 'txt_internal_ref_no': internal_ref_no, 'reportType': '3'}
     found_data = None
    
@@ -2304,7 +2304,7 @@ def fetch_closing_report_data(internal_ref_no):
             payload['cbo_company_name'] = str(company_id)
             try:
                 response = active_session.post(report_url, data=payload, timeout=300)
-                if response.status_code == 200 and "Data not Found" not in response. text:
+                if response.status_code == 200 and "Data not Found" not in response.text:
                     found_data = response.text
                     break
             except: continue
@@ -2321,8 +2321,8 @@ def parse_report_data(html_content):
         header_row = soup.select_one('thead tr:nth-of-type(2)')
         if not header_row: return None
         all_th = header_row.find_all('th')
-        headers = [th.get_text(strip=True) for th in all_th if 'total' not in th.get_text(strip=True). lower()]
-        data_rows = soup. select('div#scroll_body table tbody tr')
+        headers = [th.get_text(strip=True) for th in all_th if 'total' not in th.get_text(strip=True).lower()]
+        data_rows = soup.select('div#scroll_body table tbody tr')
         item_blocks = []
         current_block = []
         for row in data_rows:
@@ -2338,15 +2338,15 @@ def parse_report_data(html_content):
             for row in block:
                 cells = row.find_all('td')
                 if len(cells) > 2:
-                    criteria_main = cells[0]. get_text(strip=True)
+                    criteria_main = cells[0].get_text(strip=True)
                     criteria_sub = cells[2].get_text(strip=True)
                     main_lower, sub_lower = criteria_main.lower(), criteria_sub.lower()
                     
                     if main_lower == "style": style = cells[1].get_text(strip=True)
-                    elif main_lower == "color & gmts.  item": color = cells[1].get_text(strip=True)
-                    elif "buyer" in main_lower: buyer_name = cells[1]. get_text(strip=True)
+                    elif main_lower == "color & gmts. item": color = cells[1].get_text(strip=True)
+                    elif "buyer" in main_lower: buyer_name = cells[1].get_text(strip=True)
                     
-                    if sub_lower == "gmts. color /country qty": gmts_qty_data = [cell.get_text(strip=True) for cell in cells[3:len(headers)+3]]
+                    if sub_lower == "gmts.color /country qty": gmts_qty_data = [cell.get_text(strip=True) for cell in cells[3:len(headers)+3]]
                     
                     if "sewing input" in main_lower: sewing_input_data = [cell.get_text(strip=True) for cell in cells[1:len(headers)+1]]
                     elif "sewing input" in sub_lower: sewing_input_data = [cell.get_text(strip=True) for cell in cells[3:len(headers)+3]]
@@ -2359,11 +2359,11 @@ def parse_report_data(html_content):
                 plus_3_percent_data = []
                 for value in gmts_qty_data:
                     try:
-                        new_qty = round(int(value. replace(',', '')) * 1.03)
+                        new_qty = round(int(value.replace(',', '')) * 1.03)
                         plus_3_percent_data.append(str(new_qty))
                     except (ValueError, TypeError):
                         plus_3_percent_data.append(value)
-                all_report_data. append({
+                all_report_data.append({
                     'style': style, 'buyer': buyer_name, 'color': color, 
                     'headers': headers, 'gmts_qty': gmts_qty_data, 
                     'plus_3_percent': plus_3_percent_data, 
@@ -2376,13 +2376,13 @@ def parse_report_data(html_content):
 
 def create_formatted_excel_report(report_data, internal_ref_no=""):
     if not report_data: return None
-    wb = openpyxl. Workbook()
-    ws = wb. active
-    ws. title = "Closing Report"
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.title = "Closing Report"
     # Styles
     bold_font = Font(bold=True)
     title_font = Font(size=32, bold=True, color="7B261A") 
-    white_bold_font = Font(size=16. 5, bold=True, color="FFFFFF")
+    white_bold_font = Font(size=16.5, bold=True, color="FFFFFF")
     center_align = Alignment(horizontal='center', vertical='center')
     left_align = Alignment(horizontal='left', vertical='center')
     color_align = Alignment(horizontal='center', vertical='center', wrap_text=True)
@@ -2397,22 +2397,22 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
     dark_green_fill = PatternFill(start_color="f1f2e8", end_color="f1f2e8", fill_type="solid") 
 
     NUM_COLUMNS, TABLE_START_ROW = 9, 8
-    ws. merge_cells(start_row=1, start_column=1, end_row=1, end_column=NUM_COLUMNS)
-    ws['A1']. value = "COTTON CLOTHING BD LTD"
+    ws.merge_cells(start_row=1, start_column=1, end_row=1, end_column=NUM_COLUMNS)
+    ws['A1'].value = "COTTON CLOTHING BD LTD"
     ws['A1'].font = title_font 
     ws['A1'].alignment = center_align
 
-    ws. merge_cells(start_row=2, start_column=1, end_row=2, end_column=NUM_COLUMNS)
+    ws.merge_cells(start_row=2, start_column=1, end_row=2, end_column=NUM_COLUMNS)
     ws['A2'].value = "CLOSING REPORT [ INPUT SECTION ]"
     ws['A2'].font = Font(size=15, bold=True) 
     ws['A2'].alignment = center_align
-    ws. row_dimensions[3].height = 6
+    ws.row_dimensions[3].height = 6
 
-    formatted_ref_no = internal_ref_no. upper()
-    current_date = get_bd_time(). strftime("%d/%m/%Y")
+    formatted_ref_no = internal_ref_no.upper()
+    current_date = get_bd_time().strftime("%d/%m/%Y")
     
     left_sub_headers = {
-        'A4': 'BUYER', 'B4': report_data[0]. get('buyer', ''), 
+        'A4': 'BUYER', 'B4': report_data[0].get('buyer', ''), 
         'A5': 'IR/IB NO', 'B5': formatted_ref_no, 
         'A6': 'STYLE NO', 'B6': report_data[0].get('style', '')
     }
@@ -2421,28 +2421,28 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
         cell = ws[cell_ref]
         cell.value = value
         cell.font = bold_font
-        cell. alignment = left_align
+        cell.alignment = left_align
         cell.border = thin_border
         if cell_ref == 'B5':
-            cell. fill = ir_ib_fill 
+            cell.fill = ir_ib_fill 
             cell.font = white_bold_font 
         else:
-            cell. fill = dark_green_fill 
+            cell.fill = dark_green_fill 
 
-    ws.merge_cells('B4:G4'); ws. merge_cells('B5:G5'); ws.merge_cells('B6:G6')
+    ws.merge_cells('B4:G4'); ws.merge_cells('B5:G5'); ws.merge_cells('B6:G6')
     
     right_sub_headers = {'H4': 'CLOSING DATE', 'I4': current_date, 'H5': 'SHIPMENT', 'I5': 'ALL', 'H6': 'PO NO', 'I6': 'ALL'}
     for cell_ref, value in right_sub_headers.items():
         cell = ws[cell_ref]
         cell.value = value
-        cell. font = bold_font
+        cell.font = bold_font
         cell.alignment = left_align
         cell.border = thin_border
         cell.fill = dark_green_fill 
 
     for row in range(4, 7):
         for col in range(3, 8): 
-            cell = ws. cell(row=row, column=col)
+            cell = ws.cell(row=row, column=col)
             cell.border = thin_border
        
     current_row = TABLE_START_ROW
@@ -2453,33 +2453,33 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
             cell.font = bold_font
             cell.alignment = center_align
             cell.border = medium_border
-            cell. fill = header_row_fill 
+            cell.fill = header_row_fill 
 
         current_row += 1
         start_merge_row = current_row
-        full_color_name = block. get('color', 'N/A')
+        full_color_name = block.get('color', 'N/A')
 
         for i, size in enumerate(block['headers']):
             color_to_write = full_color_name if i == 0 else ""
-            actual_qty = int(block['gmts_qty'][i]. replace(',', '') or 0)
+            actual_qty = int(block['gmts_qty'][i].replace(',', '') or 0)
             input_qty = int(block['sewing_input'][i].replace(',', '') or 0) if i < len(block['sewing_input']) else 0
-            cutting_qc_val = int(block. get('cutting_qc', [])[i].replace(',', '') or 0) if i < len(block.get('cutting_qc', [])) else 0
+            cutting_qc_val = int(block.get('cutting_qc', [])[i].replace(',', '') or 0) if i < len(block.get('cutting_qc', [])) else 0
             
             ws.cell(row=current_row, column=1, value=color_to_write)
             ws.cell(row=current_row, column=2, value=size)
             ws.cell(row=current_row, column=4, value=actual_qty)
             ws.cell(row=current_row, column=5, value=cutting_qc_val)
-            ws. cell(row=current_row, column=6, value=input_qty)
+            ws.cell(row=current_row, column=6, value=input_qty)
             
             ws.cell(row=current_row, column=3, value=f"=ROUND(D{current_row}*1.03, 0)")      
             ws.cell(row=current_row, column=7, value=f"=E{current_row}-F{current_row}")      
             ws.cell(row=current_row, column=8, value=f"=F{current_row}-C{current_row}")      
-            ws. cell(row=current_row, column=9, value=f'=IF(C{current_row}<>0, H{current_row}/C{current_row}, 0)') 
+            ws.cell(row=current_row, column=9, value=f'=IF(C{current_row}<>0, H{current_row}/C{current_row}, 0)') 
             
             for col_idx in range(1, NUM_COLUMNS + 1):
                 cell = ws.cell(row=current_row, column=col_idx)
                 cell.border = medium_border if col_idx == 2 else thin_border
-                cell. alignment = center_align
+                cell.alignment = center_align
     
                 if col_idx in [1, 2, 3, 6, 9]: cell.font = bold_font
                 
@@ -2488,14 +2488,14 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
                 else: cell.fill = dark_green_fill 
 
                 if col_idx == 9:
-                    cell. number_format = '0.00%' 
+                    cell.number_format = '0.00%' 
             current_row += 1
             
         end_merge_row = current_row - 1
         if start_merge_row <= end_merge_row:
             ws.merge_cells(start_row=start_merge_row, start_column=1, end_row=end_merge_row, end_column=1)
-            merged_cell = ws. cell(row=start_merge_row, column=1)
-            merged_cell. alignment = color_align
+            merged_cell = ws.cell(row=start_merge_row, column=1)
+            merged_cell.alignment = color_align
             if not merged_cell.font.bold: merged_cell.font = bold_font
         
         total_row_str = str(current_row)
@@ -2523,7 +2523,7 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
                 cell.number_format = '0.00%'
         
         for col_idx in range(2, NUM_COLUMNS + 1):
-            cell = ws. cell(row=current_row, column=col_idx)
+            cell = ws.cell(row=current_row, column=col_idx)
             if not cell.value: 
                 cell.fill = dark_green_fill 
                 cell.border = medium_border
@@ -2531,19 +2531,19 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
     image_row = current_row + 1
    
     try:
-        direct_image_url = 'https://i.ibb.co/v6bp0jQW/rockybilly-regular. webp'
+        direct_image_url = 'https://i.ibb.co/v6bp0jQW/rockybilly-regular.webp'
         image_response = requests.get(direct_image_url)
         image_response.raise_for_status()
         original_img = PILImage.open(BytesIO(image_response.content))
-        padded_img = PILImage.new('RGBA', (original_img.width + 400, original_img. height), (0, 0, 0, 0))
+        padded_img = PILImage.new('RGBA', (original_img.width + 400, original_img.height), (0, 0, 0, 0))
         padded_img.paste(original_img, (400, 0))
         padded_image_io = BytesIO()
-        padded_img. save(padded_image_io, format='PNG')
+        padded_img.save(padded_image_io, format='PNG')
         img = Image(padded_image_io)
         aspect_ratio = padded_img.height / padded_img.width
         img.width = 95
         img.height = int(img.width * aspect_ratio)
-        ws. row_dimensions[image_row].height = img.height * 0.90
+        ws.row_dimensions[image_row].height = img.height * 0.90
         ws.add_image(img, f'A{image_row}')
     except Exception:
         pass
@@ -2551,37 +2551,37 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
     signature_row = image_row + 1
     ws.merge_cells(start_row=signature_row, start_column=1, end_row=signature_row, end_column=NUM_COLUMNS)
     titles = ["Prepared By", "Input Incharge", "Cutting Incharge", "IE & Planning", "Sewing Manager", "Cutting Manager"]
-    signature_cell = ws. cell(row=signature_row, column=1)
-    signature_cell.value = "                 ". join(titles)
-    signature_cell. font = Font(bold=True, size=15)
+    signature_cell = ws.cell(row=signature_row, column=1)
+    signature_cell.value = "                 ".join(titles)
+    signature_cell.font = Font(bold=True, size=15)
     signature_cell.alignment = Alignment(horizontal='center', vertical='center')
 
     last_data_row = current_row - 2
     for row in ws.iter_rows(min_row=4, max_row=last_data_row):
         for cell in row:
             if cell.coordinate == 'B5': continue
-            if cell. font:
+            if cell.font:
                 existing_font = cell.font
                 if cell.row != 1: 
-                    new_font = Font(name=existing_font. name, size=16. 5, bold=existing_font.bold, italic=existing_font. italic, vertAlign=existing_font.vertAlign, underline=existing_font.underline, strike=existing_font. strike, color=existing_font.color)
+                    new_font = Font(name=existing_font.name, size=16.5, bold=existing_font.bold, italic=existing_font.italic, vertAlign=existing_font.vertAlign, underline=existing_font.underline, strike=existing_font.strike, color=existing_font.color)
                     cell.font = new_font
     ws.column_dimensions['A'].width = 23
-    ws.column_dimensions['B']. width = 8. 5
-    ws. column_dimensions['C'].width = 20
-    ws.column_dimensions['D']. width = 17
-    ws.column_dimensions['E']. width = 17
+    ws.column_dimensions['B'].width = 8.5
+    ws.column_dimensions['C'].width = 20
+    ws.column_dimensions['D'].width = 17
+    ws.column_dimensions['E'].width = 17
     ws.column_dimensions['F'].width = 15
-    ws.column_dimensions['G']. width = 13. 5
-    ws. column_dimensions['H'].width = 23
-    ws.column_dimensions['I']. width = 18
+    ws.column_dimensions['G'].width = 13.5
+    ws.column_dimensions['H'].width = 23
+    ws.column_dimensions['I'].width = 18
    
-    ws.page_setup.orientation = ws. ORIENTATION_PORTRAIT
+    ws.page_setup.orientation = ws.ORIENTATION_PORTRAIT
     ws.page_setup.fitToPage = True
-    ws.page_setup. fitToWidth = 1
+    ws.page_setup.fitToWidth = 1
     ws.page_setup.fitToHeight = 1 
     ws.page_setup.horizontalCentered = True
     ws.page_setup.verticalCentered = False 
-    ws.page_setup.left = 0. 25
+    ws.page_setup.left = 0.25
     ws.page_setup.right = 0.25
     ws.page_setup.top = 0.45
     ws.page_setup.bottom = 0.45
@@ -2589,7 +2589,7 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
     ws.page_setup.footer = 0
    
     file_stream = BytesIO()
-    wb. save(file_stream)
+    wb.save(file_stream)
     file_stream.seek(0)
     return file_stream
     # ==============================================================================
@@ -2601,7 +2601,7 @@ LOGIN_TEMPLATE = f"""
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1. 0, maximum-scale=1. 0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Login - MNM Software</title>
     {COMMON_STYLES}
     <style>
@@ -2632,7 +2632,7 @@ LOGIN_TEMPLATE = f"""
             pointer-events: none;
         }}
         
-        . orb-1 {{
+        .orb-1 {{
             width: 300px;
             height: 300px;
             background: var(--accent-orange);
@@ -2650,7 +2650,7 @@ LOGIN_TEMPLATE = f"""
             animation-delay: -5s;
         }}
         
-        . orb-3 {{
+        .orb-3 {{
             width: 150px;
             height: 150px;
             background: var(--accent-green);
@@ -2667,7 +2667,7 @@ LOGIN_TEMPLATE = f"""
             75% {{ transform: translate(15px, 30px) scale(1.02); }}
         }}
         
-        . login-container {{
+        .login-container {{
             position: relative;
             z-index: 10;
             width: 100%;
@@ -2705,7 +2705,7 @@ LOGIN_TEMPLATE = f"""
             margin-bottom: 35px;
         }}
         
-        . brand-icon {{
+        .brand-icon {{
             width: 70px;
             height: 70px;
             background: var(--gradient-orange);
@@ -2748,7 +2748,7 @@ LOGIN_TEMPLATE = f"""
             text-transform: uppercase;
         }}
         
-        .login-form . input-group {{
+        .login-form .input-group {{
             margin-bottom: 20px;
         }}
         
@@ -2759,12 +2759,12 @@ LOGIN_TEMPLATE = f"""
             margin-bottom: 8px;
         }}
         
-        .login-form . input-group label i {{
+        .login-form .input-group label i {{
             color: var(--accent-orange);
             font-size: 13px;
         }}
         
-        . login-form input {{
+        .login-form input {{
             padding: 14px 18px;
             font-size: 14px;
             border-radius: 12px;
@@ -2789,10 +2789,10 @@ LOGIN_TEMPLATE = f"""
             transform: translateX(5px);
         }}
         
-        . error-box {{
+        .error-box {{
             margin-top: 20px;
             padding: 14px 18px;
-            background: rgba(239, 68, 68, 0. 1);
+            background: rgba(239, 68, 68, 0.1);
             border: 1px solid rgba(239, 68, 68, 0.2);
             border-radius: 10px;
             color: #F87171;
@@ -2834,13 +2834,13 @@ LOGIN_TEMPLATE = f"""
                 border-radius: 20px;
             }}
             
-            . brand-icon {{
+            .brand-icon {{
                 width: 60px;
                 height: 60px;
                 font-size: 28px;
             }}
             
-            . brand-name {{
+            .brand-name {{
                 font-size: 24px;
             }}
             
@@ -2848,12 +2848,12 @@ LOGIN_TEMPLATE = f"""
                 font-size: 10px;
             }}
             
-            . login-form input {{
+            .login-form input {{
                 padding: 12px 16px;
                 font-size: 14px;
             }}
             
-            . login-btn {{
+            .login-btn {{
                 padding: 12px 20px;
                 font-size: 14px;
             }}
@@ -2866,11 +2866,11 @@ LOGIN_TEMPLATE = f"""
                 padding-bottom: 30px;
             }}
             
-            . brand-section {{
+            .brand-section {{
                 margin-bottom: 25px;
             }}
             
-            . brand-icon {{
+            .brand-icon {{
                 width: 60px;
                 height: 60px;
                 font-size: 26px;
@@ -2925,12 +2925,12 @@ LOGIN_TEMPLATE = f"""
     
     <script>
         // Add ripple effect to button
-        document.querySelector('.login-btn'). addEventListener('click', function(e) {{
+        document.querySelector('.login-btn').addEventListener('click', function(e) {{
             const ripple = document.createElement('span');
-            ripple.classList. add('ripple-effect');
+            ripple.classList.add('ripple-effect');
             const rect = this.getBoundingClientRect();
             ripple.style.left = (e.clientX - rect.left) + 'px';
-            ripple.style. top = (e. clientY - rect. top) + 'px';
+            ripple.style.top = (e.clientY - rect.top) + 'px';
             this.appendChild(ripple);
             setTimeout(() => ripple.remove(), 600);
         }});
@@ -2962,7 +2962,7 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
             <div class="welcome-greeting" id="greetingText">Good Morning</div>
             <div class="welcome-title">Welcome Back, <span>{{{{ session.user }}}}</span>!</div>
             <div class="welcome-message">
-                You're now logged into the MNM Software Dashboard. 
+                You're now logged into the MNM Software Dashboard.
                 All systems are operational and ready for your commands.
             </div>
             <button class="welcome-close" onclick="closeWelcome()">
@@ -2991,7 +2991,7 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
         <div class="loading-text" id="loading-text">Processing Request...</div>
     </div>
 
-    <div class="mobile-toggle" onclick="document.querySelector('. sidebar').classList.toggle('active')">
+    <div class="mobile-toggle" onclick="document.querySelector('.sidebar').classList.toggle('active')">
         <i class="fas fa-bars"></i>
     </div>
 
@@ -3053,10 +3053,10 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
             {{% endwith %}}
 
             <div class="stats-grid">
-                <div class="card stat-card" style="animation-delay: 0. 1s;">
+                <div class="card stat-card" style="animation-delay: 0.1s;">
                     <div class="stat-icon"><i class="fas fa-file-export"></i></div>
                     <div class="stat-info">
-                        <h3 class="count-up" data-target="{{{{ stats. closing. count }}}}">0</h3>
+                        <h3 class="count-up" data-target="{{{{ stats.closing.count }}}}">0</h3>
                         <p>Lifetime Closing</p>
                     </div>
                 </div>
@@ -3074,12 +3074,12 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
                         <i class="fas fa-file-pdf" style="color: var(--accent-green);"></i>
                     </div>
                     <div class="stat-info">
-                        <h3 class="count-up" data-target="{{{{ stats.po. count }}}}">0</h3>
+                        <h3 class="count-up" data-target="{{{{ stats.po.count }}}}">0</h3>
                         <p>Lifetime PO Sheets</p>
                     </div>
                 </div>
                 <div class="card stat-card" style="animation-delay: 0.4s;">
-                    <div class="stat-icon" style="background: linear-gradient(145deg, rgba(59, 130, 246, 0. 15), rgba(59, 130, 246, 0. 05));">
+                    <div class="stat-icon" style="background: linear-gradient(145deg, rgba(59, 130, 246, 0.15), rgba(59, 130, 246, 0.05));">
                         <i class="fas fa-users" style="color: var(--accent-blue);"></i>
                     </div>
                     <div class="stat-info">
@@ -3111,7 +3111,7 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
                     <div class="progress-item">
                         <div class="progress-header">
                             <span>Closing Report</span>
-                            <span class="progress-value">{{{{ stats. closing.count }}}} Lifetime</span>
+                            <span class="progress-value">{{{{ stats.closing.count }}}} Lifetime</span>
                         </div>
                         <div class="progress-bar-container">
                             <div class="progress-bar-fill progress-orange" style="width: 85%;"></div>
@@ -3131,7 +3131,7 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
                     <div class="progress-item">
                         <div class="progress-header">
                             <span>PO Generator</span>
-                            <span class="progress-value">{{{{ stats.po. count }}}} Files</span>
+                            <span class="progress-value">{{{{ stats.po.count }}}} Files</span>
                         </div>
                         <div class="progress-bar-container">
                             <div class="progress-bar-fill progress-green" style="width: 45%;"></div>
@@ -3169,10 +3169,10 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
                                     <span class="table-badge" style="
                                         {{% if log.type == 'Closing Report' %}}
                                         background: rgba(255, 122, 0, 0.1); color: var(--accent-orange);
-                                        {{% elif log. type == 'PO Sheet' %}}
-                                        background: rgba(16, 185, 129, 0. 1); color: var(--accent-green);
+                                        {{% elif log.type == 'PO Sheet' %}}
+                                        background: rgba(16, 185, 129, 0.1); color: var(--accent-green);
                                         {{% else %}}
-                                        background: rgba(139, 92, 246, 0. 1); color: var(--accent-purple);
+                                        background: rgba(139, 92, 246, 0.1); color: var(--accent-purple);
                                         {{% endif %}}
                                     ">{{{{ log.type }}}}</span>
                                 </td>
@@ -3182,7 +3182,7 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
                             <tr>
                                 <td colspan="4" style="text-align: center; padding: 40px; color: var(--text-secondary);">
                                     <i class="fas fa-inbox" style="font-size: 40px; opacity: 0.3; margin-bottom: 15px; display: block;"></i>
-                                    No activity recorded yet.  
+                                    No activity recorded yet. 
                                 </td>
                             </tr>
                             {{% endfor %}}
@@ -3206,7 +3206,7 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
                 <form action="/generate-report" method="post" onsubmit="return showLoading()">
                     <div class="input-group">
                         <label><i class="fas fa-bookmark" style="margin-right: 5px;"></i> INTERNAL REF NO</label>
-                        <input type="text" name="ref_no" placeholder="e.g.  IB-12345 or Booking-123" required>
+                        <input type="text" name="ref_no" placeholder="e.g. IB-12345 or Booking-123" required>
                     </div>
                     <button type="submit">
                         <i class="fas fa-bolt" style="margin-right: 10px;"></i> Generate Report
@@ -3254,7 +3254,7 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
                 <div class="card">
                     <div class="section-header">
                         <span>User Directory</span>
-                        <span class="table-badge" style="background: var(--accent-orange); color: white;">{{{{ stats.users. count }}}} Users</span>
+                        <span class="table-badge" style="background: var(--accent-orange); color: white;">{{{{ stats.users.count }}}} Users</span>
                     </div>
                     <div id="userTableContainer" style="max-height: 450px; overflow-y: auto;">
                         <div class="skeleton" style="height: 50px; margin-bottom: 10px;"></div>
@@ -3329,7 +3329,7 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
                 icon = '<i class="fas fa-moon"></i>';
             }}
             
-            document. getElementById('greetingText').textContent = greeting;
+            document.getElementById('greetingText').textContent = greeting;
             document.getElementById('welcomeIcon').innerHTML = icon;
             document.getElementById('welcomeModal').style.display = 'flex';
         }}
@@ -3360,16 +3360,16 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
             }}
             
             if (id === 'settings') loadUsers();
-            if (window.innerWidth < 1024) document.querySelector('.sidebar').classList. remove('active');
+            if (window.innerWidth < 1024) document.querySelector('.sidebar').classList.remove('active');
         }}
         
         // ===== FILE UPLOAD HANDLER =====
         const fileUpload = document.getElementById('file-upload');
-        const uploadZone = document. getElementById('uploadZone');
+        const uploadZone = document.getElementById('uploadZone');
         
         if (fileUpload) {{
             fileUpload.addEventListener('change', function() {{
-                const count = this.files. length;
+                const count = this.files.length;
                 document.getElementById('file-count').innerHTML = count > 0 
                     ? `<i class="fas fa-check-circle" style="margin-right: 5px;"></i>${{count}} file(s) selected`
                     : 'No files selected';
@@ -3383,8 +3383,8 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
             }});
             uploadZone.addEventListener('drop', (e) => {{
                 e.preventDefault();
-                uploadZone. classList.remove('dragover');
-                fileUpload.files = e.dataTransfer. files;
+                uploadZone.classList.remove('dragover');
+                fileUpload.files = e.dataTransfer.files;
                 fileUpload.dispatchEvent(new Event('change'));
             }});
         }}
@@ -3393,13 +3393,13 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
         const ctx = document.getElementById('mainChart').getContext('2d');
         const gradientOrange = ctx.createLinearGradient(0, 0, 0, 300);
         gradientOrange.addColorStop(0, 'rgba(255, 122, 0, 0.5)');
-        gradientOrange.addColorStop(1, 'rgba(255, 122, 0, 0. 0)');
+        gradientOrange.addColorStop(1, 'rgba(255, 122, 0, 0.0)');
         const gradientPurple = ctx.createLinearGradient(0, 0, 0, 300);
-        gradientPurple.addColorStop(0, 'rgba(139, 92, 246, 0. 5)');
-        gradientPurple. addColorStop(1, 'rgba(139, 92, 246, 0.0)');
+        gradientPurple.addColorStop(0, 'rgba(139, 92, 246, 0.5)');
+        gradientPurple.addColorStop(1, 'rgba(139, 92, 246, 0.0)');
         const gradientGreen = ctx.createLinearGradient(0, 0, 0, 300);
-        gradientGreen.addColorStop(0, 'rgba(16, 185, 129, 0. 5)');
-        gradientGreen. addColorStop(1, 'rgba(16, 185, 129, 0.0)');
+        gradientGreen.addColorStop(0, 'rgba(16, 185, 129, 0.5)');
+        gradientGreen.addColorStop(1, 'rgba(16, 185, 129, 0.0)');
         new Chart(ctx, {{
             type: 'line',
             data: {{
@@ -3410,7 +3410,7 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
                         data: {{{{ stats.chart.closing | tojson }}}},
                         borderColor: '#FF7A00',
                         backgroundColor: gradientOrange,
-                        tension: 0. 4,
+                        tension: 0.4,
                         fill: true,
                         pointBackgroundColor: '#FF7A00',
                         pointBorderColor: '#fff',
@@ -3515,7 +3515,7 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
 
         // ===== COUNT UP ANIMATION =====
         function animateCountUp() {{
-            document.querySelectorAll('.count-up'). forEach(counter => {{
+            document.querySelectorAll('.count-up').forEach(counter => {{
                 const target = parseInt(counter.getAttribute('data-target'));
                 const duration = 2000;
                 const step = target / (duration / 16);
@@ -3540,16 +3540,16 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
         // ===== LOADING ANIMATION =====
         function showLoading() {{
             const overlay = document.getElementById('loading-overlay');
-            const spinner = document.getElementById('spinner-anim'). parentElement;
+            const spinner = document.getElementById('spinner-anim').parentElement;
             const success = document.getElementById('success-anim');
             const fail = document.getElementById('fail-anim');
             const text = document.getElementById('loading-text');
             
-            overlay. style.display = 'flex';
-            spinner. style.display = 'block';
+            overlay.style.display = 'flex';
+            spinner.style.display = 'block';
             success.style.display = 'none';
-            fail.style. display = 'none';
-            text. style.display = 'block';
+            fail.style.display = 'none';
+            text.style.display = 'block';
             text.textContent = 'Processing Request...';
             
             return true;
@@ -3557,13 +3557,13 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
 
         function showSuccess() {{
             const overlay = document.getElementById('loading-overlay');
-            const spinner = document.getElementById('spinner-anim'). parentElement;
-            const success = document. getElementById('success-anim');
+            const spinner = document.getElementById('spinner-anim').parentElement;
+            const success = document.getElementById('success-anim');
             const text = document.getElementById('loading-text');
             
             spinner.style.display = 'none';
-            success.style. display = 'block';
-            text. style.display = 'none';
+            success.style.display = 'block';
+            text.style.display = 'none';
             
             setTimeout(() => {{ overlay.style.display = 'none'; }}, 1500);
         }}
@@ -3580,11 +3580,11 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
                         
                         html += `<tr>
                             <td style="font-weight: 600;">${{u}}</td>
-                            <td><span class="table-badge" style="${{roleClass}}">${{d. role}}</span></td>
+                            <td><span class="table-badge" style="${{roleClass}}">${{d.role}}</span></td>
                             <td style="text-align:right;">
                                 ${{d.role !== 'admin' ?  `
                                     <div class="action-cell">
-                                        <button class="action-btn btn-edit" onclick="editUser('${{u}}', '${{d.password}}', '${{d. permissions. join(',')}}')">
+                                        <button class="action-btn btn-edit" onclick="editUser('${{u}}', '${{d.password}}', '${{d.permissions.join(',')}}')">
                                             <i class="fas fa-edit"></i>
                                         </button> 
                                         <button class="action-btn btn-del" onclick="deleteUser('${{u}}')">
@@ -3607,7 +3607,7 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
             
             let perms = [];
             if (document.getElementById('perm_closing').checked) perms.push('closing');
-            if (document.getElementById('perm_po'). checked) perms. push('po_sheet');
+            if (document.getElementById('perm_po').checked) perms.push('po_sheet');
             if (document.getElementById('perm_acc').checked) perms.push('accessories');
             if (document.getElementById('perm_store').checked) perms.push('store');
             
@@ -3625,19 +3625,19 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
                     loadUsers();
                     resetForm();
                 }} else {{
-                    alert(d. message);
-                    document.getElementById('loading-overlay').style. display = 'none';
+                    alert(d.message);
+                    document.getElementById('loading-overlay').style.display = 'none';
                 }}
             }});
         }}
         
         function editUser(u, p, permsStr) {{
             document.getElementById('new_username').value = u;
-            document. getElementById('new_username').readOnly = true;
+            document.getElementById('new_username').readOnly = true;
             document.getElementById('new_password').value = p;
             document.getElementById('action_type').value = 'update';
-            document. getElementById('saveUserBtn').innerHTML = '<i class="fas fa-sync" style="margin-right: 10px;"></i> Update User';
-            const pArr = permsStr. split(',');
+            document.getElementById('saveUserBtn').innerHTML = '<i class="fas fa-sync" style="margin-right: 10px;"></i> Update User';
+            const pArr = permsStr.split(',');
             document.getElementById('perm_closing').checked = pArr.includes('closing');
             document.getElementById('perm_po').checked = pArr.includes('po_sheet');
             document.getElementById('perm_acc').checked = pArr.includes('accessories');
@@ -3658,11 +3658,11 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
                     method: 'POST',
                     headers: {{'Content-Type': 'application/json'}},
                     body: JSON.stringify({{ username: u }})
-                }}). then(() => loadUsers());
+                }}).then(() => loadUsers());
             }}
         }}
         
-        // ===== PARTICLES. JS INITIALIZATION =====
+        // ===== PARTICLES.JS INITIALIZATION =====
         if (typeof particlesJS !== 'undefined') {{
             particlesJS('particles-js', {{
                 particles: {{
@@ -3683,7 +3683,7 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
         
         // Add CSS for fadeInUp animation
         const style = document.createElement('style');
-        style. textContent = `
+        style.textContent = `
             @keyframes fadeInUp {{
                 from {{ opacity: 0; transform: translateY(20px); }}
                 to {{ opacity: 1; transform: translateY(0); }}
@@ -3717,9 +3717,9 @@ USER_DASHBOARD_TEMPLATE = f"""
         <div class="welcome-content">
             <div class="welcome-icon" id="welcomeIcon"><i class="fas fa-hand-sparkles"></i></div>
             <div class="welcome-greeting" id="greetingText">Good Morning</div>
-            <div class="welcome-title">Welcome, <span>{{{{ session. user }}}}</span>!</div>
+            <div class="welcome-title">Welcome, <span>{{{{ session.user }}}}</span>!</div>
             <div class="welcome-message">
-                Your workspace is ready. 
+                Your workspace is ready.
                 Access your assigned modules below.
             </div>
             <button class="welcome-close" onclick="closeWelcome()">
@@ -3776,13 +3776,13 @@ USER_DASHBOARD_TEMPLATE = f"""
         {{% endwith %}}
 
         <div class="stats-grid">
-            {{% if 'closing' in session. permissions %}}
+            {{% if 'closing' in session.permissions %}}
             <div class="card" style="animation: fadeInUp 0.5s ease-out 0.1s backwards;">
                 <div class="section-header">
                     <span><i class="fas fa-file-export" style="margin-right: 10px; color: var(--accent-orange);"></i>Closing Report</span>
                 </div>
                 <p style="color: var(--text-secondary); margin-bottom: 20px; font-size: 14px; line-height: 1.6;">
-                    Generate production closing reports with real-time data. 
+                    Generate production closing reports with real-time data.
                 </p>
                 <form action="/generate-report" method="post" onsubmit="showLoading()">
                     <div class="input-group">
@@ -3870,7 +3870,7 @@ USER_DASHBOARD_TEMPLATE = f"""
                 icon = '<i class="fas fa-moon"></i>';
             }}
             
-            document. getElementById('greetingText').textContent = greeting;
+            document.getElementById('greetingText').textContent = greeting;
             document.getElementById('welcomeIcon').innerHTML = icon;
             document.getElementById('welcomeModal').style.display = 'flex';
         }}
@@ -3894,14 +3894,14 @@ USER_DASHBOARD_TEMPLATE = f"""
         }}
         
         // Add fadeInUp animation
-        const style = document. createElement('style');
-        style. textContent = `
+        const style = document.createElement('style');
+        style.textContent = `
             @keyframes fadeInUp {{
                 from {{ opacity: 0; transform: translateY(20px); }}
                 to {{ opacity: 1; transform: translateY(0); }}
             }}
         `;
-        document. head.appendChild(style);
+        document.head.appendChild(style);
     </script>
 </body>
 </html>
@@ -3954,7 +3954,7 @@ ACCESSORIES_SEARCH_TEMPLATE = f"""
             margin-bottom: 40px;
         }}
         
-        . search-icon {{
+        .search-icon {{
             width: 80px;
             height: 80px;
             background: linear-gradient(145deg, rgba(139, 92, 246, 0.2), rgba(139, 92, 246, 0.05));
@@ -3994,7 +3994,7 @@ ACCESSORIES_SEARCH_TEMPLATE = f"""
             border-top: 1px solid var(--border-color);
         }}
         
-        . nav-links a {{
+        .nav-links a {{
             color: var(--text-secondary);
             text-decoration: none;
             font-size: 13px;
@@ -4009,7 +4009,7 @@ ACCESSORIES_SEARCH_TEMPLATE = f"""
             color: var(--accent-orange);
         }}
         
-        . nav-links a.logout {{
+        .nav-links a.logout {{
             color: var(--accent-red);
         }}
         
@@ -4034,7 +4034,7 @@ ACCESSORIES_SEARCH_TEMPLATE = f"""
             <form action="/admin/accessories/input" method="post">
                 <div class="input-group">
                     <label><i class="fas fa-search" style="margin-right: 5px;"></i> BOOKING REFERENCE</label>
-                    <input type="text" name="ref_no" required placeholder="e.g.  IB-12345" autocomplete="off">
+                    <input type="text" name="ref_no" required placeholder="e.g. IB-12345" autocomplete="off">
                 </div>
                 <button type="submit" style="background: linear-gradient(135deg, #8B5CF6 0%, #A78BFA 100%);">
                     Proceed to Entry <i class="fas fa-arrow-right" style="margin-left: 10px;"></i>
@@ -4073,7 +4073,7 @@ ACCESSORIES_INPUT_TEMPLATE = f"""
     <title>Accessories Entry - MNM Software</title>
     {COMMON_STYLES}
     <style>
-        . ref-badge {{
+        .ref-badge {{
             display: inline-flex;
             align-items: center;
             gap: 10px;
@@ -4084,7 +4084,7 @@ ACCESSORIES_INPUT_TEMPLATE = f"""
             margin-top: 10px;
         }}
         
-        .ref-badge . ref-no {{
+        .ref-badge .ref-no {{
             font-size: 18px;
             font-weight: 800;
             color: var(--accent-orange);
@@ -4102,7 +4102,7 @@ ACCESSORIES_INPUT_TEMPLATE = f"""
             padding-right: 5px;
         }}
         
-        . challan-row {{
+        .challan-row {{
             display: grid;
             grid-template-columns: 60px 1fr 80px 60px 80px;
             gap: 10px;
@@ -4120,7 +4120,7 @@ ACCESSORIES_INPUT_TEMPLATE = f"""
             border-color: var(--border-glow);
         }}
         
-        . line-badge {{
+        .line-badge {{
             background: var(--gradient-orange);
             color: white;
             padding: 6px 12px;
@@ -4157,7 +4157,7 @@ ACCESSORIES_INPUT_TEMPLATE = f"""
             margin-bottom: 15px;
         }}
         
-        . grid-2-cols {{
+        .grid-2-cols {{
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 20px;
@@ -4262,7 +4262,7 @@ ACCESSORIES_INPUT_TEMPLATE = f"""
                     <div class="grid-2-cols">
                         <div class="input-group">
                             <label><i class="fas fa-industry" style="margin-right: 5px;"></i> LINE NO</label>
-                            <input type="text" name="line_no" required placeholder="e.g. L-01">
+                            <input type="text" name="line_no" required placeholder="e.g.L-01">
                         </div>
                         <div class="input-group">
                             <label><i class="fas fa-ruler" style="margin-right: 5px;"></i> SIZE</label>
@@ -4292,7 +4292,7 @@ ACCESSORIES_INPUT_TEMPLATE = f"""
                         <div class="challan-row" style="animation: fadeInUp 0.3s ease-out {{{{ loop.index * 0.05 }}}}s backwards;">
                             <div class="line-badge">{{{{ item.line }}}}</div>
                             <div style="color: white; font-weight: 500; font-size: 13px;">{{{{ item.color }}}}</div>
-                            <div class="qty-value">{{{{ item. qty }}}}</div>
+                            <div class="qty-value">{{{{ item.qty }}}}</div>
                             <div class="status-check">{{{{ item.status if item.status else '●' }}}}</div>
                             <div class="action-cell">
                                 {{% if session.role == 'admin' %}}
@@ -4325,15 +4325,15 @@ ACCESSORIES_INPUT_TEMPLATE = f"""
     <script>
         function showLoading() {{
             const overlay = document.getElementById('loading-overlay');
-            const spinner = document.getElementById('spinner-anim'). parentElement;
+            const spinner = document.getElementById('spinner-anim').parentElement;
             const success = document.getElementById('success-anim');
             const text = document.getElementById('loading-text');
             
-            overlay. style.display = 'flex';
+            overlay.style.display = 'flex';
             spinner.style.display = 'block';
             success.style.display = 'none';
-            text.style. display = 'block';
-            text.textContent = 'Saving Entry... ';
+            text.style.display = 'block';
+            text.textContent = 'Saving Entry...';
             
             return true;
         }}
@@ -4380,7 +4380,7 @@ ACCESSORIES_EDIT_TEMPLATE = f"""
             padding: 45px;
             backdrop-filter: blur(20px);
             box-shadow: 0 25px 80px rgba(0, 0, 0, 0.5);
-            animation: cardAppear 0. 5s ease-out;
+            animation: cardAppear 0.5s ease-out;
         }}
         
         @keyframes cardAppear {{
@@ -4388,12 +4388,12 @@ ACCESSORIES_EDIT_TEMPLATE = f"""
             to {{ opacity: 1; transform: scale(1); }}
         }}
         
-        . edit-header {{
+        .edit-header {{
             text-align: center;
             margin-bottom: 35px;
         }}
         
-        . edit-icon {{
+        .edit-icon {{
             width: 70px;
             height: 70px;
             background: linear-gradient(145deg, rgba(139, 92, 246, 0.2), rgba(139, 92, 246, 0.05));
@@ -4450,7 +4450,7 @@ ACCESSORIES_EDIT_TEMPLATE = f"""
                 
                 <div class="input-group">
                     <label><i class="fas fa-palette" style="margin-right: 5px;"></i> COLOR</label>
-                    <input type="text" name="color" value="{{{{ item. color }}}}" required>
+                    <input type="text" name="color" value="{{{{ item.color }}}}" required>
                 </div>
                 
                 <div class="input-group">
@@ -4460,7 +4460,7 @@ ACCESSORIES_EDIT_TEMPLATE = f"""
                 
                 <div class="input-group">
                     <label><i class="fas fa-sort-numeric-up" style="margin-right: 5px;"></i> QUANTITY</label>
-                    <input type="number" name="qty" value="{{{{ item. qty }}}}" required>
+                    <input type="number" name="qty" value="{{{{ item.qty }}}}" required>
                 </div>
                 
                 <button type="submit" style="background: linear-gradient(135deg, #8B5CF6 0%, #A78BFA 100%);">
@@ -4489,7 +4489,7 @@ STORE_DASHBOARD_TEMPLATE = f"""
     <title>Store Dashboard - MNM Software</title>
     {COMMON_STYLES}
     <style>
-        . store-stat-card {{
+        .store-stat-card {{
             background: var(--gradient-card);
             border: 1px solid var(--border-color);
             border-radius: 16px;
@@ -4502,7 +4502,7 @@ STORE_DASHBOARD_TEMPLATE = f"""
             box-shadow: var(--shadow-glow);
         }}
         
-        . store-stat-icon {{
+        .store-stat-icon {{
             width: 50px;
             height: 50px;
             border-radius: 12px;
@@ -4513,21 +4513,21 @@ STORE_DASHBOARD_TEMPLATE = f"""
             margin-bottom: 15px;
         }}
         
-        . store-stat-value {{
+        .store-stat-value {{
             font-size: 28px;
             font-weight: 800;
             color: white;
             margin-bottom: 5px;
         }}
         
-        . store-stat-label {{
+        .store-stat-label {{
             font-size: 12px;
             color: var(--text-secondary);
             text-transform: uppercase;
             letter-spacing: 1px;
         }}
         
-        . quick-action-grid {{
+        .quick-action-grid {{
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
             gap: 15px;
@@ -4552,7 +4552,7 @@ STORE_DASHBOARD_TEMPLATE = f"""
             transform: translateY(-3px);
         }}
         
-        . quick-action-btn i {{
+        .quick-action-btn i {{
             font-size: 24px;
             color: var(--accent-orange);
             margin-bottom: 10px;
@@ -4608,7 +4608,7 @@ STORE_DASHBOARD_TEMPLATE = f"""
             margin-bottom: 8px;
         }}
         
-        . invoice-number {{
+        .invoice-number {{
             background: var(--gradient-orange);
             color: white;
             padding: 5px 12px;
@@ -4623,7 +4623,7 @@ STORE_DASHBOARD_TEMPLATE = f"""
             font-size: 14px;
         }}
         
-        . invoice-amount {{
+        .invoice-amount {{
             font-weight: 700;
             color: var(--accent-green);
         }}
@@ -4637,7 +4637,7 @@ STORE_DASHBOARD_TEMPLATE = f"""
 <body>
     <div class="animated-bg"></div>
 
-    <div class="mobile-toggle" onclick="document.querySelector('.sidebar'). classList.toggle('active')">
+    <div class="mobile-toggle" onclick="document.querySelector('.sidebar').classList.toggle('active')">
         <i class="fas fa-bars"></i>
     </div>
 
@@ -4737,7 +4737,7 @@ STORE_DASHBOARD_TEMPLATE = f"""
                 <div class="store-stat-icon" style="background: linear-gradient(145deg, rgba(255, 122, 0, 0.2), rgba(255, 122, 0, 0.05)); color: var(--accent-orange);">
                     <i class="fas fa-shopping-cart"></i>
                 </div>
-                <div class="store-stat-value">৳{{{{ "{:,. 0f}".format(stats.today_sales) }}}}</div>
+                <div class="store-stat-value">৳{{{{ "{:,.0f}".format(stats.today_sales) }}}}</div>
                 <div class="store-stat-label">Today's Sales</div>
             </div>
             
@@ -4753,12 +4753,12 @@ STORE_DASHBOARD_TEMPLATE = f"""
                 <div class="store-stat-icon" style="background: linear-gradient(145deg, rgba(239, 68, 68, 0.2), rgba(239, 68, 68, 0.05)); color: var(--accent-red);">
                     <i class="fas fa-exclamation-triangle"></i>
                 </div>
-                <div class="store-stat-value">৳{{{{ "{:,.0f}". format(stats.total_due) }}}}</div>
+                <div class="store-stat-value">৳{{{{ "{:,.0f}".format(stats.total_due) }}}}</div>
                 <div class="store-stat-label">Total Due</div>
             </div>
             
             <div class="store-stat-card">
-                <div class="store-stat-icon" style="background: linear-gradient(145deg, rgba(59, 130, 246, 0. 2), rgba(59, 130, 246, 0. 05)); color: var(--accent-blue);">
+                <div class="store-stat-icon" style="background: linear-gradient(145deg, rgba(59, 130, 246, 0.2), rgba(59, 130, 246, 0.05)); color: var(--accent-blue);">
                     <i class="fas fa-users"></i>
                 </div>
                 <div class="store-stat-value">{{{{ stats.total_customers }}}}</div>
@@ -4793,9 +4793,9 @@ STORE_DASHBOARD_TEMPLATE = f"""
                     {{% if stats.recent_invoices %}}
                         {{% for inv in stats.recent_invoices %}}
                         <div class="recent-invoice">
-                            <span class="invoice-number">{{{{ inv. invoice_number }}}}</span>
+                            <span class="invoice-number">{{{{ inv.invoice_number }}}}</span>
                             <span class="invoice-customer">{{{{ inv.customer_name }}}}</span>
-                            <span class="invoice-amount">৳{{{{ "{:,.0f}". format(inv.grand_total) }}}}</span>
+                            <span class="invoice-amount">৳{{{{ "{:,.0f}".format(inv.grand_total) }}}}</span>
                             <span class="invoice-date">{{{{ inv.date }}}}</span>
                         </div>
                         {{% endfor %}}
@@ -4947,12 +4947,12 @@ STORE_CUSTOMERS_TEMPLATE = f"""
                         {{% for cust in customers %}}
                         <tr>
                             <td style="font-weight: 600;">{{{{ cust.name }}}}</td>
-                            <td>{{{{ cust. phone }}}}</td>
-                            <td style="color: var(--text-secondary); max-width: 200px; overflow: hidden; text-overflow: ellipsis;">{{{{ cust. address or '-' }}}}</td>
-                            <td class="amount-positive">৳{{{{ "{:,.0f}". format(cust. total_purchase or 0) }}}}</td>
+                            <td>{{{{ cust.phone }}}}</td>
+                            <td style="color: var(--text-secondary); max-width: 200px; overflow: hidden; text-overflow: ellipsis;">{{{{ cust.address or '-' }}}}</td>
+                            <td class="amount-positive">৳{{{{ "{:,.0f}".format(cust.total_purchase or 0) }}}}</td>
                             <td>
-                                {{% if cust. total_due and cust.total_due > 0 %}}
-                                <span class="due-badge">৳{{{{ "{:,.0f}". format(cust. total_due) }}}}</span>
+                                {{% if cust.total_due and cust.total_due > 0 %}}
+                                <span class="due-badge">৳{{{{ "{:,.0f}".format(cust.total_due) }}}}</span>
                                 {{% else %}}
                                 <span class="paid-badge">Cleared</span>
                                 {{% endif %}}
@@ -4975,7 +4975,7 @@ STORE_CUSTOMERS_TEMPLATE = f"""
                         <tr>
                             <td colspan="6" style="text-align: center; padding: 50px; color: var(--text-secondary);">
                                 <i class="fas fa-users" style="font-size: 40px; opacity: 0.2; margin-bottom: 15px; display: block;"></i>
-                                No customers found.  Add your first customer! 
+                                No customers found. Add your first customer! 
                             </td>
                         </tr>
                         {{% endfor %}}
@@ -4987,10 +4987,10 @@ STORE_CUSTOMERS_TEMPLATE = f"""
 
     <script>
         function filterCustomers() {{
-            const input = document.getElementById('searchCustomer'). value.toLowerCase();
+            const input = document.getElementById('searchCustomer').value.toLowerCase();
             const rows = document.querySelectorAll('#customerTable tbody tr');
             
-            rows. forEach(row => {{
+            rows.forEach(row => {{
                 const text = row.textContent.toLowerCase();
                 row.style.display = text.includes(input) ? '' : 'none';
             }});
@@ -5000,7 +5000,7 @@ STORE_CUSTOMERS_TEMPLATE = f"""
             if (confirm('Are you sure you want to delete this customer?  This action cannot be undone.')) {{
                 fetch('/store/customers/delete/' + id, {{
                     method: 'POST'
-                }}). then(() => location.reload());
+                }}).then(() => location.reload());
             }}
         }}
     </script>
@@ -5143,7 +5143,7 @@ STORE_CUSTOMER_EDIT_TEMPLATE = f"""
             <form action="/store/customers/edit/{{{{ customer._id }}}}" method="post">
                 <div class="input-group">
                     <label><i class="fas fa-user" style="margin-right: 5px;"></i> CUSTOMER NAME *</label>
-                    <input type="text" name="name" required value="{{{{ customer. name }}}}">
+                    <input type="text" name="name" required value="{{{{ customer.name }}}}">
                 </div>
                 
                 <div class="grid-2">
@@ -5153,7 +5153,7 @@ STORE_CUSTOMER_EDIT_TEMPLATE = f"""
                     </div>
                     <div class="input-group">
                         <label><i class="fas fa-envelope" style="margin-right: 5px;"></i> EMAIL</label>
-                        <input type="email" name="email" value="{{{{ customer. email or '' }}}}">
+                        <input type="email" name="email" value="{{{{ customer.email or '' }}}}">
                     </div>
                 </div>
                 
@@ -5221,7 +5221,7 @@ STORE_CUSTOMER_VIEW_TEMPLATE = f"""
     <div class="main-content">
         <div class="header-section">
             <div>
-                <div class="page-title">{{{{ data.customer. name }}}}</div>
+                <div class="page-title">{{{{ data.customer.name }}}}</div>
                 <div class="page-subtitle">Customer Profile & Transaction History</div>
             </div>
             <div style="display: flex; gap: 10px;">
@@ -5230,7 +5230,7 @@ STORE_CUSTOMER_VIEW_TEMPLATE = f"""
                         <i class="fas fa-plus" style="margin-right: 8px;"></i> New Invoice
                     </button>
                 </a>
-                <a href="/store/customers/edit/{{{{ data. customer._id }}}}">
+                <a href="/store/customers/edit/{{{{ data.customer._id }}}}">
                     <button style="width: auto; padding: 12px 20px; background: linear-gradient(135deg, #8B5CF6 0%, #A78BFA 100%);">
                         <i class="fas fa-edit" style="margin-right: 8px;"></i> Edit
                     </button>
@@ -5245,12 +5245,12 @@ STORE_CUSTOMER_VIEW_TEMPLATE = f"""
                     <i class="fas fa-shopping-bag" style="color: var(--accent-green);"></i>
                 </div>
                 <div class="stat-info">
-                    <h3>৳{{{{ "{:,.0f}".format(data. total_purchase) }}}}</h3>
+                    <h3>৳{{{{ "{:,.0f}".format(data.total_purchase) }}}}</h3>
                     <p>Total Purchase</p>
                 </div>
             </div>
             <div class="card stat-card">
-                <div class="stat-icon" style="background: linear-gradient(145deg, rgba(59, 130, 246, 0. 15), rgba(59, 130, 246, 0. 05));">
+                <div class="stat-icon" style="background: linear-gradient(145deg, rgba(59, 130, 246, 0.15), rgba(59, 130, 246, 0.05));">
                     <i class="fas fa-check-circle" style="color: var(--accent-blue);"></i>
                 </div>
                 <div class="stat-info">
@@ -5259,7 +5259,7 @@ STORE_CUSTOMER_VIEW_TEMPLATE = f"""
                 </div>
             </div>
             <div class="card stat-card">
-                <div class="stat-icon" style="background: linear-gradient(145deg, rgba(239, 68, 68, 0. 15), rgba(239, 68, 68, 0. 05));">
+                <div class="stat-icon" style="background: linear-gradient(145deg, rgba(239, 68, 68, 0.15), rgba(239, 68, 68, 0.05));">
                     <i class="fas fa-exclamation-circle" style="color: var(--accent-red);"></i>
                 </div>
                 <div class="stat-info">
@@ -5278,7 +5278,7 @@ STORE_CUSTOMER_VIEW_TEMPLATE = f"""
                 <div style="display: grid; gap: 15px;">
                     <div style="display: flex; justify-content: space-between; padding: 12px; background: rgba(255,255,255,0.02); border-radius: 8px;">
                         <span style="color: var(--text-secondary);">Phone</span>
-                        <span style="font-weight: 600;">{{{{ data. customer.phone }}}}</span>
+                        <span style="font-weight: 600;">{{{{ data.customer.phone }}}}</span>
                     </div>
                     <div style="display: flex; justify-content: space-between; padding: 12px; background: rgba(255,255,255,0.02); border-radius: 8px;">
                         <span style="color: var(--text-secondary);">Email</span>
@@ -5288,7 +5288,7 @@ STORE_CUSTOMER_VIEW_TEMPLATE = f"""
                         <span style="color: var(--text-secondary);">Address</span>
                         <span style="font-weight: 600; text-align: right; max-width: 200px;">{{{{ data.customer.address or '-' }}}}</span>
                     </div>
-                    <div style="display: flex; justify-content: space-between; padding: 12px; background: rgba(255,255,255,0. 02); border-radius: 8px;">
+                    <div style="display: flex; justify-content: space-between; padding: 12px; background: rgba(255,255,255,0.02); border-radius: 8px;">
                         <span style="color: var(--text-secondary);">Total Invoices</span>
                         <span style="font-weight: 600;">{{{{ data.invoices|length }}}}</span>
                     </div>
@@ -5313,7 +5313,7 @@ STORE_CUSTOMER_VIEW_TEMPLATE = f"""
                         {{% for pay in data.payments[:10] %}}
                         <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; background: rgba(255,255,255,0.02); border-radius: 8px; margin-bottom: 8px;">
                             <div>
-                                <div style="font-weight: 600; color: var(--accent-green);">৳{{{{ "{:,.0f}".format(pay. amount) }}}}</div>
+                                <div style="font-weight: 600; color: var(--accent-green);">৳{{{{ "{:,.0f}".format(pay.amount) }}}}</div>
                                 <div style="font-size: 11px; color: var(--text-secondary);">{{{{ pay.date }}}}</div>
                             </div>
                             <div style="font-size: 12px; color: var(--text-secondary);">{{{{ pay.method or 'Cash' }}}}</div>
@@ -5349,10 +5349,10 @@ STORE_CUSTOMER_VIEW_TEMPLATE = f"""
                     <tbody>
                         {{% for inv in data.invoices %}}
                         <tr>
-                            <td><span class="invoice-number">{{{{ inv. invoice_number }}}}</span></td>
+                            <td><span class="invoice-number">{{{{ inv.invoice_number }}}}</span></td>
                             <td>{{{{ inv.date }}}}</td>
-                            <td style="font-weight: 600;">৳{{{{ "{:,.0f}". format(inv.grand_total) }}}}</td>
-                            <td class="amount-positive">৳{{{{ "{:,.0f}".format(inv. paid_amount) }}}}</td>
+                            <td style="font-weight: 600;">৳{{{{ "{:,.0f}".format(inv.grand_total) }}}}</td>
+                            <td class="amount-positive">৳{{{{ "{:,.0f}".format(inv.paid_amount) }}}}</td>
                             <td>
                                 {{% if inv.due_amount > 0 %}}
                                 <span class="due-badge">৳{{{{ "{:,.0f}".format(inv.due_amount) }}}}</span>
@@ -5411,7 +5411,7 @@ STORE_PRODUCTS_TEMPLATE = f"""
 <body>
     <div class="animated-bg"></div>
 
-    <div class="mobile-toggle" onclick="document.querySelector('.sidebar'). classList.toggle('active')">
+    <div class="mobile-toggle" onclick="document.querySelector('.sidebar').classList.toggle('active')">
         <i class="fas fa-bars"></i>
     </div>
 
@@ -5506,8 +5506,8 @@ STORE_PRODUCTS_TEMPLATE = f"""
                     </thead>
                     <tbody>
                         {{% for prod in products %}}
-                        <tr data-category="{{{{ prod. category or '' }}}}">
-                            <td style="font-weight: 600;">{{{{ prod. name }}}}</td>
+                        <tr data-category="{{{{ prod.category or '' }}}}">
+                            <td style="font-weight: 600;">{{{{ prod.name }}}}</td>
                             <td><span class="table-badge">{{{{ prod.category or 'General' }}}}</span></td>
                             <td>{{{{ prod.unit or 'Pcs' }}}}</td>
                             <td class="amount-positive">৳{{{{ "{:,.2f}".format(prod.price or 0) }}}}</td>
@@ -5539,7 +5539,7 @@ STORE_PRODUCTS_TEMPLATE = f"""
                         <tr>
                             <td colspan="6" style="text-align: center; padding: 50px; color: var(--text-secondary);">
                                 <i class="fas fa-box-open" style="font-size: 40px; opacity: 0.2; margin-bottom: 15px; display: block;"></i>
-                                No products found.  Add your first product! 
+                                No products found. Add your first product! 
                             </td>
                         </tr>
                         {{% endfor %}}
@@ -5551,14 +5551,14 @@ STORE_PRODUCTS_TEMPLATE = f"""
 
     <script>
         function filterProducts() {{
-            const search = document.getElementById('searchProduct').value. toLowerCase();
+            const search = document.getElementById('searchProduct').value.toLowerCase();
             const category = document.getElementById('categoryFilter').value;
             const rows = document.querySelectorAll('#productTable tbody tr');
             
             rows.forEach(row => {{
                 const text = row.textContent.toLowerCase();
                 const rowCategory = row.getAttribute('data-category') || '';
-                const matchSearch = text. includes(search);
+                const matchSearch = text.includes(search);
                 const matchCategory = ! category || rowCategory === category;
                 row.style.display = (matchSearch && matchCategory) ? '' : 'none';
             }});
@@ -5568,7 +5568,7 @@ STORE_PRODUCTS_TEMPLATE = f"""
             if (confirm('Are you sure you want to delete this product?')) {{
                 fetch('/store/products/delete/' + id, {{
                     method: 'POST'
-                }}). then(() => location.reload());
+                }}).then(() => location.reload());
             }}
         }}
     </script>
@@ -5629,7 +5629,7 @@ STORE_PRODUCT_ADD_TEMPLATE = f"""
                 <div class="grid-2">
                     <div class="input-group">
                         <label><i class="fas fa-folder" style="margin-right: 5px;"></i> CATEGORY</label>
-                        <input type="text" name="category" placeholder="e.g.  Aluminum Profile" list="categories">
+                        <input type="text" name="category" placeholder="e.g. Aluminum Profile" list="categories">
                         <datalist id="categories">
                             <option value="Aluminum Profile">
                             <option value="Aluminum Sheet">
@@ -5743,13 +5743,13 @@ STORE_PRODUCT_EDIT_TEMPLATE = f"""
             <form action="/store/products/edit/{{{{ product._id }}}}" method="post">
                 <div class="input-group">
                     <label><i class="fas fa-tag" style="margin-right: 5px;"></i> PRODUCT NAME *</label>
-                    <input type="text" name="name" required value="{{{{ product. name }}}}">
+                    <input type="text" name="name" required value="{{{{ product.name }}}}">
                 </div>
                 
                 <div class="grid-2">
                     <div class="input-group">
                         <label><i class="fas fa-folder" style="margin-right: 5px;"></i> CATEGORY</label>
-                        <input type="text" name="category" value="{{{{ product. category or '' }}}}" list="categories">
+                        <input type="text" name="category" value="{{{{ product.category or '' }}}}" list="categories">
                         <datalist id="categories">
                             <option value="Aluminum Profile">
                             <option value="Aluminum Sheet">
@@ -5763,9 +5763,9 @@ STORE_PRODUCT_EDIT_TEMPLATE = f"""
                         <label><i class="fas fa-ruler" style="margin-right: 5px;"></i> UNIT</label>
                         <select name="unit">
                             <option value="Pcs" {{{{ 'selected' if product.unit == 'Pcs' else '' }}}}>Pcs (Piece)</option>
-                            <option value="Ft" {{{{ 'selected' if product. unit == 'Ft' else '' }}}}>Ft (Feet)</option>
+                            <option value="Ft" {{{{ 'selected' if product.unit == 'Ft' else '' }}}}>Ft (Feet)</option>
                             <option value="Meter" {{{{ 'selected' if product.unit == 'Meter' else '' }}}}>Meter</option>
-                            <option value="Kg" {{{{ 'selected' if product. unit == 'Kg' else '' }}}}>Kg (Kilogram)</option>
+                            <option value="Kg" {{{{ 'selected' if product.unit == 'Kg' else '' }}}}>Kg (Kilogram)</option>
                             <option value="Set" {{{{ 'selected' if product.unit == 'Set' else '' }}}}>Set</option>
                             <option value="Sqft" {{{{ 'selected' if product.unit == 'Sqft' else '' }}}}>Sqft (Square Feet)</option>
                         </select>
@@ -5775,11 +5775,11 @@ STORE_PRODUCT_EDIT_TEMPLATE = f"""
                 <div class="grid-2">
                     <div class="input-group">
                         <label><i class="fas fa-money-bill-wave" style="margin-right: 5px;"></i> SELLING PRICE (৳) *</label>
-                        <input type="number" name="price" required step="0.01" min="0" value="{{{{ product. price or 0 }}}}">
+                        <input type="number" name="price" required step="0.01" min="0" value="{{{{ product.price or 0 }}}}">
                     </div>
                     <div class="input-group">
                         <label><i class="fas fa-coins" style="margin-right: 5px;"></i> COST PRICE (৳)</label>
-                        <input type="number" name="cost_price" step="0.01" min="0" value="{{{{ product. cost_price or 0 }}}}">
+                        <input type="number" name="cost_price" step="0.01" min="0" value="{{{{ product.cost_price or 0 }}}}">
                     </div>
                 </div>
                 
@@ -5832,7 +5832,7 @@ STORE_INVOICES_TEMPLATE = f"""
 <body>
     <div class="animated-bg"></div>
 
-    <div class="mobile-toggle" onclick="document. querySelector('.sidebar').classList.toggle('active')">
+    <div class="mobile-toggle" onclick="document.querySelector('.sidebar').classList.toggle('active')">
         <i class="fas fa-bars"></i>
     </div>
 
@@ -5932,15 +5932,15 @@ STORE_INVOICES_TEMPLATE = f"""
                     </thead>
                     <tbody>
                         {{% for inv in invoices %}}
-                        <tr data-status="{{% if inv. due_amount == 0 %}}paid{{% elif inv. paid_amount > 0 %}}partial{{% else %}}unpaid{{% endif %}}">
+                        <tr data-status="{{% if inv.due_amount == 0 %}}paid{{% elif inv.paid_amount > 0 %}}partial{{% else %}}unpaid{{% endif %}}">
                             <td><span class="invoice-number">{{{{ inv.invoice_number }}}}</span></td>
                             <td>{{{{ inv.date }}}}</td>
                             <td style="font-weight: 600;">{{{{ inv.customer_name }}}}</td>
-                            <td style="font-weight: 700;">৳{{{{ "{:,.0f}".format(inv. grand_total) }}}}</td>
-                            <td class="amount-positive">৳{{{{ "{:,.0f}".format(inv. paid_amount) }}}}</td>
+                            <td style="font-weight: 700;">৳{{{{ "{:,.0f}".format(inv.grand_total) }}}}</td>
+                            <td class="amount-positive">৳{{{{ "{:,.0f}".format(inv.paid_amount) }}}}</td>
                             <td>
                                 {{% if inv.due_amount > 0 %}}
-                                <span class="due-badge">৳{{{{ "{:,.0f}". format(inv.due_amount) }}}}</span>
+                                <span class="due-badge">৳{{{{ "{:,.0f}".format(inv.due_amount) }}}}</span>
                                 {{% else %}}
                                 <span style="color: var(--text-secondary);">-</span>
                                 {{% endif %}}
@@ -5977,7 +5977,7 @@ STORE_INVOICES_TEMPLATE = f"""
                         <tr>
                             <td colspan="8" style="text-align: center; padding: 50px; color: var(--text-secondary);">
                                 <i class="fas fa-file-invoice" style="font-size: 40px; opacity: 0.2; margin-bottom: 15px; display: block;"></i>
-                                No invoices found. Create your first invoice! 
+                                No invoices found.Create your first invoice! 
                             </td>
                         </tr>
                         {{% endfor %}}
@@ -5989,8 +5989,8 @@ STORE_INVOICES_TEMPLATE = f"""
 
     <script>
         function filterInvoices(status, element) {{
-            document.querySelectorAll('.filter-tab').forEach(t => t.classList. remove('active'));
-            element.classList. add('active');
+            document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+            element.classList.add('active');
             
             const rows = document.querySelectorAll('#invoiceTable tbody tr');
             rows.forEach(row => {{
@@ -6004,7 +6004,7 @@ STORE_INVOICES_TEMPLATE = f"""
         }}
         
         function searchInvoices() {{
-            const search = document.getElementById('searchInvoice'). value.toLowerCase();
+            const search = document.getElementById('searchInvoice').value.toLowerCase();
             const rows = document.querySelectorAll('#invoiceTable tbody tr');
             
             rows.forEach(row => {{
@@ -6043,7 +6043,7 @@ STORE_INVOICE_NEW_TEMPLATE = f"""
         }}
         
         .remove-item {{
-            background: rgba(239, 68, 68, 0. 15);
+            background: rgba(239, 68, 68, 0.15);
             color: var(--accent-red);
             border: none;
             width: 40px;
@@ -6137,7 +6137,7 @@ STORE_INVOICE_NEW_TEMPLATE = f"""
                             {{% for cust in customers %}}
                             <option value="{{{{ cust._id }}}}" data-name="{{{{ cust.name }}}}" data-phone="{{{{ cust.phone }}}}" data-address="{{{{ cust.address or '' }}}}"
                                 {{{{ 'selected' if selected_customer and str(cust._id) == selected_customer else '' }}}}>
-                                {{{{ cust. name }}}} - {{{{ cust. phone }}}}
+                                {{{{ cust.name }}}} - {{{{ cust.phone }}}}
                             </option>
                             {{% endfor %}}
                         </select>
@@ -6168,7 +6168,7 @@ STORE_INVOICE_NEW_TEMPLATE = f"""
                     
                     <div class="input-group">
                         <label>NOTES / REMARKS</label>
-                        <textarea name="notes" rows="3" placeholder="Any additional notes... "></textarea>
+                        <textarea name="notes" rows="3" placeholder="Any additional notes..."></textarea>
                     </div>
                 </div>
             </div>
@@ -6255,7 +6255,7 @@ STORE_INVOICE_NEW_TEMPLATE = f"""
         function updateCustomerInfo() {{
             const select = document.getElementById('customerSelect');
             const option = select.options[select.selectedIndex];
-            const infoDiv = document. getElementById('customerInfo');
+            const infoDiv = document.getElementById('customerInfo');
             
             if (select.value) {{
                 document.getElementById('custName').textContent = option.getAttribute('data-name');
@@ -6263,7 +6263,7 @@ STORE_INVOICE_NEW_TEMPLATE = f"""
                 document.getElementById('custAddress').textContent = option.getAttribute('data-address') || '';
                 infoDiv.style.display = 'block';
             }} else {{
-                infoDiv.style. display = 'none';
+                infoDiv.style.display = 'none';
             }}
         }}
         
@@ -6285,7 +6285,7 @@ STORE_INVOICE_NEW_TEMPLATE = f"""
                         <input type="text" id="desc-${{itemCount}}" placeholder="Or type description..." style="margin-top: 8px;">
                     </div>
                     <input type="number" id="rate-${{itemCount}}" placeholder="0.00" step="0.01" min="0" onchange="calculateRowTotal(${{itemCount}})">
-                    <input type="number" id="qty-${{itemCount}}" placeholder="1" value="1" min="0. 01" step="0.01" onchange="calculateRowTotal(${{itemCount}})">
+                    <input type="number" id="qty-${{itemCount}}" placeholder="1" value="1" min="0.01" step="0.01" onchange="calculateRowTotal(${{itemCount}})">
                     <select id="unit-${{itemCount}}">
                         <option value="Pcs">Pcs</option>
                         <option value="Ft">Ft</option>
@@ -6306,9 +6306,9 @@ STORE_INVOICE_NEW_TEMPLATE = f"""
         
         function updateItemPrice(select, id) {{
             const option = select.options[select.selectedIndex];
-            if (option. value) {{
-                document.getElementById('rate-' + id). value = option.getAttribute('data-price') || 0;
-                document.getElementById('unit-' + id). value = option.getAttribute('data-unit') || 'Pcs';
+            if (option.value) {{
+                document.getElementById('rate-' + id).value = option.getAttribute('data-price') || 0;
+                document.getElementById('unit-' + id).value = option.getAttribute('data-unit') || 'Pcs';
                 calculateRowTotal(id);
             }}
         }}
@@ -6322,7 +6322,7 @@ STORE_INVOICE_NEW_TEMPLATE = f"""
         }}
         
         function removeItem(id) {{
-            document.getElementById('item-' + id). remove();
+            document.getElementById('item-' + id).remove();
             calculateTotals();
         }}
         
@@ -6337,23 +6337,23 @@ STORE_INVOICE_NEW_TEMPLATE = f"""
             const paid = parseFloat(document.getElementById('paidInput').value) || 0;
             const due = grandTotal - paid;
             
-            document. getElementById('subtotal'). textContent = '৳' + subtotal.toFixed(2);
-            document. getElementById('discountAmount').textContent = '৳' + discount.toFixed(2);
-            document. getElementById('grandTotal'). textContent = '৳' + grandTotal.toFixed(2);
-            document. getElementById('paidAmount').textContent = '৳' + paid.toFixed(2);
-            document. getElementById('dueAmount').textContent = '৳' + due.toFixed(2);
+            document.getElementById('subtotal').textContent = '৳' + subtotal.toFixed(2);
+            document.getElementById('discountAmount').textContent = '৳' + discount.toFixed(2);
+            document.getElementById('grandTotal').textContent = '৳' + grandTotal.toFixed(2);
+            document.getElementById('paidAmount').textContent = '৳' + paid.toFixed(2);
+            document.getElementById('dueAmount').textContent = '৳' + due.toFixed(2);
             
             document.getElementById('subtotalInput').value = subtotal;
             document.getElementById('grandTotalInput').value = grandTotal;
-            document. getElementById('dueAmountInput').value = due;
+            document.getElementById('dueAmountInput').value = due;
         }}
         
         function prepareSubmit() {{
             const items = [];
-            document.querySelectorAll('. invoice-item-row').forEach(row => {{
-                const id = row.id. split('-')[1];
+            document.querySelectorAll('.invoice-item-row').forEach(row => {{
+                const id = row.id.split('-')[1];
                 const productSelect = document.getElementById('product-' + id);
-                const desc = document.getElementById('desc-' + id). value;
+                const desc = document.getElementById('desc-' + id).value;
                 const productName = productSelect.options[productSelect.selectedIndex].text;
                 
                 items.push({{
@@ -6362,7 +6362,7 @@ STORE_INVOICE_NEW_TEMPLATE = f"""
                     rate: parseFloat(document.getElementById('rate-' + id).value) || 0,
                     quantity: parseFloat(document.getElementById('qty-' + id).value) || 0,
                     unit: document.getElementById('unit-' + id).value,
-                    amount: parseFloat(document. getElementById('amount-' + id).value) || 0
+                    amount: parseFloat(document.getElementById('amount-' + id).value) || 0
                 }});
             }});
             
@@ -6424,7 +6424,7 @@ STORE_INVOICE_VIEW_TEMPLATE = f"""
     <div class="main-content">
         <div class="header-section">
             <div>
-                <div class="page-title">Invoice #{{{{ invoice. invoice_number }}}}</div>
+                <div class="page-title">Invoice #{{{{ invoice.invoice_number }}}}</div>
                 <div class="page-subtitle">Created on {{{{ invoice.date }}}}</div>
             </div>
             <div style="display: flex; gap: 10px;">
@@ -6483,15 +6483,15 @@ STORE_INVOICE_VIEW_TEMPLATE = f"""
                     {{% endif %}}
                 </div>
                 <div style="display: grid; gap: 12px;">
-                    <div style="display: flex; justify-content: space-between; padding: 12px; background: rgba(255,255,255,0. 02); border-radius: 8px;">
+                    <div style="display: flex; justify-content: space-between; padding: 12px; background: rgba(255,255,255,0.02); border-radius: 8px;">
                         <span style="color: var(--text-secondary);">Grand Total</span>
-                        <span style="font-weight: 700; font-size: 18px;">৳{{{{ "{:,.2f}". format(invoice.grand_total) }}}}</span>
+                        <span style="font-weight: 700; font-size: 18px;">৳{{{{ "{:,.2f}".format(invoice.grand_total) }}}}</span>
                     </div>
                     <div style="display: flex; justify-content: space-between; padding: 12px; background: rgba(16, 185, 129, 0.1); border-radius: 8px;">
                         <span style="color: var(--accent-green);">Paid Amount</span>
-                        <span style="font-weight: 700; font-size: 18px; color: var(--accent-green);">৳{{{{ "{:,.2f}".format(invoice. paid_amount) }}}}</span>
+                        <span style="font-weight: 700; font-size: 18px; color: var(--accent-green);">৳{{{{ "{:,.2f}".format(invoice.paid_amount) }}}}</span>
                     </div>
-                    <div style="display: flex; justify-content: space-between; padding: 12px; background: rgba(239, 68, 68, 0. 1); border-radius: 8px;">
+                    <div style="display: flex; justify-content: space-between; padding: 12px; background: rgba(239, 68, 68, 0.1); border-radius: 8px;">
                         <span style="color: var(--accent-red);">Due Amount</span>
                         <span style="font-weight: 700; font-size: 18px; color: var(--accent-red);">৳{{{{ "{:,.2f}".format(invoice.due_amount) }}}}</span>
                     </div>
@@ -6521,7 +6521,7 @@ STORE_INVOICE_VIEW_TEMPLATE = f"""
                         <tr>
                             <td>{{{{ loop.index }}}}</td>
                             <td style="font-weight: 600;">{{{{ item.description }}}}</td>
-                            <td>৳{{{{ "{:,.2f}". format(item.rate) }}}}</td>
+                            <td>৳{{{{ "{:,.2f}".format(item.rate) }}}}</td>
                             <td>{{{{ item.quantity }}}}</td>
                             <td>{{{{ item.unit }}}}</td>
                             <td style="text-align: right; font-weight: 700;">৳{{{{ "{:,.2f}".format(item.amount) }}}}</td>
@@ -6536,7 +6536,7 @@ STORE_INVOICE_VIEW_TEMPLATE = f"""
                         {{% if invoice.discount > 0 %}}
                         <tr style="background: rgba(255,255,255,0.02);">
                             <td colspan="5" style="text-align: right; font-weight: 600;">Discount:</td>
-                            <td style="text-align: right; font-weight: 700; color: var(--accent-red);">-৳{{{{ "{:,.2f}".format(invoice. discount) }}}}</td>
+                            <td style="text-align: right; font-weight: 700; color: var(--accent-red);">-৳{{{{ "{:,.2f}".format(invoice.discount) }}}}</td>
                         </tr>
                         {{% endif %}}
                         <tr style="background: rgba(255, 122, 0, 0.1);">
@@ -6567,7 +6567,7 @@ STORE_INVOICE_VIEW_TEMPLATE = f"""
                     <tbody>
                         {{% for pay in payments %}}
                         <tr>
-                            <td>{{{{ pay. date }}}}</td>
+                            <td>{{{{ pay.date }}}}</td>
                             <td class="amount-positive">৳{{{{ "{:,.2f}".format(pay.amount) }}}}</td>
                             <td>{{{{ pay.method or 'Cash' }}}}</td>
                             <td style="color: var(--text-secondary);">{{{{ pay.note or '-' }}}}</td>
@@ -6584,7 +6584,7 @@ STORE_INVOICE_VIEW_TEMPLATE = f"""
             <div class="section-header">
                 <span><i class="fas fa-sticky-note" style="margin-right: 10px; color: var(--text-secondary);"></i>Notes</span>
             </div>
-            <p style="color: var(--text-secondary); line-height: 1. 6;">{{{{ invoice.notes }}}}</p>
+            <p style="color: var(--text-secondary); line-height: 1.6;">{{{{ invoice.notes }}}}</p>
         </div>
         {{% endif %}}
     </div>
@@ -6597,7 +6597,7 @@ STORE_INVOICE_PRINT_TEMPLATE = """
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1. 0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Invoice #{{ invoice.invoice_number }}</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
@@ -6630,14 +6630,14 @@ STORE_INVOICE_PRINT_TEMPLATE = """
             margin-bottom: 20px;
         }
         
-        . company-info h1 {
+        .company-info h1 {
             font-size: 28px;
             font-weight: 800;
             color: #1a1a2e;
             margin-bottom: 5px;
         }
         
-        . company-info p {
+        .company-info p {
             font-size: 12px;
             color: #555;
             line-height: 1.5;
@@ -6654,7 +6654,7 @@ STORE_INVOICE_PRINT_TEMPLATE = """
             margin-bottom: 10px;
         }
         
-        .invoice-title . invoice-number {
+        .invoice-title .invoice-number {
             font-size: 16px;
             font-weight: 700;
             background: #1a1a2e;
@@ -6670,13 +6670,13 @@ STORE_INVOICE_PRINT_TEMPLATE = """
             margin-top: 10px;
         }
         
-        . info-section {
+        .info-section {
             display: flex;
             justify-content: space-between;
             margin-bottom: 25px;
         }
         
-        . info-box {
+        .info-box {
             width: 48%;
             background: #f8f9fa;
             padding: 15px;
@@ -6692,14 +6692,14 @@ STORE_INVOICE_PRINT_TEMPLATE = """
             margin-bottom: 10px;
         }
         
-        . info-box p {
+        .info-box p {
             font-size: 14px;
             font-weight: 600;
             color: #000;
             margin-bottom: 5px;
         }
         
-        . info-box .sub-info {
+        .info-box .sub-info {
             font-size: 12px;
             color: #555;
             font-weight: 400;
@@ -6731,7 +6731,7 @@ STORE_INVOICE_PRINT_TEMPLATE = """
             font-size: 13px;
         }
         
-        . items-table td:last-child {
+        .items-table td:last-child {
             text-align: right;
             font-weight: 600;
         }
@@ -6780,7 +6780,7 @@ STORE_INVOICE_PRINT_TEMPLATE = """
             font-size: 14px;
         }
         
-        .grand-total . totals-label,
+        .grand-total .totals-label,
         .grand-total .totals-value {
             color: #fff;
         }
@@ -6794,7 +6794,7 @@ STORE_INVOICE_PRINT_TEMPLATE = """
             font-size: 14px;
         }
         
-        . status-paid {
+        .status-paid {
             background: #d4edda;
             color: #155724;
             border: 1px solid #c3e6cb;
@@ -6825,7 +6825,7 @@ STORE_INVOICE_PRINT_TEMPLATE = """
             margin-bottom: 5px;
         }
         
-        . signature-section {
+        .signature-section {
             display: flex;
             justify-content: space-between;
             margin-top: 60px;
@@ -6890,7 +6890,7 @@ STORE_INVOICE_PRINT_TEMPLATE = """
                 print-color-adjust: exact;
             }
             
-            .totals-row. grand-total {
+            .totals-row.grand-total {
                 background: #FF7A00 !important;
                 color: #fff ! important;
                 -webkit-print-color-adjust: exact;
@@ -6931,9 +6931,9 @@ STORE_INVOICE_PRINT_TEMPLATE = """
             </div>
             <div class="info-box">
                 <h3>Payment Info</h3>
-                <p>Total: ৳{{ "{:,.2f}". format(invoice.grand_total) }}</p>
-                <p class="sub-info">Paid: ৳{{ "{:,.2f}". format(invoice.paid_amount) }}</p>
-                <p class="sub-info">Due: ৳{{ "{:,.2f}". format(invoice.due_amount) }}</p>
+                <p>Total: ৳{{ "{:,.2f}".format(invoice.grand_total) }}</p>
+                <p class="sub-info">Paid: ৳{{ "{:,.2f}".format(invoice.paid_amount) }}</p>
+                <p class="sub-info">Due: ৳{{ "{:,.2f}".format(invoice.due_amount) }}</p>
             </div>
         </div>
         
@@ -6952,11 +6952,11 @@ STORE_INVOICE_PRINT_TEMPLATE = """
                 {% for item in invoice.items %}
                 <tr>
                     <td>{{ loop.index }}</td>
-                    <td>{{ item. description }}</td>
-                    <td>৳{{ "{:,.2f}". format(item.rate) }}</td>
+                    <td>{{ item.description }}</td>
+                    <td>৳{{ "{:,.2f}".format(item.rate) }}</td>
                     <td>{{ item.quantity }}</td>
                     <td>{{ item.unit }}</td>
-                    <td>৳{{ "{:,. 2f}".format(item.amount) }}</td>
+                    <td>৳{{ "{:,.2f}".format(item.amount) }}</td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -6966,12 +6966,12 @@ STORE_INVOICE_PRINT_TEMPLATE = """
             <div class="totals-box">
                 <div class="totals-row">
                     <span class="totals-label">Subtotal</span>
-                    <span class="totals-value">৳{{ "{:,. 2f}".format(invoice.subtotal) }}</span>
+                    <span class="totals-value">৳{{ "{:,.2f}".format(invoice.subtotal) }}</span>
                 </div>
                 {% if invoice.discount > 0 %}
                 <div class="totals-row">
                     <span class="totals-label">Discount</span>
-                    <span class="totals-value">-৳{{ "{:,.2f}". format(invoice.discount) }}</span>
+                    <span class="totals-value">-৳{{ "{:,.2f}".format(invoice.discount) }}</span>
                 </div>
                 {% endif %}
                 <div class="totals-row grand-total">
@@ -7045,7 +7045,7 @@ STORE_INVOICE_EDIT_TEMPLATE = f"""
         }}
         
         .remove-item {{
-            background: rgba(239, 68, 68, 0. 15);
+            background: rgba(239, 68, 68, 0.15);
             color: var(--accent-red);
             border: none;
             width: 40px;
@@ -7139,7 +7139,7 @@ STORE_INVOICE_EDIT_TEMPLATE = f"""
                     
                     <div class="input-group">
                         <label>INVOICE DATE *</label>
-                        <input type="date" name="date" value="{{{{ invoice. date }}}}" required>
+                        <input type="date" name="date" value="{{{{ invoice.date }}}}" required>
                     </div>
                     
                     <div class="input-group">
@@ -7220,8 +7220,8 @@ STORE_INVOICE_EDIT_TEMPLATE = f"""
             const html = `
                 <div class="invoice-item-row" id="item-${{itemCount}}">
                     <input type="text" id="desc-${{itemCount}}" placeholder="Description" value="${{data ?  data.description : ''}}">
-                    <input type="number" id="rate-${{itemCount}}" placeholder="0.00" step="0.01" min="0" value="${{data ? data. rate : ''}}" onchange="calculateRowTotal(${{itemCount}})">
-                    <input type="number" id="qty-${{itemCount}}" placeholder="1" value="${{data ? data.quantity : 1}}" min="0. 01" step="0.01" onchange="calculateRowTotal(${{itemCount}})">
+                    <input type="number" id="rate-${{itemCount}}" placeholder="0.00" step="0.01" min="0" value="${{data ? data.rate : ''}}" onchange="calculateRowTotal(${{itemCount}})">
+                    <input type="number" id="qty-${{itemCount}}" placeholder="1" value="${{data ? data.quantity : 1}}" min="0.01" step="0.01" onchange="calculateRowTotal(${{itemCount}})">
                     <select id="unit-${{itemCount}}">
                         <option value="Pcs" ${{data && data.unit === 'Pcs' ? 'selected' : ''}}>Pcs</option>
                         <option value="Ft" ${{data && data.unit === 'Ft' ?  'selected' : ''}}>Ft</option>
@@ -7230,7 +7230,7 @@ STORE_INVOICE_EDIT_TEMPLATE = f"""
                         <option value="Set" ${{data && data.unit === 'Set' ? 'selected' : ''}}>Set</option>
                         <option value="Sqft" ${{data && data.unit === 'Sqft' ? 'selected' : ''}}>Sqft</option>
                     </select>
-                    <input type="text" id="amount-${{itemCount}}" value="${{data ? data.amount. toFixed(2) : '0.00'}}" readonly style="background: rgba(255,255,255,0.05); font-weight: 700;">
+                    <input type="text" id="amount-${{itemCount}}" value="${{data ? data.amount.toFixed(2) : '0.00'}}" readonly style="background: rgba(255,255,255,0.05); font-weight: 700;">
                     <button type="button" class="remove-item" onclick="removeItem(${{itemCount}})">
                         <i class="fas fa-times"></i>
                     </button>
@@ -7273,12 +7273,12 @@ STORE_INVOICE_EDIT_TEMPLATE = f"""
         
         function prepareSubmit() {{
             const items = [];
-            document.querySelectorAll('. invoice-item-row').forEach(row => {{
-                const id = row.id. split('-')[1];
+            document.querySelectorAll('.invoice-item-row').forEach(row => {{
+                const id = row.id.split('-')[1];
                 items.push({{
                     description: document.getElementById('desc-' + id).value,
                     rate: parseFloat(document.getElementById('rate-' + id).value) || 0,
-                    quantity: parseFloat(document.getElementById('qty-' + id). value) || 0,
+                    quantity: parseFloat(document.getElementById('qty-' + id).value) || 0,
                     unit: document.getElementById('unit-' + id).value,
                     amount: parseFloat(document.getElementById('amount-' + id).value) || 0
                 }});
@@ -7295,7 +7295,7 @@ STORE_INVOICE_EDIT_TEMPLATE = f"""
         
         // Load existing items
         existingItems.forEach(item => addItem(item));
-        if (existingItems. length === 0) addItem();
+        if (existingItems.length === 0) addItem();
     </script>
 </body>
 </html>
@@ -7349,15 +7349,15 @@ STORE_INVOICE_PAY_TEMPLATE = f"""
             <div style="background: rgba(255,255,255,0.02); padding: 20px; border-radius: 12px; margin-bottom: 25px;">
                 <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
                     <span style="color: var(--text-secondary);">Customer</span>
-                    <span style="font-weight: 600;">{{{{ invoice. customer_name }}}}</span>
+                    <span style="font-weight: 600;">{{{{ invoice.customer_name }}}}</span>
                 </div>
                 <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
                     <span style="color: var(--text-secondary);">Total Amount</span>
-                    <span style="font-weight: 600;">৳{{{{ "{:,.2f}". format(invoice.grand_total) }}}}</span>
+                    <span style="font-weight: 600;">৳{{{{ "{:,.2f}".format(invoice.grand_total) }}}}</span>
                 </div>
                 <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
                     <span style="color: var(--text-secondary);">Already Paid</span>
-                    <span style="font-weight: 600; color: var(--accent-green);">৳{{{{ "{:,.2f}". format(invoice.paid_amount) }}}}</span>
+                    <span style="font-weight: 600; color: var(--accent-green);">৳{{{{ "{:,.2f}".format(invoice.paid_amount) }}}}</span>
                 </div>
                 <div style="display: flex; justify-content: space-between; padding-top: 10px; border-top: 1px solid var(--border-color);">
                     <span style="color: var(--accent-red); font-weight: 600;">Due Amount</span>
@@ -7368,8 +7368,8 @@ STORE_INVOICE_PAY_TEMPLATE = f"""
             <form action="/store/invoices/pay/{{{{ invoice._id }}}}" method="post">
                 <div class="input-group">
                     <label><i class="fas fa-money-bill-wave" style="margin-right: 5px;"></i> PAYMENT AMOUNT (৳) *</label>
-                    <input type="number" name="amount" required step="0.01" min="0. 01" max="{{{{ invoice.due_amount }}}}" 
-                        placeholder="Enter amount" value="{{{{ invoice. due_amount }}}}">
+                    <input type="number" name="amount" required step="0.01" min="0.01" max="{{{{ invoice.due_amount }}}}" 
+                        placeholder="Enter amount" value="{{{{ invoice.due_amount }}}}">
                 </div>
                 
                 <div class="input-group">
@@ -7386,7 +7386,7 @@ STORE_INVOICE_PAY_TEMPLATE = f"""
                 
                 <div class="input-group">
                     <label><i class="fas fa-sticky-note" style="margin-right: 5px;"></i> NOTE (Optional)</label>
-                    <input type="text" name="note" placeholder="Payment note... ">
+                    <input type="text" name="note" placeholder="Payment note...">
                 </div>
                 
                 <div style="display: flex; gap: 15px; margin-top: 10px;">
@@ -7394,7 +7394,7 @@ STORE_INVOICE_PAY_TEMPLATE = f"""
                         <i class="fas fa-check" style="margin-right: 8px;"></i> Confirm Payment
                     </button>
                     <a href="/store/invoices/view/{{{{ invoice._id }}}}" style="flex: 1;">
-                        <button type="button" style="background: rgba(255,255,255,0. 05); border: 1px solid var(--border-color); width: 100%;">
+                        <button type="button" style="background: rgba(255,255,255,0.05); border: 1px solid var(--border-color); width: 100%;">
                             <i class="fas fa-times" style="margin-right: 8px;"></i> Cancel
                         </button>
                     </a>
@@ -7421,7 +7421,7 @@ STORE_QUOTATIONS_TEMPLATE = f"""
 <body>
     <div class="animated-bg"></div>
 
-    <div class="mobile-toggle" onclick="document.querySelector('.sidebar'). classList.toggle('active')">
+    <div class="mobile-toggle" onclick="document.querySelector('.sidebar').classList.toggle('active')">
         <i class="fas fa-bars"></i>
     </div>
 
@@ -7505,9 +7505,9 @@ STORE_QUOTATIONS_TEMPLATE = f"""
                     <tbody>
                         {{% for qt in quotations %}}
                         <tr>
-                            <td><span class="table-badge" style="background: rgba(139, 92, 246, 0.2); color: var(--accent-purple);">{{{{ qt. quotation_number }}}}</span></td>
+                            <td><span class="table-badge" style="background: rgba(139, 92, 246, 0.2); color: var(--accent-purple);">{{{{ qt.quotation_number }}}}</span></td>
                             <td>{{{{ qt.date }}}}</td>
-                            <td style="font-weight: 600;">{{{{ qt. customer_name }}}}</td>
+                            <td style="font-weight: 600;">{{{{ qt.customer_name }}}}</td>
                             <td style="font-weight: 700;">৳{{{{ "{:,.0f}".format(qt.grand_total) }}}}</td>
                             <td>{{{{ qt.valid_until or '-' }}}}</td>
                             <td>
@@ -7542,7 +7542,7 @@ STORE_QUOTATIONS_TEMPLATE = f"""
                         <tr>
                             <td colspan="7" style="text-align: center; padding: 50px; color: var(--text-secondary);">
                                 <i class="fas fa-file-alt" style="font-size: 40px; opacity: 0.2; margin-bottom: 15px; display: block;"></i>
-                                No quotations found.  Create your first quotation! 
+                                No quotations found. Create your first quotation! 
                             </td>
                         </tr>
                         {{% endfor %}}
@@ -7557,7 +7557,7 @@ STORE_QUOTATIONS_TEMPLATE = f"""
             if (confirm('Are you sure you want to delete this quotation?')) {{
                 fetch('/store/quotations/delete/' + id, {{
                     method: 'POST'
-                }}). then(() => location.reload());
+                }}).then(() => location.reload());
             }}
         }}
     </script>
@@ -7591,7 +7591,7 @@ STORE_QUOTATION_NEW_TEMPLATE = f"""
         }}
         
         .remove-item {{
-            background: rgba(239, 68, 68, 0. 15);
+            background: rgba(239, 68, 68, 0.15);
             color: var(--accent-red);
             border: none;
             width: 40px;
@@ -7601,7 +7601,7 @@ STORE_QUOTATION_NEW_TEMPLATE = f"""
         }}
         
         .totals-section {{
-            background: rgba(139, 92, 246, 0. 05);
+            background: rgba(139, 92, 246, 0.05);
             border: 1px solid rgba(139, 92, 246, 0.2);
             border-radius: 12px;
             padding: 20px;
@@ -7668,7 +7668,7 @@ STORE_QUOTATION_NEW_TEMPLATE = f"""
                             <option value="">-- Select Customer --</option>
                             {{% for cust in customers %}}
                             <option value="{{{{ cust._id }}}}" data-name="{{{{ cust.name }}}}" data-phone="{{{{ cust.phone }}}}">
-                                {{{{ cust. name }}}} - {{{{ cust.phone }}}}
+                                {{{{ cust.name }}}} - {{{{ cust.phone }}}}
                             </option>
                             {{% endfor %}}
                         </select>
@@ -7783,7 +7783,7 @@ STORE_QUOTATION_NEW_TEMPLATE = f"""
                         <input type="text" id="desc-${{itemCount}}" placeholder="Or type description..." style="margin-top: 8px;">
                     </div>
                     <input type="number" id="rate-${{itemCount}}" placeholder="0.00" step="0.01" min="0" onchange="calculateRowTotal(${{itemCount}})">
-                    <input type="number" id="qty-${{itemCount}}" placeholder="1" value="1" min="0. 01" step="0.01" onchange="calculateRowTotal(${{itemCount}})">
+                    <input type="number" id="qty-${{itemCount}}" placeholder="1" value="1" min="0.01" step="0.01" onchange="calculateRowTotal(${{itemCount}})">
                     <select id="unit-${{itemCount}}">
                         <option value="Pcs">Pcs</option>
                         <option value="Ft">Ft</option>
@@ -7804,9 +7804,9 @@ STORE_QUOTATION_NEW_TEMPLATE = f"""
         
         function updateItemPrice(select, id) {{
             const option = select.options[select.selectedIndex];
-            if (option. value) {{
-                document.getElementById('rate-' + id). value = option.getAttribute('data-price') || 0;
-                document.getElementById('unit-' + id). value = option.getAttribute('data-unit') || 'Pcs';
+            if (option.value) {{
+                document.getElementById('rate-' + id).value = option.getAttribute('data-price') || 0;
+                document.getElementById('unit-' + id).value = option.getAttribute('data-unit') || 'Pcs';
                 calculateRowTotal(id);
             }}
         }}
@@ -7826,11 +7826,11 @@ STORE_QUOTATION_NEW_TEMPLATE = f"""
         
         function calculateTotals() {{
             let subtotal = 0;
-            document.querySelectorAll('[id^="amount-"]'). forEach(input => {{
+            document.querySelectorAll('[id^="amount-"]').forEach(input => {{
                 subtotal += parseFloat(input.value) || 0;
             }});
             
-            const discount = parseFloat(document.getElementById('discountInput'). value) || 0;
+            const discount = parseFloat(document.getElementById('discountInput').value) || 0;
             const grandTotal = subtotal - discount;
             
             document.getElementById('subtotal').textContent = '৳' + subtotal.toFixed(2);
@@ -7843,10 +7843,10 @@ STORE_QUOTATION_NEW_TEMPLATE = f"""
         
         function prepareSubmit() {{
             const items = [];
-            document.querySelectorAll('. invoice-item-row').forEach(row => {{
-                const id = row.id. split('-')[1];
+            document.querySelectorAll('.invoice-item-row').forEach(row => {{
+                const id = row.id.split('-')[1];
                 const productSelect = document.getElementById('product-' + id);
-                const desc = document.getElementById('desc-' + id). value;
+                const desc = document.getElementById('desc-' + id).value;
                 const productName = productSelect.options[productSelect.selectedIndex].text;
                 
                 items.push({{
@@ -7879,8 +7879,8 @@ STORE_QUOTATION_PRINT_TEMPLATE = """
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1. 0">
-    <title>Quotation #{{ quotation. quotation_number }}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quotation #{{ quotation.quotation_number }}</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
@@ -7889,31 +7889,31 @@ STORE_QUOTATION_PRINT_TEMPLATE = """
         .header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #8B5CF6; padding-bottom: 20px; margin-bottom: 20px; }
         .company-info h1 { font-size: 28px; font-weight: 800; color: #1a1a2e; margin-bottom: 5px; }
         .company-info p { font-size: 12px; color: #555; line-height: 1.5; }
-        . quote-title { text-align: right; }
+        .quote-title { text-align: right; }
         .quote-title h2 { font-size: 32px; font-weight: 800; color: #8B5CF6; margin-bottom: 10px; }
-        .quote-title . quote-number { font-size: 16px; font-weight: 700; background: #8B5CF6; color: #fff; padding: 8px 20px; border-radius: 5px; display: inline-block; }
+        .quote-title .quote-number { font-size: 16px; font-weight: 700; background: #8B5CF6; color: #fff; padding: 8px 20px; border-radius: 5px; display: inline-block; }
         .quote-title .quote-date { font-size: 13px; color: #555; margin-top: 10px; }
         .info-section { display: flex; justify-content: space-between; margin-bottom: 25px; }
         .info-box { width: 48%; background: #f8f9fa; padding: 15px; border-radius: 8px; border-left: 4px solid #8B5CF6; }
         .info-box h3 { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: #888; margin-bottom: 10px; }
         .info-box p { font-size: 14px; font-weight: 600; color: #000; margin-bottom: 5px; }
-        .info-box . sub-info { font-size: 12px; color: #555; font-weight: 400; }
+        .info-box .sub-info { font-size: 12px; color: #555; font-weight: 400; }
         .items-table { width: 100%; border-collapse: collapse; margin-bottom: 25px; }
         .items-table th { background: #8B5CF6; color: #fff; padding: 12px; text-align: left; font-size: 12px; text-transform: uppercase; }
         .items-table th:last-child { text-align: right; }
-        . items-table td { padding: 12px; border-bottom: 1px solid #eee; font-size: 13px; }
+        .items-table td { padding: 12px; border-bottom: 1px solid #eee; font-size: 13px; }
         .items-table td:last-child { text-align: right; font-weight: 600; }
         .totals-section { display: flex; justify-content: flex-end; }
         .totals-box { width: 300px; background: #f8f9fa; border-radius: 8px; overflow: hidden; }
         .totals-row { display: flex; justify-content: space-between; padding: 12px 15px; border-bottom: 1px solid #eee; }
-        . totals-row. grand-total { background: #8B5CF6; color: #fff; font-size: 18px; font-weight: 800; border-bottom: none; }
-        . validity-note { margin-top: 25px; padding: 15px; background: #fff3cd; border-radius: 8px; border: 1px solid #ffc107; text-align: center; font-size: 13px; color: #856404; }
+        .totals-row.grand-total { background: #8B5CF6; color: #fff; font-size: 18px; font-weight: 800; border-bottom: none; }
+        .validity-note { margin-top: 25px; padding: 15px; background: #fff3cd; border-radius: 8px; border: 1px solid #ffc107; text-align: center; font-size: 13px; color: #856404; }
         .footer { margin-top: 40px; padding-top: 20px; border-top: 1px solid #ddd; text-align: center; }
         .footer p { font-size: 11px; color: #888; margin-bottom: 5px; }
         .signature-section { display: flex; justify-content: space-between; margin-top: 60px; }
         .signature-box { width: 200px; text-align: center; }
         .signature-line { border-top: 2px solid #000; padding-top: 10px; font-size: 12px; font-weight: 600; }
-        . no-print { margin-bottom: 20px; text-align: center; }
+        .no-print { margin-bottom: 20px; text-align: center; }
         .no-print button { padding: 12px 30px; font-size: 14px; font-weight: 600; cursor: pointer; border: none; border-radius: 8px; margin: 0 5px; }
         .btn-print { background: #8B5CF6; color: #fff; }
         .btn-back { background: #eee; color: #333; }
@@ -7941,8 +7941,8 @@ STORE_QUOTATION_PRINT_TEMPLATE = """
             </div>
             <div class="quote-title">
                 <h2>QUOTATION</h2>
-                <div class="quote-number">{{ quotation. quotation_number }}</div>
-                <div class="quote-date">Date: {{ quotation. date }}</div>
+                <div class="quote-number">{{ quotation.quotation_number }}</div>
+                <div class="quote-date">Date: {{ quotation.date }}</div>
             </div>
         </div>
         
@@ -7955,8 +7955,8 @@ STORE_QUOTATION_PRINT_TEMPLATE = """
             </div>
             <div class="info-box">
                 <h3>Validity</h3>
-                <p>Valid Until: {{ quotation. valid_until or 'Not Specified' }}</p>
-                <p class="sub-info">Status: {{ quotation. status. title() }}</p>
+                <p>Valid Until: {{ quotation.valid_until or 'Not Specified' }}</p>
+                <p class="sub-info">Status: {{ quotation.status.title() }}</p>
             </div>
         </div>
         
@@ -7976,10 +7976,10 @@ STORE_QUOTATION_PRINT_TEMPLATE = """
                 <tr>
                     <td>{{ loop.index }}</td>
                     <td>{{ item.description }}</td>
-                    <td>৳{{ "{:,.2f}". format(item.rate) }}</td>
+                    <td>৳{{ "{:,.2f}".format(item.rate) }}</td>
                     <td>{{ item.quantity }}</td>
                     <td>{{ item.unit }}</td>
-                    <td>৳{{ "{:,. 2f}".format(item.amount) }}</td>
+                    <td>৳{{ "{:,.2f}".format(item.amount) }}</td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -7994,19 +7994,19 @@ STORE_QUOTATION_PRINT_TEMPLATE = """
                 {% if quotation.discount > 0 %}
                 <div class="totals-row">
                     <span>Discount</span>
-                    <span>-৳{{ "{:,.2f}". format(quotation. discount) }}</span>
+                    <span>-৳{{ "{:,.2f}".format(quotation.discount) }}</span>
                 </div>
                 {% endif %}
                 <div class="totals-row grand-total">
                     <span>Grand Total</span>
-                    <span>৳{{ "{:,.2f}". format(quotation. grand_total) }}</span>
+                    <span>৳{{ "{:,.2f}".format(quotation.grand_total) }}</span>
                 </div>
             </div>
         </div>
         
         {% if quotation.valid_until %}
         <div class="validity-note">
-            ⚠️ This quotation is valid until <strong>{{ quotation.valid_until }}</strong>.  Prices may change after this date.
+            ⚠️ This quotation is valid until <strong>{{ quotation.valid_until }}</strong>. Prices may change after this date.
         </div>
         {% endif %}
         
@@ -8050,7 +8050,7 @@ STORE_DUES_TEMPLATE = f"""
 <body>
     <div class="animated-bg"></div>
 
-    <div class="mobile-toggle" onclick="document.querySelector('.sidebar'). classList.toggle('active')">
+    <div class="mobile-toggle" onclick="document.querySelector('.sidebar').classList.toggle('active')">
         <i class="fas fa-bars"></i>
     </div>
 
@@ -8128,7 +8128,7 @@ STORE_DUES_TEMPLATE = f"""
                             <div style="font-size: 13px; color: var(--text-secondary);">{{{{ cust.invoice_count }}}} unpaid invoice(s)</div>
                         </div>
                         <div style="text-align: right;">
-                            <div style="font-size: 24px; font-weight: 800; color: var(--accent-red);">৳{{{{ "{:,.0f}". format(cust. total_due) }}}}</div>
+                            <div style="font-size: 24px; font-weight: 800; color: var(--accent-red);">৳{{{{ "{:,.0f}".format(cust.total_due) }}}}</div>
                             <a href="/store/dues/collect/{{{{ cust._id }}}}" style="color: var(--accent-green); font-size: 13px; text-decoration: none;">
                                 <i class="fas fa-hand-holding-usd"></i> Collect Payment
                             </a>
@@ -8141,7 +8141,7 @@ STORE_DUES_TEMPLATE = f"""
                         {{% for inv in cust.invoices %}}
                         <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--border-color);">
                             <div>
-                                <span class="table-badge" style="background: rgba(255, 122, 0, 0.2); color: var(--accent-orange);">{{{{ inv. invoice_number }}}}</span>
+                                <span class="table-badge" style="background: rgba(255, 122, 0, 0.2); color: var(--accent-orange);">{{{{ inv.invoice_number }}}}</span>
                                 <span style="margin-left: 10px; font-size: 13px; color: var(--text-secondary);">{{{{ inv.date }}}}</span>
                             </div>
                             <div style="display: flex; align-items: center; gap: 15px;">
@@ -8158,7 +8158,7 @@ STORE_DUES_TEMPLATE = f"""
                 <div style="text-align: center; padding: 60px; color: var(--text-secondary);">
                     <i class="fas fa-check-circle" style="font-size: 60px; color: var(--accent-green); opacity: 0.3; margin-bottom: 20px; display: block;"></i>
                     <div style="font-size: 18px; font-weight: 600; margin-bottom: 5px;">All Clear! </div>
-                    <div>No pending dues.  All payments are collected.</div>
+                    <div>No pending dues. All payments are collected.</div>
                 </div>
                 {{% endfor %}}
             </div>
@@ -8184,7 +8184,7 @@ STORE_DUES_TEMPLATE = f"""
                         {{% for pay in recent_payments %}}
                         <tr>
                             <td>{{{{ pay.date }}}}</td>
-                            <td style="font-weight: 600;">{{{{ pay. customer_name }}}}</td>
+                            <td style="font-weight: 600;">{{{{ pay.customer_name }}}}</td>
                             <td><span class="table-badge">{{{{ pay.invoice_number }}}}</span></td>
                             <td class="amount-positive">৳{{{{ "{:,.0f}".format(pay.amount) }}}}</td>
                             <td>{{{{ pay.method or 'Cash' }}}}</td>
@@ -8204,7 +8204,7 @@ STORE_DUES_TEMPLATE = f"""
 
     <script>
         function filterDues() {{
-            const search = document.getElementById('searchDue').value. toLowerCase();
+            const search = document.getElementById('searchDue').value.toLowerCase();
             const cards = document.querySelectorAll('.due-customer-card');
             
             cards.forEach(card => {{
@@ -8252,7 +8252,7 @@ STORE_DUE_COLLECT_TEMPLATE = f"""
         <div class="header-section">
             <div>
                 <div class="page-title">Collect Due Payment</div>
-                <div class="page-subtitle">Customer: {{{{ customer. name }}}}</div>
+                <div class="page-subtitle">Customer: {{{{ customer.name }}}}</div>
             </div>
         </div>
 
@@ -8266,13 +8266,13 @@ STORE_DUE_COLLECT_TEMPLATE = f"""
                 <div style="display: grid; gap: 12px;">
                     <div style="display: flex; justify-content: space-between; padding: 15px; background: rgba(255,255,255,0.02); border-radius: 10px;">
                         <span style="color: var(--text-secondary);">Name</span>
-                        <span style="font-weight: 700;">{{{{ customer. name }}}}</span>
+                        <span style="font-weight: 700;">{{{{ customer.name }}}}</span>
                     </div>
                     <div style="display: flex; justify-content: space-between; padding: 15px; background: rgba(255,255,255,0.02); border-radius: 10px;">
                         <span style="color: var(--text-secondary);">Phone</span>
                         <span style="font-weight: 700;">{{{{ customer.phone }}}}</span>
                     </div>
-                    <div style="display: flex; justify-content: space-between; padding: 15px; background: rgba(239, 68, 68, 0.1); border-radius: 10px; border: 1px solid rgba(239, 68, 68, 0. 2);">
+                    <div style="display: flex; justify-content: space-between; padding: 15px; background: rgba(239, 68, 68, 0.1); border-radius: 10px; border: 1px solid rgba(239, 68, 68, 0.2);">
                         <span style="color: var(--accent-red);">Total Due</span>
                         <span style="font-weight: 800; font-size: 24px; color: var(--accent-red);">৳{{{{ "{:,.0f}".format(total_due) }}}}</span>
                     </div>
@@ -8288,7 +8288,7 @@ STORE_DUE_COLLECT_TEMPLATE = f"""
                 <form action="/store/dues/collect/{{{{ customer._id }}}}" method="post">
                     <div class="input-group">
                         <label>PAYMENT AMOUNT (৳) *</label>
-                        <input type="number" name="amount" required step="0.01" min="0. 01" max="{{{{ total_due }}}}"
+                        <input type="number" name="amount" required step="0.01" min="0.01" max="{{{{ total_due }}}}"
                             placeholder="Enter amount" value="{{{{ total_due }}}}">
                     </div>
                     
@@ -8306,7 +8306,7 @@ STORE_DUE_COLLECT_TEMPLATE = f"""
                     
                     <div class="input-group">
                         <label>NOTE (Optional)</label>
-                        <input type="text" name="note" placeholder="Payment note... ">
+                        <input type="text" name="note" placeholder="Payment note...">
                     </div>
                     
                     <button type="submit" style="background: linear-gradient(135deg, #10B981 0%, #34D399 100%);">
@@ -8338,9 +8338,9 @@ STORE_DUE_COLLECT_TEMPLATE = f"""
                         <tr>
                             <td><span class="table-badge" style="background: rgba(255, 122, 0, 0.2); color: var(--accent-orange);">{{{{ inv.invoice_number }}}}</span></td>
                             <td>{{{{ inv.date }}}}</td>
-                            <td>৳{{{{ "{:,.0f}".format(inv. grand_total) }}}}</td>
-                            <td class="amount-positive">৳{{{{ "{:,.0f}".format(inv. paid_amount) }}}}</td>
-                            <td><span class="due-badge">৳{{{{ "{:,.0f}". format(inv.due_amount) }}}}</span></td>
+                            <td>৳{{{{ "{:,.0f}".format(inv.grand_total) }}}}</td>
+                            <td class="amount-positive">৳{{{{ "{:,.0f}".format(inv.paid_amount) }}}}</td>
+                            <td><span class="due-badge">৳{{{{ "{:,.0f}".format(inv.due_amount) }}}}</span></td>
                             <td>
                                 <div class="action-cell">
                                     <a href="/store/invoices/pay/{{{{ inv._id }}}}" class="action-btn btn-pay">
@@ -8379,10 +8379,10 @@ def home():
         return redirect(url_for('login'))
     
     users = load_users()
-    user_data = users. get(session. get('user'), {})
+    user_data = users.get(session.get('user'), {})
     
     # স্টোর ইউজার হলে সরাসরি স্টোর ড্যাশবোর্ডে
-    if user_data.get('permissions') == ['store'] or (len(user_data. get('permissions', [])) == 1 and 'store' in user_data.get('permissions', [])):
+    if user_data.get('permissions') == ['store'] or (len(user_data.get('permissions', [])) == 1 and 'store' in user_data.get('permissions', [])):
         return redirect(url_for('store_dashboard'))
     
     if session.get('role') == 'admin':
@@ -8393,17 +8393,17 @@ def home():
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
-    if request. method == 'POST':
-        username = request.form.  get('username')
-        password = request. form.get('password')
+    if request.method == 'POST':
+        username = request.form. get('username')
+        password = request.form.get('password')
         users = load_users()
         
         if username in users and users[username]['password'] == password:
-            session. permanent = True
+            session.permanent = True
             session['user'] = username
             session['role'] = users[username]['role']
-            session['permissions'] = users[username]. get('permissions', [])
-            session['login_time'] = get_bd_time(). isoformat()
+            session['permissions'] = users[username].get('permissions', [])
+            session['login_time'] = get_bd_time().isoformat()
             
             # আপডেট লাস্ট লগইন
             users[username]['last_login'] = get_bd_time().strftime('%d-%m-%Y %I:%M %p')
@@ -8420,10 +8420,10 @@ def logout():
         users = load_users()
         if session['user'] in users:
             try:
-                login_time = datetime. fromisoformat(session['login_time'])
+                login_time = datetime.fromisoformat(session['login_time'])
                 now = get_bd_time()
-                duration = now - login_time.  replace(tzinfo=bd_tz)
-                total_seconds = int(duration.  total_seconds())
+                duration = now - login_time. replace(tzinfo=bd_tz)
+                total_seconds = int(duration. total_seconds())
                 hours, remainder = divmod(total_seconds, 3600)
                 minutes, seconds = divmod(remainder, 60)
                 
@@ -8451,7 +8451,7 @@ def generate_report():
     if 'user' not in session:
         return redirect(url_for('login'))
     
-    ref_no = request.form. get('ref_no', '').strip()
+    ref_no = request.form.get('ref_no', '').strip()
     if not ref_no:
         flash('Please enter a valid Ref No.')
         return redirect(url_for('home'))
@@ -8467,7 +8467,7 @@ def generate_report():
                 excel_file,
                 as_attachment=True,
                 download_name=filename,
-                mimetype='application/vnd. openxmlformats-officedocument.spreadsheetml.sheet'
+                mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
             )
     
     flash('Data not found or report generation failed for the given Ref No.')
@@ -8482,11 +8482,11 @@ def generate_po_report():
     if 'user' not in session:
         return redirect(url_for('login'))
     
-    if 'pdf_files' not in request. files:
+    if 'pdf_files' not in request.files:
         flash('No files uploaded.')
         return redirect(url_for('home'))
     
-    files = request.files. getlist('pdf_files')
+    files = request.files.getlist('pdf_files')
     if not files or files[0].filename == '':
         flash('Please select at least one PDF file.')
         return redirect(url_for('home'))
@@ -8499,11 +8499,11 @@ def generate_po_report():
         if file and file.filename.endswith('.pdf'):
             file_path = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
             file.save(file_path)
-            saved_file_paths. append(file_path)
+            saved_file_paths.append(file_path)
             
             extracted, meta = extract_data_dynamic(file_path)
             all_data.extend(extracted)
-            if not global_metadata and meta. get('buyer') != 'N/A':
+            if not global_metadata and meta.get('buyer') != 'N/A':
                 global_metadata = meta
 
     if not all_data:
@@ -8518,21 +8518,21 @@ def generate_po_report():
     df = pd.DataFrame(all_data)
     df['P.O NO'] = df['P.O NO'].astype(str)
     df['Size'] = df['Size'].astype(str)
-    df['Quantity'] = pd.to_numeric(df['Quantity'], errors='coerce'). fillna(0).  astype(int)
+    df['Quantity'] = pd.to_numeric(df['Quantity'], errors='coerce').fillna(0). astype(int)
 
-    pivot_table = df. pivot_table(index=['P.O NO', 'Color'], columns='Size', values='Quantity', aggfunc='sum', fill_value=0)
+    pivot_table = df.pivot_table(index=['P.O NO', 'Color'], columns='Size', values='Quantity', aggfunc='sum', fill_value=0)
     pivot_table = pivot_table.reset_index()
     
     size_columns = [col for col in pivot_table.columns if col not in ['P.O NO', 'Color']]
     sorted_sizes = sort_sizes(size_columns)
     final_column_order = ['P.O NO', 'Color'] + sorted_sizes
-    pivot_table = pivot_table. reindex(columns=final_column_order, fill_value=0)
+    pivot_table = pivot_table.reindex(columns=final_column_order, fill_value=0)
     pivot_table['TOTAL'] = pivot_table[sorted_sizes].sum(axis=1)
 
     output = BytesIO()
-    wb = openpyxl. Workbook()
-    ws = wb. active
-    ws. title = "PO Summary"
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.title = "PO Summary"
 
     title_font = Font(size=16, bold=True, color="FFFFFF")
     header_font = Font(size=11, bold=True, color="FFFFFF")
@@ -8547,7 +8547,7 @@ def generate_po_report():
     total_fill = PatternFill(start_color="e8f5e9", end_color="e8f5e9", fill_type="solid")
 
     meta = global_metadata or {}
-    ws.merge_cells('A1:' + openpyxl. utils.get_column_letter(len(pivot_table.columns)) + '1')
+    ws.merge_cells('A1:' + openpyxl.utils.get_column_letter(len(pivot_table.columns)) + '1')
     ws['A1'] = f"PURCHASE ORDER SUMMARY"
     ws['A1'].font = title_font
     ws['A1'].fill = dark_fill
@@ -8568,17 +8568,17 @@ def generate_po_report():
     header_row = 4
     for col_idx, header in enumerate(pivot_table.columns, 1):
         cell = ws.cell(row=header_row, column=col_idx, value=header)
-        cell. font = header_font
+        cell.font = header_font
         cell.fill = header_fill
         cell.alignment = center_align
         cell.border = thin_border
 
-    for row_idx, row_data in enumerate(pivot_table. values, header_row + 1):
+    for row_idx, row_data in enumerate(pivot_table.values, header_row + 1):
         fill = alt_fill_1 if row_idx % 2 == 0 else alt_fill_2
         for col_idx, value in enumerate(row_data, 1):
             cell = ws.cell(row=row_idx, column=col_idx, value=value)
             cell.font = cell_font
-            cell. alignment = center_align if col_idx > 2 else left_align
+            cell.alignment = center_align if col_idx > 2 else left_align
             cell.border = thin_border
             cell.fill = fill
             if col_idx == len(row_data):
@@ -8586,8 +8586,8 @@ def generate_po_report():
                 cell.font = Font(size=10, bold=True)
 
     total_row = header_row + len(pivot_table) + 1
-    ws.cell(row=total_row, column=1, value="GRAND TOTAL"). font = Font(bold=True)
-    ws.cell(row=total_row, column=1). fill = dark_fill
+    ws.cell(row=total_row, column=1, value="GRAND TOTAL").font = Font(bold=True)
+    ws.cell(row=total_row, column=1).fill = dark_fill
     ws.cell(row=total_row, column=1).font = Font(bold=True, color="FFFFFF")
     ws.merge_cells(f'A{total_row}:B{total_row}')
     
@@ -8602,19 +8602,19 @@ def generate_po_report():
 
     for col in ws.columns:
         max_length = 0
-        column = col[0]. column_letter
+        column = col[0].column_letter
         for cell in col:
             try:
                 if len(str(cell.value)) > max_length:
                     max_length = len(str(cell.value))
             except: pass
-        ws. column_dimensions[column].width = max(max_length + 2, 10)
+        ws.column_dimensions[column].width = max(max_length + 2, 10)
 
     wb.save(output)
     output.seek(0)
 
     for f_path in saved_file_paths:
-        try: os. remove(f_path)
+        try: os.remove(f_path)
         except: pass
 
     filename = f"PO_Summary_{meta.get('style', 'Report')}_{get_bd_date_str()}.xlsx"
@@ -8625,9 +8625,9 @@ def generate_po_report():
 # FLASK ROUTES - USER MANAGEMENT (ADMIN)
 # ==============================================================================
 
-@app. route('/admin/get-users')
+@app.route('/admin/get-users')
 def get_users():
-    if 'user' not in session or session. get('role') != 'admin':
+    if 'user' not in session or session.get('role') != 'admin':
         return jsonify({"error": "Unauthorized"}), 403
     return jsonify(load_users())
 
@@ -8654,14 +8654,14 @@ def save_user():
             "password": password,
             "role": "user",
             "permissions": permissions,
-            "created_at": get_bd_time(). strftime('%d-%m-%Y %I:%M %p'),
+            "created_at": get_bd_time().strftime('%d-%m-%Y %I:%M %p'),
             "last_login": "Never",
             "last_duration": "N/A"
         }
     else:
         if username not in users:
             return jsonify({"status": "error", "message": "User not found"})
-        if users[username]. get('role') == 'admin':
+        if users[username].get('role') == 'admin':
             return jsonify({"status": "error", "message": "Cannot modify admin user"})
         users[username]['password'] = password
         users[username]['permissions'] = permissions
@@ -8669,16 +8669,16 @@ def save_user():
     save_users(users)
     return jsonify({"status": "success"})
 
-@app. route('/admin/delete-user', methods=['POST'])
+@app.route('/admin/delete-user', methods=['POST'])
 def delete_user():
     if 'user' not in session or session.get('role') != 'admin':
         return jsonify({"status": "error", "message": "Unauthorized"}), 403
     
-    data = request. get_json()
-    username = data. get('username')
+    data = request.get_json()
+    username = data.get('username')
     
     users = load_users()
-    if username in users and users[username]. get('role') != 'admin':
+    if username in users and users[username].get('role') != 'admin':
         del users[username]
         save_users(users)
         return jsonify({"status": "success"})
@@ -8700,7 +8700,7 @@ def accessories_input():
     if 'user' not in session:
         return redirect(url_for('login'))
     
-    ref_no = request. form.get('ref_no', ''). strip(). upper()
+    ref_no = request.form.get('ref_no', '').strip().upper()
     if not ref_no:
         flash('Please enter a valid reference number.')
         return redirect(url_for('accessories_search'))
@@ -8710,7 +8710,7 @@ def accessories_input():
     if report_data:
         db = load_accessories_db()
         if ref_no not in db:
-            colors = list(set([item. get('color', 'N/A') for item in report_data]))
+            colors = list(set([item.get('color', 'N/A') for item in report_data]))
             db[ref_no] = {
                 'buyer': report_data[0].get('buyer', 'N/A'),
                 'style': report_data[0].get('style', 'N/A'),
@@ -8724,7 +8724,7 @@ def accessories_input():
         flash('Could not find data for this reference number.')
         return redirect(url_for('accessories_search'))
 
-@app. route('/admin/accessories/input_direct')
+@app.route('/admin/accessories/input_direct')
 def accessories_input_direct():
     if 'user' not in session:
         return redirect(url_for('login'))
@@ -8733,7 +8733,7 @@ def accessories_input_direct():
     db = load_accessories_db()
     
     if ref not in db:
-        flash('Reference not found.  Please search again.')
+        flash('Reference not found. Please search again.')
         return redirect(url_for('accessories_search'))
     
     data = db[ref]
@@ -8742,7 +8742,7 @@ def accessories_input_direct():
         ref=ref,
         buyer=data.get('buyer', 'N/A'),
         style=data.get('style', 'N/A'),
-        colors=data. get('colors', []),
+        colors=data.get('colors', []),
         challans=data.get('challans', [])
     )
 
@@ -8751,12 +8751,12 @@ def accessories_save():
     if 'user' not in session:
         return redirect(url_for('login'))
     
-    ref = request.form.get('ref', ''). upper()
-    item_type = request.form. get('item_type', 'Top')
-    color = request.form. get('color', '')
-    line_no = request.form. get('line_no', '')
-    size = request.form. get('size', 'ALL')
-    qty = request.form. get('qty', 0)
+    ref = request.form.get('ref', '').upper()
+    item_type = request.form.get('item_type', 'Top')
+    color = request.form.get('color', '')
+    line_no = request.form.get('line_no', '')
+    size = request.form.get('size', 'ALL')
+    qty = request.form.get('qty', 0)
     
     db = load_accessories_db()
     
@@ -8769,7 +8769,7 @@ def accessories_save():
             'qty': int(qty),
             'date': get_bd_date_str(),
             'time': get_bd_time().strftime('%I:%M %p'),
-            'user': session. get('user', 'Unknown'),
+            'user': session.get('user', 'Unknown'),
             'status': '✓'
         }
         db[ref]['challans'].append(challan_entry)
@@ -8784,7 +8784,7 @@ def accessories_edit():
         return redirect(url_for('home'))
     
     ref = request.args.get('ref', '').upper()
-    index = int(request.args. get('index', 0))
+    index = int(request.args.get('index', 0))
     
     db = load_accessories_db()
     
@@ -8821,8 +8821,8 @@ def accessories_delete():
     if 'user' not in session or session.get('role') != 'admin':
         return redirect(url_for('home'))
     
-    ref = request.form.get('ref', ''). upper()
-    index = int(request. form.get('index', 0))
+    ref = request.form.get('ref', '').upper()
+    index = int(request.form.get('index', 0))
     
     db = load_accessories_db()
     
@@ -8863,13 +8863,13 @@ def accessories_print():
             th, td {{ border: 1px solid #000; padding: 8px; text-align: center; }}
             th {{ background: #f0f0f0; }}
             .no-print {{ margin-bottom: 20px; }}
-            @media print {{ . no-print {{ display: none; }} }}
+            @media print {{ .no-print {{ display: none; }} }}
         </style>
     </head>
     <body>
         <div class="no-print">
             <button onclick="window.print()">🖨️ Print</button>
-            <button onclick="window.  close()">Close</button>
+            <button onclick="window. close()">Close</button>
         </div>
         
         <div class="header">
@@ -8878,7 +8878,7 @@ def accessories_print():
         </div>
         
         <div class="info">
-            <span><strong>Buyer:</strong> {data. get('buyer', 'N/A')}</span>
+            <span><strong>Buyer:</strong> {data.get('buyer', 'N/A')}</span>
             <span><strong>Style:</strong> {data.get('style', 'N/A')}</span>
             <span><strong>Date:</strong> {get_bd_date_str()}</span>
         </div>
@@ -8905,13 +8905,13 @@ def accessories_print():
         print_html += f"""
             <tr>
                 <td>{i}</td>
-                <td>{challan. get('line', '')}</td>
+                <td>{challan.get('line', '')}</td>
                 <td>{challan.get('type', '')}</td>
                 <td>{challan.get('color', '')}</td>
                 <td>{challan.get('size', '')}</td>
                 <td>{challan.get('qty', 0)}</td>
                 <td>{challan.get('date', '')}</td>
-                <td>{challan. get('time', '')}</td>
+                <td>{challan.get('time', '')}</td>
             </tr>
         """
     
@@ -8949,7 +8949,7 @@ def store_dashboard():
         return redirect(url_for('login'))
     
     # Check store permission
-    if 'store' not in session. get('permissions', []) and session.get('role') != 'admin':
+    if 'store' not in session.get('permissions', []) and session.get('role') != 'admin':
         flash('You do not have access to the Store Panel.')
         return redirect(url_for('home'))
     
@@ -8968,7 +8968,7 @@ def store_customers():
         return redirect(url_for('login'))
     
     # Get all customers with their due info
-    customers = list(store_customers_col.find(). sort("name", 1))
+    customers = list(store_customers_col.find().sort("name", 1))
     
     # Calculate totals for each customer
     for cust in customers:
@@ -8999,13 +8999,13 @@ def store_customer_add():
     
     if request.method == 'POST':
         customer_data = {
-            "name": request.form.get('name', ''). strip(),
-            "phone": request.form. get('phone', '').strip(),
-            "email": request. form.get('email', '').strip(),
-            "address": request.form.get('address', ''). strip(),
-            "notes": request.form. get('notes', '').strip(),
-            "created_at": get_bd_time(). isoformat(),
-            "created_by": session. get('user')
+            "name": request.form.get('name', '').strip(),
+            "phone": request.form.get('phone', '').strip(),
+            "email": request.form.get('email', '').strip(),
+            "address": request.form.get('address', '').strip(),
+            "notes": request.form.get('notes', '').strip(),
+            "created_at": get_bd_time().isoformat(),
+            "created_by": session.get('user')
         }
         
         store_customers_col.insert_one(customer_data)
@@ -9021,18 +9021,18 @@ def store_customer_edit(customer_id):
     
     customer = store_customers_col.find_one({"_id": ObjectId(customer_id)})
     if not customer:
-        flash('Customer not found. ', 'error')
+        flash('Customer not found.', 'error')
         return redirect(url_for('store_customers'))
     
-    if request. method == 'POST':
+    if request.method == 'POST':
         update_data = {
             "name": request.form.get('name', '').strip(),
-            "phone": request.form. get('phone', '').strip(),
-            "email": request. form.get('email', '').strip(),
-            "address": request.form.get('address', ''). strip(),
+            "phone": request.form.get('phone', '').strip(),
+            "email": request.form.get('email', '').strip(),
+            "address": request.form.get('address', '').strip(),
             "notes": request.form.get('notes', '').strip(),
             "updated_at": get_bd_time().isoformat(),
-            "updated_by": session. get('user')
+            "updated_by": session.get('user')
         }
         
         store_customers_col.update_one(
@@ -9044,7 +9044,7 @@ def store_customer_edit(customer_id):
     
     return render_template_string(STORE_CUSTOMER_EDIT_TEMPLATE, customer=customer)
 
-@app. route('/store/customers/view/<customer_id>')
+@app.route('/store/customers/view/<customer_id>')
 def store_customer_view(customer_id):
     if 'user' not in session:
         return redirect(url_for('login'))
@@ -9062,12 +9062,12 @@ def store_customer_delete(customer_id):
         return redirect(url_for('login'))
     
     # Check if customer has invoices
-    invoice_count = store_invoices_col. count_documents({"customer_id": customer_id})
+    invoice_count = store_invoices_col.count_documents({"customer_id": customer_id})
     if invoice_count > 0:
         flash('Cannot delete customer with existing invoices.', 'error')
         return redirect(url_for('store_customers'))
     
-    store_customers_col. delete_one({"_id": ObjectId(customer_id)})
+    store_customers_col.delete_one({"_id": ObjectId(customer_id)})
     flash('Customer deleted successfully!', 'success')
     return redirect(url_for('store_customers'))
 
@@ -9083,7 +9083,7 @@ def store_products():
     products = list(store_products_col.find().sort("name", 1))
     
     # Get unique categories
-    categories = store_products_col. distinct("category")
+    categories = store_products_col.distinct("category")
     categories = [c for c in categories if c]
     
     return render_template_string(STORE_PRODUCTS_TEMPLATE, products=products, categories=categories)
@@ -9096,13 +9096,13 @@ def store_product_add():
     if request.method == 'POST':
         product_data = {
             "name": request.form.get('name', '').strip(),
-            "category": request.form. get('category', '').strip(),
+            "category": request.form.get('category', '').strip(),
             "unit": request.form.get('unit', 'Pcs'),
             "price": float(request.form.get('price', 0) or 0),
             "cost_price": float(request.form.get('cost_price', 0) or 0),
-            "stock": int(request. form.get('stock', 0) or 0),
-            "low_stock_alert": int(request.form. get('low_stock_alert', 10) or 10),
-            "description": request.form. get('description', '').strip(),
+            "stock": int(request.form.get('stock', 0) or 0),
+            "low_stock_alert": int(request.form.get('low_stock_alert', 10) or 10),
+            "description": request.form.get('description', '').strip(),
             "created_at": get_bd_time().isoformat(),
             "created_by": session.get('user')
         }
@@ -9118,21 +9118,21 @@ def store_product_edit(product_id):
     if 'user' not in session:
         return redirect(url_for('login'))
     
-    product = store_products_col. find_one({"_id": ObjectId(product_id)})
+    product = store_products_col.find_one({"_id": ObjectId(product_id)})
     if not product:
-        flash('Product not found. ', 'error')
+        flash('Product not found.', 'error')
         return redirect(url_for('store_products'))
     
-    if request. method == 'POST':
+    if request.method == 'POST':
         update_data = {
-            "name": request. form.get('name', '').strip(),
-            "category": request.form.get('category', ''). strip(),
+            "name": request.form.get('name', '').strip(),
+            "category": request.form.get('category', '').strip(),
             "unit": request.form.get('unit', 'Pcs'),
-            "price": float(request. form.get('price', 0) or 0),
+            "price": float(request.form.get('price', 0) or 0),
             "cost_price": float(request.form.get('cost_price', 0) or 0),
-            "stock": int(request.form. get('stock', 0) or 0),
+            "stock": int(request.form.get('stock', 0) or 0),
             "low_stock_alert": int(request.form.get('low_stock_alert', 10) or 10),
-            "description": request.form. get('description', '').strip(),
+            "description": request.form.get('description', '').strip(),
             "updated_at": get_bd_time().isoformat(),
             "updated_by": session.get('user')
         }
@@ -9151,7 +9151,7 @@ def store_product_delete(product_id):
     if 'user' not in session:
         return redirect(url_for('login'))
     
-    store_products_col. delete_one({"_id": ObjectId(product_id)})
+    store_products_col.delete_one({"_id": ObjectId(product_id)})
     flash('Product deleted successfully!', 'success')
     return redirect(url_for('store_products'))
 
@@ -9159,7 +9159,7 @@ def store_product_delete(product_id):
 # FLASK ROUTES - STORE INVOICES
 # ==============================================================================
 
-@app. route('/store/invoices')
+@app.route('/store/invoices')
 def store_invoices():
     if 'user' not in session:
         return redirect(url_for('login'))
@@ -9173,29 +9173,29 @@ def store_invoice_new():
         return redirect(url_for('login'))
     
     if request.method == 'POST':
-        customer_id = request. form.get('customer_id')
-        customer = store_customers_col. find_one({"_id": ObjectId(customer_id)})
+        customer_id = request.form.get('customer_id')
+        customer = store_customers_col.find_one({"_id": ObjectId(customer_id)})
         
         if not customer:
             flash('Customer not found.', 'error')
             return redirect(url_for('store_invoice_new'))
         
-        items = json.loads(request. form.get('items_json', '[]'))
+        items = json.loads(request.form.get('items_json', '[]'))
         
         invoice_data = {
             "invoice_number": request.form.get('invoice_number'),
             "customer_id": customer_id,
             "customer_name": customer['name'],
-            "customer_phone": customer. get('phone', ''),
+            "customer_phone": customer.get('phone', ''),
             "customer_address": customer.get('address', ''),
             "date": request.form.get('date'),
             "items": items,
             "subtotal": float(request.form.get('subtotal', 0)),
-            "discount": float(request. form.get('discount', 0) or 0),
+            "discount": float(request.form.get('discount', 0) or 0),
             "grand_total": float(request.form.get('grand_total', 0)),
             "paid_amount": float(request.form.get('paid_amount', 0) or 0),
             "due_amount": float(request.form.get('due_amount', 0)),
-            "notes": request.form. get('notes', ''),
+            "notes": request.form.get('notes', ''),
             "created_at": get_bd_time().isoformat(),
             "created_by": session.get('user')
         }
@@ -9231,7 +9231,7 @@ def store_invoice_new():
         products_json.append({
             "_id": str(p['_id']),
             "name": p['name'],
-            "price": p. get('price', 0),
+            "price": p.get('price', 0),
             "unit": p.get('unit', 'Pcs')
         })
     
@@ -9283,34 +9283,34 @@ def store_invoice_edit(invoice_id):
     if 'user' not in session:
         return redirect(url_for('login'))
     
-    invoice = store_invoices_col. find_one({"_id": ObjectId(invoice_id)})
+    invoice = store_invoices_col.find_one({"_id": ObjectId(invoice_id)})
     if not invoice:
-        flash('Invoice not found. ', 'error')
+        flash('Invoice not found.', 'error')
         return redirect(url_for('store_invoices'))
     
     if request.method == 'POST':
-        customer_id = request. form.get('customer_id')
+        customer_id = request.form.get('customer_id')
         customer = store_customers_col.find_one({"_id": ObjectId(customer_id)})
         
         items = json.loads(request.form.get('items_json', '[]'))
         new_grand_total = float(request.form.get('grand_total', 0))
         
         # Recalculate due based on already paid amount
-        already_paid = invoice. get('paid_amount', 0)
+        already_paid = invoice.get('paid_amount', 0)
         new_due = new_grand_total - already_paid
         
         update_data = {
             "customer_id": customer_id,
             "customer_name": customer['name'] if customer else invoice['customer_name'],
             "customer_phone": customer.get('phone', '') if customer else invoice.get('customer_phone', ''),
-            "customer_address": customer. get('address', '') if customer else invoice. get('customer_address', ''),
-            "date": request. form.get('date'),
+            "customer_address": customer.get('address', '') if customer else invoice.get('customer_address', ''),
+            "date": request.form.get('date'),
             "items": items,
-            "subtotal": float(request.form. get('subtotal', 0)),
+            "subtotal": float(request.form.get('subtotal', 0)),
             "discount": float(request.form.get('discount', 0) or 0),
             "grand_total": new_grand_total,
             "due_amount": max(0, new_due),
-            "notes": request.form. get('notes', ''),
+            "notes": request.form.get('notes', ''),
             "updated_at": get_bd_time().isoformat(),
             "updated_by": session.get('user')
         }
@@ -9324,7 +9324,7 @@ def store_invoice_edit(invoice_id):
         return redirect(url_for('store_invoice_view', invoice_id=invoice_id))
     
     # GET request
-    customers = list(store_customers_col.find(). sort("name", 1))
+    customers = list(store_customers_col.find().sort("name", 1))
     products = list(store_products_col.find().sort("name", 1))
     
     products_json = []
@@ -9336,7 +9336,7 @@ def store_invoice_edit(invoice_id):
             "unit": p.get('unit', 'Pcs')
         })
     
-    items_json = json. dumps(invoice.get('items', []))
+    items_json = json.dumps(invoice.get('items', []))
     
     return render_template_string(
         STORE_INVOICE_EDIT_TEMPLATE,
@@ -9358,11 +9358,11 @@ def store_invoice_pay(invoice_id):
     
     if request.method == 'POST':
         amount = float(request.form.get('amount', 0))
-        method = request.form. get('method', 'Cash')
-        note = request.form. get('note', '')
+        method = request.form.get('method', 'Cash')
+        note = request.form.get('note', '')
         
         if amount <= 0:
-            flash('Please enter a valid amount. ', 'error')
+            flash('Please enter a valid amount.', 'error')
             return redirect(url_for('store_invoice_pay', invoice_id=invoice_id))
         
         if amount > invoice['due_amount']:
@@ -9394,7 +9394,7 @@ def store_invoice_pay(invoice_id):
             "created_at": get_bd_time().isoformat(),
             "created_by": session.get('user')
         }
-        store_payments_col. insert_one(payment_record)
+        store_payments_col.insert_one(payment_record)
         
         flash(f'Payment of ৳{amount:,.2f} recorded successfully!', 'success')
         return redirect(url_for('store_invoice_view', invoice_id=invoice_id))
@@ -9404,12 +9404,12 @@ def store_invoice_pay(invoice_id):
 # FLASK ROUTES - STORE QUOTATIONS
 # ==============================================================================
 
-@app. route('/store/quotations')
+@app.route('/store/quotations')
 def store_quotations():
     if 'user' not in session:
         return redirect(url_for('login'))
     
-    quotations = list(store_quotations_col.find(). sort("created_at", -1))
+    quotations = list(store_quotations_col.find().sort("created_at", -1))
     return render_template_string(STORE_QUOTATIONS_TEMPLATE, quotations=quotations)
 
 @app.route('/store/quotations/new', methods=['GET', 'POST'])
@@ -9417,15 +9417,15 @@ def store_quotation_new():
     if 'user' not in session:
         return redirect(url_for('login'))
     
-    if request. method == 'POST':
-        customer_id = request. form.get('customer_id')
+    if request.method == 'POST':
+        customer_id = request.form.get('customer_id')
         customer = store_customers_col.find_one({"_id": ObjectId(customer_id)})
         
         if not customer:
             flash('Customer not found.', 'error')
             return redirect(url_for('store_quotation_new'))
         
-        items = json.loads(request. form.get('items_json', '[]'))
+        items = json.loads(request.form.get('items_json', '[]'))
         
         quotation_data = {
             "quotation_number": request.form.get('quotation_number'),
@@ -9434,14 +9434,14 @@ def store_quotation_new():
             "customer_phone": customer.get('phone', ''),
             "customer_address": customer.get('address', ''),
             "date": request.form.get('date'),
-            "valid_until": request.form. get('valid_until', ''),
+            "valid_until": request.form.get('valid_until', ''),
             "items": items,
-            "subtotal": float(request.form. get('subtotal', 0)),
+            "subtotal": float(request.form.get('subtotal', 0)),
             "discount": float(request.form.get('discount', 0) or 0),
             "grand_total": float(request.form.get('grand_total', 0)),
-            "notes": request.form. get('notes', ''),
+            "notes": request.form.get('notes', ''),
             "status": "pending",
-            "created_at": get_bd_time(). isoformat(),
+            "created_at": get_bd_time().isoformat(),
             "created_by": session.get('user')
         }
         
@@ -9451,16 +9451,16 @@ def store_quotation_new():
         return redirect(url_for('store_quotations'))
     
     # GET request
-    customers = list(store_customers_col.find(). sort("name", 1))
+    customers = list(store_customers_col.find().sort("name", 1))
     products = list(store_products_col.find().sort("name", 1))
     
     products_json = []
     for p in products:
-        products_json. append({
+        products_json.append({
             "_id": str(p['_id']),
             "name": p['name'],
             "price": p.get('price', 0),
-            "unit": p. get('unit', 'Pcs')
+            "unit": p.get('unit', 'Pcs')
         })
     
     quotation_number = generate_quotation_number()
@@ -9485,7 +9485,7 @@ def store_quotation_print(quotation_id):
     
     quotation = store_quotations_col.find_one({"_id": ObjectId(quotation_id)})
     if not quotation:
-        flash('Quotation not found. ', 'error')
+        flash('Quotation not found.', 'error')
         return redirect(url_for('store_quotations'))
     
     settings = load_store_settings()
@@ -9504,7 +9504,7 @@ def store_quotation_convert(quotation_id):
         flash('Quotation not found.', 'error')
         return redirect(url_for('store_quotations'))
     
-    if quotation. get('status') == 'converted':
+    if quotation.get('status') == 'converted':
         flash('This quotation has already been converted to an invoice.', 'error')
         return redirect(url_for('store_quotations'))
     
@@ -9524,7 +9524,7 @@ def store_quotation_convert(quotation_id):
         "grand_total": quotation['grand_total'],
         "paid_amount": 0,
         "due_amount": quotation['grand_total'],
-        "notes": f"Converted from {quotation['quotation_number']}.  " + quotation.get('notes', ''),
+        "notes": f"Converted from {quotation['quotation_number']}. " + quotation.get('notes', ''),
         "from_quotation": quotation_id,
         "created_at": get_bd_time().isoformat(),
         "created_by": session.get('user')
@@ -9559,8 +9559,8 @@ def store_quotation_edit(quotation_id):
         flash('Cannot edit a converted quotation.', 'error')
         return redirect(url_for('store_quotations'))
     
-    if request. method == 'POST':
-        customer_id = request. form.get('customer_id')
+    if request.method == 'POST':
+        customer_id = request.form.get('customer_id')
         customer = store_customers_col.find_one({"_id": ObjectId(customer_id)})
         
         items = json.loads(request.form.get('items_json', '[]'))
@@ -9574,9 +9574,9 @@ def store_quotation_edit(quotation_id):
             "valid_until": request.form.get('valid_until', ''),
             "items": items,
             "subtotal": float(request.form.get('subtotal', 0)),
-            "discount": float(request.form. get('discount', 0) or 0),
+            "discount": float(request.form.get('discount', 0) or 0),
             "grand_total": float(request.form.get('grand_total', 0)),
-            "notes": request. form.get('notes', ''),
+            "notes": request.form.get('notes', ''),
             "updated_at": get_bd_time().isoformat(),
             "updated_by": session.get('user')
         }
@@ -9590,29 +9590,29 @@ def store_quotation_edit(quotation_id):
         return redirect(url_for('store_quotations'))
     
     # GET - Render edit form (similar to new but with data)
-    customers = list(store_customers_col.find(). sort("name", 1))
+    customers = list(store_customers_col.find().sort("name", 1))
     products = list(store_products_col.find().sort("name", 1))
     
     products_json = []
     for p in products:
-        products_json. append({
+        products_json.append({
             "_id": str(p['_id']),
             "name": p['name'],
             "price": p.get('price', 0),
-            "unit": p. get('unit', 'Pcs')
+            "unit": p.get('unit', 'Pcs')
         })
     
     # Return edit template (using same structure as invoice edit)
-    return render_template_string(STORE_QUOTATION_NEW_TEMPLATE. replace(
+    return render_template_string(STORE_QUOTATION_NEW_TEMPLATE.replace(
         'Create New Quotation', 'Edit Quotation'
-    ). replace(
+    ).replace(
         'Save Quotation', 'Update Quotation'
     ), 
         customers=customers,
         products_json=json.dumps(products_json),
         quotation_number=quotation['quotation_number'],
         today=quotation.get('date', get_bd_time().strftime('%Y-%m-%d')),
-        valid_until=quotation. get('valid_until', '')
+        valid_until=quotation.get('valid_until', '')
     )
 
 @app.route('/store/quotations/delete/<quotation_id>', methods=['POST'])
@@ -9664,7 +9664,7 @@ def store_dues():
     total_due = sum(c['total_due'] for c in due_customers)
     
     # Get recent payments
-    recent_payments = list(store_payments_col.find().sort("created_at", -1). limit(20))
+    recent_payments = list(store_payments_col.find().sort("created_at", -1).limit(20))
     
     return render_template_string(
         STORE_DUES_TEMPLATE,
@@ -9692,8 +9692,8 @@ def store_due_collect(customer_id):
     total_due = sum(inv['due_amount'] for inv in unpaid_invoices)
     
     if request.method == 'POST':
-        amount = float(request. form.get('amount', 0))
-        method = request.form. get('method', 'Cash')
+        amount = float(request.form.get('amount', 0))
+        method = request.form.get('method', 'Cash')
         note = request.form.get('note', '')
         
         if amount <= 0:
@@ -9732,7 +9732,7 @@ def store_due_collect(customer_id):
                 "method": method,
                 "date": get_bd_date_str(),
                 "note": note,
-                "created_at": get_bd_time(). isoformat(),
+                "created_at": get_bd_time().isoformat(),
                 "created_by": session.get('user')
             }
             store_payments_col.insert_one(payment_record)
@@ -9853,7 +9853,7 @@ def store_reports():
                 <div class="card stat-card">
                     <div class="stat-icon"><i class="fas fa-chart-line"></i></div>
                     <div class="stat-info">
-                        <h3>৳{stats['total_sales']:,. 0f}</h3>
+                        <h3>৳{stats['total_sales']:,.0f}</h3>
                         <p>Total Sales</p>
                     </div>
                 </div>
@@ -9865,7 +9865,7 @@ def store_reports():
                     </div>
                 </div>
                 <div class="card stat-card">
-                    <div class="stat-icon" style="background: linear-gradient(145deg, rgba(239, 68, 68, 0. 15), rgba(239, 68, 68, 0. 05));"><i class="fas fa-exclamation-triangle" style="color: var(--accent-red);"></i></div>
+                    <div class="stat-icon" style="background: linear-gradient(145deg, rgba(239, 68, 68, 0.15), rgba(239, 68, 68, 0.05));"><i class="fas fa-exclamation-triangle" style="color: var(--accent-red);"></i></div>
                     <div class="stat-info">
                         <h3>৳{stats['total_due']:,.0f}</h3>
                         <p>Total Due</p>
@@ -9914,7 +9914,7 @@ def store_users():
     users = load_users()
     
     # Filter users with store permission
-    store_users = {k: v for k, v in users.items() if 'store' in v. get('permissions', [])}
+    store_users = {k: v for k, v in users.items() if 'store' in v.get('permissions', [])}
     
     users_html = f"""
     <!doctype html>
@@ -9947,19 +9947,19 @@ def store_users():
                     <tbody>
     """
     
-    for username, data in store_users. items():
-        perms = ', '.join(data. get('permissions', []))
+    for username, data in store_users.items():
+        perms = ', '.join(data.get('permissions', []))
         users_html += f"""
             <tr>
                 <td style="font-weight: 600;">{username}</td>
-                <td><span class="table-badge" style="background: rgba(255, 122, 0, 0.1); color: var(--accent-orange);">{data. get('role', 'user')}</span></td>
+                <td><span class="table-badge" style="background: rgba(255, 122, 0, 0.1); color: var(--accent-orange);">{data.get('role', 'user')}</span></td>
                 <td style="color: var(--text-secondary);">{data.get('last_login', 'Never')}</td>
                 <td style="font-size: 12px; color: var(--text-secondary);">{perms}</td>
             </tr>
         """
     
     if not store_users:
-        users_html += '<tr><td colspan="4" style="text-align: center; padding: 40px; color: var(--text-secondary);">No store users found.  Add users from main dashboard.</td></tr>'
+        users_html += '<tr><td colspan="4" style="text-align: center; padding: 40px; color: var(--text-secondary);">No store users found. Add users from main dashboard.</td></tr>'
     
     users_html += """
                     </tbody>
@@ -9969,10 +9969,10 @@ def store_users():
             <div class="card" style="margin-top: 25px;">
                 <div class="section-header"><span><i class="fas fa-info-circle" style="margin-right: 10px; color: var(--accent-blue);"></i>How to Add Store Users</span></div>
                 <p style="color: var(--text-secondary); line-height: 1.8;">
-                    1. Go to <strong>Main Dashboard</strong> → <strong>User Manage</strong><br>
-                    2. Create a new user or edit existing user<br>
-                    3. Check the <strong>"Store"</strong> permission checkbox<br>
-                    4. Save the user<br><br>
+                    1.Go to <strong>Main Dashboard</strong> → <strong>User Manage</strong><br>
+                    2.Create a new user or edit existing user<br>
+                    3.Check the <strong>"Store"</strong> permission checkbox<br>
+                    4.Save the user<br><br>
                     <em>Users with only "Store" permission will be redirected directly to Store Panel on login.</em>
                 </p>
             </div>
@@ -10018,7 +10018,7 @@ def server_error(e):
         <div class="card" style="text-align: center; max-width: 400px;">
             <div style="font-size: 80px; color: var(--accent-red); margin-bottom: 20px;">500</div>
             <h2 style="color: white; margin-bottom: 10px;">Server Error</h2>
-            <p style="color: var(--text-secondary); margin-bottom: 25px;">Something went wrong.  Please try again. </p>
+            <p style="color: var(--text-secondary); margin-bottom: 25px;">Something went wrong. Please try again.</p>
             <a href="/"><button style="background: var(--accent-red);"><i class="fas fa-redo" style="margin-right: 8px;"></i> Try Again</button></a>
         </div>
     </body>
@@ -10053,4 +10053,5 @@ if __name__ == '__main__':
     print("      - Professional Print")
     print("=" * 60)
     
-    app. run(debug=True, host='0. 0.0.0', port=5000)
+    app.run(debug=True, host='0.0.0.0', port=5000)
+
