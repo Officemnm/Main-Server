@@ -2596,23 +2596,23 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
 # HTML TEMPLATES: LOGIN PAGE - FIXED RESPONSIVE & CENTERED
 # ==============================================================================
 
-LOGIN_TEMPLATE = f"""
-<! doctype html>
+LOGIN_TEMPLATE = """
+<!doctype html>
 <html lang="en">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Login - MNM Software</title>
-    {COMMON_STYLES}
+""" + COMMON_STYLES + """
     <style>
-        html, body {{
+        html, body {
             height: 100%;
             margin: 0;
             padding: 0;
             overflow-x: hidden;
-        }}
+        }
         
-        body {{
+        body {
             background: var(--bg-body);
             min-height: 100vh;
             display: flex;
@@ -2620,37 +2620,37 @@ LOGIN_TEMPLATE = f"""
             align-items: center;
             position: relative;
             overflow-y: auto;
-        }}
+        }
         
         /* Animated Background Orbs */
-        .bg-orb {{
+        .bg-orb {
             position: fixed;
             border-radius: 50%;
             filter: blur(80px);
             opacity: 0.4;
             animation: orbFloat 20s ease-in-out infinite;
             pointer-events: none;
-        }}
+        }
         
-        .orb-1 {{
+        .orb-1 {
             width: 300px;
             height: 300px;
             background: var(--accent-orange);
             top: -100px;
             left: -100px;
             animation-delay: 0s;
-        }}
+        }
         
-        .orb-2 {{
+        .orb-2 {
             width: 250px;
             height: 250px;
             background: var(--accent-purple);
             bottom: -50px;
             right: -50px;
             animation-delay: -5s;
-        }}
+        }
         
-        .orb-3 {{
+        .orb-3 {
             width: 150px;
             height: 150px;
             background: var(--accent-green);
@@ -2658,16 +2658,16 @@ LOGIN_TEMPLATE = f"""
             left: 50%;
             transform: translate(-50%, -50%);
             animation-delay: -10s;
-        }}
+        }
         
-        @keyframes orbFloat {{
-            0%, 100% {{ transform: translate(0, 0) scale(1); }}
-            25% {{ transform: translate(30px, -30px) scale(1.05); }}
-            50% {{ transform: translate(-20px, 20px) scale(0.95); }}
-            75% {{ transform: translate(15px, 30px) scale(1.02); }}
-        }}
+        @keyframes orbFloat {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            25% { transform: translate(30px, -30px) scale(1.05); }
+            50% { transform: translate(-20px, 20px) scale(0.95); }
+            75% { transform: translate(15px, 30px) scale(1.02); }
+        }
         
-        .login-container {{
+        .login-container {
             position: relative;
             z-index: 10;
             width: 100%;
@@ -2678,9 +2678,9 @@ LOGIN_TEMPLATE = f"""
             flex-direction: column;
             justify-content: center;
             min-height: 100vh;
-        }}
+        }
         
-        .login-card {{
+        .login-card {
             background: var(--gradient-card);
             border: 1px solid var(--border-color);
             border-radius: 24px;
@@ -2688,24 +2688,24 @@ LOGIN_TEMPLATE = f"""
             backdrop-filter: blur(20px);
             box-shadow: 0 25px 80px rgba(0, 0, 0, 0.5), 0 0 60px var(--accent-orange-glow);
             animation: loginCardAppear 0.8s cubic-bezier(0.4, 0, 0.2, 1);
-        }}
-        @keyframes loginCardAppear {{
-            from {{
+        }
+        @keyframes loginCardAppear {
+            from {
                 opacity: 0;
                 transform: translateY(30px) scale(0.95);
-            }}
-            to {{
+            }
+            to {
                 opacity: 1;
                 transform: translateY(0) scale(1);
-            }}
-        }}
+            }
+        }
         
-        .brand-section {{
+        .brand-section {
             text-align: center;
             margin-bottom: 35px;
-        }}
+        }
         
-        .brand-icon {{
+        .brand-icon {
             width: 70px;
             height: 70px;
             background: var(--gradient-orange);
@@ -2718,59 +2718,59 @@ LOGIN_TEMPLATE = f"""
             margin-bottom: 18px;
             box-shadow: 0 15px 40px var(--accent-orange-glow);
             animation: brandIconPulse 3s ease-in-out infinite;
-        }}
+        }
         
-        @keyframes brandIconPulse {{
-            0%, 100% {{ transform: scale(1) rotate(0deg); box-shadow: 0 15px 40px var(--accent-orange-glow); }}
-            50% {{ transform: scale(1.05) rotate(5deg); box-shadow: 0 20px 50px var(--accent-orange-glow); }}
-        }}
+        @keyframes brandIconPulse {
+            0%, 100% { transform: scale(1) rotate(0deg); box-shadow: 0 15px 40px var(--accent-orange-glow); }
+            50% { transform: scale(1.05) rotate(5deg); box-shadow: 0 20px 50px var(--accent-orange-glow); }
+        }
         
-        .brand-name {{
+        .brand-name {
             font-size: 28px;
             font-weight: 900;
             color: white;
             letter-spacing: -1px;
-        }}
+        }
         
-        .brand-name span {{
+        .brand-name span {
             background: var(--gradient-orange);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
-        }}
+        }
         
-        .brand-tagline {{
+        .brand-tagline {
             color: var(--text-secondary);
             font-size: 11px;
             letter-spacing: 2px;
             margin-top: 6px;
             font-weight: 600;
             text-transform: uppercase;
-        }}
+        }
         
-        .login-form .input-group {{
+        .login-form .input-group {
             margin-bottom: 20px;
-        }}
+        }
         
-        .login-form .input-group label {{
+        .login-form .input-group label {
             display: flex;
             align-items: center;
             gap: 8px;
             margin-bottom: 8px;
-        }}
+        }
         
-        .login-form .input-group label i {{
+        .login-form .input-group label i {
             color: var(--accent-orange);
             font-size: 13px;
-        }}
+        }
         
-        .login-form input {{
+        .login-form input {
             padding: 14px 18px;
             font-size: 14px;
             border-radius: 12px;
-        }}
+        }
         
-        .login-btn {{
+        .login-btn {
             margin-top: 8px;
             padding: 14px 24px;
             font-size: 15px;
@@ -2779,17 +2779,17 @@ LOGIN_TEMPLATE = f"""
             align-items: center;
             justify-content: center;
             gap: 10px;
-        }}
+        }
         
-        .login-btn i {{
+        .login-btn i {
             transition: transform 0.3s;
-        }}
+        }
         
-        .login-btn:hover i {{
+        .login-btn:hover i {
             transform: translateX(5px);
-        }}
+        }
         
-        .error-box {{
+        .error-box {
             margin-top: 20px;
             padding: 14px 18px;
             background: rgba(239, 68, 68, 0.1);
@@ -2801,82 +2801,82 @@ LOGIN_TEMPLATE = f"""
             align-items: center;
             gap: 10px;
             animation: errorShake 0.5s ease-out;
-        }}
+        }
         
-        @keyframes errorShake {{
-            0%, 100% {{ transform: translateX(0); }}
-            20%, 60% {{ transform: translateX(-5px); }}
-            40%, 80% {{ transform: translateX(5px); }}
-        }}
+        @keyframes errorShake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-5px); }
+            40%, 80% { transform: translateX(5px); }
+        }
         
-        .footer-credit {{
+        .footer-credit {
             text-align: center;
             margin-top: 25px;
             color: var(--text-secondary);
             font-size: 11px;
             opacity: 0.5;
             font-weight: 500;
-        }}
+        }
         
-        .footer-credit a {{
+        .footer-credit a {
             color: var(--accent-orange);
             text-decoration: none;
-        }}
+        }
         
         /* Responsive Fixes */
-        @media (max-width: 480px) {{
-            .login-container {{
+        @media (max-width: 480px) {
+            .login-container {
                 padding: 15px;
-            }}
+            }
             
-            .login-card {{
+            .login-card {
                 padding: 30px 25px;
                 border-radius: 20px;
-            }}
+            }
             
-            .brand-icon {{
+            .brand-icon {
                 width: 60px;
                 height: 60px;
                 font-size: 28px;
-            }}
+            }
             
-            .brand-name {{
+            .brand-name {
                 font-size: 24px;
-            }}
+            }
             
-            .brand-tagline {{
+            .brand-tagline {
                 font-size: 10px;
-            }}
+            }
             
-            .login-form input {{
+            .login-form input {
                 padding: 12px 16px;
                 font-size: 14px;
-            }}
+            }
             
-            .login-btn {{
+            .login-btn {
                 padding: 12px 20px;
                 font-size: 14px;
-            }}
-        }}
+            }
+        }
         
-        @media (max-height: 700px) {{
-            .login-container {{
+        @media (max-height: 700px) {
+            .login-container {
                 min-height: auto;
                 padding-top: 30px;
                 padding-bottom: 30px;
-            }}
+            }
             
-            .brand-section {{
+            .brand-section {
                 margin-bottom: 25px;
-            }}
+            }
             
-            .brand-icon {{
+            .brand-icon {
                 width: 60px;
                 height: 60px;
                 font-size: 26px;
                 margin-bottom: 12px;
-            }}
-        }}
+            }
+        }
     </style>
 </head>
 <body>
@@ -2908,14 +2908,14 @@ LOGIN_TEMPLATE = f"""
                 </button>
             </form>
             
-            {{% with messages = get_flashed_messages() %}}
-                {{% if messages %}}
+            {% with messages = get_flashed_messages() %}
+                {% if messages %}
                     <div class="error-box">
                         <i class="fas fa-exclamation-circle"></i>
-                        <span>{{{{ messages[0] }}}}</span>
+                        <span>{{ messages[0] }}</span>
                     </div>
-                {{% endif %}}
-            {{% endwith %}}
+                {% endif %}
+            {% endwith %}
             
             <div class="footer-credit">
                 © 2025 <a href="#">Mehedi Hasan</a> • All Rights Reserved
@@ -2925,7 +2925,7 @@ LOGIN_TEMPLATE = f"""
     
     <script>
         // Add ripple effect to button
-        document.querySelector('.login-btn').addEventListener('click', function(e) {{
+        document.querySelector('.login-btn').addEventListener('click', function(e) {
             const ripple = document.createElement('span');
             ripple.classList.add('ripple-effect');
             const rect = this.getBoundingClientRect();
@@ -2933,7 +2933,7 @@ LOGIN_TEMPLATE = f"""
             ripple.style.top = (e.clientY - rect.top) + 'px';
             this.appendChild(ripple);
             setTimeout(() => ripple.remove(), 600);
-        }});
+        });
     </script>
 </body>
 </html>
@@ -2943,14 +2943,14 @@ LOGIN_TEMPLATE = f"""
 # ADMIN DASHBOARD TEMPLATE - MODERN UI WITH DEW STYLE CHART
 # ==============================================================================
 
-ADMIN_DASHBOARD_TEMPLATE = f"""
-<! doctype html>
+ADMIN_DASHBOARD_TEMPLATE = """
+<!doctype html>
 <html lang="en">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Admin Dashboard - MNM Software</title>
-    {COMMON_STYLES}
+""" + COMMON_STYLES + """
 </head>
 <body>
     <div class="animated-bg"></div>
@@ -2960,7 +2960,7 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
         <div class="welcome-content">
             <div class="welcome-icon" id="welcomeIcon"><i class="fas fa-hand-sparkles"></i></div>
             <div class="welcome-greeting" id="greetingText">Good Morning</div>
-            <div class="welcome-title">Welcome Back, <span>{{{{ session.user }}}}</span>!</div>
+            <div class="welcome-title">Welcome Back, <span>{{ session.user }}</span>!</div>
             <div class="welcome-message">
                 You're now logged into the MNM Software Dashboard.
                 All systems are operational and ready for your commands.
@@ -3043,20 +3043,20 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
                 </div>
             </div>
             
-            {{% with messages = get_flashed_messages() %}}
-                {{% if messages %}}
+            {% with messages = get_flashed_messages() %}
+                {% if messages %}
                     <div class="flash-message flash-error">
                         <i class="fas fa-exclamation-circle"></i>
-                        <span>{{{{ messages[0] }}}}</span>
+                        <span>{{ messages[0] }}</span>
                     </div>
-                {{% endif %}}
-            {{% endwith %}}
+                {% endif %}
+            {% endwith %}
 
             <div class="stats-grid">
                 <div class="card stat-card" style="animation-delay: 0.1s;">
                     <div class="stat-icon"><i class="fas fa-file-export"></i></div>
                     <div class="stat-info">
-                        <h3 class="count-up" data-target="{{{{ stats.closing.count }}}}">0</h3>
+                        <h3 class="count-up" data-target="{{ stats.closing.count }}">0</h3>
                         <p>Lifetime Closing</p>
                     </div>
                 </div>
@@ -3065,7 +3065,7 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
                         <i class="fas fa-boxes" style="color: var(--accent-purple);"></i>
                     </div>
                     <div class="stat-info">
-                        <h3 class="count-up" data-target="{{{{ stats.accessories.count }}}}">0</h3>
+                        <h3 class="count-up" data-target="{{ stats.accessories.count }}">0</h3>
                         <p>Lifetime Accessories</p>
                     </div>
                 </div>
@@ -3074,7 +3074,7 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
                         <i class="fas fa-file-pdf" style="color: var(--accent-green);"></i>
                     </div>
                     <div class="stat-info">
-                        <h3 class="count-up" data-target="{{{{ stats.po.count }}}}">0</h3>
+                        <h3 class="count-up" data-target="{{ stats.po.count }}">0</h3>
                         <p>Lifetime PO Sheets</p>
                     </div>
                 </div>
@@ -3083,7 +3083,7 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
                         <i class="fas fa-users" style="color: var(--accent-blue);"></i>
                     </div>
                     <div class="stat-info">
-                        <h3 class="count-up" data-target="{{{{ stats.users.count }}}}">0</h3>
+                        <h3 class="count-up" data-target="{{ stats.users.count }}">0</h3>
                         <p>Total Users</p>
                     </div>
                 </div>
@@ -3111,7 +3111,7 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
                     <div class="progress-item">
                         <div class="progress-header">
                             <span>Closing Report</span>
-                            <span class="progress-value">{{{{ stats.closing.count }}}} Lifetime</span>
+                            <span class="progress-value">{{ stats.closing.count }} Lifetime</span>
                         </div>
                         <div class="progress-bar-container">
                             <div class="progress-bar-fill progress-orange" style="width: 85%;"></div>
@@ -3121,7 +3121,7 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
                     <div class="progress-item">
                         <div class="progress-header">
                             <span>Accessories</span>
-                            <span class="progress-value">{{{{ stats.accessories.count }}}} Challans</span>
+                            <span class="progress-value">{{ stats.accessories.count }} Challans</span>
                         </div>
                         <div class="progress-bar-container">
                             <div class="progress-bar-fill progress-purple" style="width: 65%;"></div>
@@ -3131,7 +3131,7 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
                     <div class="progress-item">
                         <div class="progress-header">
                             <span>PO Generator</span>
-                            <span class="progress-value">{{{{ stats.po.count }}}} Files</span>
+                            <span class="progress-value">{{ stats.po.count }} Files</span>
                         </div>
                         <div class="progress-bar-container">
                             <div class="progress-bar-fill progress-green" style="width: 45%;"></div>
@@ -3156,36 +3156,36 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
                             </tr>
                         </thead>
                         <tbody>
-                            {{% for log in stats.history[:10] %}}
-                            <tr style="animation: fadeInUp 0.5s ease-out {{{{ loop.index * 0.05 }}}}s backwards;">
+                            {% for log in stats.history[:10] %}
+                            <tr style="animation: fadeInUp 0.5s ease-out {{ loop.index * 0.05 }}s backwards;">
                                 <td>
                                     <div class="time-badge">
                                         <i class="far fa-clock"></i>
-                                        {{{{ log.time }}}}
+                                        {{ log.time }}
                                     </div>
                                 </td>
-                                <td style="font-weight: 600; color: white;">{{{{ log.user }}}}</td>
+                                <td style="font-weight: 600; color: white;">{{ log.user }}</td>
                                 <td>
                                     <span class="table-badge" style="
-                                        {{% if log.type == 'Closing Report' %}}
+                                        {% if log.type == 'Closing Report' %}
                                         background: rgba(255, 122, 0, 0.1); color: var(--accent-orange);
-                                        {{% elif log.type == 'PO Sheet' %}}
+                                        {% elif log.type == 'PO Sheet' %}
                                         background: rgba(16, 185, 129, 0.1); color: var(--accent-green);
-                                        {{% else %}}
+                                        {% else %}
                                         background: rgba(139, 92, 246, 0.1); color: var(--accent-purple);
-                                        {{% endif %}}
-                                    ">{{{{ log.type }}}}</span>
+                                        {% endif %}
+                                    ">{{ log.type }}</span>
                                 </td>
-                                <td style="color: var(--text-secondary);">{{{{ log.ref if log.ref else '-' }}}}</td>
+                                <td style="color: var(--text-secondary);">{{ log.ref if log.ref else '-' }}</td>
                             </tr>
-                            {{% else %}}
+                            {% else %}
                             <tr>
                                 <td colspan="4" style="text-align: center; padding: 40px; color: var(--text-secondary);">
                                     <i class="fas fa-inbox" style="font-size: 40px; opacity: 0.3; margin-bottom: 15px; display: block;"></i>
                                     No activity recorded yet. 
                                 </td>
                             </tr>
-                            {{% endfor %}}
+                            {% endfor %}
                         </tbody>
                     </table>
                 </div>
@@ -3254,7 +3254,7 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
                 <div class="card">
                     <div class="section-header">
                         <span>User Directory</span>
-                        <span class="table-badge" style="background: var(--accent-orange); color: white;">{{{{ stats.users.count }}}} Users</span>
+                        <span class="table-badge" style="background: var(--accent-orange); color: white;">{{ stats.users.count }} Users</span>
                     </div>
                     <div id="userTableContainer" style="max-height: 450px; overflow-y: auto;">
                         <div class="skeleton" style="height: 50px; margin-bottom: 10px;"></div>
@@ -3311,83 +3311,83 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
     </div>
     <script>
         // ===== WELCOME POPUP WITH TIME-BASED GREETING =====
-        function showWelcomePopup() {{
+        function showWelcomePopup() {
             const hour = new Date().getHours();
             let greeting, icon;
             
-            if (hour >= 5 && hour < 12) {{
+            if (hour >= 5 && hour < 12) {
                 greeting = "Good Morning";
                 icon = '<i class="fas fa-sun"></i>';
-            }} else if (hour >= 12 && hour < 17) {{
+            } else if (hour >= 12 && hour < 17) {
                 greeting = "Good Afternoon";
                 icon = '<i class="fas fa-sun"></i>';
-            }} else if (hour >= 17 && hour < 21) {{
+            } else if (hour >= 17 && hour < 21) {
                 greeting = "Good Evening";
                 icon = '<i class="fas fa-city"></i>';
-            }} else {{
+            } else {
                 greeting = "Good Night";
                 icon = '<i class="fas fa-moon"></i>';
-            }}
+            }
             
             document.getElementById('greetingText').textContent = greeting;
             document.getElementById('welcomeIcon').innerHTML = icon;
             document.getElementById('welcomeModal').style.display = 'flex';
-        }}
+        }
         
-        function closeWelcome() {{
+        function closeWelcome() {
             const modal = document.getElementById('welcomeModal');
             modal.style.animation = 'modalFadeOut 0.3s ease-out forwards';
-            setTimeout(() => {{
+            setTimeout(() => {
                 modal.style.display = 'none';
                 sessionStorage.setItem('welcomeShown', 'true');
-            }}, 300);
-        }}
+            }, 300);
+        }
         
-        if (! sessionStorage.getItem('welcomeShown')) {{
+        if (! sessionStorage.getItem('welcomeShown')) {
             setTimeout(showWelcomePopup, 500);
-        }}
+        }
         
         // ===== SECTION NAVIGATION =====
-        function showSection(id, element) {{
-            ['dashboard', 'analytics', 'help', 'settings'].forEach(sid => {{
+        function showSection(id, element) {
+            ['dashboard', 'analytics', 'help', 'settings'].forEach(sid => {
                 document.getElementById('section-' + sid).style.display = 'none';
-            }});
+            });
             document.getElementById('section-' + id).style.display = 'block';
             
-            if (element) {{
+            if (element) {
                 document.querySelectorAll('.nav-link').forEach(el => el.classList.remove('active'));
                 element.classList.add('active');
-            }}
+            }
             
             if (id === 'settings') loadUsers();
             if (window.innerWidth < 1024) document.querySelector('.sidebar').classList.remove('active');
-        }}
+        }
         
         // ===== FILE UPLOAD HANDLER =====
         const fileUpload = document.getElementById('file-upload');
         const uploadZone = document.getElementById('uploadZone');
         
-        if (fileUpload) {{
-            fileUpload.addEventListener('change', function() {{
+        if (fileUpload) {
+            fileUpload.addEventListener('change', function() {
                 const count = this.files.length;
                 document.getElementById('file-count').innerHTML = count > 0 
-                    ? `<i class="fas fa-check-circle" style="margin-right: 5px;"></i>${{count}} file(s) selected`
+                    ? `<i class="fas fa-check-circle" style="margin-right: 5px;"></i>${count} file(s) selected`
                     : 'No files selected';
-            }});
-            uploadZone.addEventListener('dragover', (e) => {{
+            });
+            uploadZone.addEventListener('dragover', (e) => {
                 e.preventDefault();
                 uploadZone.classList.add('dragover');
-            }});
-            uploadZone.addEventListener('dragleave', () => {{
+            });
+            uploadZone.addEventListener('dragleave', () => {
                 uploadZone.classList.remove('dragover');
-            }});
-            uploadZone.addEventListener('drop', (e) => {{
+            });
+            uploadZone.addEventListener('drop', (e) => {
                 e.preventDefault();
                 uploadZone.classList.remove('dragover');
                 fileUpload.files = e.dataTransfer.files;
                 fileUpload.dispatchEvent(new Event('change'));
-            }});
-        }}
+            });
+        }
         
         // ===== DEW STYLE DAILY CHART =====
         const ctx = document.getElementById('mainChart').getContext('2d');
@@ -3400,14 +3400,14 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
         const gradientGreen = ctx.createLinearGradient(0, 0, 0, 300);
         gradientGreen.addColorStop(0, 'rgba(16, 185, 129, 0.5)');
         gradientGreen.addColorStop(1, 'rgba(16, 185, 129, 0.0)');
-        new Chart(ctx, {{
+        new Chart(ctx, {
             type: 'line',
-            data: {{
-                labels: {{{{ stats.chart.labels | tojson }}}},
+            data: {
+                labels: {{ stats.chart.labels | tojson }},
                 datasets: [
-                    {{
+                    {
                         label: 'Closing',
-                        data: {{{{ stats.chart.closing | tojson }}}},
+                        data: {{ stats.chart.closing | tojson }},
                         borderColor: '#FF7A00',
                         backgroundColor: gradientOrange,
                         tension: 0.4,
@@ -3418,10 +3418,10 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
                         pointRadius: 4,
                         pointHoverRadius: 7,
                         borderWidth: 3
-                    }},
-                    {{
+                    },
+                    {
                         label: 'Accessories',
-                        data: {{{{ stats.chart.acc | tojson }}}},
+                        data: {{ stats.chart.acc | tojson }},
                         borderColor: '#8B5CF6',
                         backgroundColor: gradientPurple,
                         tension: 0.4,
@@ -3432,10 +3432,10 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
                         pointRadius: 4,
                         pointHoverRadius: 7,
                         borderWidth: 3
-                    }},
-                    {{
+                    },
+                    {
                         label: 'PO Sheets',
-                        data: {{{{ stats.chart.po | tojson }}}},
+                        data: {{ stats.chart.po | tojson }},
                         borderColor: '#10B981',
                         backgroundColor: gradientGreen,
                         tension: 0.4,
@@ -3446,23 +3446,23 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
                         pointRadius: 4,
                         pointHoverRadius: 7,
                         borderWidth: 3
-                    }}
+                    }
                 ]
-            }},
-            options: {{
-                plugins: {{
-                    legend: {{
+            },
+            options: {
+                plugins: {
+                    legend: {
                         display: true,
                         position: 'top',
-                        labels: {{
+                        labels: {
                             color: '#8b8b9e',
-                            font: {{ size: 11, weight: 500 }},
+                            font: { size: 11, weight: 500 },
                             usePointStyle: true,
                             padding: 15,
                             boxWidth: 8
-                        }}
-                    }},
-                    tooltip: {{
+                        }
+                    },
+                    tooltip: {
                         mode: 'index',
                         intersect: false,
                         backgroundColor: 'rgba(22, 22, 31, 0.95)',
@@ -3473,72 +3473,72 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
                         padding: 12,
                         cornerRadius: 10,
                         displayColors: true
-                    }}
-                }},
-                scales: {{
-                    x: {{
-                        grid: {{ 
+                    }
+                },
+                scales: {
+                    x: {
+                        grid: { 
                             display: false 
-                        }},
-                        ticks: {{ 
+                        },
+                        ticks: { 
                             color: '#8b8b9e', 
-                            font: {{ size: 10 }},
+                            font: { size: 10 },
                             maxRotation: 45,
                             minRotation: 45
-                        }}
-                    }},
-                    y: {{
-                        grid: {{ 
+                        }
+                    },
+                    y: {
+                        grid: { 
                             color: 'rgba(255,255,255,0.03)',
                             drawBorder: false
-                        }},
-                        ticks: {{ 
+                        },
+                        ticks: { 
                             color: '#8b8b9e', 
-                            font: {{ size: 10 }},
+                            font: { size: 10 },
                             stepSize: 1
-                        }},
+                        },
                         beginAtZero: true
-                    }}
-                }},
+                    }
+                },
                 responsive: true,
                 maintainAspectRatio: false,
-                interaction: {{
+                interaction: {
                     intersect: false,
                     mode: 'index'
-                }},
-                animation: {{
+                },
+                animation: {
                     duration: 2000,
                     easing: 'easeOutQuart'
-                }}
-            }}
-        }});
+                }
+            }
+        });
 
         // ===== COUNT UP ANIMATION =====
-        function animateCountUp() {{
-            document.querySelectorAll('.count-up').forEach(counter => {{
+        function animateCountUp() {
+            document.querySelectorAll('.count-up').forEach(counter => {
                 const target = parseInt(counter.getAttribute('data-target'));
                 const duration = 2000;
                 const step = target / (duration / 16);
                 let current = 0;
                 
-                const updateCounter = () => {{
+                const updateCounter = () => {
                     current += step;
-                    if (current < target) {{
+                    if (current < target) {
                         counter.textContent = Math.floor(current);
                         requestAnimationFrame(updateCounter);
-                    }} else {{
+                    } else {
                         counter.textContent = target;
-                    }}
-                }};
+                    }
+                };
                 
                 updateCounter();
-            }});
-        }}
+            });
+        }
         
         setTimeout(animateCountUp, 500);
 
         // ===== LOADING ANIMATION =====
-        function showLoading() {{
+        function showLoading() {
             const overlay = document.getElementById('loading-overlay');
             const spinner = document.getElementById('spinner-anim').parentElement;
             const success = document.getElementById('success-anim');
@@ -3553,9 +3553,9 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
             text.textContent = 'Processing Request...';
             
             return true;
-        }}
+        }
 
-        function showSuccess() {{
+        function showSuccess() {
             const overlay = document.getElementById('loading-overlay');
             const spinner = document.getElementById('spinner-anim').parentElement;
             const success = document.getElementById('success-anim');
@@ -3565,42 +3565,42 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
             success.style.display = 'block';
             text.style.display = 'none';
             
-            setTimeout(() => {{ overlay.style.display = 'none'; }}, 1500);
-        }}
+            setTimeout(() => { overlay.style.display = 'none'; }, 1500);
+        }
 
         // ===== USER MANAGEMENT =====
-        function loadUsers() {{
+        function loadUsers() {
             fetch('/admin/get-users')
                 .then(res => res.json())
-                .then(data => {{
+                .then(data => {
                     let html = '<table class="dark-table"><thead><tr><th>User</th><th>Role</th><th style="text-align:right;">Actions</th></tr></thead><tbody>';
                     
-                    for (const [u, d] of Object.entries(data)) {{
+                    for (const [u, d] of Object.entries(data)) {
                         const roleClass = d.role === 'admin' ? 'background: rgba(255, 122, 0, 0.1); color: var(--accent-orange);' : 'background: rgba(139, 92, 246, 0.1); color: var(--accent-purple);';
                         
                         html += `<tr>
-                            <td style="font-weight: 600;">${{u}}</td>
-                            <td><span class="table-badge" style="${{roleClass}}">${{d.role}}</span></td>
+                            <td style="font-weight: 600;">${u}</td>
+                            <td><span class="table-badge" style="${roleClass}">${d.role}</span></td>
                             <td style="text-align:right;">
-                                ${{d.role !== 'admin' ?  `
+                                ${d.role !== 'admin' ?  `
                                     <div class="action-cell">
-                                        <button class="action-btn btn-edit" onclick="editUser('${{u}}', '${{d.password}}', '${{d.permissions.join(',')}}')">
+                                        <button class="action-btn btn-edit" onclick="editUser('${u}', '${d.password}', '${d.permissions.join(',')}')">
                                             <i class="fas fa-edit"></i>
                                         </button> 
-                                        <button class="action-btn btn-del" onclick="deleteUser('${{u}}')">
+                                        <button class="action-btn btn-del" onclick="deleteUser('${u}')">
                                             <i class="fas fa-trash"></i>
                                         </button>
                                     </div>
-                                ` : '<i class="fas fa-shield-alt" style="color: var(--accent-orange); opacity: 0.5;"></i>'}}
+                                ` : '<i class="fas fa-shield-alt" style="color: var(--accent-orange); opacity: 0.5;"></i>'}
                             </td>
                         </tr>`;
-                    }}
+                    }
                     
                     document.getElementById('userTableContainer').innerHTML = html + '</tbody></table>';
-                }});
-        }}
+                });
+        }
         
-        function handleUserSubmit() {{
+        function handleUserSubmit() {
             const u = document.getElementById('new_username').value;
             const p = document.getElementById('new_password').value;
             const a = document.getElementById('action_type').value;
@@ -3613,25 +3613,25 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
             
             showLoading();
             
-            fetch('/admin/save-user', {{
+            fetch('/admin/save-user', {
                 method: 'POST',
-                headers: {{'Content-Type': 'application/json'}},
-                body: JSON.stringify({{ username: u, password: p, permissions: perms, action_type: a }})
-            }})
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ username: u, password: p, permissions: perms, action_type: a })
+            })
             .then(r => r.json())
-            .then(d => {{
-                if (d.status === 'success') {{
+            .then(d => {
+                if (d.status === 'success') {
                     showSuccess();
                     loadUsers();
                     resetForm();
-                }} else {{
+                } else {
                     alert(d.message);
                     document.getElementById('loading-overlay').style.display = 'none';
-                }}
-            }});
-        }}
+                }
+            });
+        }
         
-        function editUser(u, p, permsStr) {{
+        function editUser(u, p, permsStr) {
             document.getElementById('new_username').value = u;
             document.getElementById('new_username').readOnly = true;
             document.getElementById('new_password').value = p;
@@ -3642,55 +3642,55 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
             document.getElementById('perm_po').checked = pArr.includes('po_sheet');
             document.getElementById('perm_acc').checked = pArr.includes('accessories');
             document.getElementById('perm_store').checked = pArr.includes('store');
-        }}
+        }
         
-        function resetForm() {{
+        function resetForm() {
             document.getElementById('userForm').reset();
             document.getElementById('action_type').value = 'create';
             document.getElementById('saveUserBtn').innerHTML = '<i class="fas fa-save" style="margin-right: 10px;"></i> Save User';
             document.getElementById('new_username').readOnly = false;
             document.getElementById('perm_closing').checked = true;
-        }}
+        }
         
-        function deleteUser(u) {{
-            if (confirm('Are you sure you want to delete "' + u + '"?')) {{
-                fetch('/admin/delete-user', {{
+        function deleteUser(u) {
+            if (confirm('Are you sure you want to delete "' + u + '"?')) {
+                fetch('/admin/delete-user', {
                     method: 'POST',
-                    headers: {{'Content-Type': 'application/json'}},
-                    body: JSON.stringify({{ username: u }})
-                }}).then(() => loadUsers());
-            }}
-        }}
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ username: u })
+                }).then(() => loadUsers());
+            }
+        }
         
         // ===== PARTICLES.JS INITIALIZATION =====
-        if (typeof particlesJS !== 'undefined') {{
-            particlesJS('particles-js', {{
-                particles: {{
-                    number: {{ value: 50, density: {{ enable: true, value_area: 800 }} }},
-                    color: {{ value: '#FF7A00' }},
-                    shape: {{ type: 'circle' }},
-                    opacity: {{ value: 0.3, random: true }},
-                    size: {{ value: 3, random: true }},
-                    line_linked: {{ enable: true, distance: 150, color: '#FF7A00', opacity: 0.1, width: 1 }},
-                    move: {{ enable: true, speed: 1, direction: 'none', random: true, out_mode: 'out' }}
-                }},
-                interactivity: {{
-                    events: {{ onhover: {{ enable: true, mode: 'grab' }} }},
-                    modes: {{ grab: {{ distance: 140, line_linked: {{ opacity: 0.3 }} }} }}
-                }}
-            }});
-        }}
+        if (typeof particlesJS !== 'undefined') {
+            particlesJS('particles-js', {
+                particles: {
+                    number: { value: 50, density: { enable: true, value_area: 800 } },
+                    color: { value: '#FF7A00' },
+                    shape: { type: 'circle' },
+                    opacity: { value: 0.3, random: true },
+                    size: { value: 3, random: true },
+                    line_linked: { enable: true, distance: 150, color: '#FF7A00', opacity: 0.1, width: 1 },
+                    move: { enable: true, speed: 1, direction: 'none', random: true, out_mode: 'out' }
+                },
+                interactivity: {
+                    events: { onhover: { enable: true, mode: 'grab' } },
+                    modes: { grab: { distance: 140, line_linked: { opacity: 0.3 } } }
+                }
+            });
+        }
         
         // Add CSS for fadeInUp animation
         const style = document.createElement('style');
         style.textContent = `
-            @keyframes fadeInUp {{
-                from {{ opacity: 0; transform: translateY(20px); }}
-                to {{ opacity: 1; transform: translateY(0); }}
-            }}
-            @keyframes modalFadeOut {{
-                to {{ opacity: 0; }}
-            }}
+            @keyframes fadeInUp {
+                from { opacity: 0; transform: translateY(20px); }
+                to { opacity: 1; transform: translateY(0); }
+            }
+            @keyframes modalFadeOut {
+                to { opacity: 0; }
+            }
         `;
         document.head.appendChild(style);
     </script>
@@ -3701,14 +3701,14 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
 # USER DASHBOARD TEMPLATE - MODERN UI
 # ==============================================================================
 
-USER_DASHBOARD_TEMPLATE = f"""
-<! doctype html>
+USER_DASHBOARD_TEMPLATE = """
+<!doctype html>
 <html lang="en">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Dashboard - MNM Software</title>
-    {COMMON_STYLES}
+""" + COMMON_STYLES + """
 </head>
 <body>
     <div class="animated-bg"></div>
@@ -3717,7 +3717,7 @@ USER_DASHBOARD_TEMPLATE = f"""
         <div class="welcome-content">
             <div class="welcome-icon" id="welcomeIcon"><i class="fas fa-hand-sparkles"></i></div>
             <div class="welcome-greeting" id="greetingText">Good Morning</div>
-            <div class="welcome-title">Welcome, <span>{{{{ session.user }}}}</span>!</div>
+            <div class="welcome-title">Welcome, <span>{{ session.user }}</span>!</div>
             <div class="welcome-message">
                 Your workspace is ready.
                 Access your assigned modules below.
@@ -3757,7 +3757,7 @@ USER_DASHBOARD_TEMPLATE = f"""
     <div class="main-content">
         <div class="header-section">
             <div>
-                <div class="page-title">Welcome, {{{{ session.user }}}}!</div>
+                <div class="page-title">Welcome, {{ session.user }}!</div>
                 <div class="page-subtitle">Your assigned production modules</div>
             </div>
             <div class="status-badge">
@@ -3766,17 +3766,17 @@ USER_DASHBOARD_TEMPLATE = f"""
             </div>
         </div>
 
-        {{% with messages = get_flashed_messages() %}}
-            {{% if messages %}}
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
                 <div class="flash-message flash-error">
                     <i class="fas fa-exclamation-circle"></i>
-                    <span>{{{{ messages[0] }}}}</span>
+                    <span>{{ messages[0] }}</span>
                 </div>
-            {{% endif %}}
-        {{% endwith %}}
+            {% endif %}
+        {% endwith %}
 
         <div class="stats-grid">
-            {{% if 'closing' in session.permissions %}}
+            {% if 'closing' in session.permissions %}
             <div class="card" style="animation: fadeInUp 0.5s ease-out 0.1s backwards;">
                 <div class="section-header">
                     <span><i class="fas fa-file-export" style="margin-right: 10px; color: var(--accent-orange);"></i>Closing Report</span>
@@ -3794,9 +3794,9 @@ USER_DASHBOARD_TEMPLATE = f"""
                     </button>
                 </form>
             </div>
-            {{% endif %}}
+            {% endif %}
             
-            {{% if 'po_sheet' in session.permissions %}}
+            {% if 'po_sheet' in session.permissions %}
             <div class="card" style="animation: fadeInUp 0.5s ease-out 0.2s backwards;">
                 <div class="section-header">
                     <span><i class="fas fa-file-pdf" style="margin-right: 10px; color: var(--accent-green);"></i>PO Sheet</span>
@@ -3814,9 +3814,9 @@ USER_DASHBOARD_TEMPLATE = f"""
                     </button>
                 </form>
             </div>
-            {{% endif %}}
+            {% endif %}
             
-            {{% if 'accessories' in session.permissions %}}
+            {% if 'accessories' in session.permissions %}
             <div class="card" style="animation: fadeInUp 0.5s ease-out 0.3s backwards;">
                 <div class="section-header">
                     <span><i class="fas fa-boxes" style="margin-right: 10px; color: var(--accent-purple);"></i>Accessories</span>
@@ -3830,9 +3830,9 @@ USER_DASHBOARD_TEMPLATE = f"""
                     </button>
                 </a>
             </div>
-            {{% endif %}}
+            {% endif %}
             
-            {{% if 'store' in session.permissions %}}
+            {% if 'store' in session.permissions %}
             <div class="card" style="animation: fadeInUp 0.5s ease-out 0.4s backwards;">
                 <div class="section-header">
                     <span><i class="fas fa-store" style="margin-right: 10px; color: var(--accent-cyan);"></i>Store Panel</span>
@@ -3846,60 +3846,60 @@ USER_DASHBOARD_TEMPLATE = f"""
                     </button>
                 </a>
             </div>
-            {{% endif %}}
+            {% endif %}
         </div>
     </div>
     
     <script>
         // Welcome Popup
-        function showWelcomePopup() {{
+        function showWelcomePopup() {
             const hour = new Date().getHours();
             let greeting, icon;
             
-            if (hour >= 5 && hour < 12) {{
+            if (hour >= 5 && hour < 12) {
                 greeting = "Good Morning";
                 icon = '<i class="fas fa-sun"></i>';
-            }} else if (hour >= 12 && hour < 17) {{
+            } else if (hour >= 12 && hour < 17) {
                 greeting = "Good Afternoon";
                 icon = '<i class="fas fa-sun"></i>';
-            }} else if (hour >= 17 && hour < 21) {{
+            } else if (hour >= 17 && hour < 21) {
                 greeting = "Good Evening";
                 icon = '<i class="fas fa-city"></i>';
-            }} else {{
+            } else {
                 greeting = "Good Night";
                 icon = '<i class="fas fa-moon"></i>';
-            }}
+            }
             
             document.getElementById('greetingText').textContent = greeting;
             document.getElementById('welcomeIcon').innerHTML = icon;
             document.getElementById('welcomeModal').style.display = 'flex';
-        }}
+        }
         
-        function closeWelcome() {{
+        function closeWelcome() {
             const modal = document.getElementById('welcomeModal');
             modal.style.opacity = '0';
-            setTimeout(() => {{
+            setTimeout(() => {
                 modal.style.display = 'none';
                 sessionStorage.setItem('welcomeShown', 'true');
-            }}, 300);
-        }}
+            }, 300);
+        }
         
-        if (! sessionStorage.getItem('welcomeShown')) {{
+        if (! sessionStorage.getItem('welcomeShown')) {
             setTimeout(showWelcomePopup, 500);
-        }}
+        }
         
-        function showLoading() {{
+        function showLoading() {
             document.getElementById('loading-overlay').style.display = 'flex';
             return true;
-        }}
+        }
         
         // Add fadeInUp animation
         const style = document.createElement('style');
         style.textContent = `
-            @keyframes fadeInUp {{
-                from {{ opacity: 0; transform: translateY(20px); }}
-                to {{ opacity: 1; transform: translateY(0); }}
-            }}
+            @keyframes fadeInUp {
+                from { opacity: 0; transform: translateY(20px); }
+                to { opacity: 1; transform: translateY(0); }
+            }
         `;
         document.head.appendChild(style);
     </script>
@@ -3911,30 +3911,30 @@ USER_DASHBOARD_TEMPLATE = f"""
 # ACCESSORIES TEMPLATES
 # ==============================================================================
 
-ACCESSORIES_SEARCH_TEMPLATE = f"""
+ACCESSORIES_SEARCH_TEMPLATE = """
 <!doctype html>
 <html lang="en">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Accessories Search - MNM Software</title>
-    {COMMON_STYLES}
+""" + COMMON_STYLES + """
     <style>
-        body {{
+        body {
             justify-content: center;
             align-items: center;
             min-height: 100vh;
-        }}
+        }
         
-        .search-container {{
+        .search-container {
             position: relative;
             z-index: 10;
             width: 100%;
             max-width: 480px;
             padding: 20px;
-        }}
+        }
         
-        .search-card {{
+        .search-card {
             background: var(--gradient-card);
             border: 1px solid var(--border-color);
             border-radius: 24px;
@@ -3942,19 +3942,19 @@ ACCESSORIES_SEARCH_TEMPLATE = f"""
             backdrop-filter: blur(20px);
             box-shadow: 0 25px 80px rgba(0, 0, 0, 0.5), 0 0 60px var(--accent-orange-glow);
             animation: cardAppear 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-        }}
+        }
         
-        @keyframes cardAppear {{
-            from {{ opacity: 0; transform: translateY(20px) scale(0.95); }}
-            to {{ opacity: 1; transform: translateY(0) scale(1); }}
-        }}
+        @keyframes cardAppear {
+            from { opacity: 0; transform: translateY(20px) scale(0.95); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
         
-        .search-header {{
+        .search-header {
             text-align: center;
             margin-bottom: 40px;
-        }}
+        }
         
-        .search-icon {{
+        .search-icon {
             width: 80px;
             height: 80px;
             background: linear-gradient(145deg, rgba(139, 92, 246, 0.2), rgba(139, 92, 246, 0.05));
@@ -3966,35 +3966,35 @@ ACCESSORIES_SEARCH_TEMPLATE = f"""
             color: var(--accent-purple);
             margin-bottom: 20px;
             animation: iconFloat 3s ease-in-out infinite;
-        }}
+        }
         
-        @keyframes iconFloat {{
-            0%, 100% {{ transform: translateY(0); }}
-            50% {{ transform: translateY(-10px); }}
-        }}
+        @keyframes iconFloat {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
         
-        .search-title {{
+        .search-title {
             font-size: 28px;
             font-weight: 800;
             color: white;
             margin-bottom: 8px;
-        }}
+        }
         
-        .search-subtitle {{
+        .search-subtitle {
             color: var(--text-secondary);
             font-size: 14px;
-        }}
+        }
         
-        .nav-links {{
+        .nav-links {
             display: flex;
             justify-content: space-between;
             align-items: center;
             margin-top: 30px;
             padding-top: 20px;
             border-top: 1px solid var(--border-color);
-        }}
+        }
         
-        .nav-links a {{
+        .nav-links a {
             color: var(--text-secondary);
             text-decoration: none;
             font-size: 13px;
@@ -4003,19 +4003,19 @@ ACCESSORIES_SEARCH_TEMPLATE = f"""
             align-items: center;
             gap: 6px;
             transition: var(--transition-smooth);
-        }}
+        }
         
-        .nav-links a:hover {{
+        .nav-links a:hover {
             color: var(--accent-orange);
-        }}
+        }
         
-        .nav-links a.logout {{
+        .nav-links a.logout {
             color: var(--accent-red);
-        }}
+        }
         
-        .nav-links a.logout:hover {{
+        .nav-links a.logout:hover {
             color: #ff6b6b;
-        }}
+        }
     </style>
 </head>
 <body>
@@ -4041,14 +4041,14 @@ ACCESSORIES_SEARCH_TEMPLATE = f"""
                 </button>
             </form>
             
-            {{% with messages = get_flashed_messages() %}}
-                {{% if messages %}}
+            {% with messages = get_flashed_messages() %}
+                {% if messages %}
                     <div class="flash-message flash-error" style="margin-top: 20px;">
                         <i class="fas fa-exclamation-circle"></i>
-                        <span>{{{{ messages[0] }}}}</span>
+                        <span>{{ messages[0] }}</span>
                     </div>
-                {{% endif %}}
-            {{% endwith %}}
+                {% endif %}
+            {% endwith %}
             
             <div class="nav-links">
                 <a href="/"><i class="fas fa-arrow-left"></i> Back to Dashboard</a>
@@ -4064,16 +4064,16 @@ ACCESSORIES_SEARCH_TEMPLATE = f"""
 </html>
 """
 
-ACCESSORIES_INPUT_TEMPLATE = f"""
+ACCESSORIES_INPUT_TEMPLATE = """
 <!doctype html>
 <html lang="en">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Accessories Entry - MNM Software</title>
-    {COMMON_STYLES}
+""" + COMMON_STYLES + """
     <style>
-        .ref-badge {{
+        .ref-badge {
             display: inline-flex;
             align-items: center;
             gap: 10px;
@@ -4082,27 +4082,27 @@ ACCESSORIES_INPUT_TEMPLATE = f"""
             padding: 10px 20px;
             border-radius: 12px;
             margin-top: 10px;
-        }}
+        }
         
-        .ref-badge .ref-no {{
+        .ref-badge .ref-no {
             font-size: 18px;
             font-weight: 800;
             color: var(--accent-orange);
-        }}
+        }
         
-        .ref-badge .ref-info {{
+        .ref-badge .ref-info {
             color: var(--text-secondary);
             font-size: 13px;
             font-weight: 500;
-        }}
+        }
         
-        .history-scroll {{
+        .history-scroll {
             max-height: 500px;
             overflow-y: auto;
             padding-right: 5px;
-        }}
+        }
         
-        .challan-row {{
+        .challan-row {
             display: grid;
             grid-template-columns: 60px 1fr 80px 60px 80px;
             gap: 10px;
@@ -4113,14 +4113,14 @@ ACCESSORIES_INPUT_TEMPLATE = f"""
             align-items: center;
             transition: var(--transition-smooth);
             border: 1px solid transparent;
-        }}
+        }
         
-        .challan-row:hover {{
+        .challan-row:hover {
             background: rgba(255, 122, 0, 0.05);
             border-color: var(--border-glow);
-        }}
+        }
         
-        .line-badge {{
+        .line-badge {
             background: var(--gradient-orange);
             color: white;
             padding: 6px 12px;
@@ -4128,42 +4128,42 @@ ACCESSORIES_INPUT_TEMPLATE = f"""
             font-weight: 700;
             font-size: 13px;
             text-align: center;
-        }}
+        }
         
-        .qty-value {{
+        .qty-value {
             font-size: 18px;
             font-weight: 800;
             color: var(--accent-green);
-        }}
+        }
         
-        .status-check {{
+        .status-check {
             color: var(--accent-green);
             font-size: 20px;
-        }}
+        }
         
-        .print-btn {{
+        .print-btn {
             background: linear-gradient(135deg, #10B981 0%, #34D399 100%) !important;
-        }}
+        }
         
-        .empty-state {{
+        .empty-state {
             text-align: center;
             padding: 50px 20px;
             color: var(--text-secondary);
-        }}
+        }
         
-        .empty-state i {{
+        .empty-state i {
             font-size: 50px;
             opacity: 0.2;
             margin-bottom: 15px;
-        }}
+        }
         
-        .grid-2-cols {{
+        .grid-2-cols {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 20px;
-        }}
+        }
         
-        .count-badge {{
+        .count-badge {
             background: var(--accent-purple);
             color: white;
             padding: 4px 12px;
@@ -4171,19 +4171,19 @@ ACCESSORIES_INPUT_TEMPLATE = f"""
             font-size: 12px;
             font-weight: 700;
             margin-left: 10px;
-        }}
+        }
         
         /* Fixed Select Styling */
-        select {{
+        select {
             background-color: #1a1a25 !important;
             color: white !important;
-        }}
+        }
         
-        select option {{
+        select option {
             background-color: #1a1a25 !important;
             color: white !important;
             padding: 10px;
-        }}
+        }
     </style>
 </head>
 <body>
@@ -4221,11 +4221,11 @@ ACCESSORIES_INPUT_TEMPLATE = f"""
             <div>
                 <div class="page-title">Accessories Entry</div>
                 <div class="ref-badge">
-                    <span class="ref-no">{{{{ ref }}}}</span>
-                    <span class="ref-info">{{{{ buyer }}}} • {{{{ style }}}}</span>
+                    <span class="ref-no">{{ ref }}</span>
+                    <span class="ref-info">{{ buyer }} • {{ style }}</span>
                 </div>
             </div>
-            <a href="/admin/accessories/print? ref={{{{ ref }}}}" target="_blank">
+            <a href="/admin/accessories/print? ref={{ ref }}" target="_blank">
                 <button class="print-btn" style="width: auto; padding: 14px 30px;">
                     <i class="fas fa-print" style="margin-right: 10px;"></i> Print Report
                 </button>
@@ -4238,7 +4238,7 @@ ACCESSORIES_INPUT_TEMPLATE = f"""
                     <span><i class="fas fa-plus-circle" style="margin-right: 10px; color: var(--accent-orange);"></i>New Challan Entry</span>
                 </div>
                 <form action="/admin/accessories/save" method="post" onsubmit="return showLoading()">
-                    <input type="hidden" name="ref" value="{{{{ ref }}}}">
+                    <input type="hidden" name="ref" value="{{ ref }}">
                     
                     <div class="grid-2-cols">
                         <div class="input-group">
@@ -4252,9 +4252,9 @@ ACCESSORIES_INPUT_TEMPLATE = f"""
                             <label><i class="fas fa-palette" style="margin-right: 5px;"></i> COLOR</label>
                             <select name="color" required>
                                 <option value="" disabled selected>Select Color</option>
-                                {{% for c in colors %}}
-                                <option value="{{{{ c }}}}">{{{{ c }}}}</option>
-                                {{% endfor %}}
+                                {% for c in colors %}
+                                <option value="{{ c }}">{{ c }}</option>
+                                {% endfor %}
                             </select>
                         </div>
                     </div>
@@ -4284,46 +4284,46 @@ ACCESSORIES_INPUT_TEMPLATE = f"""
             <div class="card">
                 <div class="section-header">
                     <span>Recent History</span>
-                    <span class="count-badge">{{{{ challans|length }}}}</span>
+                    <span class="count-badge">{{ challans|length }}</span>
                 </div>
                 <div class="history-scroll">
-                    {{% if challans %}}
-                        {{% for item in challans|reverse %}}
-                        <div class="challan-row" style="animation: fadeInUp 0.3s ease-out {{{{ loop.index * 0.05 }}}}s backwards;">
-                            <div class="line-badge">{{{{ item.line }}}}</div>
-                            <div style="color: white; font-weight: 500; font-size: 13px;">{{{{ item.color }}}}</div>
-                            <div class="qty-value">{{{{ item.qty }}}}</div>
-                            <div class="status-check">{{{{ item.status if item.status else '●' }}}}</div>
+                    {% if challans %}
+                        {% for item in challans|reverse %}
+                        <div class="challan-row" style="animation: fadeInUp 0.3s ease-out {{ loop.index * 0.05 }}s backwards;">
+                            <div class="line-badge">{{ item.line }}</div>
+                            <div style="color: white; font-weight: 500; font-size: 13px;">{{ item.color }}</div>
+                            <div class="qty-value">{{ item.qty }}</div>
+                            <div class="status-check">{{ item.status if item.status else '●' }}</div>
                             <div class="action-cell">
-                                {{% if session.role == 'admin' %}}
-                                <a href="/admin/accessories/edit? ref={{{{ ref }}}}&index={{{{ (challans|length) - loop.index }}}}" class="action-btn btn-edit">
+                                {% if session.role == 'admin' %}
+                                <a href="/admin/accessories/edit? ref={{ ref }}&index={{ (challans|length) - loop.index }}" class="action-btn btn-edit">
                                     <i class="fas fa-pen"></i>
                                 </a>
                                 <form action="/admin/accessories/delete" method="POST" style="display: inline;" onsubmit="return confirm('Delete this entry?');">
-                                    <input type="hidden" name="ref" value="{{{{ ref }}}}">
-                                    <input type="hidden" name="index" value="{{{{ (challans|length) - loop.index }}}}">
+                                    <input type="hidden" name="ref" value="{{ ref }}">
+                                    <input type="hidden" name="index" value="{{ (challans|length) - loop.index }}">
                                     <button type="submit" class="action-btn btn-del"><i class="fas fa-trash"></i></button>
                                 </form>
-                                {{% else %}}
+                                {% else %}
                                 <span style="font-size: 10px; color: var(--text-secondary); opacity: 0.5;">🔒</span>
-                                {{% endif %}}
+                                {% endif %}
                             </div>
                         </div>
-                        {{% endfor %}}
-                    {{% else %}}
+                        {% endfor %}
+                    {% else %}
                         <div class="empty-state">
                             <i class="fas fa-inbox"></i>
                             <div>No challans added yet</div>
                             <div style="font-size: 12px; margin-top: 5px;">Add your first entry using the form</div>
                         </div>
-                    {{% endif %}}
+                    {% endif %}
                 </div>
             </div>
         </div>
     </div>
     
     <script>
-        function showLoading() {{
+        function showLoading() {
             const overlay = document.getElementById('loading-overlay');
             const spinner = document.getElementById('spinner-anim').parentElement;
             const success = document.getElementById('success-anim');
@@ -4336,14 +4336,14 @@ ACCESSORIES_INPUT_TEMPLATE = f"""
             text.textContent = 'Saving Entry...';
             
             return true;
-        }}
+        }
         
         const style = document.createElement('style');
         style.textContent = `
-            @keyframes fadeInUp {{
-                from {{ opacity: 0; transform: translateY(10px); }}
-                to {{ opacity: 1; transform: translateY(0); }}
-            }}
+            @keyframes fadeInUp {
+                from { opacity: 0; transform: translateY(10px); }
+                to { opacity: 1; transform: translateY(0); }
+            }
         `;
         document.head.appendChild(style);
     </script>
@@ -4351,29 +4351,29 @@ ACCESSORIES_INPUT_TEMPLATE = f"""
 </html>
 """
 
-ACCESSORIES_EDIT_TEMPLATE = f"""
+ACCESSORIES_EDIT_TEMPLATE = """
 <!doctype html>
 <html lang="en">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Edit Entry - MNM Software</title>
-    {COMMON_STYLES}
+""" + COMMON_STYLES + """
     <style>
-        body {{
+        body {
             justify-content: center;
             align-items: center;
-        }}
+        }
         
-        .edit-container {{
+        .edit-container {
             position: relative;
             z-index: 10;
             width: 100%;
             max-width: 450px;
             padding: 20px;
-        }}
+        }
         
-        .edit-card {{
+        .edit-card {
             background: var(--gradient-card);
             border: 1px solid var(--border-color);
             border-radius: 24px;
@@ -4381,19 +4381,19 @@ ACCESSORIES_EDIT_TEMPLATE = f"""
             backdrop-filter: blur(20px);
             box-shadow: 0 25px 80px rgba(0, 0, 0, 0.5);
             animation: cardAppear 0.5s ease-out;
-        }}
+        }
         
-        @keyframes cardAppear {{
-            from {{ opacity: 0; transform: scale(0.95); }}
-            to {{ opacity: 1; transform: scale(1); }}
-        }}
+        @keyframes cardAppear {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
         
-        .edit-header {{
+        .edit-header {
             text-align: center;
             margin-bottom: 35px;
-        }}
+        }
         
-        .edit-icon {{
+        .edit-icon {
             width: 70px;
             height: 70px;
             background: linear-gradient(145deg, rgba(139, 92, 246, 0.2), rgba(139, 92, 246, 0.05));
@@ -4404,15 +4404,15 @@ ACCESSORIES_EDIT_TEMPLATE = f"""
             font-size: 28px;
             color: var(--accent-purple);
             margin-bottom: 15px;
-        }}
+        }
         
-        .edit-title {{
+        .edit-title {
             font-size: 24px;
             font-weight: 800;
             color: white;
-        }}
+        }
         
-        .cancel-link {{
+        .cancel-link {
             display: block;
             text-align: center;
             margin-top: 20px;
@@ -4420,11 +4420,11 @@ ACCESSORIES_EDIT_TEMPLATE = f"""
             font-size: 13px;
             text-decoration: none;
             transition: var(--transition-smooth);
-        }}
+        }
         
-        .cancel-link:hover {{
+        .cancel-link:hover {
             color: var(--accent-orange);
-        }}
+        }
     </style>
 </head>
 <body>
@@ -4440,27 +4440,27 @@ ACCESSORIES_EDIT_TEMPLATE = f"""
             </div>
             
             <form action="/admin/accessories/update" method="post">
-                <input type="hidden" name="ref" value="{{{{ ref }}}}">
-                <input type="hidden" name="index" value="{{{{ index }}}}">
+                <input type="hidden" name="ref" value="{{ ref }}">
+                <input type="hidden" name="index" value="{{ index }}">
                 
                 <div class="input-group">
                     <label><i class="fas fa-industry" style="margin-right: 5px;"></i> LINE NO</label>
-                    <input type="text" name="line_no" value="{{{{ item.line }}}}" required>
+                    <input type="text" name="line_no" value="{{ item.line }}" required>
                 </div>
                 
                 <div class="input-group">
                     <label><i class="fas fa-palette" style="margin-right: 5px;"></i> COLOR</label>
-                    <input type="text" name="color" value="{{{{ item.color }}}}" required>
+                    <input type="text" name="color" value="{{ item.color }}" required>
                 </div>
                 
                 <div class="input-group">
                     <label><i class="fas fa-ruler" style="margin-right: 5px;"></i> SIZE</label>
-                    <input type="text" name="size" value="{{{{ item.size }}}}" required>
+                    <input type="text" name="size" value="{{ item.size }}" required>
                 </div>
                 
                 <div class="input-group">
                     <label><i class="fas fa-sort-numeric-up" style="margin-right: 5px;"></i> QUANTITY</label>
-                    <input type="number" name="qty" value="{{{{ item.qty }}}}" required>
+                    <input type="number" name="qty" value="{{ item.qty }}" required>
                 </div>
                 
                 <button type="submit" style="background: linear-gradient(135deg, #8B5CF6 0%, #A78BFA 100%);">
@@ -4468,7 +4468,7 @@ ACCESSORIES_EDIT_TEMPLATE = f"""
                 </button>
             </form>
             
-            <a href="/admin/accessories/input_direct?ref={{{{ ref }}}}" class="cancel-link">
+            <a href="/admin/accessories/input_direct?ref={{ ref }}" class="cancel-link">
                 <i class="fas fa-times" style="margin-right: 5px;"></i> Cancel
             </a>
         </div>
@@ -4480,29 +4480,29 @@ ACCESSORIES_EDIT_TEMPLATE = f"""
 # STORE DASHBOARD TEMPLATE - FULL FEATURED (ALUMINUM SHOP)
 # ==============================================================================
 
-STORE_DASHBOARD_TEMPLATE = f"""
-<! doctype html>
+STORE_DASHBOARD_TEMPLATE = """
+<!doctype html>
 <html lang="en">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Store Dashboard - MNM Software</title>
-    {COMMON_STYLES}
+""" + COMMON_STYLES + """
     <style>
-        .store-stat-card {{
+        .store-stat-card {
             background: var(--gradient-card);
             border: 1px solid var(--border-color);
             border-radius: 16px;
             padding: 24px;
             transition: var(--transition-smooth);
-        }}
+        }
         
-        .store-stat-card:hover {{
+        .store-stat-card:hover {
             transform: translateY(-5px);
             box-shadow: var(--shadow-glow);
-        }}
+        }
         
-        .store-stat-icon {{
+        .store-stat-icon {
             width: 50px;
             height: 50px;
             border-radius: 12px;
@@ -4511,30 +4511,30 @@ STORE_DASHBOARD_TEMPLATE = f"""
             justify-content: center;
             font-size: 22px;
             margin-bottom: 15px;
-        }}
+        }
         
-        .store-stat-value {{
+        .store-stat-value {
             font-size: 28px;
             font-weight: 800;
             color: white;
             margin-bottom: 5px;
-        }}
+        }
         
-        .store-stat-label {{
+        .store-stat-label {
             font-size: 12px;
             color: var(--text-secondary);
             text-transform: uppercase;
             letter-spacing: 1px;
-        }}
+        }
         
-        .quick-action-grid {{
+        .quick-action-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
             gap: 15px;
             margin-bottom: 30px;
-        }}
+        }
         
-        .quick-action-btn {{
+        .quick-action-btn {
             background: var(--bg-card);
             border: 1px solid var(--border-color);
             border-radius: 12px;
@@ -4544,33 +4544,33 @@ STORE_DASHBOARD_TEMPLATE = f"""
             transition: var(--transition-smooth);
             text-decoration: none;
             display: block;
-        }}
+        }
         
-        .quick-action-btn:hover {{
+        .quick-action-btn:hover {
             border-color: var(--accent-orange);
             background: rgba(255, 122, 0, 0.05);
             transform: translateY(-3px);
-        }}
+        }
         
-        .quick-action-btn i {{
+        .quick-action-btn i {
             font-size: 24px;
             color: var(--accent-orange);
             margin-bottom: 10px;
             display: block;
-        }}
+        }
         
-        .quick-action-btn span {{
+        .quick-action-btn span {
             font-size: 13px;
             font-weight: 600;
             color: white;
-        }}
+        }
         
-        .due-list {{
+        .due-list {
             max-height: 400px;
             overflow-y: auto;
-        }}
+        }
         
-        .due-item {{
+        .due-item {
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -4579,25 +4579,25 @@ STORE_DASHBOARD_TEMPLATE = f"""
             border-radius: 10px;
             margin-bottom: 10px;
             transition: var(--transition-smooth);
-        }}
+        }
         
-        .due-item:hover {{
+        .due-item:hover {
             background: rgba(255, 122, 0, 0.05);
-        }}
+        }
         
-        .due-customer {{
+        .due-customer {
             font-weight: 600;
             color: white;
             font-size: 14px;
-        }}
+        }
         
-        .due-amount {{
+        .due-amount {
             font-size: 16px;
             font-weight: 800;
             color: var(--accent-red);
-        }}
+        }
         
-        .recent-invoice {{
+        .recent-invoice {
             display: grid;
             grid-template-columns: auto 1fr auto auto;
             gap: 15px;
@@ -4606,32 +4606,32 @@ STORE_DASHBOARD_TEMPLATE = f"""
             background: rgba(255, 255, 255, 0.02);
             border-radius: 10px;
             margin-bottom: 8px;
-        }}
+        }
         
-        .invoice-number {{
+        .invoice-number {
             background: var(--gradient-orange);
             color: white;
             padding: 5px 12px;
             border-radius: 6px;
             font-size: 12px;
             font-weight: 700;
-        }}
+        }
         
-        .invoice-customer {{
+        .invoice-customer {
             font-weight: 500;
             color: white;
             font-size: 14px;
-        }}
+        }
         
-        .invoice-amount {{
+        .invoice-amount {
             font-weight: 700;
             color: var(--accent-green);
-        }}
+        }
         
-        .invoice-date {{
+        .invoice-date {
             font-size: 12px;
             color: var(--text-secondary);
-        }}
+        }
     </style>
 </head>
 <body>
@@ -4688,20 +4688,20 @@ STORE_DASHBOARD_TEMPLATE = f"""
             </div>
             <div class="status-badge">
                 <div class="realtime-dot"></div>
-                <span>{{{{ today }}}}</span>
+                <span>{{ today }}</span>
             </div>
         </div>
 
-        {{% with messages = get_flashed_messages(with_categories=true) %}}
-            {{% if messages %}}
-                {{% for category, message in messages %}}
-                <div class="flash-message flash-{{{{ category }}}}">
-                    <i class="fas fa-{{{{ 'check-circle' if category == 'success' else 'exclamation-circle' }}}}"></i>
-                    <span>{{{{ message }}}}</span>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                <div class="flash-message flash-{{ category }}">
+                    <i class="fas fa-{{ 'check-circle' if category == 'success' else 'exclamation-circle' }}"></i>
+                    <span>{{ message }}</span>
                 </div>
-                {{% endfor %}}
-            {{% endif %}}
-        {{% endwith %}}
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
 
         <!-- Quick Actions -->
         <div class="quick-action-grid">
@@ -4737,7 +4737,7 @@ STORE_DASHBOARD_TEMPLATE = f"""
                 <div class="store-stat-icon" style="background: linear-gradient(145deg, rgba(255, 122, 0, 0.2), rgba(255, 122, 0, 0.05)); color: var(--accent-orange);">
                     <i class="fas fa-shopping-cart"></i>
                 </div>
-                <div class="store-stat-value">৳{{{{ "{:,.0f}".format(stats.today_sales) }}}}</div>
+                <div class="store-stat-value">৳{{ "{:,.0f}".format(stats.today_sales) }}</div>
                 <div class="store-stat-label">Today's Sales</div>
             </div>
             
@@ -4745,7 +4745,7 @@ STORE_DASHBOARD_TEMPLATE = f"""
                 <div class="store-stat-icon" style="background: linear-gradient(145deg, rgba(16, 185, 129, 0.2), rgba(16, 185, 129, 0.05)); color: var(--accent-green);">
                     <i class="fas fa-chart-line"></i>
                 </div>
-                <div class="store-stat-value">৳{{{{ "{:,.0f}".format(stats.total_sales) }}}}</div>
+                <div class="store-stat-value">৳{{ "{:,.0f}".format(stats.total_sales) }}</div>
                 <div class="store-stat-label">Total Sales</div>
             </div>
             
@@ -4753,7 +4753,7 @@ STORE_DASHBOARD_TEMPLATE = f"""
                 <div class="store-stat-icon" style="background: linear-gradient(145deg, rgba(239, 68, 68, 0.2), rgba(239, 68, 68, 0.05)); color: var(--accent-red);">
                     <i class="fas fa-exclamation-triangle"></i>
                 </div>
-                <div class="store-stat-value">৳{{{{ "{:,.0f}".format(stats.total_due) }}}}</div>
+                <div class="store-stat-value">৳{{ "{:,.0f}".format(stats.total_due) }}</div>
                 <div class="store-stat-label">Total Due</div>
             </div>
             
@@ -4761,7 +4761,7 @@ STORE_DASHBOARD_TEMPLATE = f"""
                 <div class="store-stat-icon" style="background: linear-gradient(145deg, rgba(59, 130, 246, 0.2), rgba(59, 130, 246, 0.05)); color: var(--accent-blue);">
                     <i class="fas fa-users"></i>
                 </div>
-                <div class="store-stat-value">{{{{ stats.total_customers }}}}</div>
+                <div class="store-stat-value">{{ stats.total_customers }}</div>
                 <div class="store-stat-label">Customers</div>
             </div>
             
@@ -4769,7 +4769,7 @@ STORE_DASHBOARD_TEMPLATE = f"""
                 <div class="store-stat-icon" style="background: linear-gradient(145deg, rgba(139, 92, 246, 0.2), rgba(139, 92, 246, 0.05)); color: var(--accent-purple);">
                     <i class="fas fa-file-invoice"></i>
                 </div>
-                <div class="store-stat-value">{{{{ stats.today_invoices }}}}</div>
+                <div class="store-stat-value">{{ stats.today_invoices }}</div>
                 <div class="store-stat-label">Today's Invoices</div>
             </div>
             
@@ -4777,7 +4777,7 @@ STORE_DASHBOARD_TEMPLATE = f"""
                 <div class="store-stat-icon" style="background: linear-gradient(145deg, rgba(6, 182, 212, 0.2), rgba(6, 182, 212, 0.05)); color: var(--accent-cyan);">
                     <i class="fas fa-boxes"></i>
                 </div>
-                <div class="store-stat-value">{{{{ stats.total_products }}}}</div>
+                <div class="store-stat-value">{{ stats.total_products }}</div>
                 <div class="store-stat-label">Products</div>
             </div>
         </div>
@@ -4790,21 +4790,21 @@ STORE_DASHBOARD_TEMPLATE = f"""
                     <a href="/store/invoices" style="color: var(--accent-orange); text-decoration: none; font-size: 13px;">View All →</a>
                 </div>
                 <div style="max-height: 350px; overflow-y: auto;">
-                    {{% if stats.recent_invoices %}}
-                        {{% for inv in stats.recent_invoices %}}
+                    {% if stats.recent_invoices %}
+                        {% for inv in stats.recent_invoices %}
                         <div class="recent-invoice">
-                            <span class="invoice-number">{{{{ inv.invoice_number }}}}</span>
-                            <span class="invoice-customer">{{{{ inv.customer_name }}}}</span>
-                            <span class="invoice-amount">৳{{{{ "{:,.0f}".format(inv.grand_total) }}}}</span>
-                            <span class="invoice-date">{{{{ inv.date }}}}</span>
+                            <span class="invoice-number">{{ inv.invoice_number }}</span>
+                            <span class="invoice-customer">{{ inv.customer_name }}</span>
+                            <span class="invoice-amount">৳{{ "{:,.0f}".format(inv.grand_total) }}</span>
+                            <span class="invoice-date">{{ inv.date }}</span>
                         </div>
-                        {{% endfor %}}
-                    {{% else %}}
+                        {% endfor %}
+                    {% else %}
                         <div class="empty-state" style="padding: 40px;">
                             <i class="fas fa-file-invoice" style="font-size: 40px; opacity: 0.2; margin-bottom: 15px;"></i>
                             <div style="color: var(--text-secondary);">No invoices yet</div>
                         </div>
-                    {{% endif %}}
+                    {% endif %}
                 </div>
             </div>
 
@@ -4815,22 +4815,22 @@ STORE_DASHBOARD_TEMPLATE = f"""
                     <a href="/store/dues" style="color: var(--accent-orange); text-decoration: none; font-size: 13px;">Collect →</a>
                 </div>
                 <div class="due-list">
-                    {{% if stats.due_customers %}}
-                        {{% for cust in stats.due_customers %}}
+                    {% if stats.due_customers %}
+                        {% for cust in stats.due_customers %}
                         <div class="due-item">
                             <div>
-                                <div class="due-customer">{{{{ cust.customer_name }}}}</div>
-                                <div style="font-size: 11px; color: var(--text-secondary);">{{{{ cust.invoice_count }}}} invoice(s)</div>
+                                <div class="due-customer">{{ cust.customer_name }}</div>
+                                <div style="font-size: 11px; color: var(--text-secondary);">{{ cust.invoice_count }} invoice(s)</div>
                             </div>
-                            <div class="due-amount">৳{{{{ "{:,.0f}".format(cust.total_due) }}}}</div>
+                            <div class="due-amount">৳{{ "{:,.0f}".format(cust.total_due) }}</div>
                         </div>
-                        {{% endfor %}}
-                    {{% else %}}
+                        {% endfor %}
+                    {% else %}
                         <div class="empty-state" style="padding: 40px;">
                             <i class="fas fa-check-circle" style="font-size: 40px; opacity: 0.2; color: var(--accent-green); margin-bottom: 15px;"></i>
                             <div style="color: var(--text-secondary);">No pending dues</div>
                         </div>
-                    {{% endif %}}
+                    {% endif %}
                 </div>
             </div>
         </div>
@@ -4838,19 +4838,18 @@ STORE_DASHBOARD_TEMPLATE = f"""
 </body>
 </html>
 """
-
 # ==============================================================================
 # STORE CUSTOMER TEMPLATES
 # ==============================================================================
 
-STORE_CUSTOMERS_TEMPLATE = f"""
+STORE_CUSTOMERS_TEMPLATE = """
 <!doctype html>
 <html lang="en">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Customers - Store Panel</title>
-    {COMMON_STYLES}
+""" + COMMON_STYLES + """
 </head>
 <body>
     <div class="animated-bg"></div>
@@ -4906,16 +4905,16 @@ STORE_CUSTOMERS_TEMPLATE = f"""
             </a>
         </div>
 
-        {{% with messages = get_flashed_messages(with_categories=true) %}}
-            {{% if messages %}}
-                {{% for category, message in messages %}}
-                <div class="flash-message flash-{{{{ category }}}}">
-                    <i class="fas fa-{{{{ 'check-circle' if category == 'success' else 'exclamation-circle' }}}}"></i>
-                    <span>{{{{ message }}}}</span>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                <div class="flash-message flash-{{ category }}">
+                    <i class="fas fa-{{ 'check-circle' if category == 'success' else 'exclamation-circle' }}"></i>
+                    <span>{{ message }}</span>
                 </div>
-                {{% endfor %}}
-            {{% endif %}}
-        {{% endwith %}}
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
 
         <!-- Search Box -->
         <div class="card" style="margin-bottom: 25px; padding: 20px;">
@@ -4928,7 +4927,7 @@ STORE_CUSTOMERS_TEMPLATE = f"""
         <div class="card">
             <div class="section-header">
                 <span>All Customers</span>
-                <span class="table-badge" style="background: var(--accent-orange); color: white;">{{{{ customers|length }}}} Total</span>
+                <span class="table-badge" style="background: var(--accent-orange); color: white;">{{ customers|length }} Total</span>
             </div>
             
             <div style="overflow-x: auto;">
@@ -4944,41 +4943,41 @@ STORE_CUSTOMERS_TEMPLATE = f"""
                         </tr>
                     </thead>
                     <tbody>
-                        {{% for cust in customers %}}
+                        {% for cust in customers %}
                         <tr>
-                            <td style="font-weight: 600;">{{{{ cust.name }}}}</td>
-                            <td>{{{{ cust.phone }}}}</td>
-                            <td style="color: var(--text-secondary); max-width: 200px; overflow: hidden; text-overflow: ellipsis;">{{{{ cust.address or '-' }}}}</td>
-                            <td class="amount-positive">৳{{{{ "{:,.0f}".format(cust.total_purchase or 0) }}}}</td>
+                            <td style="font-weight: 600;">{{ cust.name }}</td>
+                            <td>{{ cust.phone }}</td>
+                            <td style="color: var(--text-secondary); max-width: 200px; overflow: hidden; text-overflow: ellipsis;">{{ cust.address or '-' }}</td>
+                            <td class="amount-positive">৳{{ "{:,.0f}".format(cust.total_purchase or 0) }}</td>
                             <td>
-                                {{% if cust.total_due and cust.total_due > 0 %}}
-                                <span class="due-badge">৳{{{{ "{:,.0f}".format(cust.total_due) }}}}</span>
-                                {{% else %}}
+                                {% if cust.total_due and cust.total_due > 0 %}
+                                <span class="due-badge">৳{{ "{:,.0f}".format(cust.total_due) }}</span>
+                                {% else %}
                                 <span class="paid-badge">Cleared</span>
-                                {{% endif %}}
+                                {% endif %}
                             </td>
                             <td>
                                 <div class="action-cell">
-                                    <a href="/store/customers/view/{{{{ cust._id }}}}" class="action-btn btn-view" title="View Details">
+                                    <a href="/store/customers/view/{{ cust._id }}" class="action-btn btn-view" title="View Details">
                                         <i class="fas fa-eye"></i>
                                     </a>
-                                    <a href="/store/customers/edit/{{{{ cust._id }}}}" class="action-btn btn-edit" title="Edit">
+                                    <a href="/store/customers/edit/{{ cust._id }}" class="action-btn btn-edit" title="Edit">
                                         <i class="fas fa-edit"></i>
                                     </a>
-                                    <button class="action-btn btn-del" onclick="deleteCustomer('{{{{ cust._id }}}}')" title="Delete">
+                                    <button class="action-btn btn-del" onclick="deleteCustomer('{{ cust._id }}')" title="Delete">
                                         <i class="fas fa-trash"></i>
                                     </button>
                                 </div>
                             </td>
                         </tr>
-                        {{% else %}}
+                        {% else %}
                         <tr>
                             <td colspan="6" style="text-align: center; padding: 50px; color: var(--text-secondary);">
                                 <i class="fas fa-users" style="font-size: 40px; opacity: 0.2; margin-bottom: 15px; display: block;"></i>
                                 No customers found. Add your first customer! 
                             </td>
                         </tr>
-                        {{% endfor %}}
+                        {% endfor %}
                     </tbody>
                 </table>
             </div>
@@ -4986,36 +4985,36 @@ STORE_CUSTOMERS_TEMPLATE = f"""
     </div>
 
     <script>
-        function filterCustomers() {{
+        function filterCustomers() {
             const input = document.getElementById('searchCustomer').value.toLowerCase();
             const rows = document.querySelectorAll('#customerTable tbody tr');
             
-            rows.forEach(row => {{
+            rows.forEach(row => {
                 const text = row.textContent.toLowerCase();
                 row.style.display = text.includes(input) ? '' : 'none';
-            }});
-        }}
+            });
+        }
         
-        function deleteCustomer(id) {{
-            if (confirm('Are you sure you want to delete this customer?  This action cannot be undone.')) {{
-                fetch('/store/customers/delete/' + id, {{
+        function deleteCustomer(id) {
+            if (confirm('Are you sure you want to delete this customer?  This action cannot be undone.')) {
+                fetch('/store/customers/delete/' + id, {
                     method: 'POST'
-                }}).then(() => location.reload());
-            }}
-        }}
+                }).then(() => location.reload());
+            }
+        }
     </script>
 </body>
 </html>
 """
 
-STORE_CUSTOMER_ADD_TEMPLATE = f"""
+STORE_CUSTOMER_ADD_TEMPLATE = """
 <!doctype html>
 <html lang="en">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Add Customer - Store Panel</title>
-    {COMMON_STYLES}
+""" + COMMON_STYLES + """
 </head>
 <body>
     <div class="animated-bg"></div>
@@ -5096,14 +5095,14 @@ STORE_CUSTOMER_ADD_TEMPLATE = f"""
 </html>
 """
 
-STORE_CUSTOMER_EDIT_TEMPLATE = f"""
-<! doctype html>
+STORE_CUSTOMER_EDIT_TEMPLATE = """
+<!doctype html>
 <html lang="en">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Edit Customer - Store Panel</title>
-    {COMMON_STYLES}
+""" + COMMON_STYLES + """
 </head>
 <body>
     <div class="animated-bg"></div>
@@ -5140,31 +5139,31 @@ STORE_CUSTOMER_EDIT_TEMPLATE = f"""
                 <span><i class="fas fa-user-edit" style="margin-right: 10px; color: var(--accent-purple);"></i>Customer Information</span>
             </div>
             
-            <form action="/store/customers/edit/{{{{ customer._id }}}}" method="post">
+            <form action="/store/customers/edit/{{ customer._id }}" method="post">
                 <div class="input-group">
                     <label><i class="fas fa-user" style="margin-right: 5px;"></i> CUSTOMER NAME *</label>
-                    <input type="text" name="name" required value="{{{{ customer.name }}}}">
+                    <input type="text" name="name" required value="{{ customer.name }}">
                 </div>
                 
                 <div class="grid-2">
                     <div class="input-group">
                         <label><i class="fas fa-phone" style="margin-right: 5px;"></i> PHONE NUMBER *</label>
-                        <input type="tel" name="phone" required value="{{{{ customer.phone }}}}">
+                        <input type="tel" name="phone" required value="{{ customer.phone }}">
                     </div>
                     <div class="input-group">
                         <label><i class="fas fa-envelope" style="margin-right: 5px;"></i> EMAIL</label>
-                        <input type="email" name="email" value="{{{{ customer.email or '' }}}}">
+                        <input type="email" name="email" value="{{ customer.email or '' }}">
                     </div>
                 </div>
                 
                 <div class="input-group">
                     <label><i class="fas fa-map-marker-alt" style="margin-right: 5px;"></i> ADDRESS</label>
-                    <textarea name="address" rows="3">{{{{ customer.address or '' }}}}</textarea>
+                    <textarea name="address" rows="3">{{ customer.address or '' }}</textarea>
                 </div>
                 
                 <div class="input-group">
                     <label><i class="fas fa-sticky-note" style="margin-right: 5px;"></i> NOTES</label>
-                    <textarea name="notes" rows="2">{{{{ customer.notes or '' }}}}</textarea>
+                    <textarea name="notes" rows="2">{{ customer.notes or '' }}</textarea>
                 </div>
                 
                 <div style="display: flex; gap: 15px; margin-top: 10px;">
@@ -5184,14 +5183,14 @@ STORE_CUSTOMER_EDIT_TEMPLATE = f"""
 </html>
 """
 
-STORE_CUSTOMER_VIEW_TEMPLATE = f"""
+STORE_CUSTOMER_VIEW_TEMPLATE = """
 <!doctype html>
 <html lang="en">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Customer Details - Store Panel</title>
-    {COMMON_STYLES}
+""" + COMMON_STYLES + """
 </head>
 <body>
     <div class="animated-bg"></div>
@@ -5221,16 +5220,16 @@ STORE_CUSTOMER_VIEW_TEMPLATE = f"""
     <div class="main-content">
         <div class="header-section">
             <div>
-                <div class="page-title">{{{{ data.customer.name }}}}</div>
+                <div class="page-title">{{ data.customer.name }}</div>
                 <div class="page-subtitle">Customer Profile & Transaction History</div>
             </div>
             <div style="display: flex; gap: 10px;">
-                <a href="/store/invoices/new? customer={{{{ data.customer._id }}}}">
+                <a href="/store/invoices/new? customer={{ data.customer._id }}">
                     <button style="width: auto; padding: 12px 20px;">
                         <i class="fas fa-plus" style="margin-right: 8px;"></i> New Invoice
                     </button>
                 </a>
-                <a href="/store/customers/edit/{{{{ data.customer._id }}}}">
+                <a href="/store/customers/edit/{{ data.customer._id }}">
                     <button style="width: auto; padding: 12px 20px; background: linear-gradient(135deg, #8B5CF6 0%, #A78BFA 100%);">
                         <i class="fas fa-edit" style="margin-right: 8px;"></i> Edit
                     </button>
@@ -5245,7 +5244,7 @@ STORE_CUSTOMER_VIEW_TEMPLATE = f"""
                     <i class="fas fa-shopping-bag" style="color: var(--accent-green);"></i>
                 </div>
                 <div class="stat-info">
-                    <h3>৳{{{{ "{:,.0f}".format(data.total_purchase) }}}}</h3>
+                    <h3>৳{{ "{:,.0f}".format(data.total_purchase) }}</h3>
                     <p>Total Purchase</p>
                 </div>
             </div>
@@ -5254,7 +5253,7 @@ STORE_CUSTOMER_VIEW_TEMPLATE = f"""
                     <i class="fas fa-check-circle" style="color: var(--accent-blue);"></i>
                 </div>
                 <div class="stat-info">
-                    <h3>৳{{{{ "{:,.0f}".format(data.total_paid) }}}}</h3>
+                    <h3>৳{{ "{:,.0f}".format(data.total_paid) }}</h3>
                     <p>Total Paid</p>
                 </div>
             </div>
@@ -5263,7 +5262,7 @@ STORE_CUSTOMER_VIEW_TEMPLATE = f"""
                     <i class="fas fa-exclamation-circle" style="color: var(--accent-red);"></i>
                 </div>
                 <div class="stat-info">
-                    <h3>৳{{{{ "{:,.0f}".format(data.total_due) }}}}</h3>
+                    <h3>৳{{ "{:,.0f}".format(data.total_due) }}</h3>
                     <p>Total Due</p>
                 </div>
             </div>
@@ -5278,29 +5277,29 @@ STORE_CUSTOMER_VIEW_TEMPLATE = f"""
                 <div style="display: grid; gap: 15px;">
                     <div style="display: flex; justify-content: space-between; padding: 12px; background: rgba(255,255,255,0.02); border-radius: 8px;">
                         <span style="color: var(--text-secondary);">Phone</span>
-                        <span style="font-weight: 600;">{{{{ data.customer.phone }}}}</span>
+                        <span style="font-weight: 600;">{{ data.customer.phone }}</span>
                     </div>
                     <div style="display: flex; justify-content: space-between; padding: 12px; background: rgba(255,255,255,0.02); border-radius: 8px;">
                         <span style="color: var(--text-secondary);">Email</span>
-                        <span style="font-weight: 600;">{{{{ data.customer.email or '-' }}}}</span>
+                        <span style="font-weight: 600;">{{ data.customer.email or '-' }}</span>
                     </div>
                     <div style="display: flex; justify-content: space-between; padding: 12px; background: rgba(255,255,255,0.02); border-radius: 8px;">
                         <span style="color: var(--text-secondary);">Address</span>
-                        <span style="font-weight: 600; text-align: right; max-width: 200px;">{{{{ data.customer.address or '-' }}}}</span>
+                        <span style="font-weight: 600; text-align: right; max-width: 200px;">{{ data.customer.address or '-' }}</span>
                     </div>
                     <div style="display: flex; justify-content: space-between; padding: 12px; background: rgba(255,255,255,0.02); border-radius: 8px;">
                         <span style="color: var(--text-secondary);">Total Invoices</span>
-                        <span style="font-weight: 600;">{{{{ data.invoices|length }}}}</span>
+                        <span style="font-weight: 600;">{{ data.invoices|length }}</span>
                     </div>
                 </div>
                 
-                {{% if data.total_due > 0 %}}
-                <a href="/store/dues/collect/{{{{ data.customer._id }}}}">
+                {% if data.total_due > 0 %}
+                <a href="/store/dues/collect/{{ data.customer._id }}">
                     <button style="margin-top: 20px; background: linear-gradient(135deg, #10B981 0%, #34D399 100%);">
                         <i class="fas fa-hand-holding-usd" style="margin-right: 8px;"></i> Collect Due Payment
                     </button>
                 </a>
-                {{% endif %}}
+                {% endif %}
             </div>
 
             <!-- Recent Payments -->
@@ -5309,21 +5308,21 @@ STORE_CUSTOMER_VIEW_TEMPLATE = f"""
                     <span><i class="fas fa-history" style="margin-right: 10px; color: var(--accent-green);"></i>Recent Payments</span>
                 </div>
                 <div style="max-height: 300px; overflow-y: auto;">
-                    {{% if data.payments %}}
-                        {{% for pay in data.payments[:10] %}}
+                    {% if data.payments %}
+                        {% for pay in data.payments[:10] %}
                         <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; background: rgba(255,255,255,0.02); border-radius: 8px; margin-bottom: 8px;">
                             <div>
-                                <div style="font-weight: 600; color: var(--accent-green);">৳{{{{ "{:,.0f}".format(pay.amount) }}}}</div>
-                                <div style="font-size: 11px; color: var(--text-secondary);">{{{{ pay.date }}}}</div>
+                                <div style="font-weight: 600; color: var(--accent-green);">৳{{ "{:,.0f}".format(pay.amount) }}</div>
+                                <div style="font-size: 11px; color: var(--text-secondary);">{{ pay.date }}</div>
                             </div>
-                            <div style="font-size: 12px; color: var(--text-secondary);">{{{{ pay.method or 'Cash' }}}}</div>
+                            <div style="font-size: 12px; color: var(--text-secondary);">{{ pay.method or 'Cash' }}</div>
                         </div>
-                        {{% endfor %}}
-                    {{% else %}}
+                        {% endfor %}
+                    {% else %}
                         <div style="text-align: center; padding: 30px; color: var(--text-secondary);">
                             No payment records found
                         </div>
-                    {{% endif %}}
+                    {% endif %}
                 </div>
             </div>
         </div>
@@ -5347,46 +5346,46 @@ STORE_CUSTOMER_VIEW_TEMPLATE = f"""
                         </tr>
                     </thead>
                     <tbody>
-                        {{% for inv in data.invoices %}}
+                        {% for inv in data.invoices %}
                         <tr>
-                            <td><span class="invoice-number">{{{{ inv.invoice_number }}}}</span></td>
-                            <td>{{{{ inv.date }}}}</td>
-                            <td style="font-weight: 600;">৳{{{{ "{:,.0f}".format(inv.grand_total) }}}}</td>
-                            <td class="amount-positive">৳{{{{ "{:,.0f}".format(inv.paid_amount) }}}}</td>
+                            <td><span class="invoice-number">{{ inv.invoice_number }}</span></td>
+                            <td>{{ inv.date }}</td>
+                            <td style="font-weight: 600;">৳{{ "{:,.0f}".format(inv.grand_total) }}</td>
+                            <td class="amount-positive">৳{{ "{:,.0f}".format(inv.paid_amount) }}</td>
                             <td>
-                                {{% if inv.due_amount > 0 %}}
-                                <span class="due-badge">৳{{{{ "{:,.0f}".format(inv.due_amount) }}}}</span>
-                                {{% else %}}
+                                {% if inv.due_amount > 0 %}
+                                <span class="due-badge">৳{{ "{:,.0f}".format(inv.due_amount) }}</span>
+                                {% else %}
                                 <span class="paid-badge">Paid</span>
-                                {{% endif %}}
+                                {% endif %}
                             </td>
                             <td>
-                                {{% if inv.due_amount == 0 %}}
+                                {% if inv.due_amount == 0 %}
                                 <span class="paid-badge">Completed</span>
-                                {{% elif inv.paid_amount > 0 %}}
+                                {% elif inv.paid_amount > 0 %}
                                 <span class="partial-badge">Partial</span>
-                                {{% else %}}
+                                {% else %}
                                 <span class="due-badge">Unpaid</span>
-                                {{% endif %}}
+                                {% endif %}
                             </td>
                             <td>
                                 <div class="action-cell">
-                                    <a href="/store/invoices/view/{{{{ inv._id }}}}" class="action-btn btn-view">
+                                    <a href="/store/invoices/view/{{ inv._id }}" class="action-btn btn-view">
                                         <i class="fas fa-eye"></i>
                                     </a>
-                                    <a href="/store/invoices/print/{{{{ inv._id }}}}" class="action-btn btn-edit" target="_blank">
+                                    <a href="/store/invoices/print/{{ inv._id }}" class="action-btn btn-edit" target="_blank">
                                         <i class="fas fa-print"></i>
                                     </a>
                                 </div>
                             </td>
                         </tr>
-                        {{% else %}}
+                        {% else %}
                         <tr>
                             <td colspan="7" style="text-align: center; padding: 40px; color: var(--text-secondary);">
                                 No invoices found for this customer
                             </td>
                         </tr>
-                        {{% endfor %}}
+                        {% endfor %}
                     </tbody>
                 </table>
             </div>
@@ -5399,14 +5398,14 @@ STORE_CUSTOMER_VIEW_TEMPLATE = f"""
 # STORE PRODUCT TEMPLATES
 # ==============================================================================
 
-STORE_PRODUCTS_TEMPLATE = f"""
-<! doctype html>
+STORE_PRODUCTS_TEMPLATE = """
+<!doctype html>
 <html lang="en">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Products - Store Panel</title>
-    {COMMON_STYLES}
+""" + COMMON_STYLES + """
 </head>
 <body>
     <div class="animated-bg"></div>
@@ -5459,16 +5458,16 @@ STORE_PRODUCTS_TEMPLATE = f"""
             </a>
         </div>
 
-        {{% with messages = get_flashed_messages(with_categories=true) %}}
-            {{% if messages %}}
-                {{% for category, message in messages %}}
-                <div class="flash-message flash-{{{{ category }}}}">
-                    <i class="fas fa-{{{{ 'check-circle' if category == 'success' else 'exclamation-circle' }}}}"></i>
-                    <span>{{{{ message }}}}</span>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                <div class="flash-message flash-{{ category }}">
+                    <i class="fas fa-{{ 'check-circle' if category == 'success' else 'exclamation-circle' }}"></i>
+                    <span>{{ message }}</span>
                 </div>
-                {{% endfor %}}
-            {{% endif %}}
-        {{% endwith %}}
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
 
         <!-- Search & Filter -->
         <div class="card" style="margin-bottom: 25px; padding: 20px;">
@@ -5479,9 +5478,9 @@ STORE_PRODUCTS_TEMPLATE = f"""
                 </div>
                 <select id="categoryFilter" onchange="filterProducts()" style="width: auto; min-width: 150px;">
                     <option value="">All Categories</option>
-                    {{% for cat in categories %}}
-                    <option value="{{{{ cat }}}}">{{{{ cat }}}}</option>
-                    {{% endfor %}}
+                    {% for cat in categories %}
+                    <option value="{{ cat }}">{{ cat }}</option>
+                    {% endfor %}
                 </select>
             </div>
         </div>
@@ -5489,7 +5488,7 @@ STORE_PRODUCTS_TEMPLATE = f"""
         <div class="card">
             <div class="section-header">
                 <span>All Products</span>
-                <span class="table-badge" style="background: var(--accent-orange); color: white;">{{{{ products|length }}}} Items</span>
+                <span class="table-badge" style="background: var(--accent-orange); color: white;">{{ products|length }} Items</span>
             </div>
             
             <div style="overflow-x: auto;">
@@ -5505,44 +5504,44 @@ STORE_PRODUCTS_TEMPLATE = f"""
                         </tr>
                     </thead>
                     <tbody>
-                        {{% for prod in products %}}
-                        <tr data-category="{{{{ prod.category or '' }}}}">
-                            <td style="font-weight: 600;">{{{{ prod.name }}}}</td>
-                            <td><span class="table-badge">{{{{ prod.category or 'General' }}}}</span></td>
-                            <td>{{{{ prod.unit or 'Pcs' }}}}</td>
-                            <td class="amount-positive">৳{{{{ "{:,.2f}".format(prod.price or 0) }}}}</td>
+                        {% for prod in products %}
+                        <tr data-category="{{ prod.category or '' }}">
+                            <td style="font-weight: 600;">{{ prod.name }}</td>
+                            <td><span class="table-badge">{{ prod.category or 'General' }}</span></td>
+                            <td>{{ prod.unit or 'Pcs' }}</td>
+                            <td class="amount-positive">৳{{ "{:,.2f}".format(prod.price or 0) }}</td>
                             <td>
-                                {{% if prod.stock is defined %}}
-                                    {{% if prod.stock <= 0 %}}
+                                {% if prod.stock is defined %}
+                                    {% if prod.stock <= 0 %}
                                     <span class="due-badge">Out of Stock</span>
-                                    {{% elif prod.stock < 10 %}}
-                                    <span class="partial-badge">{{{{ prod.stock }}}}</span>
-                                    {{% else %}}
-                                    <span class="paid-badge">{{{{ prod.stock }}}}</span>
-                                    {{% endif %}}
-                                {{% else %}}
+                                    {% elif prod.stock < 10 %}
+                                    <span class="partial-badge">{{ prod.stock }}</span>
+                                    {% else %}
+                                    <span class="paid-badge">{{ prod.stock }}</span>
+                                    {% endif %}
+                                {% else %}
                                 <span style="color: var(--text-secondary);">N/A</span>
-                                {{% endif %}}
+                                {% endif %}
                             </td>
                             <td>
                                 <div class="action-cell">
-                                    <a href="/store/products/edit/{{{{ prod._id }}}}" class="action-btn btn-edit" title="Edit">
+                                    <a href="/store/products/edit/{{ prod._id }}" class="action-btn btn-edit" title="Edit">
                                         <i class="fas fa-edit"></i>
                                     </a>
-                                    <button class="action-btn btn-del" onclick="deleteProduct('{{{{ prod._id }}}}')" title="Delete">
+                                    <button class="action-btn btn-del" onclick="deleteProduct('{{ prod._id }}')" title="Delete">
                                         <i class="fas fa-trash"></i>
                                     </button>
                                 </div>
                             </td>
                         </tr>
-                        {{% else %}}
+                        {% else %}
                         <tr>
                             <td colspan="6" style="text-align: center; padding: 50px; color: var(--text-secondary);">
                                 <i class="fas fa-box-open" style="font-size: 40px; opacity: 0.2; margin-bottom: 15px; display: block;"></i>
                                 No products found. Add your first product! 
                             </td>
                         </tr>
-                        {{% endfor %}}
+                        {% endfor %}
                     </tbody>
                 </table>
             </div>
@@ -5550,40 +5549,40 @@ STORE_PRODUCTS_TEMPLATE = f"""
     </div>
 
     <script>
-        function filterProducts() {{
+        function filterProducts() {
             const search = document.getElementById('searchProduct').value.toLowerCase();
             const category = document.getElementById('categoryFilter').value;
             const rows = document.querySelectorAll('#productTable tbody tr');
             
-            rows.forEach(row => {{
+            rows.forEach(row => {
                 const text = row.textContent.toLowerCase();
                 const rowCategory = row.getAttribute('data-category') || '';
                 const matchSearch = text.includes(search);
                 const matchCategory = ! category || rowCategory === category;
                 row.style.display = (matchSearch && matchCategory) ? '' : 'none';
-            }});
-        }}
+            });
+        }
         
-        function deleteProduct(id) {{
-            if (confirm('Are you sure you want to delete this product?')) {{
-                fetch('/store/products/delete/' + id, {{
+        function deleteProduct(id) {
+            if (confirm('Are you sure you want to delete this product?')) {
+                fetch('/store/products/delete/' + id, {
                     method: 'POST'
-                }}).then(() => location.reload());
-            }}
-        }}
+                }).then(() => location.reload());
+            }
+        }
     </script>
 </body>
 </html>
 """
 
-STORE_PRODUCT_ADD_TEMPLATE = f"""
+STORE_PRODUCT_ADD_TEMPLATE = """
 <!doctype html>
 <html lang="en">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Add Product - Store Panel</title>
-    {COMMON_STYLES}
+""" + COMMON_STYLES + """
 </head>
 <body>
     <div class="animated-bg"></div>
@@ -5696,14 +5695,14 @@ STORE_PRODUCT_ADD_TEMPLATE = f"""
 </html>
 """
 
-STORE_PRODUCT_EDIT_TEMPLATE = f"""
+STORE_PRODUCT_EDIT_TEMPLATE = """
 <!doctype html>
 <html lang="en">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Edit Product - Store Panel</title>
-    {COMMON_STYLES}
+""" + COMMON_STYLES + """
 </head>
 <body>
     <div class="animated-bg"></div>
@@ -5740,16 +5739,16 @@ STORE_PRODUCT_EDIT_TEMPLATE = f"""
                 <span><i class="fas fa-edit" style="margin-right: 10px; color: var(--accent-purple);"></i>Product Information</span>
             </div>
             
-            <form action="/store/products/edit/{{{{ product._id }}}}" method="post">
+            <form action="/store/products/edit/{{ product._id }}" method="post">
                 <div class="input-group">
                     <label><i class="fas fa-tag" style="margin-right: 5px;"></i> PRODUCT NAME *</label>
-                    <input type="text" name="name" required value="{{{{ product.name }}}}">
+                    <input type="text" name="name" required value="{{ product.name }}">
                 </div>
                 
                 <div class="grid-2">
                     <div class="input-group">
                         <label><i class="fas fa-folder" style="margin-right: 5px;"></i> CATEGORY</label>
-                        <input type="text" name="category" value="{{{{ product.category or '' }}}}" list="categories">
+                        <input type="text" name="category" value="{{ product.category or '' }}" list="categories">
                         <datalist id="categories">
                             <option value="Aluminum Profile">
                             <option value="Aluminum Sheet">
@@ -5762,12 +5761,12 @@ STORE_PRODUCT_EDIT_TEMPLATE = f"""
                     <div class="input-group">
                         <label><i class="fas fa-ruler" style="margin-right: 5px;"></i> UNIT</label>
                         <select name="unit">
-                            <option value="Pcs" {{{{ 'selected' if product.unit == 'Pcs' else '' }}}}>Pcs (Piece)</option>
-                            <option value="Ft" {{{{ 'selected' if product.unit == 'Ft' else '' }}}}>Ft (Feet)</option>
-                            <option value="Meter" {{{{ 'selected' if product.unit == 'Meter' else '' }}}}>Meter</option>
-                            <option value="Kg" {{{{ 'selected' if product.unit == 'Kg' else '' }}}}>Kg (Kilogram)</option>
-                            <option value="Set" {{{{ 'selected' if product.unit == 'Set' else '' }}}}>Set</option>
-                            <option value="Sqft" {{{{ 'selected' if product.unit == 'Sqft' else '' }}}}>Sqft (Square Feet)</option>
+                            <option value="Pcs" {{ 'selected' if product.unit == 'Pcs' else '' }}>Pcs (Piece)</option>
+                            <option value="Ft" {{ 'selected' if product.unit == 'Ft' else '' }}>Ft (Feet)</option>
+                            <option value="Meter" {{ 'selected' if product.unit == 'Meter' else '' }}>Meter</option>
+                            <option value="Kg" {{ 'selected' if product.unit == 'Kg' else '' }}>Kg (Kilogram)</option>
+                            <option value="Set" {{ 'selected' if product.unit == 'Set' else '' }}>Set</option>
+                            <option value="Sqft" {{ 'selected' if product.unit == 'Sqft' else '' }}>Sqft (Square Feet)</option>
                         </select>
                     </div>
                 </div>
@@ -5775,28 +5774,28 @@ STORE_PRODUCT_EDIT_TEMPLATE = f"""
                 <div class="grid-2">
                     <div class="input-group">
                         <label><i class="fas fa-money-bill-wave" style="margin-right: 5px;"></i> SELLING PRICE (৳) *</label>
-                        <input type="number" name="price" required step="0.01" min="0" value="{{{{ product.price or 0 }}}}">
+                        <input type="number" name="price" required step="0.01" min="0" value="{{ product.price or 0 }}">
                     </div>
                     <div class="input-group">
                         <label><i class="fas fa-coins" style="margin-right: 5px;"></i> COST PRICE (৳)</label>
-                        <input type="number" name="cost_price" step="0.01" min="0" value="{{{{ product.cost_price or 0 }}}}">
+                        <input type="number" name="cost_price" step="0.01" min="0" value="{{ product.cost_price or 0 }}">
                     </div>
                 </div>
                 
                 <div class="grid-2">
                     <div class="input-group">
                         <label><i class="fas fa-warehouse" style="margin-right: 5px;"></i> STOCK QUANTITY</label>
-                        <input type="number" name="stock" min="0" value="{{{{ product.stock or 0 }}}}">
+                        <input type="number" name="stock" min="0" value="{{ product.stock or 0 }}">
                     </div>
                     <div class="input-group">
                         <label><i class="fas fa-exclamation-triangle" style="margin-right: 5px;"></i> LOW STOCK ALERT</label>
-                        <input type="number" name="low_stock_alert" min="0" value="{{{{ product.low_stock_alert or 10 }}}}">
+                        <input type="number" name="low_stock_alert" min="0" value="{{ product.low_stock_alert or 10 }}">
                     </div>
                 </div>
                 
                 <div class="input-group">
                     <label><i class="fas fa-align-left" style="margin-right: 5px;"></i> DESCRIPTION</label>
-                    <textarea name="description" rows="3">{{{{ product.description or '' }}}}</textarea>
+                    <textarea name="description" rows="3">{{ product.description or '' }}</textarea>
                 </div>
                 
                 <div style="display: flex; gap: 15px; margin-top: 10px;">
@@ -5820,14 +5819,14 @@ STORE_PRODUCT_EDIT_TEMPLATE = f"""
 # STORE INVOICE TEMPLATES
 # ==============================================================================
 
-STORE_INVOICES_TEMPLATE = f"""
-<! doctype html>
+STORE_INVOICES_TEMPLATE = """
+<!doctype html>
 <html lang="en">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Invoices - Store Panel</title>
-    {COMMON_STYLES}
+""" + COMMON_STYLES + """
 </head>
 <body>
     <div class="animated-bg"></div>
@@ -5883,16 +5882,16 @@ STORE_INVOICES_TEMPLATE = f"""
             </a>
         </div>
 
-        {{% with messages = get_flashed_messages(with_categories=true) %}}
-            {{% if messages %}}
-                {{% for category, message in messages %}}
-                <div class="flash-message flash-{{{{ category }}}}">
-                    <i class="fas fa-{{{{ 'check-circle' if category == 'success' else 'exclamation-circle' }}}}"></i>
-                    <span>{{{{ message }}}}</span>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                <div class="flash-message flash-{{ category }}">
+                    <i class="fas fa-{{ 'check-circle' if category == 'success' else 'exclamation-circle' }}"></i>
+                    <span>{{ message }}</span>
                 </div>
-                {{% endfor %}}
-            {{% endif %}}
-        {{% endwith %}}
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
 
         <!-- Filter Tabs -->
         <div class="filter-tabs">
@@ -5913,7 +5912,7 @@ STORE_INVOICES_TEMPLATE = f"""
         <div class="card">
             <div class="section-header">
                 <span>All Invoices</span>
-                <span class="table-badge" style="background: var(--accent-orange); color: white;">{{{{ invoices|length }}}} Total</span>
+                <span class="table-badge" style="background: var(--accent-orange); color: white;">{{ invoices|length }} Total</span>
             </div>
             
             <div style="overflow-x: auto;">
@@ -5931,56 +5930,56 @@ STORE_INVOICES_TEMPLATE = f"""
                         </tr>
                     </thead>
                     <tbody>
-                        {{% for inv in invoices %}}
-                        <tr data-status="{{% if inv.due_amount == 0 %}}paid{{% elif inv.paid_amount > 0 %}}partial{{% else %}}unpaid{{% endif %}}">
-                            <td><span class="invoice-number">{{{{ inv.invoice_number }}}}</span></td>
-                            <td>{{{{ inv.date }}}}</td>
-                            <td style="font-weight: 600;">{{{{ inv.customer_name }}}}</td>
-                            <td style="font-weight: 700;">৳{{{{ "{:,.0f}".format(inv.grand_total) }}}}</td>
-                            <td class="amount-positive">৳{{{{ "{:,.0f}".format(inv.paid_amount) }}}}</td>
+                        {% for inv in invoices %}
+                        <tr data-status="{% if inv.due_amount == 0 %}paid{% elif inv.paid_amount > 0 %}partial{% else %}unpaid{% endif %}">
+                            <td><span class="invoice-number">{{ inv.invoice_number }}</span></td>
+                            <td>{{ inv.date }}</td>
+                            <td style="font-weight: 600;">{{ inv.customer_name }}</td>
+                            <td style="font-weight: 700;">৳{{ "{:,.0f}".format(inv.grand_total) }}</td>
+                            <td class="amount-positive">৳{{ "{:,.0f}".format(inv.paid_amount) }}</td>
                             <td>
-                                {{% if inv.due_amount > 0 %}}
-                                <span class="due-badge">৳{{{{ "{:,.0f}".format(inv.due_amount) }}}}</span>
-                                {{% else %}}
+                                {% if inv.due_amount > 0 %}
+                                <span class="due-badge">৳{{ "{:,.0f}".format(inv.due_amount) }}</span>
+                                {% else %}
                                 <span style="color: var(--text-secondary);">-</span>
-                                {{% endif %}}
+                                {% endif %}
                             </td>
                             <td>
-                                {{% if inv.due_amount == 0 %}}
+                                {% if inv.due_amount == 0 %}
                                 <span class="paid-badge">Paid</span>
-                                {{% elif inv.paid_amount > 0 %}}
+                                {% elif inv.paid_amount > 0 %}
                                 <span class="partial-badge">Partial</span>
-                                {{% else %}}
+                                {% else %}
                                 <span class="due-badge">Unpaid</span>
-                                {{% endif %}}
+                                {% endif %}
                             </td>
                             <td>
                                 <div class="action-cell">
-                                    <a href="/store/invoices/view/{{{{ inv._id }}}}" class="action-btn btn-view" title="View">
+                                    <a href="/store/invoices/view/{{ inv._id }}" class="action-btn btn-view" title="View">
                                         <i class="fas fa-eye"></i>
                                     </a>
-                                    <a href="/store/invoices/print/{{{{ inv._id }}}}" class="action-btn btn-edit" title="Print" target="_blank">
+                                    <a href="/store/invoices/print/{{ inv._id }}" class="action-btn btn-edit" title="Print" target="_blank">
                                         <i class="fas fa-print"></i>
                                     </a>
-                                    {{% if inv.due_amount > 0 %}}
-                                    <a href="/store/invoices/pay/{{{{ inv._id }}}}" class="action-btn btn-pay" title="Collect Payment">
+                                    {% if inv.due_amount > 0 %}
+                                    <a href="/store/invoices/pay/{{ inv._id }}" class="action-btn btn-pay" title="Collect Payment">
                                         <i class="fas fa-hand-holding-usd"></i>
                                     </a>
-                                    {{% endif %}}
-                                    <a href="/store/invoices/edit/{{{{ inv._id }}}}" class="action-btn btn-edit" title="Edit">
+                                    {% endif %}
+                                    <a href="/store/invoices/edit/{{ inv._id }}" class="action-btn btn-edit" title="Edit">
                                         <i class="fas fa-edit"></i>
                                     </a>
                                 </div>
                             </td>
                         </tr>
-                        {{% else %}}
+                        {% else %}
                         <tr>
                             <td colspan="8" style="text-align: center; padding: 50px; color: var(--text-secondary);">
                                 <i class="fas fa-file-invoice" style="font-size: 40px; opacity: 0.2; margin-bottom: 15px; display: block;"></i>
                                 No invoices found.Create your first invoice! 
                             </td>
                         </tr>
-                        {{% endfor %}}
+                        {% endfor %}
                     </tbody>
                 </table>
             </div>
@@ -5988,45 +5987,45 @@ STORE_INVOICES_TEMPLATE = f"""
     </div>
 
     <script>
-        function filterInvoices(status, element) {{
+        function filterInvoices(status, element) {
             document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
             element.classList.add('active');
             
             const rows = document.querySelectorAll('#invoiceTable tbody tr');
-            rows.forEach(row => {{
+            rows.forEach(row => {
                 const rowStatus = row.getAttribute('data-status');
-                if (status === 'all' || rowStatus === status) {{
+                if (status === 'all' || rowStatus === status) {
                     row.style.display = '';
-                }} else {{
+                } else {
                     row.style.display = 'none';
-                }}
-            }});
-        }}
+                }
+            });
+        }
         
-        function searchInvoices() {{
+        function searchInvoices() {
             const search = document.getElementById('searchInvoice').value.toLowerCase();
             const rows = document.querySelectorAll('#invoiceTable tbody tr');
             
-            rows.forEach(row => {{
+            rows.forEach(row => {
                 const text = row.textContent.toLowerCase();
                 row.style.display = text.includes(search) ? '' : 'none';
-            }});
-        }}
+            });
+        }
     </script>
 </body>
 </html>
 """
 
-STORE_INVOICE_NEW_TEMPLATE = f"""
+STORE_INVOICE_NEW_TEMPLATE = """
 <!doctype html>
 <html lang="en">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>New Invoice - Store Panel</title>
-    {COMMON_STYLES}
+""" + COMMON_STYLES + """
     <style>
-        .invoice-item-row {{
+        .invoice-item-row {
             display: grid;
             grid-template-columns: 2fr 1fr 1fr 1fr 1fr auto;
             gap: 10px;
@@ -6035,14 +6034,14 @@ STORE_INVOICE_NEW_TEMPLATE = f"""
             background: rgba(255, 255, 255, 0.02);
             border-radius: 10px;
             margin-bottom: 10px;
-        }}
+        }
         
-        .invoice-item-row input, .invoice-item-row select {{
+        .invoice-item-row input, .invoice-item-row select {
             padding: 10px 12px;
             font-size: 14px;
-        }}
+        }
         
-        .remove-item {{
+        .remove-item {
             background: rgba(239, 68, 68, 0.15);
             color: var(--accent-red);
             border: none;
@@ -6051,43 +6050,43 @@ STORE_INVOICE_NEW_TEMPLATE = f"""
             border-radius: 8px;
             cursor: pointer;
             transition: var(--transition-smooth);
-        }}
+        }
         
-        .remove-item:hover {{
+        .remove-item:hover {
             background: var(--accent-red);
             color: white;
-        }}
+        }
         
-        .totals-section {{
+        .totals-section {
             background: rgba(255, 122, 0, 0.05);
             border: 1px solid rgba(255, 122, 0, 0.2);
             border-radius: 12px;
             padding: 20px;
             margin-top: 20px;
-        }}
+        }
         
-        .total-row {{
+        .total-row {
             display: flex;
             justify-content: space-between;
             padding: 10px 0;
             border-bottom: 1px solid var(--border-color);
-        }}
+        }
         
-        .total-row:last-child {{
+        .total-row:last-child {
             border-bottom: none;
             font-size: 20px;
             font-weight: 800;
             color: var(--accent-orange);
-        }}
+        }
         
-        .total-label {{
+        .total-label {
             color: var(--text-secondary);
-        }}
+        }
         
-        .total-value {{
+        .total-value {
             font-weight: 700;
             color: white;
-        }}
+        }
     </style>
 </head>
 <body>
@@ -6116,12 +6115,12 @@ STORE_INVOICE_NEW_TEMPLATE = f"""
         <div class="header-section">
             <div>
                 <div class="page-title">Create New Invoice</div>
-                <div class="page-subtitle">Invoice #: {{{{ invoice_number }}}}</div>
+                <div class="page-subtitle">Invoice #: {{ invoice_number }}</div>
             </div>
         </div>
 
         <form action="/store/invoices/new" method="post" id="invoiceForm">
-            <input type="hidden" name="invoice_number" value="{{{{ invoice_number }}}}">
+            <input type="hidden" name="invoice_number" value="{{ invoice_number }}">
             
             <div class="dashboard-grid-2">
                 <!-- Customer & Date Info -->
@@ -6134,12 +6133,12 @@ STORE_INVOICE_NEW_TEMPLATE = f"""
                         <label>SELECT CUSTOMER *</label>
                         <select name="customer_id" id="customerSelect" required onchange="updateCustomerInfo()">
                             <option value="">-- Select Customer --</option>
-                            {{% for cust in customers %}}
-                            <option value="{{{{ cust._id }}}}" data-name="{{{{ cust.name }}}}" data-phone="{{{{ cust.phone }}}}" data-address="{{{{ cust.address or '' }}}}"
-                                {{{{ 'selected' if selected_customer and str(cust._id) == selected_customer else '' }}}}>
-                                {{{{ cust.name }}}} - {{{{ cust.phone }}}}
+                            {% for cust in customers %}
+                            <option value="{{ cust._id }}" data-name="{{ cust.name }}" data-phone="{{ cust.phone }}" data-address="{{ cust.address or '' }}"
+                                {{ 'selected' if selected_customer and str(cust._id) == selected_customer else '' }}>
+                                {{ cust.name }} - {{ cust.phone }}
                             </option>
-                            {{% endfor %}}
+                            {% endfor %}
                         </select>
                     </div>
                     
@@ -6163,7 +6162,7 @@ STORE_INVOICE_NEW_TEMPLATE = f"""
                     
                     <div class="input-group">
                         <label>INVOICE DATE *</label>
-                        <input type="date" name="date" value="{{{{ today }}}}" required>
+                        <input type="date" name="date" value="{{ today }}" required>
                     </div>
                     
                     <div class="input-group">
@@ -6249,44 +6248,44 @@ STORE_INVOICE_NEW_TEMPLATE = f"""
 
     <script>
         // Products data
-        const products = {{{{ products_json | safe }}}};
+        const products = {{ products_json | safe }};
         let itemCount = 0;
         
-        function updateCustomerInfo() {{
+        function updateCustomerInfo() {
             const select = document.getElementById('customerSelect');
             const option = select.options[select.selectedIndex];
             const infoDiv = document.getElementById('customerInfo');
             
-            if (select.value) {{
+            if (select.value) {
                 document.getElementById('custName').textContent = option.getAttribute('data-name');
                 document.getElementById('custPhone').textContent = option.getAttribute('data-phone');
                 document.getElementById('custAddress').textContent = option.getAttribute('data-address') || '';
                 infoDiv.style.display = 'block';
-            }} else {{
+            } else {
                 infoDiv.style.display = 'none';
-            }}
-        }}
+            }
+        }
         
-        function addItem() {{
+        function addItem() {
             itemCount++;
             const container = document.getElementById('itemsContainer');
             
             let productOptions = '<option value="">-- Select or Type --</option>';
-            products.forEach(p => {{
-                productOptions += `<option value="${{p._id}}" data-price="${{p.price}}" data-unit="${{p.unit}}">${{p.name}}</option>`;
-            }});
+            products.forEach(p => {
+                productOptions += `<option value="${p._id}" data-price="${p.price}" data-unit="${p.unit}">${p.name}</option>`;
+            });
             
             const html = `
-                <div class="invoice-item-row" id="item-${{itemCount}}">
+                <div class="invoice-item-row" id="item-${itemCount}">
                     <div>
-                        <select onchange="updateItemPrice(this, ${{itemCount}})" id="product-${{itemCount}}">
-                            ${{productOptions}}
+                        <select onchange="updateItemPrice(this, ${itemCount})" id="product-${itemCount}">
+                            ${productOptions}
                         </select>
-                        <input type="text" id="desc-${{itemCount}}" placeholder="Or type description..." style="margin-top: 8px;">
+                        <input type="text" id="desc-${itemCount}" placeholder="Or type description..." style="margin-top: 8px;">
                     </div>
-                    <input type="number" id="rate-${{itemCount}}" placeholder="0.00" step="0.01" min="0" onchange="calculateRowTotal(${{itemCount}})">
-                    <input type="number" id="qty-${{itemCount}}" placeholder="1" value="1" min="0.01" step="0.01" onchange="calculateRowTotal(${{itemCount}})">
-                    <select id="unit-${{itemCount}}">
+                    <input type="number" id="rate-${itemCount}" placeholder="0.00" step="0.01" min="0" onchange="calculateRowTotal(${itemCount})">
+                    <input type="number" id="qty-${itemCount}" placeholder="1" value="1" min="0.01" step="0.01" onchange="calculateRowTotal(${itemCount})">
+                    <select id="unit-${itemCount}">
                         <option value="Pcs">Pcs</option>
                         <option value="Ft">Ft</option>
                         <option value="Meter">Meter</option>
@@ -6294,43 +6293,43 @@ STORE_INVOICE_NEW_TEMPLATE = f"""
                         <option value="Set">Set</option>
                         <option value="Sqft">Sqft</option>
                     </select>
-                    <input type="text" id="amount-${{itemCount}}" value="0.00" readonly style="background: rgba(255,255,255,0.05); font-weight: 700;">
-                    <button type="button" class="remove-item" onclick="removeItem(${{itemCount}})">
+                    <input type="text" id="amount-${itemCount}" value="0.00" readonly style="background: rgba(255,255,255,0.05); font-weight: 700;">
+                    <button type="button" class="remove-item" onclick="removeItem(${itemCount})">
                         <i class="fas fa-times"></i>
                     </button>
                 </div>
             `;
             
             container.insertAdjacentHTML('beforeend', html);
-        }}
+        }
         
-        function updateItemPrice(select, id) {{
+        function updateItemPrice(select, id) {
             const option = select.options[select.selectedIndex];
-            if (option.value) {{
+            if (option.value) {
                 document.getElementById('rate-' + id).value = option.getAttribute('data-price') || 0;
                 document.getElementById('unit-' + id).value = option.getAttribute('data-unit') || 'Pcs';
                 calculateRowTotal(id);
-            }}
-        }}
+            }
+        }
         
-        function calculateRowTotal(id) {{
+        function calculateRowTotal(id) {
             const rate = parseFloat(document.getElementById('rate-' + id).value) || 0;
             const qty = parseFloat(document.getElementById('qty-' + id).value) || 0;
             const amount = rate * qty;
             document.getElementById('amount-' + id).value = amount.toFixed(2);
             calculateTotals();
-        }}
+        }
         
-        function removeItem(id) {{
+        function removeItem(id) {
             document.getElementById('item-' + id).remove();
             calculateTotals();
-        }}
+        }
         
-        function calculateTotals() {{
+        function calculateTotals() {
             let subtotal = 0;
-            document.querySelectorAll('[id^="amount-"]').forEach(input => {{
+            document.querySelectorAll('[id^="amount-"]').forEach(input => {
                 subtotal += parseFloat(input.value) || 0;
-            }});
+            });
             
             const discount = parseFloat(document.getElementById('discountInput').value) || 0;
             const grandTotal = subtotal - discount;
@@ -6346,42 +6345,42 @@ STORE_INVOICE_NEW_TEMPLATE = f"""
             document.getElementById('subtotalInput').value = subtotal;
             document.getElementById('grandTotalInput').value = grandTotal;
             document.getElementById('dueAmountInput').value = due;
-        }}
+        }
         
-        function prepareSubmit() {{
+        function prepareSubmit() {
             const items = [];
-            document.querySelectorAll('.invoice-item-row').forEach(row => {{
+            document.querySelectorAll('.invoice-item-row').forEach(row => {
                 const id = row.id.split('-')[1];
                 const productSelect = document.getElementById('product-' + id);
                 const desc = document.getElementById('desc-' + id).value;
                 const productName = productSelect.options[productSelect.selectedIndex].text;
                 
-                items.push({{
+                items.push({
                     product_id: productSelect.value,
                     description: desc || (productSelect.value ?  productName : ''),
                     rate: parseFloat(document.getElementById('rate-' + id).value) || 0,
                     quantity: parseFloat(document.getElementById('qty-' + id).value) || 0,
                     unit: document.getElementById('unit-' + id).value,
                     amount: parseFloat(document.getElementById('amount-' + id).value) || 0
-                }});
-            }});
+                });
+            });
             
-            if (items.length === 0) {{
+            if (items.length === 0) {
                 alert('Please add at least one item');
                 return false;
-            }}
+            }
             
             document.getElementById('itemsJson').value = JSON.stringify(items);
             return true;
-        }}
+        }
         
         // Initialize with one item
         addItem();
         
         // Check if customer pre-selected
-        if (document.getElementById('customerSelect').value) {{
+        if (document.getElementById('customerSelect').value) {
             updateCustomerInfo();
-        }}
+        }
     </script>
 </body>
 </html>
@@ -6390,14 +6389,14 @@ STORE_INVOICE_NEW_TEMPLATE = f"""
 # STORE INVOICE VIEW & PRINT TEMPLATES
 # ==============================================================================
 
-STORE_INVOICE_VIEW_TEMPLATE = f"""
-<! doctype html>
+STORE_INVOICE_VIEW_TEMPLATE = """
+<!doctype html>
 <html lang="en">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Invoice Details - Store Panel</title>
-    {COMMON_STYLES}
+""" + COMMON_STYLES + """
 </head>
 <body>
     <div class="animated-bg"></div>
@@ -6424,23 +6423,23 @@ STORE_INVOICE_VIEW_TEMPLATE = f"""
     <div class="main-content">
         <div class="header-section">
             <div>
-                <div class="page-title">Invoice #{{{{ invoice.invoice_number }}}}</div>
-                <div class="page-subtitle">Created on {{{{ invoice.date }}}}</div>
+                <div class="page-title">Invoice #{{ invoice.invoice_number }}</div>
+                <div class="page-subtitle">Created on {{ invoice.date }}</div>
             </div>
             <div style="display: flex; gap: 10px;">
-                <a href="/store/invoices/print/{{{{ invoice._id }}}}" target="_blank">
+                <a href="/store/invoices/print/{{ invoice._id }}" target="_blank">
                     <button style="width: auto; padding: 12px 20px; background: linear-gradient(135deg, #10B981 0%, #34D399 100%);">
                         <i class="fas fa-print" style="margin-right: 8px;"></i> Print
                     </button>
                 </a>
-                {{% if invoice.due_amount > 0 %}}
-                <a href="/store/invoices/pay/{{{{ invoice._id }}}}">
+                {% if invoice.due_amount > 0 %}
+                <a href="/store/invoices/pay/{{ invoice._id }}">
                     <button style="width: auto; padding: 12px 20px; background: linear-gradient(135deg, #3B82F6 0%, #60A5FA 100%);">
                         <i class="fas fa-hand-holding-usd" style="margin-right: 8px;"></i> Collect Payment
                     </button>
                 </a>
-                {{% endif %}}
-                <a href="/store/invoices/edit/{{{{ invoice._id }}}}">
+                {% endif %}
+                <a href="/store/invoices/edit/{{ invoice._id }}">
                     <button style="width: auto; padding: 12px 20px; background: linear-gradient(135deg, #8B5CF6 0%, #A78BFA 100%);">
                         <i class="fas fa-edit" style="margin-right: 8px;"></i> Edit
                     </button>
@@ -6457,15 +6456,15 @@ STORE_INVOICE_VIEW_TEMPLATE = f"""
                 <div style="display: grid; gap: 12px;">
                     <div style="display: flex; justify-content: space-between; padding: 12px; background: rgba(255,255,255,0.02); border-radius: 8px;">
                         <span style="color: var(--text-secondary);">Name</span>
-                        <span style="font-weight: 600;">{{{{ invoice.customer_name }}}}</span>
+                        <span style="font-weight: 600;">{{ invoice.customer_name }}</span>
                     </div>
                     <div style="display: flex; justify-content: space-between; padding: 12px; background: rgba(255,255,255,0.02); border-radius: 8px;">
                         <span style="color: var(--text-secondary);">Phone</span>
-                        <span style="font-weight: 600;">{{{{ invoice.customer_phone or '-' }}}}</span>
+                        <span style="font-weight: 600;">{{ invoice.customer_phone or '-' }}</span>
                     </div>
                     <div style="display: flex; justify-content: space-between; padding: 12px; background: rgba(255,255,255,0.02); border-radius: 8px;">
                         <span style="color: var(--text-secondary);">Address</span>
-                        <span style="font-weight: 600; text-align: right; max-width: 200px;">{{{{ invoice.customer_address or '-' }}}}</span>
+                        <span style="font-weight: 600; text-align: right; max-width: 200px;">{{ invoice.customer_address or '-' }}</span>
                     </div>
                 </div>
             </div>
@@ -6474,26 +6473,26 @@ STORE_INVOICE_VIEW_TEMPLATE = f"""
             <div class="card">
                 <div class="section-header">
                     <span><i class="fas fa-money-check-alt" style="margin-right: 10px; color: var(--accent-green);"></i>Payment Status</span>
-                    {{% if invoice.due_amount == 0 %}}
+                    {% if invoice.due_amount == 0 %}
                     <span class="paid-badge">PAID</span>
-                    {{% elif invoice.paid_amount > 0 %}}
+                    {% elif invoice.paid_amount > 0 %}
                     <span class="partial-badge">PARTIAL</span>
-                    {{% else %}}
+                    {% else %}
                     <span class="due-badge">UNPAID</span>
-                    {{% endif %}}
+                    {% endif %}
                 </div>
                 <div style="display: grid; gap: 12px;">
                     <div style="display: flex; justify-content: space-between; padding: 12px; background: rgba(255,255,255,0.02); border-radius: 8px;">
                         <span style="color: var(--text-secondary);">Grand Total</span>
-                        <span style="font-weight: 700; font-size: 18px;">৳{{{{ "{:,.2f}".format(invoice.grand_total) }}}}</span>
+                        <span style="font-weight: 700; font-size: 18px;">৳{{ "{:,.2f}".format(invoice.grand_total) }}</span>
                     </div>
                     <div style="display: flex; justify-content: space-between; padding: 12px; background: rgba(16, 185, 129, 0.1); border-radius: 8px;">
                         <span style="color: var(--accent-green);">Paid Amount</span>
-                        <span style="font-weight: 700; font-size: 18px; color: var(--accent-green);">৳{{{{ "{:,.2f}".format(invoice.paid_amount) }}}}</span>
+                        <span style="font-weight: 700; font-size: 18px; color: var(--accent-green);">৳{{ "{:,.2f}".format(invoice.paid_amount) }}</span>
                     </div>
                     <div style="display: flex; justify-content: space-between; padding: 12px; background: rgba(239, 68, 68, 0.1); border-radius: 8px;">
                         <span style="color: var(--accent-red);">Due Amount</span>
-                        <span style="font-weight: 700; font-size: 18px; color: var(--accent-red);">৳{{{{ "{:,.2f}".format(invoice.due_amount) }}}}</span>
+                        <span style="font-weight: 700; font-size: 18px; color: var(--accent-red);">৳{{ "{:,.2f}".format(invoice.due_amount) }}</span>
                     </div>
                 </div>
             </div>
@@ -6517,31 +6516,31 @@ STORE_INVOICE_VIEW_TEMPLATE = f"""
                         </tr>
                     </thead>
                     <tbody>
-                        {{% for item in invoice.items %}}
+                        {% for item in invoice.items %}
                         <tr>
-                            <td>{{{{ loop.index }}}}</td>
-                            <td style="font-weight: 600;">{{{{ item.description }}}}</td>
-                            <td>৳{{{{ "{:,.2f}".format(item.rate) }}}}</td>
-                            <td>{{{{ item.quantity }}}}</td>
-                            <td>{{{{ item.unit }}}}</td>
-                            <td style="text-align: right; font-weight: 700;">৳{{{{ "{:,.2f}".format(item.amount) }}}}</td>
+                            <td>{{ loop.index }}</td>
+                            <td style="font-weight: 600;">{{ item.description }}</td>
+                            <td>৳{{ "{:,.2f}".format(item.rate) }}</td>
+                            <td>{{ item.quantity }}</td>
+                            <td>{{ item.unit }}</td>
+                            <td style="text-align: right; font-weight: 700;">৳{{ "{:,.2f}".format(item.amount) }}</td>
                         </tr>
-                        {{% endfor %}}
+                        {% endfor %}
                     </tbody>
                     <tfoot>
                         <tr style="background: rgba(255,255,255,0.02);">
                             <td colspan="5" style="text-align: right; font-weight: 600;">Subtotal:</td>
-                            <td style="text-align: right; font-weight: 700;">৳{{{{ "{:,.2f}".format(invoice.subtotal) }}}}</td>
+                            <td style="text-align: right; font-weight: 700;">৳{{ "{:,.2f}".format(invoice.subtotal) }}</td>
                         </tr>
-                        {{% if invoice.discount > 0 %}}
+                        {% if invoice.discount > 0 %}
                         <tr style="background: rgba(255,255,255,0.02);">
                             <td colspan="5" style="text-align: right; font-weight: 600;">Discount:</td>
-                            <td style="text-align: right; font-weight: 700; color: var(--accent-red);">-৳{{{{ "{:,.2f}".format(invoice.discount) }}}}</td>
+                            <td style="text-align: right; font-weight: 700; color: var(--accent-red);">-৳{{ "{:,.2f}".format(invoice.discount) }}</td>
                         </tr>
-                        {{% endif %}}
+                        {% endif %}
                         <tr style="background: rgba(255, 122, 0, 0.1);">
                             <td colspan="5" style="text-align: right; font-weight: 800; font-size: 16px;">Grand Total:</td>
-                            <td style="text-align: right; font-weight: 800; font-size: 16px; color: var(--accent-orange);">৳{{{{ "{:,.2f}".format(invoice.grand_total) }}}}</td>
+                            <td style="text-align: right; font-weight: 800; font-size: 16px; color: var(--accent-orange);">৳{{ "{:,.2f}".format(invoice.grand_total) }}</td>
                         </tr>
                     </tfoot>
                 </table>
@@ -6549,7 +6548,7 @@ STORE_INVOICE_VIEW_TEMPLATE = f"""
         </div>
 
         <!-- Payment History -->
-        {{% if payments %}}
+        {% if payments %}
         <div class="card" style="margin-top: 25px;">
             <div class="section-header">
                 <span><i class="fas fa-history" style="margin-right: 10px; color: var(--accent-blue);"></i>Payment History</span>
@@ -6565,28 +6564,28 @@ STORE_INVOICE_VIEW_TEMPLATE = f"""
                         </tr>
                     </thead>
                     <tbody>
-                        {{% for pay in payments %}}
+                        {% for pay in payments %}
                         <tr>
-                            <td>{{{{ pay.date }}}}</td>
-                            <td class="amount-positive">৳{{{{ "{:,.2f}".format(pay.amount) }}}}</td>
-                            <td>{{{{ pay.method or 'Cash' }}}}</td>
-                            <td style="color: var(--text-secondary);">{{{{ pay.note or '-' }}}}</td>
+                            <td>{{ pay.date }}</td>
+                            <td class="amount-positive">৳{{ "{:,.2f}".format(pay.amount) }}</td>
+                            <td>{{ pay.method or 'Cash' }}</td>
+                            <td style="color: var(--text-secondary);">{{ pay.note or '-' }}</td>
                         </tr>
-                        {{% endfor %}}
+                        {% endfor %}
                     </tbody>
                 </table>
             </div>
         </div>
-        {{% endif %}}
+        {% endif %}
 
-        {{% if invoice.notes %}}
+        {% if invoice.notes %}
         <div class="card" style="margin-top: 25px;">
             <div class="section-header">
                 <span><i class="fas fa-sticky-note" style="margin-right: 10px; color: var(--text-secondary);"></i>Notes</span>
             </div>
-            <p style="color: var(--text-secondary); line-height: 1.6;">{{{{ invoice.notes }}}}</p>
+            <p style="color: var(--text-secondary); line-height: 1.6;">{{ invoice.notes }}</p>
         </div>
-        {{% endif %}}
+        {% endif %}
     </div>
 </body>
 </html>
@@ -7019,16 +7018,16 @@ STORE_INVOICE_PRINT_TEMPLATE = """
 </html>
 """
 
-STORE_INVOICE_EDIT_TEMPLATE = f"""
-<! doctype html>
+STORE_INVOICE_EDIT_TEMPLATE = """
+<!doctype html>
 <html lang="en">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Edit Invoice - Store Panel</title>
-    {COMMON_STYLES}
+""" + COMMON_STYLES + """
     <style>
-        .invoice-item-row {{
+        .invoice-item-row {
             display: grid;
             grid-template-columns: 2fr 1fr 1fr 1fr 1fr auto;
             gap: 10px;
@@ -7037,14 +7036,14 @@ STORE_INVOICE_EDIT_TEMPLATE = f"""
             background: rgba(255, 255, 255, 0.02);
             border-radius: 10px;
             margin-bottom: 10px;
-        }}
+        }
         
-        .invoice-item-row input, .invoice-item-row select {{
+        .invoice-item-row input, .invoice-item-row select {
             padding: 10px 12px;
             font-size: 14px;
-        }}
+        }
         
-        .remove-item {{
+        .remove-item {
             background: rgba(239, 68, 68, 0.15);
             color: var(--accent-red);
             border: none;
@@ -7053,34 +7052,34 @@ STORE_INVOICE_EDIT_TEMPLATE = f"""
             border-radius: 8px;
             cursor: pointer;
             transition: var(--transition-smooth);
-        }}
+        }
         
-        .remove-item:hover {{
+        .remove-item:hover {
             background: var(--accent-red);
             color: white;
-        }}
+        }
         
-        .totals-section {{
+        .totals-section {
             background: rgba(255, 122, 0, 0.05);
             border: 1px solid rgba(255, 122, 0, 0.2);
             border-radius: 12px;
             padding: 20px;
             margin-top: 20px;
-        }}
+        }
         
-        .total-row {{
+        .total-row {
             display: flex;
             justify-content: space-between;
             padding: 10px 0;
             border-bottom: 1px solid var(--border-color);
-        }}
+        }
         
-        .total-row:last-child {{
+        .total-row:last-child {
             border-bottom: none;
             font-size: 20px;
             font-weight: 800;
             color: var(--accent-orange);
-        }}
+        }
     </style>
 </head>
 <body>
@@ -7109,11 +7108,11 @@ STORE_INVOICE_EDIT_TEMPLATE = f"""
         <div class="header-section">
             <div>
                 <div class="page-title">Edit Invoice</div>
-                <div class="page-subtitle">Invoice #: {{{{ invoice.invoice_number }}}}</div>
+                <div class="page-subtitle">Invoice #: {{ invoice.invoice_number }}</div>
             </div>
         </div>
 
-        <form action="/store/invoices/edit/{{{{ invoice._id }}}}" method="post" id="invoiceForm">
+        <form action="/store/invoices/edit/{{ invoice._id }}" method="post" id="invoiceForm">
             <div class="dashboard-grid-2">
                 <div class="card">
                     <div class="section-header">
@@ -7123,11 +7122,11 @@ STORE_INVOICE_EDIT_TEMPLATE = f"""
                     <div class="input-group">
                         <label>CUSTOMER *</label>
                         <select name="customer_id" id="customerSelect" required>
-                            {{% for cust in customers %}}
-                            <option value="{{{{ cust._id }}}}" {{{{ 'selected' if str(cust._id) == invoice.customer_id else '' }}}}>
-                                {{{{ cust.name }}}} - {{{{ cust.phone }}}}
+                            {% for cust in customers %}
+                            <option value="{{ cust._id }}" {{ 'selected' if str(cust._id) == invoice.customer_id else '' }}>
+                                {{ cust.name }} - {{ cust.phone }}
                             </option>
-                            {{% endfor %}}
+                            {% endfor %}
                         </select>
                     </div>
                 </div>
@@ -7139,12 +7138,12 @@ STORE_INVOICE_EDIT_TEMPLATE = f"""
                     
                     <div class="input-group">
                         <label>INVOICE DATE *</label>
-                        <input type="date" name="date" value="{{{{ invoice.date }}}}" required>
+                        <input type="date" name="date" value="{{ invoice.date }}" required>
                     </div>
                     
                     <div class="input-group">
                         <label>NOTES</label>
-                        <textarea name="notes" rows="2">{{{{ invoice.notes or '' }}}}</textarea>
+                        <textarea name="notes" rows="2">{{ invoice.notes or '' }}</textarea>
                     </div>
                 </div>
             </div>
@@ -7179,7 +7178,7 @@ STORE_INVOICE_EDIT_TEMPLATE = f"""
                     <div class="total-row">
                         <span style="color: var(--text-secondary);">
                             Discount 
-                            <input type="number" name="discount" id="discountInput" value="{{{{ invoice.discount or 0 }}}}" min="0" step="0.01" 
+                            <input type="number" name="discount" id="discountInput" value="{{ invoice.discount or 0 }}" min="0" step="0.01" 
                                 style="width: 100px; padding: 5px 10px; margin-left: 10px;" onchange="calculateTotals()">
                         </span>
                         <span style="font-weight: 700; color: white;" id="discountAmount">৳0</span>
@@ -7199,7 +7198,7 @@ STORE_INVOICE_EDIT_TEMPLATE = f"""
                 <button type="submit" onclick="return prepareSubmit()" style="background: linear-gradient(135deg, #8B5CF6 0%, #A78BFA 100%);">
                     <i class="fas fa-sync-alt" style="margin-right: 8px;"></i> Update Invoice
                 </button>
-                <a href="/store/invoices/view/{{{{ invoice._id }}}}" style="flex: 1;">
+                <a href="/store/invoices/view/{{ invoice._id }}" style="flex: 1;">
                     <button type="button" style="background: rgba(255,255,255,0.05); border: 1px solid var(--border-color); width: 100%;">
                         <i class="fas fa-times" style="margin-right: 8px;"></i> Cancel
                     </button>
@@ -7209,29 +7208,29 @@ STORE_INVOICE_EDIT_TEMPLATE = f"""
     </div>
 
     <script>
-        const products = {{{{ products_json | safe }}}};
-        const existingItems = {{{{ items_json | safe }}}};
+        const products = {{ products_json | safe }};
+        const existingItems = {{ items_json | safe }};
         let itemCount = 0;
         
-        function addItem(data = null) {{
+        function addItem(data = null) {
             itemCount++;
             const container = document.getElementById('itemsContainer');
             
             const html = `
-                <div class="invoice-item-row" id="item-${{itemCount}}">
-                    <input type="text" id="desc-${{itemCount}}" placeholder="Description" value="${{data ?  data.description : ''}}">
-                    <input type="number" id="rate-${{itemCount}}" placeholder="0.00" step="0.01" min="0" value="${{data ? data.rate : ''}}" onchange="calculateRowTotal(${{itemCount}})">
-                    <input type="number" id="qty-${{itemCount}}" placeholder="1" value="${{data ? data.quantity : 1}}" min="0.01" step="0.01" onchange="calculateRowTotal(${{itemCount}})">
-                    <select id="unit-${{itemCount}}">
-                        <option value="Pcs" ${{data && data.unit === 'Pcs' ? 'selected' : ''}}>Pcs</option>
-                        <option value="Ft" ${{data && data.unit === 'Ft' ?  'selected' : ''}}>Ft</option>
-                        <option value="Meter" ${{data && data.unit === 'Meter' ?  'selected' : ''}}>Meter</option>
-                        <option value="Kg" ${{data && data.unit === 'Kg' ?  'selected' : ''}}>Kg</option>
-                        <option value="Set" ${{data && data.unit === 'Set' ? 'selected' : ''}}>Set</option>
-                        <option value="Sqft" ${{data && data.unit === 'Sqft' ? 'selected' : ''}}>Sqft</option>
+                <div class="invoice-item-row" id="item-${itemCount}">
+                    <input type="text" id="desc-${itemCount}" placeholder="Description" value="${data ?  data.description : ''}">
+                    <input type="number" id="rate-${itemCount}" placeholder="0.00" step="0.01" min="0" value="${data ? data.rate : ''}" onchange="calculateRowTotal(${itemCount})">
+                    <input type="number" id="qty-${itemCount}" placeholder="1" value="${data ? data.quantity : 1}" min="0.01" step="0.01" onchange="calculateRowTotal(${itemCount})">
+                    <select id="unit-${itemCount}">
+                        <option value="Pcs" ${data && data.unit === 'Pcs' ? 'selected' : ''}>Pcs</option>
+                        <option value="Ft" ${data && data.unit === 'Ft' ?  'selected' : ''}>Ft</option>
+                        <option value="Meter" ${data && data.unit === 'Meter' ?  'selected' : ''}>Meter</option>
+                        <option value="Kg" ${data && data.unit === 'Kg' ?  'selected' : ''}>Kg</option>
+                        <option value="Set" ${data && data.unit === 'Set' ? 'selected' : ''}>Set</option>
+                        <option value="Sqft" ${data && data.unit === 'Sqft' ? 'selected' : ''}>Sqft</option>
                     </select>
-                    <input type="text" id="amount-${{itemCount}}" value="${{data ? data.amount.toFixed(2) : '0.00'}}" readonly style="background: rgba(255,255,255,0.05); font-weight: 700;">
-                    <button type="button" class="remove-item" onclick="removeItem(${{itemCount}})">
+                    <input type="text" id="amount-${itemCount}" value="${data ? data.amount.toFixed(2) : '0.00'}" readonly style="background: rgba(255,255,255,0.05); font-weight: 700;">
+                    <button type="button" class="remove-item" onclick="removeItem(${itemCount})">
                         <i class="fas fa-times"></i>
                     </button>
                 </div>
@@ -7239,26 +7238,26 @@ STORE_INVOICE_EDIT_TEMPLATE = f"""
             
             container.insertAdjacentHTML('beforeend', html);
             if (data) calculateRowTotal(itemCount);
-        }}
+        }
         
-        function calculateRowTotal(id) {{
+        function calculateRowTotal(id) {
             const rate = parseFloat(document.getElementById('rate-' + id).value) || 0;
             const qty = parseFloat(document.getElementById('qty-' + id).value) || 0;
             const amount = rate * qty;
             document.getElementById('amount-' + id).value = amount.toFixed(2);
             calculateTotals();
-        }}
+        }
         
-        function removeItem(id) {{
+        function removeItem(id) {
             document.getElementById('item-' + id).remove();
             calculateTotals();
-        }}
+        }
         
-        function calculateTotals() {{
+        function calculateTotals() {
             let subtotal = 0;
-            document.querySelectorAll('[id^="amount-"]').forEach(input => {{
+            document.querySelectorAll('[id^="amount-"]').forEach(input => {
                 subtotal += parseFloat(input.value) || 0;
-            }});
+            });
             
             const discount = parseFloat(document.getElementById('discountInput').value) || 0;
             const grandTotal = subtotal - discount;
@@ -7269,29 +7268,29 @@ STORE_INVOICE_EDIT_TEMPLATE = f"""
             
             document.getElementById('subtotalInput').value = subtotal;
             document.getElementById('grandTotalInput').value = grandTotal;
-        }}
+        }
         
-        function prepareSubmit() {{
+        function prepareSubmit() {
             const items = [];
-            document.querySelectorAll('.invoice-item-row').forEach(row => {{
+            document.querySelectorAll('.invoice-item-row').forEach(row => {
                 const id = row.id.split('-')[1];
-                items.push({{
+                items.push({
                     description: document.getElementById('desc-' + id).value,
                     rate: parseFloat(document.getElementById('rate-' + id).value) || 0,
                     quantity: parseFloat(document.getElementById('qty-' + id).value) || 0,
                     unit: document.getElementById('unit-' + id).value,
                     amount: parseFloat(document.getElementById('amount-' + id).value) || 0
-                }});
-            }});
+                });
+            });
             
-            if (items.length === 0) {{
+            if (items.length === 0) {
                 alert('Please add at least one item');
                 return false;
-            }}
+            }
             
             document.getElementById('itemsJson').value = JSON.stringify(items);
             return true;
-        }}
+        }
         
         // Load existing items
         existingItems.forEach(item => addItem(item));
@@ -7301,14 +7300,14 @@ STORE_INVOICE_EDIT_TEMPLATE = f"""
 </html>
 """
 
-STORE_INVOICE_PAY_TEMPLATE = f"""
-<! doctype html>
+STORE_INVOICE_PAY_TEMPLATE = """
+<!doctype html>
 <html lang="en">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Collect Payment - Store Panel</title>
-    {COMMON_STYLES}
+""" + COMMON_STYLES + """
 </head>
 <body>
     <div class="animated-bg"></div>
@@ -7336,7 +7335,7 @@ STORE_INVOICE_PAY_TEMPLATE = f"""
         <div class="header-section">
             <div>
                 <div class="page-title">Collect Payment</div>
-                <div class="page-subtitle">Invoice #{{{{ invoice.invoice_number }}}}</div>
+                <div class="page-subtitle">Invoice #{{ invoice.invoice_number }}</div>
             </div>
         </div>
 
@@ -7349,27 +7348,27 @@ STORE_INVOICE_PAY_TEMPLATE = f"""
             <div style="background: rgba(255,255,255,0.02); padding: 20px; border-radius: 12px; margin-bottom: 25px;">
                 <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
                     <span style="color: var(--text-secondary);">Customer</span>
-                    <span style="font-weight: 600;">{{{{ invoice.customer_name }}}}</span>
+                    <span style="font-weight: 600;">{{ invoice.customer_name }}</span>
                 </div>
                 <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
                     <span style="color: var(--text-secondary);">Total Amount</span>
-                    <span style="font-weight: 600;">৳{{{{ "{:,.2f}".format(invoice.grand_total) }}}}</span>
+                    <span style="font-weight: 600;">৳{{ "{:,.2f}".format(invoice.grand_total) }}</span>
                 </div>
                 <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
                     <span style="color: var(--text-secondary);">Already Paid</span>
-                    <span style="font-weight: 600; color: var(--accent-green);">৳{{{{ "{:,.2f}".format(invoice.paid_amount) }}}}</span>
+                    <span style="font-weight: 600; color: var(--accent-green);">৳{{ "{:,.2f}".format(invoice.paid_amount) }}</span>
                 </div>
                 <div style="display: flex; justify-content: space-between; padding-top: 10px; border-top: 1px solid var(--border-color);">
                     <span style="color: var(--accent-red); font-weight: 600;">Due Amount</span>
-                    <span style="font-weight: 800; font-size: 20px; color: var(--accent-red);">৳{{{{ "{:,.2f}".format(invoice.due_amount) }}}}</span>
+                    <span style="font-weight: 800; font-size: 20px; color: var(--accent-red);">৳{{ "{:,.2f}".format(invoice.due_amount) }}</span>
                 </div>
             </div>
             
-            <form action="/store/invoices/pay/{{{{ invoice._id }}}}" method="post">
+            <form action="/store/invoices/pay/{{ invoice._id }}" method="post">
                 <div class="input-group">
                     <label><i class="fas fa-money-bill-wave" style="margin-right: 5px;"></i> PAYMENT AMOUNT (৳) *</label>
-                    <input type="number" name="amount" required step="0.01" min="0.01" max="{{{{ invoice.due_amount }}}}" 
-                        placeholder="Enter amount" value="{{{{ invoice.due_amount }}}}">
+                    <input type="number" name="amount" required step="0.01" min="0.01" max="{{ invoice.due_amount }}" 
+                        placeholder="Enter amount" value="{{ invoice.due_amount }}">
                 </div>
                 
                 <div class="input-group">
@@ -7393,7 +7392,7 @@ STORE_INVOICE_PAY_TEMPLATE = f"""
                     <button type="submit" style="background: linear-gradient(135deg, #10B981 0%, #34D399 100%);">
                         <i class="fas fa-check" style="margin-right: 8px;"></i> Confirm Payment
                     </button>
-                    <a href="/store/invoices/view/{{{{ invoice._id }}}}" style="flex: 1;">
+                    <a href="/store/invoices/view/{{ invoice._id }}" style="flex: 1;">
                         <button type="button" style="background: rgba(255,255,255,0.05); border: 1px solid var(--border-color); width: 100%;">
                             <i class="fas fa-times" style="margin-right: 8px;"></i> Cancel
                         </button>
@@ -7409,14 +7408,14 @@ STORE_INVOICE_PAY_TEMPLATE = f"""
 # STORE QUOTATION TEMPLATES
 # ==============================================================================
 
-STORE_QUOTATIONS_TEMPLATE = f"""
-<! doctype html>
+STORE_QUOTATIONS_TEMPLATE = """
+<!doctype html>
 <html lang="en">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Quotations - Store Panel</title>
-    {COMMON_STYLES}
+""" + COMMON_STYLES + """
 </head>
 <body>
     <div class="animated-bg"></div>
@@ -7472,21 +7471,21 @@ STORE_QUOTATIONS_TEMPLATE = f"""
             </a>
         </div>
 
-        {{% with messages = get_flashed_messages(with_categories=true) %}}
-            {{% if messages %}}
-                {{% for category, message in messages %}}
-                <div class="flash-message flash-{{{{ category }}}}">
-                    <i class="fas fa-{{{{ 'check-circle' if category == 'success' else 'exclamation-circle' }}}}"></i>
-                    <span>{{{{ message }}}}</span>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                <div class="flash-message flash-{{ category }}">
+                    <i class="fas fa-{{ 'check-circle' if category == 'success' else 'exclamation-circle' }}"></i>
+                    <span>{{ message }}</span>
                 </div>
-                {{% endfor %}}
-            {{% endif %}}
-        {{% endwith %}}
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
 
         <div class="card">
             <div class="section-header">
                 <span>All Quotations</span>
-                <span class="table-badge" style="background: var(--accent-purple); color: white;">{{{{ quotations|length }}}} Total</span>
+                <span class="table-badge" style="background: var(--accent-purple); color: white;">{{ quotations|length }} Total</span>
             </div>
             
             <div style="overflow-x: auto;">
@@ -7503,49 +7502,49 @@ STORE_QUOTATIONS_TEMPLATE = f"""
                         </tr>
                     </thead>
                     <tbody>
-                        {{% for qt in quotations %}}
+                        {% for qt in quotations %}
                         <tr>
-                            <td><span class="table-badge" style="background: rgba(139, 92, 246, 0.2); color: var(--accent-purple);">{{{{ qt.quotation_number }}}}</span></td>
-                            <td>{{{{ qt.date }}}}</td>
-                            <td style="font-weight: 600;">{{{{ qt.customer_name }}}}</td>
-                            <td style="font-weight: 700;">৳{{{{ "{:,.0f}".format(qt.grand_total) }}}}</td>
-                            <td>{{{{ qt.valid_until or '-' }}}}</td>
+                            <td><span class="table-badge" style="background: rgba(139, 92, 246, 0.2); color: var(--accent-purple);">{{ qt.quotation_number }}</span></td>
+                            <td>{{ qt.date }}</td>
+                            <td style="font-weight: 600;">{{ qt.customer_name }}</td>
+                            <td style="font-weight: 700;">৳{{ "{:,.0f}".format(qt.grand_total) }}</td>
+                            <td>{{ qt.valid_until or '-' }}</td>
                             <td>
-                                {{% if qt.status == 'converted' %}}
+                                {% if qt.status == 'converted' %}
                                 <span class="paid-badge">Converted</span>
-                                {{% elif qt.status == 'expired' %}}
+                                {% elif qt.status == 'expired' %}
                                 <span class="due-badge">Expired</span>
-                                {{% else %}}
+                                {% else %}
                                 <span class="partial-badge">Pending</span>
-                                {{% endif %}}
+                                {% endif %}
                             </td>
                             <td>
                                 <div class="action-cell">
-                                    <a href="/store/quotations/print/{{{{ qt._id }}}}" class="action-btn btn-view" title="Print" target="_blank">
+                                    <a href="/store/quotations/print/{{ qt._id }}" class="action-btn btn-view" title="Print" target="_blank">
                                         <i class="fas fa-print"></i>
                                     </a>
-                                    {{% if qt.status != 'converted' %}}
-                                    <a href="/store/quotations/convert/{{{{ qt._id }}}}" class="action-btn btn-pay" title="Convert to Invoice">
+                                    {% if qt.status != 'converted' %}
+                                    <a href="/store/quotations/convert/{{ qt._id }}" class="action-btn btn-pay" title="Convert to Invoice">
                                         <i class="fas fa-exchange-alt"></i>
                                     </a>
-                                    {{% endif %}}
-                                    <a href="/store/quotations/edit/{{{{ qt._id }}}}" class="action-btn btn-edit" title="Edit">
+                                    {% endif %}
+                                    <a href="/store/quotations/edit/{{ qt._id }}" class="action-btn btn-edit" title="Edit">
                                         <i class="fas fa-edit"></i>
                                     </a>
-                                    <button class="action-btn btn-del" onclick="deleteQuotation('{{{{ qt._id }}}}')" title="Delete">
+                                    <button class="action-btn btn-del" onclick="deleteQuotation('{{ qt._id }}')" title="Delete">
                                         <i class="fas fa-trash"></i>
                                     </button>
                                 </div>
                             </td>
                         </tr>
-                        {{% else %}}
+                        {% else %}
                         <tr>
                             <td colspan="7" style="text-align: center; padding: 50px; color: var(--text-secondary);">
                                 <i class="fas fa-file-alt" style="font-size: 40px; opacity: 0.2; margin-bottom: 15px; display: block;"></i>
                                 No quotations found. Create your first quotation! 
                             </td>
                         </tr>
-                        {{% endfor %}}
+                        {% endfor %}
                     </tbody>
                 </table>
             </div>
@@ -7553,28 +7552,28 @@ STORE_QUOTATIONS_TEMPLATE = f"""
     </div>
 
     <script>
-        function deleteQuotation(id) {{
-            if (confirm('Are you sure you want to delete this quotation?')) {{
-                fetch('/store/quotations/delete/' + id, {{
+        function deleteQuotation(id) {
+            if (confirm('Are you sure you want to delete this quotation?')) {
+                fetch('/store/quotations/delete/' + id, {
                     method: 'POST'
-                }}).then(() => location.reload());
-            }}
-        }}
+                }).then(() => location.reload());
+            }
+        }
     </script>
 </body>
 </html>
 """
 
-STORE_QUOTATION_NEW_TEMPLATE = f"""
+STORE_QUOTATION_NEW_TEMPLATE = """
 <!doctype html>
 <html lang="en">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>New Quotation - Store Panel</title>
-    {COMMON_STYLES}
+""" + COMMON_STYLES + """
     <style>
-        .invoice-item-row {{
+        .invoice-item-row {
             display: grid;
             grid-template-columns: 2fr 1fr 1fr 1fr 1fr auto;
             gap: 10px;
@@ -7583,14 +7582,14 @@ STORE_QUOTATION_NEW_TEMPLATE = f"""
             background: rgba(255, 255, 255, 0.02);
             border-radius: 10px;
             margin-bottom: 10px;
-        }}
+        }
         
-        .invoice-item-row input, .invoice-item-row select {{
+        .invoice-item-row input, .invoice-item-row select {
             padding: 10px 12px;
             font-size: 14px;
-        }}
+        }
         
-        .remove-item {{
+        .remove-item {
             background: rgba(239, 68, 68, 0.15);
             color: var(--accent-red);
             border: none;
@@ -7598,29 +7597,29 @@ STORE_QUOTATION_NEW_TEMPLATE = f"""
             height: 40px;
             border-radius: 8px;
             cursor: pointer;
-        }}
+        }
         
-        .totals-section {{
+        .totals-section {
             background: rgba(139, 92, 246, 0.05);
             border: 1px solid rgba(139, 92, 246, 0.2);
             border-radius: 12px;
             padding: 20px;
             margin-top: 20px;
-        }}
+        }
         
-        .total-row {{
+        .total-row {
             display: flex;
             justify-content: space-between;
             padding: 10px 0;
             border-bottom: 1px solid var(--border-color);
-        }}
+        }
         
-        .total-row:last-child {{
+        .total-row:last-child {
             border-bottom: none;
             font-size: 20px;
             font-weight: 800;
             color: var(--accent-purple);
-        }}
+        }
     </style>
 </head>
 <body>
@@ -7649,12 +7648,12 @@ STORE_QUOTATION_NEW_TEMPLATE = f"""
         <div class="header-section">
             <div>
                 <div class="page-title">Create New Quotation</div>
-                <div class="page-subtitle">Quotation #: {{{{ quotation_number }}}}</div>
+                <div class="page-subtitle">Quotation #: {{ quotation_number }}</div>
             </div>
         </div>
 
         <form action="/store/quotations/new" method="post" id="quotationForm">
-            <input type="hidden" name="quotation_number" value="{{{{ quotation_number }}}}">
+            <input type="hidden" name="quotation_number" value="{{ quotation_number }}">
             
             <div class="dashboard-grid-2">
                 <div class="card">
@@ -7666,11 +7665,11 @@ STORE_QUOTATION_NEW_TEMPLATE = f"""
                         <label>SELECT CUSTOMER *</label>
                         <select name="customer_id" id="customerSelect" required>
                             <option value="">-- Select Customer --</option>
-                            {{% for cust in customers %}}
-                            <option value="{{{{ cust._id }}}}" data-name="{{{{ cust.name }}}}" data-phone="{{{{ cust.phone }}}}">
-                                {{{{ cust.name }}}} - {{{{ cust.phone }}}}
+                            {% for cust in customers %}
+                            <option value="{{ cust._id }}" data-name="{{ cust.name }}" data-phone="{{ cust.phone }}">
+                                {{ cust.name }} - {{ cust.phone }}
                             </option>
-                            {{% endfor %}}
+                            {% endfor %}
                         </select>
                     </div>
                     
@@ -7689,11 +7688,11 @@ STORE_QUOTATION_NEW_TEMPLATE = f"""
                     <div class="grid-2">
                         <div class="input-group">
                             <label>QUOTATION DATE *</label>
-                            <input type="date" name="date" value="{{{{ today }}}}" required>
+                            <input type="date" name="date" value="{{ today }}" required>
                         </div>
                         <div class="input-group">
                             <label>VALID UNTIL</label>
-                            <input type="date" name="valid_until" value="{{{{ valid_until }}}}">
+                            <input type="date" name="valid_until" value="{{ valid_until }}">
                         </div>
                     </div>
                     
@@ -7762,29 +7761,29 @@ STORE_QUOTATION_NEW_TEMPLATE = f"""
     </div>
 
     <script>
-        const products = {{{{ products_json | safe }}}};
+        const products = {{ products_json | safe }};
         let itemCount = 0;
         
-        function addItem() {{
+        function addItem() {
             itemCount++;
             const container = document.getElementById('itemsContainer');
             
             let productOptions = '<option value="">-- Select or Type --</option>';
-            products.forEach(p => {{
-                productOptions += `<option value="${{p._id}}" data-price="${{p.price}}" data-unit="${{p.unit}}">${{p.name}}</option>`;
-            }});
+            products.forEach(p => {
+                productOptions += `<option value="${p._id}" data-price="${p.price}" data-unit="${p.unit}">${p.name}</option>`;
+            });
             
             const html = `
-                <div class="invoice-item-row" id="item-${{itemCount}}">
+                <div class="invoice-item-row" id="item-${itemCount}">
                     <div>
-                        <select onchange="updateItemPrice(this, ${{itemCount}})" id="product-${{itemCount}}">
-                            ${{productOptions}}
+                        <select onchange="updateItemPrice(this, ${itemCount})" id="product-${itemCount}">
+                            ${productOptions}
                         </select>
-                        <input type="text" id="desc-${{itemCount}}" placeholder="Or type description..." style="margin-top: 8px;">
+                        <input type="text" id="desc-${itemCount}" placeholder="Or type description..." style="margin-top: 8px;">
                     </div>
-                    <input type="number" id="rate-${{itemCount}}" placeholder="0.00" step="0.01" min="0" onchange="calculateRowTotal(${{itemCount}})">
-                    <input type="number" id="qty-${{itemCount}}" placeholder="1" value="1" min="0.01" step="0.01" onchange="calculateRowTotal(${{itemCount}})">
-                    <select id="unit-${{itemCount}}">
+                    <input type="number" id="rate-${itemCount}" placeholder="0.00" step="0.01" min="0" onchange="calculateRowTotal(${itemCount})">
+                    <input type="number" id="qty-${itemCount}" placeholder="1" value="1" min="0.01" step="0.01" onchange="calculateRowTotal(${itemCount})">
+                    <select id="unit-${itemCount}">
                         <option value="Pcs">Pcs</option>
                         <option value="Ft">Ft</option>
                         <option value="Meter">Meter</option>
@@ -7792,43 +7791,43 @@ STORE_QUOTATION_NEW_TEMPLATE = f"""
                         <option value="Set">Set</option>
                         <option value="Sqft">Sqft</option>
                     </select>
-                    <input type="text" id="amount-${{itemCount}}" value="0.00" readonly style="background: rgba(255,255,255,0.05); font-weight: 700;">
-                    <button type="button" class="remove-item" onclick="removeItem(${{itemCount}})">
+                    <input type="text" id="amount-${itemCount}" value="0.00" readonly style="background: rgba(255,255,255,0.05); font-weight: 700;">
+                    <button type="button" class="remove-item" onclick="removeItem(${itemCount})">
                         <i class="fas fa-times"></i>
                     </button>
                 </div>
             `;
             
             container.insertAdjacentHTML('beforeend', html);
-        }}
+        }
         
-        function updateItemPrice(select, id) {{
+        function updateItemPrice(select, id) {
             const option = select.options[select.selectedIndex];
-            if (option.value) {{
+            if (option.value) {
                 document.getElementById('rate-' + id).value = option.getAttribute('data-price') || 0;
                 document.getElementById('unit-' + id).value = option.getAttribute('data-unit') || 'Pcs';
                 calculateRowTotal(id);
-            }}
-        }}
+            }
+        }
         
-        function calculateRowTotal(id) {{
+        function calculateRowTotal(id) {
             const rate = parseFloat(document.getElementById('rate-' + id).value) || 0;
             const qty = parseFloat(document.getElementById('qty-' + id).value) || 0;
             const amount = rate * qty;
             document.getElementById('amount-' + id).value = amount.toFixed(2);
             calculateTotals();
-        }}
+        }
         
-        function removeItem(id) {{
+        function removeItem(id) {
             document.getElementById('item-' + id).remove();
             calculateTotals();
-        }}
+        }
         
-        function calculateTotals() {{
+        function calculateTotals() {
             let subtotal = 0;
-            document.querySelectorAll('[id^="amount-"]').forEach(input => {{
+            document.querySelectorAll('[id^="amount-"]').forEach(input => {
                 subtotal += parseFloat(input.value) || 0;
-            }});
+            });
             
             const discount = parseFloat(document.getElementById('discountInput').value) || 0;
             const grandTotal = subtotal - discount;
@@ -7839,34 +7838,34 @@ STORE_QUOTATION_NEW_TEMPLATE = f"""
             
             document.getElementById('subtotalInput').value = subtotal;
             document.getElementById('grandTotalInput').value = grandTotal;
-        }}
+        }
         
-        function prepareSubmit() {{
+        function prepareSubmit() {
             const items = [];
-            document.querySelectorAll('.invoice-item-row').forEach(row => {{
+            document.querySelectorAll('.invoice-item-row').forEach(row => {
                 const id = row.id.split('-')[1];
                 const productSelect = document.getElementById('product-' + id);
                 const desc = document.getElementById('desc-' + id).value;
                 const productName = productSelect.options[productSelect.selectedIndex].text;
                 
-                items.push({{
+                items.push({
                     product_id: productSelect.value,
                     description: desc || (productSelect.value ?  productName : ''),
                     rate: parseFloat(document.getElementById('rate-' + id).value) || 0,
                     quantity: parseFloat(document.getElementById('qty-' + id).value) || 0,
                     unit: document.getElementById('unit-' + id).value,
                     amount: parseFloat(document.getElementById('amount-' + id).value) || 0
-                }});
-            }});
+                });
+            });
             
-            if (items.length === 0) {{
+            if (items.length === 0) {
                 alert('Please add at least one item');
                 return false;
-            }}
+            }
             
             document.getElementById('itemsJson').value = JSON.stringify(items);
             return true;
-        }}
+        }
         
         addItem();
     </script>
@@ -8038,14 +8037,14 @@ STORE_QUOTATION_PRINT_TEMPLATE = """
 # STORE DUE COLLECTION TEMPLATES
 # ==============================================================================
 
-STORE_DUES_TEMPLATE = f"""
-<! doctype html>
+STORE_DUES_TEMPLATE = """
+<!doctype html>
 <html lang="en">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Due Collection - Store Panel</title>
-    {COMMON_STYLES}
+""" + COMMON_STYLES + """
 </head>
 <body>
     <div class="animated-bg"></div>
@@ -8090,20 +8089,20 @@ STORE_DUES_TEMPLATE = f"""
             </div>
             <div class="status-badge" style="background: rgba(239, 68, 68, 0.1); border-color: rgba(239, 68, 68, 0.2);">
                 <i class="fas fa-exclamation-triangle" style="color: var(--accent-red);"></i>
-                <span style="color: var(--accent-red); font-weight: 700;">Total Due: ৳{{{{ "{:,.0f}".format(total_due) }}}}</span>
+                <span style="color: var(--accent-red); font-weight: 700;">Total Due: ৳{{ "{:,.0f}".format(total_due) }}</span>
             </div>
         </div>
 
-        {{% with messages = get_flashed_messages(with_categories=true) %}}
-            {{% if messages %}}
-                {{% for category, message in messages %}}
-                <div class="flash-message flash-{{{{ category }}}}">
-                    <i class="fas fa-{{{{ 'check-circle' if category == 'success' else 'exclamation-circle' }}}}"></i>
-                    <span>{{{{ message }}}}</span>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                <div class="flash-message flash-{{ category }}">
+                    <i class="fas fa-{{ 'check-circle' if category == 'success' else 'exclamation-circle' }}"></i>
+                    <span>{{ message }}</span>
                 </div>
-                {{% endfor %}}
-            {{% endif %}}
-        {{% endwith %}}
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
 
         <!-- Search -->
         <div class="card" style="margin-bottom: 25px; padding: 20px;">
@@ -8120,16 +8119,16 @@ STORE_DUES_TEMPLATE = f"""
             </div>
             
             <div id="duesList">
-                {{% for cust in due_customers %}}
+                {% for cust in due_customers %}
                 <div class="due-customer-card" style="background: rgba(255,255,255,0.02); border-radius: 12px; padding: 20px; margin-bottom: 15px; border: 1px solid var(--border-color);">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
                         <div>
-                            <div style="font-size: 18px; font-weight: 700; color: white;">{{{{ cust.customer_name }}}}</div>
-                            <div style="font-size: 13px; color: var(--text-secondary);">{{{{ cust.invoice_count }}}} unpaid invoice(s)</div>
+                            <div style="font-size: 18px; font-weight: 700; color: white;">{{ cust.customer_name }}</div>
+                            <div style="font-size: 13px; color: var(--text-secondary);">{{ cust.invoice_count }} unpaid invoice(s)</div>
                         </div>
                         <div style="text-align: right;">
-                            <div style="font-size: 24px; font-weight: 800; color: var(--accent-red);">৳{{{{ "{:,.0f}".format(cust.total_due) }}}}</div>
-                            <a href="/store/dues/collect/{{{{ cust._id }}}}" style="color: var(--accent-green); font-size: 13px; text-decoration: none;">
+                            <div style="font-size: 24px; font-weight: 800; color: var(--accent-red);">৳{{ "{:,.0f}".format(cust.total_due) }}</div>
+                            <a href="/store/dues/collect/{{ cust._id }}" style="color: var(--accent-green); font-size: 13px; text-decoration: none;">
                                 <i class="fas fa-hand-holding-usd"></i> Collect Payment
                             </a>
                         </div>
@@ -8138,29 +8137,29 @@ STORE_DUES_TEMPLATE = f"""
                     <!-- Unpaid Invoices for this customer -->
                     <div style="background: rgba(0,0,0,0.2); border-radius: 8px; padding: 12px;">
                         <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-secondary); margin-bottom: 10px;">Unpaid Invoices</div>
-                        {{% for inv in cust.invoices %}}
+                        {% for inv in cust.invoices %}
                         <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--border-color);">
                             <div>
-                                <span class="table-badge" style="background: rgba(255, 122, 0, 0.2); color: var(--accent-orange);">{{{{ inv.invoice_number }}}}</span>
-                                <span style="margin-left: 10px; font-size: 13px; color: var(--text-secondary);">{{{{ inv.date }}}}</span>
+                                <span class="table-badge" style="background: rgba(255, 122, 0, 0.2); color: var(--accent-orange);">{{ inv.invoice_number }}</span>
+                                <span style="margin-left: 10px; font-size: 13px; color: var(--text-secondary);">{{ inv.date }}</span>
                             </div>
                             <div style="display: flex; align-items: center; gap: 15px;">
-                                <span style="font-weight: 600;">Due: ৳{{{{ "{:,.0f}".format(inv.due_amount) }}}}</span>
-                                <a href="/store/invoices/pay/{{{{ inv._id }}}}" class="action-btn btn-pay" style="padding: 6px 12px;">
+                                <span style="font-weight: 600;">Due: ৳{{ "{:,.0f}".format(inv.due_amount) }}</span>
+                                <a href="/store/invoices/pay/{{ inv._id }}" class="action-btn btn-pay" style="padding: 6px 12px;">
                                     <i class="fas fa-money-bill-wave"></i>
                                 </a>
                             </div>
                         </div>
-                        {{% endfor %}}
+                        {% endfor %}
                     </div>
                 </div>
-                {{% else %}}
+                {% else %}
                 <div style="text-align: center; padding: 60px; color: var(--text-secondary);">
                     <i class="fas fa-check-circle" style="font-size: 60px; color: var(--accent-green); opacity: 0.3; margin-bottom: 20px; display: block;"></i>
                     <div style="font-size: 18px; font-weight: 600; margin-bottom: 5px;">All Clear! </div>
                     <div>No pending dues. All payments are collected.</div>
                 </div>
-                {{% endfor %}}
+                {% endfor %}
             </div>
         </div>
 
@@ -8181,21 +8180,21 @@ STORE_DUES_TEMPLATE = f"""
                         </tr>
                     </thead>
                     <tbody>
-                        {{% for pay in recent_payments %}}
+                        {% for pay in recent_payments %}
                         <tr>
-                            <td>{{{{ pay.date }}}}</td>
-                            <td style="font-weight: 600;">{{{{ pay.customer_name }}}}</td>
-                            <td><span class="table-badge">{{{{ pay.invoice_number }}}}</span></td>
-                            <td class="amount-positive">৳{{{{ "{:,.0f}".format(pay.amount) }}}}</td>
-                            <td>{{{{ pay.method or 'Cash' }}}}</td>
+                            <td>{{ pay.date }}</td>
+                            <td style="font-weight: 600;">{{ pay.customer_name }}</td>
+                            <td><span class="table-badge">{{ pay.invoice_number }}</span></td>
+                            <td class="amount-positive">৳{{ "{:,.0f}".format(pay.amount) }}</td>
+                            <td>{{ pay.method or 'Cash' }}</td>
                         </tr>
-                        {{% else %}}
+                        {% else %}
                         <tr>
                             <td colspan="5" style="text-align: center; padding: 30px; color: var(--text-secondary);">
                                 No payment records yet
                             </td>
                         </tr>
-                        {{% endfor %}}
+                        {% endfor %}
                     </tbody>
                 </table>
             </div>
@@ -8203,28 +8202,28 @@ STORE_DUES_TEMPLATE = f"""
     </div>
 
     <script>
-        function filterDues() {{
+        function filterDues() {
             const search = document.getElementById('searchDue').value.toLowerCase();
             const cards = document.querySelectorAll('.due-customer-card');
             
-            cards.forEach(card => {{
+            cards.forEach(card => {
                 const text = card.textContent.toLowerCase();
                 card.style.display = text.includes(search) ?  '' : 'none';
-            }});
-        }}
+            });
+        }
     </script>
 </body>
 </html>
 """
 
-STORE_DUE_COLLECT_TEMPLATE = f"""
+STORE_DUE_COLLECT_TEMPLATE = """
 <!doctype html>
 <html lang="en">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Collect Due - Store Panel</title>
-    {COMMON_STYLES}
+""" + COMMON_STYLES + """
 </head>
 <body>
     <div class="animated-bg"></div>
@@ -8252,7 +8251,7 @@ STORE_DUE_COLLECT_TEMPLATE = f"""
         <div class="header-section">
             <div>
                 <div class="page-title">Collect Due Payment</div>
-                <div class="page-subtitle">Customer: {{{{ customer.name }}}}</div>
+                <div class="page-subtitle">Customer: {{ customer.name }}</div>
             </div>
         </div>
 
@@ -8266,15 +8265,15 @@ STORE_DUE_COLLECT_TEMPLATE = f"""
                 <div style="display: grid; gap: 12px;">
                     <div style="display: flex; justify-content: space-between; padding: 15px; background: rgba(255,255,255,0.02); border-radius: 10px;">
                         <span style="color: var(--text-secondary);">Name</span>
-                        <span style="font-weight: 700;">{{{{ customer.name }}}}</span>
+                        <span style="font-weight: 700;">{{ customer.name }}</span>
                     </div>
                     <div style="display: flex; justify-content: space-between; padding: 15px; background: rgba(255,255,255,0.02); border-radius: 10px;">
                         <span style="color: var(--text-secondary);">Phone</span>
-                        <span style="font-weight: 700;">{{{{ customer.phone }}}}</span>
+                        <span style="font-weight: 700;">{{ customer.phone }}</span>
                     </div>
                     <div style="display: flex; justify-content: space-between; padding: 15px; background: rgba(239, 68, 68, 0.1); border-radius: 10px; border: 1px solid rgba(239, 68, 68, 0.2);">
                         <span style="color: var(--accent-red);">Total Due</span>
-                        <span style="font-weight: 800; font-size: 24px; color: var(--accent-red);">৳{{{{ "{:,.0f}".format(total_due) }}}}</span>
+                        <span style="font-weight: 800; font-size: 24px; color: var(--accent-red);">৳{{ "{:,.0f}".format(total_due) }}</span>
                     </div>
                 </div>
             </div>
@@ -8285,11 +8284,11 @@ STORE_DUE_COLLECT_TEMPLATE = f"""
                     <span><i class="fas fa-hand-holding-usd" style="margin-right: 10px; color: var(--accent-green);"></i>Make Payment</span>
                 </div>
                 
-                <form action="/store/dues/collect/{{{{ customer._id }}}}" method="post">
+                <form action="/store/dues/collect/{{ customer._id }}" method="post">
                     <div class="input-group">
                         <label>PAYMENT AMOUNT (৳) *</label>
-                        <input type="number" name="amount" required step="0.01" min="0.01" max="{{{{ total_due }}}}"
-                            placeholder="Enter amount" value="{{{{ total_due }}}}">
+                        <input type="number" name="amount" required step="0.01" min="0.01" max="{{ total_due }}"
+                            placeholder="Enter amount" value="{{ total_due }}">
                     </div>
                     
                     <div class="input-group">
@@ -8334,25 +8333,25 @@ STORE_DUE_COLLECT_TEMPLATE = f"""
                         </tr>
                     </thead>
                     <tbody>
-                        {{% for inv in unpaid_invoices %}}
+                        {% for inv in unpaid_invoices %}
                         <tr>
-                            <td><span class="table-badge" style="background: rgba(255, 122, 0, 0.2); color: var(--accent-orange);">{{{{ inv.invoice_number }}}}</span></td>
-                            <td>{{{{ inv.date }}}}</td>
-                            <td>৳{{{{ "{:,.0f}".format(inv.grand_total) }}}}</td>
-                            <td class="amount-positive">৳{{{{ "{:,.0f}".format(inv.paid_amount) }}}}</td>
-                            <td><span class="due-badge">৳{{{{ "{:,.0f}".format(inv.due_amount) }}}}</span></td>
+                            <td><span class="table-badge" style="background: rgba(255, 122, 0, 0.2); color: var(--accent-orange);">{{ inv.invoice_number }}</span></td>
+                            <td>{{ inv.date }}</td>
+                            <td>৳{{ "{:,.0f}".format(inv.grand_total) }}</td>
+                            <td class="amount-positive">৳{{ "{:,.0f}".format(inv.paid_amount) }}</td>
+                            <td><span class="due-badge">৳{{ "{:,.0f}".format(inv.due_amount) }}</span></td>
                             <td>
                                 <div class="action-cell">
-                                    <a href="/store/invoices/pay/{{{{ inv._id }}}}" class="action-btn btn-pay">
+                                    <a href="/store/invoices/pay/{{ inv._id }}" class="action-btn btn-pay">
                                         <i class="fas fa-money-bill-wave"></i>
                                     </a>
-                                    <a href="/store/invoices/view/{{{{ inv._id }}}}" class="action-btn btn-view">
+                                    <a href="/store/invoices/view/{{ inv._id }}" class="action-btn btn-view">
                                         <i class="fas fa-eye"></i>
                                     </a>
                                 </div>
                             </td>
                         </tr>
-                        {{% endfor %}}
+                        {% endfor %}
                     </tbody>
                 </table>
             </div>
@@ -8848,7 +8847,7 @@ def accessories_print():
     
     # Print Template তৈরি করা
     print_html = f"""
-    <! DOCTYPE html>
+    <!DOCTYPE html>
     <html>
     <head>
         <meta charset="utf-8">
@@ -8869,7 +8868,7 @@ def accessories_print():
     <body>
         <div class="no-print">
             <button onclick="window.print()">🖨️ Print</button>
-            <button onclick="window. close()">Close</button>
+            <button onclick="window.close()">Close</button>
         </div>
         
         <div class="header">
@@ -9777,7 +9776,7 @@ def store_settings():
     
     # Return a simple settings page
     settings_html = f"""
-    <! doctype html>
+    <!doctype html>
     <html><head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -9988,7 +9987,7 @@ def store_users():
 @app.errorhandler(404)
 def not_found(e):
     return f"""
-    <! DOCTYPE html>
+    <!DOCTYPE html>
     <html>
     <head>
         <title>404 - Page Not Found</title>
@@ -10054,4 +10053,3 @@ if __name__ == '__main__':
     print("=" * 60)
     
     app.run(debug=True, host='0.0.0.0', port=5000)
-
