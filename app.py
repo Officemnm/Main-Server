@@ -6883,7 +6883,7 @@ STORE_INVOICE_PRINT_TEMPLATE = """
             }
             
             .items-table th {
-                background: #1a1a2e ! important;
+                background: #1a1a2e !important;
                 color: #fff !important;
                 -webkit-print-color-adjust: exact;
                 print-color-adjust: exact;
@@ -6891,7 +6891,7 @@ STORE_INVOICE_PRINT_TEMPLATE = """
             
             .totals-row.grand-total {
                 background: #FF7A00 !important;
-                color: #fff ! important;
+                color: #fff !important;
                 -webkit-print-color-adjust: exact;
                 print-color-adjust: exact;
             }
@@ -8393,7 +8393,7 @@ def home():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        username = request.form. get('username')
+        username = request.form.get('username')
         password = request.form.get('password')
         users = load_users()
         
@@ -8421,8 +8421,8 @@ def logout():
             try:
                 login_time = datetime.fromisoformat(session['login_time'])
                 now = get_bd_time()
-                duration = now - login_time. replace(tzinfo=bd_tz)
-                total_seconds = int(duration. total_seconds())
+                duration = now - login_time.replace(tzinfo=bd_tz)
+                total_seconds = int(duration.total_seconds())
                 hours, remainder = divmod(total_seconds, 3600)
                 minutes, seconds = divmod(remainder, 60)
                 
@@ -8517,7 +8517,7 @@ def generate_po_report():
     df = pd.DataFrame(all_data)
     df['P.O NO'] = df['P.O NO'].astype(str)
     df['Size'] = df['Size'].astype(str)
-    df['Quantity'] = pd.to_numeric(df['Quantity'], errors='coerce').fillna(0). astype(int)
+    df['Quantity'] = pd.to_numeric(df['Quantity'], errors='coerce').fillna(0).astype(int)
 
     pivot_table = df.pivot_table(index=['P.O NO', 'Color'], columns='Size', values='Quantity', aggfunc='sum', fill_value=0)
     pivot_table = pivot_table.reset_index()
@@ -8845,7 +8845,7 @@ def accessories_print():
     
     data = db[ref]
     
-    # Print Template তৈরি করা
+    # Print Template তৈরি করা (Note: Here we can use f-string safely as it's a new variable)
     print_html = f"""
     <!DOCTYPE html>
     <html>
