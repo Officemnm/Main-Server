@@ -59,7 +59,7 @@ def add_header(response):
 # ==============================================================================
 # MongoDB কানেকশন সেটআপ
 # ==============================================================================
-MONGO_URI = "mongodb+srv://Mehedi:Mehedi123@office.jxdnuaj.mongodb.net/?appName=Office"
+MONGO_URI = "mongodb+srv://Mehedi:Mehedi123@office.jxdnuaj.mongodb.net/? appName=Office"
 
 try:
     client = MongoClient(MONGO_URI)
@@ -71,7 +71,7 @@ try:
     print("MongoDB Connected Successfully!")
 except Exception as e:
     print(f"MongoDB Connection Error: {e}")
-# ==============================================================================
+    # ==============================================================================
 # ENHANCED CSS STYLES - PREMIUM MODERN UI WITH ANIMATIONS
 # ==============================================================================
 COMMON_STYLES = """
@@ -851,7 +851,7 @@ COMMON_STYLES = """
             height: 50px;
             border: solid var(--accent-green); 
             border-width: 0 4px 4px 0;
-            position: absolute; 
+            position: absolute; _
             top: 15px; 
             left: 35px;
             transform: rotate(45deg); 
@@ -2176,7 +2176,7 @@ def parse_report_data(html_content):
                         plus_3_percent_data.append(value)
                 all_report_data.append({
                     'style': style, 'buyer': buyer_name, 'color': color, 
-                    'headers': headers, 'gmts_qty':   gmts_qty_data, 
+                    'headers': headers, 'gmts_qty':   gmts_qty_data, _
                     'plus_3_percent': plus_3_percent_data, 
                     'sewing_input':   sewing_input_data if sewing_input_data else [], 
                     'cutting_qc':  cutting_qc_data if cutting_qc_data else []
@@ -2193,7 +2193,7 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
     
     bold_font = Font(bold=True)
     title_font = Font(size=32, bold=True, color="7B261A") 
-    white_bold_font = Font(size=16. 5, bold=True, color="FFFFFF")
+    white_bold_font = Font(size=16.5, bold=True, color="FFFFFF")
     center_align = Alignment(horizontal='center', vertical='center')
     left_align = Alignment(horizontal='left', vertical='center')
     color_align = Alignment(horizontal='center', vertical='center', wrap_text=True)
@@ -2376,7 +2376,7 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
             if cell.font:  
                 existing_font = cell.font
                 if cell.row != 1:  
-                    new_font = Font(name=existing_font.name, size=16. 5, bold=existing_font.bold, italic=existing_font.italic, vertAlign=existing_font.vertAlign, underline=existing_font.underline, strike=existing_font.strike, color=existing_font.color)
+                    new_font = Font(name=existing_font.name, size=16.5, bold=existing_font.bold, italic=existing_font.italic, vertAlign=existing_font.vertAlign, underline=existing_font.underline, strike=existing_font.strike, color=existing_font.color)
                     cell.font = new_font
     
     ws.column_dimensions['A'].width = 23
@@ -3053,8 +3053,7 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
                 </form>
             </div>
         </div>
-"""
-# ==============================================================================
+        # ==============================================================================
 # USER DASHBOARD TEMPLATE (হুবহু তোমার মূল কোড)
 # ==============================================================================
 
@@ -4680,7 +4679,7 @@ def index():
             if len(perms) == 1 and 'accessories' in perms: 
                 return redirect(url_for('accessories_search_page'))
             else:
-                return render_template_string(USER_DASHBOARD_TEMPLATE)
+                return render_template_string(USER_DاشBOARD_TEMPLATE)
 
 @app.route('/login', methods=['POST'])
 def login():
