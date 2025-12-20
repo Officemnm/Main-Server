@@ -1163,8 +1163,16 @@ COMMON_STYLES = """
         }
 
         /* Flash Messages */
+        #flash-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 10001;
+            width: 350px;
+        }
+
         .flash-message {
-            margin-bottom: 20px;
+            margin-bottom: 10px;
             padding: 16px 20px;
             border-radius: 12px;
             font-size: 14px;
@@ -1173,11 +1181,8 @@ COMMON_STYLES = """
             align-items: center;
             gap: 12px;
             animation: flashSlideIn 0.4s ease-out;
-            z-index: 10001; /* Make it appear on top */
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            min-width: 300px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+            border: 1px solid transparent;
         }
 
         @keyframes flashSlideIn {
@@ -1193,23 +1198,20 @@ COMMON_STYLES = """
 
         .flash-error {
             background: rgba(239, 68, 68, 0.2);
-            border: 1px solid rgba(239, 68, 68, 0.4);
+            border-color: rgba(239, 68, 68, 0.4);
             color: #F87171;
-            box-shadow: 0 5px 20px rgba(239, 68, 68, 0.2);
         }
 
         .flash-success {
             background: rgba(16, 185, 129, 0.2);
-            border: 1px solid rgba(16, 185, 129, 0.4);
+            border-color: rgba(16, 185, 129, 0.4);
             color: #34D399;
-            box-shadow: 0 5px 20px rgba(16, 185, 129, 0.2);
         }
 
         .flash-info {
             background: rgba(59, 130, 246, 0.2);
-            border: 1px solid rgba(59, 130, 246, 0.4);
+            border-color: rgba(59, 130, 246, 0.4);
             color: #60a5fa;
-            box-shadow: 0 5px 20px rgba(59, 130, 246, 0.2);
         }
         
         /* Ripple Effect */
@@ -1278,7 +1280,7 @@ COMMON_STYLES = """
                 flex-direction: column;
                 gap: 15px;
             }
-            .flash-message {
+            #flash-container {
                 width: calc(100% - 40px);
                 right: 20px;
             }
@@ -1882,8 +1884,9 @@ def get_dashboard_summary_v2():
         },
         "history": history
     }
+
 # ==============================================================================
-# লজিক পার্ট: PURCHASE ORDER SHEET PARSER (PDF)
+# লজিক পার্ট: PURCHASE ORDER SHEET PARSER (PDF) - UPDATED LOGIC
 # ==============================================================================
 
 def is_potential_size(header):
@@ -1905,7 +1908,7 @@ def sort_sizes(size_list):
     ]
     def sort_key(s):
         s = s.strip()
-        if s in STANDARD_order: return (0, STANDARD_order.index(s))
+        if s in STANDARD_ORDER: return (0, STANDARD_ORDER.index(s))
         if s.isdigit(): return (1, int(s))
         match = re.match(r'^(\d+)([A-Z]+)$', s)
         if match: return (2, int(match.group(1)), match.group(2))
@@ -2015,53 +2018,50 @@ def extract_data_dynamic(file_path):
                     if not re.search(r'[a-zA-Z]', clean_line): continue
                     if re.match(r'^[A-Z]\d+$', clean_line) or "Assortment" in clean_line: continue
                     
-                    # NEW LOGIC: Split the line and handle quantities carefully
                     parts = clean_line.split()
                     
-                    # Try to separate color name from quantities
                     color_parts = []
                     qty_parts = []
-                    
+                    is_qty_part = False
                     for part in parts:
-                        if re.match(r'^\d+$', part):
+                        if re.search(r'\d', part):
+                            is_qty_part = True
+                        if is_qty_part:
                             qty_parts.append(part)
                         else:
                             color_parts.append(part)
                     
                     color_name = " ".join(color_parts)
+                    raw_qtys = [re.sub(r',.*', '', q) for q in qty_parts] # Handle numbers like "53,00" -> "53"
+                    
                     final_qtys = []
+                    for q_str in raw_qtys:
+                        if q_str.isdigit():
+                            final_qtys.append(int(q_str))
 
-                    # This handles the case where quantities are on the same line as the color
-                    if len(qty_parts) >= len(sizes):
-                        final_qtys = [int(q) for q in qty_parts[:len(sizes)]]
-                    # This handles the case where quantities are on the next line(s)
-                    elif not qty_parts:
-                        vertical_qtys_str = []
+                    # If quantities are not on the same line, look at the next line
+                    if not final_qtys:
                         next_line_idx = i + 1
-                        while next_line_idx < len(lines):
+                        if next_line_idx < len(lines):
                             next_line = lines[next_line_idx].strip()
-                            if not next_line or re.search(r'[a-zA-Z]', next_line):
-                                break
-                            vertical_qtys_str.extend(next_line.split())
-                            next_line_idx += 1
-                        
-                        if len(vertical_qtys_str) >= len(sizes):
-                            final_qtys = [int(q) for q in vertical_qtys_str[:len(sizes)]]
+                            if not re.search(r'[a-zA-Z]', next_line):
+                                next_line_qtys_raw = [re.sub(r',.*', '', q) for q in next_line.split()]
+                                final_qtys = [int(q) for q in next_line_qtys_raw if q.isdigit()]
 
-                    # Pad with zeros if quantities are missing
-                    while len(final_qtys) < len(sizes):
-                        final_qtys.append(0)
-
-                    if final_qtys and color_name:
+                    # Pad with zeros to match the number of sizes
+                    padded_qtys = final_qtys + [0] * (len(sizes) - len(final_qtys))
+                    
+                    if padded_qtys and color_name:
                         for idx, size in enumerate(sizes):
                             extracted_data.append({
                                 'P.O NO': order_no,
                                 'Color': color_name,
                                 'Size': size,
-                                'Quantity': final_qtys[idx] if idx < len(final_qtys) else 0 # Ensure we don't go out of bounds
+                                'Quantity': padded_qtys[idx] if idx < len(padded_qtys) else 0
                             })
     except Exception as e: print(f"Error processing file: {e}")
     return extracted_data, metadata
+
 # ==============================================================================
 # লজিক পার্ট: CLOSING REPORT API & EXCEL GENERATION
 # ==============================================================================
@@ -2091,7 +2091,7 @@ def fetch_closing_report_data(internal_ref_no):
     payload_template = {'action': 'report_generate', 'cbo_wo_company_name': '2', 'cbo_location_name': '2', 'cbo_floor_id': '0', 'cbo_buyer_name': '0', 'txt_internal_ref_no': internal_ref_no, 'reportType': '3'}
     found_data = None
    
-    for year in ['2025', '2024']: 
+    for year in ['2025', '2024', '2023']: 
         for company_id in range(1, 6):
             payload = payload_template.copy()
             payload['cbo_year_selection'] = year
@@ -2701,17 +2701,17 @@ LOGIN_TEMPLATE = f"""
                 </button>
             </form>
             
-            <div id="flash-container">
-                {{% with messages = get_flashed_messages(with_categories=true) %}}
-                    {{% if messages %}}
-                        {{% for category, message in messages %}}
-                            <div class="flash-message flash-{{{{ category if category != 'message' else 'info' }}}}" style="position: static; margin-top: 15px;">
-                                <i class="fas fa-exclamation-circle"></i>
-                                <span>{{{{ message }}}}</span>
-                            </div>
-                        {{% endfor %}}
-                    {{% endif %}}
-                {{% endwith %}}
+            <div id="flash-container-login">
+            {{% with messages = get_flashed_messages(with_categories=true) %}}
+                {{% if messages %}}
+                     {{% for category, message in messages %}}
+                        <div class="error-box" style="margin-top: 20px;">
+                            <i class="fas fa-exclamation-circle"></i>
+                            <span>{{{{ message }}}}</span>
+                        </div>
+                    {{% endfor %}}
+                {{% endif %}}
+            {{% endwith %}}
             </div>
             
             <div class="footer-credit">
@@ -2730,14 +2730,14 @@ LOGIN_TEMPLATE = f"""
             this.appendChild(ripple);
             setTimeout(() => ripple.remove(), 600);
         }});
-        
+
         // Auto-hide flash messages
         setTimeout(function() {{
-            let flashMessages = document.querySelectorAll('.flash-message');
-            flashMessages.forEach(function(msg) {{
-                msg.style.opacity = '0';
-                setTimeout(function() {{ msg.style.display = 'none'; }}, 500);
-            }});
+            let flashContainer = document.getElementById('flash-container-login');
+            if(flashContainer) {{
+                flashContainer.style.opacity = '0';
+                setTimeout(function() {{ flashContainer.style.display = 'none'; }}, 500);
+            }}
         }}, 5000);
     </script>
 </body>
@@ -3329,14 +3329,14 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
                 const target = parseInt(counter.getAttribute('data-target'));
                 const duration = 2000;
                 let start = 0;
-                const stepTime = 16;
+                const stepTime = 16; // 60 fps
                 const totalSteps = Math.round(duration / stepTime);
                 const increment = target / totalSteps;
                 
                 const updateCounter = () => {{
                     start += increment;
                     if (start < target) {{
-                        counter.textContent = Math.floor(start);
+                        counter.textContent = Math.floor(start).toLocaleString('en-US');
                         requestAnimationFrame(updateCounter);
                     }} else {{
                         counter.textContent = target.toLocaleString('en-US');
@@ -3490,7 +3490,7 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
                 }}
             }});
         }}
-        
+
         // Auto-hide flash messages
         setTimeout(function() {{
             let flashMessages = document.querySelectorAll('.flash-message');
@@ -5100,7 +5100,7 @@ ACCESSORIES_REPORT_TEMPLATE = """
 """
 
 # ==============================================================================
-# PO REPORT TEMPLATE
+# PO REPORT TEMPLATE - UPDATED DESIGN
 # ==============================================================================
 
 PO_REPORT_TEMPLATE = """
@@ -5220,7 +5220,6 @@ PO_REPORT_TEMPLATE = """
 
 @app.route('/')
 def index():
-    load_users()
     if not session.get('logged_in'):
         return render_template_string(LOGIN_TEMPLATE)
     else:
@@ -5393,7 +5392,7 @@ def download_closing_excel():
         return redirect(url_for('index'))
 
 # ==============================================================================
-# ACCESSORIES ROUTES 
+# ACCESSORIES ROUTES - UPDATED
 # ==============================================================================
 
 @app.route('/admin/accessories', methods=['GET'])
@@ -5669,7 +5668,7 @@ def accessories_delete():
     return redirect(url_for('accessories_input_direct', ref=ref))
 
 # ==============================================================================
-# PO REPORT ROUTE
+# PO REPORT ROUTE - UPDATED
 # ==============================================================================
 
 @app.route('/generate-po-report', methods=['POST'])
