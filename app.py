@@ -277,8 +277,7 @@ COMMON_STYLES = """
         .nav-link i { 
             width: 24px;
             margin-right: 12px; 
-            font-size: 18px; 
-            text-align: center;
+            font-size: 18px; ੯-align: center;
             transition: var(--transition-smooth);
         }
 
@@ -646,7 +645,7 @@ COMMON_STYLES = """
             padding: 10px;
         }
         
-        button { 
+        button, .button-style { 
             width: 100%;
             padding: 14px 24px; 
             background: var(--gradient-orange);
@@ -660,8 +659,13 @@ COMMON_STYLES = """
             position: relative;
             overflow: hidden;
             letter-spacing: 0.5px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
         }
-        button::before {
+        .button-style:hover { color: white; }
+
+        button::before, .button-style::before {
             content: '';
             position: absolute;
             top: 0;
@@ -672,14 +676,14 @@ COMMON_STYLES = """
             transition: 0.5s;
         }
 
-        button:hover::before { left: 100%; }
+        button:hover::before, .button-style:hover::before { left: 100%; }
 
-        button:hover { 
+        button:hover, .button-style:hover { 
             transform: translateY(-3px);
             box-shadow: 0 10px 30px var(--accent-orange-glow);
         }
 
-        button:active {
+        button:active, .button-style:active {
             transform: translateY(0);
         }
 
@@ -1198,6 +1202,12 @@ COMMON_STYLES = """
             color: #34D399;
         }
         
+        .flash-info {
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            color: #60a5fa;
+        }
+
         /* Ripple Effect */
         .ripple {
             position: relative;
@@ -1725,63 +1735,6 @@ def save_accessories_db(data):
     )
 
 # ==============================================================================
-# নতুন ফাংশন: ২৪ ঘন্টা পর পর API কল করে নতুন কালার আপডেট
-# ==============================================================================
-
-def check_and_refresh_colors(ref_no, db_acc):
-    """
-    ২৪ ঘন্টা পর পর API কল করে নতুন কালার আপডেট করে।
-    Returns: updated data dict or None if no update needed or failed
-    """
-    if ref_no not in db_acc: 
-        return None
-    
-    data = db_acc[ref_no]
-    last_updated = data.get('last_api_call', None)
-    now = get_bd_time()
-    
-    needs_refresh = False
-    if last_updated is None: 
-        needs_refresh = True
-    else:
-        try:
-            last_updated_dt = datetime.fromisoformat(last_updated)
-            if last_updated_dt.tzinfo is None:
-                last_updated_dt = bd_tz.localize(last_updated_dt)
-            
-            time_diff = now - last_updated_dt
-            if time_diff.total_seconds() >= 86400:
-                needs_refresh = True
-        except Exception as e:
-            print(f"Error parsing last_api_call: {e}")
-            needs_refresh = True
-    
-    if needs_refresh: 
-        try:
-            api_data = fetch_closing_report_data(ref_no)
-            if api_data:
-                new_colors = sorted(list(set([item['color'] for item in api_data])))
-                existing_colors = data.get('colors', [])
-                merged_colors = sorted(list(set(existing_colors + new_colors)))
-                
-                db_acc[ref_no]['colors'] = merged_colors
-                db_acc[ref_no]['last_api_call'] = now.isoformat()
-                
-                if api_data[0].get('buyer', 'N/A') != 'N/A':
-                    db_acc[ref_no]['buyer'] = api_data[0].get('buyer', data.get('buyer', 'N/A'))
-                if api_data[0].get('style', 'N/A') != 'N/A':
-                    db_acc[ref_no]['style'] = api_data[0].get('style', data.get('style', 'N/A'))
-                
-                save_accessories_db(db_acc)
-                print(f"Colors refreshed for {ref_no}. New colors: {merged_colors}")
-                return db_acc
-        except Exception as e:
-            print(f"Error refreshing colors for {ref_no}: {e}")
-            return None
-    
-    return None
-
-# ==============================================================================
 # নতুন ফাংশন: সকল সেভ করা বুকিং রেফারেন্স লিস্ট (History এর জন্য)
 # ==============================================================================
 
@@ -1921,18 +1874,18 @@ def get_dashboard_summary_v2():
         "history": history
     }
 # ==============================================================================
-# লজিক পার্ট: PURCHASE ORDER SHEET PARSER (PDF)
+# লজিক পার্ট: PURCHASE ORDER SHEET PARSER (PDF) - IMPROVED
 # ==============================================================================
 
 def is_potential_size(header):
     h = header.strip().upper()
-    if h in ["COLO", "SIZE", "TOTAL", "QUANTITY", "PRICE", "AMOUNT", "CURRENCY", "ORDER NO", "P.O NO"]:
+    if h in ["COLO", "SIZE", "TOTAL", "QUANTITY", "PRICE", "AMOUNT", "CURRENCY", "ORDER NO", "P.O NO", "REF", "DESCRIPTION"]:
         return False
     if re.match(r'^\d+$', h): return True
     if re.match(r'^\d+[AMYT]$', h): return True
     if re.match(r'^(XXS|XS|S|M|L|XL|XXL|XXXL|TU|ONE\s*SIZE)$', h): return True
     if re.match(r'^[A-Z]\d{2,}$', h): return False
-    return False
+    return True
 
 def sort_sizes(size_list):
     STANDARD_ORDER = [
@@ -1989,10 +1942,7 @@ def extract_metadata(first_page_text):
 
 def extract_data_dynamic(file_path):
     extracted_data = []
-    metadata = {
-        'buyer': 'N/A', 'booking': 'N/A', 'style': 'N/A', 
-        'season': 'N/A', 'dept': 'N/A', 'item': 'N/A'
-    }
+    metadata = { 'buyer': 'N/A', 'booking': 'N/A', 'style': 'N/A', 'season': 'N/A', 'dept': 'N/A', 'item': 'N/A' }
     order_no = "Unknown"
     
     try:
@@ -2025,10 +1975,19 @@ def extract_data_dynamic(file_path):
                 if ("Colo" in line or "Size" in line) and "Total" in line:
                     parts = line.split()
                     try:
-                        total_idx = [idx for idx, x in enumerate(parts) if 'Total' in x][0]
+                        total_idx_candidates = [idx for idx, x in enumerate(parts) if 'Total' in x]
+                        if not total_idx_candidates: continue
+                        total_idx = total_idx_candidates[0]
                         raw_sizes = parts[:total_idx]
-                        temp_sizes = [s for s in raw_sizes if s not in ["Colo", "/", "Size", "Colo/Size", "Colo/", "Size's"]]
                         
+                        temp_sizes = []
+                        potential_size_start = -1
+                        for idx, s in enumerate(raw_sizes):
+                            if is_potential_size(s) and potential_size_start == -1:
+                                potential_size_start = idx
+                            if potential_size_start != -1:
+                                temp_sizes.append(s)
+
                         valid_size_count = sum(1 for s in temp_sizes if is_potential_size(s))
                         if temp_sizes and valid_size_count >= len(temp_sizes) / 2:
                             sizes = temp_sizes
@@ -2039,37 +1998,75 @@ def extract_data_dynamic(file_path):
                     except: pass
                     continue
                 
-                if capturing_data:
+                if capturing_data and sizes:
                     if line.startswith("Total Quantity") or line.startswith("Total Amount"):
                         capturing_data = False
                         continue
+                    
                     lower_line = line.lower()
-                    if "quantity" in lower_line or "currency" in lower_line or "price" in lower_line or "amount" in lower_line: 
+                    if "quantity" in lower_line or "currency" in lower_line or "price" in lower_line or "amount" in lower_line or "assortment" in lower_line: 
                         continue
                         
                     clean_line = line.replace("Spec. price", "").replace("Spec", "").strip()
-                    if not re.search(r'[a-zA-Z]', clean_line): continue
-                    if re.match(r'^[A-Z]\d+$', clean_line) or "Assortment" in clean_line: continue
-
-                    numbers_in_line = re.findall(r'\b\d+\b', line)
-                    quantities = [int(n) for n in numbers_in_line]
-                    color_name = clean_line
-                    final_qtys = []
-
-                    if len(quantities) >= len(sizes):
-                        if len(quantities) == len(sizes) + 1: final_qtys = quantities[:-1]
-                        else: final_qtys = quantities[:len(sizes)]
-                        color_name = re.sub(r'\s\d+$', '', color_name).strip()
-                    elif len(quantities) < len(sizes):
-                        vertical_qtys = []
-                        for next_line in lines[i+1:]: 
-                            next_line = next_line.strip()
-                            if "Total" in next_line or re.search(r'[a-zA-Z]', next_line.replace("Spec", "").replace("price", "")): break
-                            if re.match(r'^\d+$', next_line): vertical_qtys.append(int(next_line))
-                        
-                        if len(vertical_qtys) >= len(sizes): final_qtys = vertical_qtys[:len(sizes)]
                     
-                    if final_qtys and color_name:
+                    parts = clean_line.split()
+                    
+                    color_parts = []
+                    qty_parts = []
+                    found_first_digit = False
+                    for part in parts:
+                        if part.isdigit() or (part.replace('.', '', 1).isdigit() and '.' in part):
+                            found_first_digit = True
+                            qty_parts.append(part)
+                        elif not found_first_digit:
+                            color_parts.append(part)
+                    
+                    color_name = ' '.join(color_parts).strip()
+                    if not color_name: continue
+
+                    final_qtys = [0] * len(sizes)
+                    
+                    raw_qtys = qty_parts
+                    
+                    num_expected_qtys = len(sizes)
+                    num_found_qtys = len(raw_qtys)
+                    
+                    # Try to align quantities from the right
+                    if num_found_qtys > 0:
+                        offset = num_expected_qtys - num_found_qtys
+                        if offset < 0: # More numbers than sizes, take the first N
+                           offset = 0
+                           raw_qtys = raw_qtys[:num_expected_qtys]
+
+                        for idx, qty_str in enumerate(raw_qtys):
+                           target_idx = idx + offset
+                           if 0 <= target_idx < len(final_qtys):
+                               try:
+                                   final_qtys[target_idx] = int(float(qty_str))
+                               except (ValueError, IndexError):
+                                   pass
+
+                    # If line has no quantities, check next line for vertical quantities
+                    if sum(final_qtys) == 0 and not qty_parts:
+                        vertical_qtys = []
+                        if i + 1 < len(lines):
+                           next_line = lines[i+1].strip()
+                           next_line_parts = next_line.split()
+                           if all(p.isdigit() for p in next_line_parts) and not re.search(r'[a-zA-Z]', next_line):
+                              vertical_qtys = next_line_parts
+                        
+                        v_offset = num_expected_qtys - len(vertical_qtys)
+                        if v_offset < 0:
+                           v_offset = 0
+                           vertical_qtys = vertical_qtys[:num_expected_qtys]
+
+                        for idx, qty_str in enumerate(vertical_qtys):
+                           target_idx = idx + v_offset
+                           if 0 <= target_idx < len(final_qtys):
+                               try: final_qtys[target_idx] = int(qty_str)
+                               except (ValueError, IndexError): pass
+                    
+                    if color_name:
                         for idx, size in enumerate(sizes):
                             extracted_data.append({
                                 'P.O NO': order_no,
@@ -2175,8 +2172,7 @@ def parse_report_data(html_content):
                     except (ValueError, TypeError):
                         plus_3_percent_data.append(value)
                 all_report_data.append({
-                    'style': style, 'buyer': buyer_name, 'color': color, 
-                    'headers': headers, 'gmts_qty': gmts_qty_data, 
+                    'style': style, 'buyer': buyer_name, 'color': color, gts_qty': gmts_qty_data, 
                     'plus_3_percent': plus_3_percent_data, 
                     'sewing_input': sewing_input_data if sewing_input_data else [], 
                     'cutting_qc': cutting_qc_data if cutting_qc_data else []
@@ -2721,12 +2717,14 @@ LOGIN_TEMPLATE = f"""
                 </button>
             </form>
             
-            {{% with messages = get_flashed_messages() %}}
+            {{% with messages = get_flashed_messages(with_categories=true) %}}
                 {{% if messages %}}
-                    <div class="error-box">
+                    {{% for category, message in messages %}}
+                    <div class="flash-message flash-{{ category }}">
                         <i class="fas fa-exclamation-circle"></i>
-                        <span>{{{{ messages[0] }}}}</span>
+                        <span>{{{{ message }}}}</span>
                     </div>
+                    {{% endfor %}}
                 {{% endif %}}
             {{% endwith %}}
             
@@ -2854,12 +2852,14 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
                 </div>
             </div>
             
-            {{% with messages = get_flashed_messages() %}}
+            {{% with messages = get_flashed_messages(with_categories=true) %}}
                 {{% if messages %}}
-                    <div class="flash-message flash-error">
+                    {{% for category, message in messages %}}
+                    <div class="flash-message flash-{{ category }}">
                         <i class="fas fa-exclamation-circle"></i>
-                        <span>{{{{ messages[0] }}}}</span>
+                        <span>{{{{ message }}}}</span>
                     </div>
+                    {{% endfor %}}
                 {{% endif %}}
             {{% endwith %}}
 
@@ -3570,12 +3570,14 @@ USER_DASHBOARD_TEMPLATE = f"""
             </div>
         </div>
 
-        {{% with messages = get_flashed_messages() %}}
+        {{% with messages = get_flashed_messages(with_categories=true) %}}
             {{% if messages %}}
-                <div class="flash-message flash-error">
+                {{% for category, message in messages %}}
+                <div class="flash-message flash-{{ category }}">
                     <i class="fas fa-exclamation-circle"></i>
-                    <span>{{{{ messages[0] }}}}</span>
+                    <span>{{{{ message }}}}</span>
                 </div>
+                {{% endfor %}}
             {{% endif %}}
         {{% endwith %}}
 
@@ -3816,6 +3818,17 @@ ACCESSORIES_SEARCH_TEMPLATE = f"""
                 <div class="search-title">Accessories Challan</div>
                 <div class="search-subtitle">Enter booking reference to continue</div>
             </div>
+
+            {{% with messages = get_flashed_messages(with_categories=true) %}}
+                {{% if messages %}}
+                    {{% for category, message in messages %}}
+                    <div class="flash-message flash-{{ category }}" style="margin-top: -20px; margin-bottom: 20px;">
+                        <i class="fas fa-info-circle"></i>
+                        <span>{{{{ message }}}}</span>
+                    </div>
+                    {{% endfor %}}
+                {{% endif %}}
+            {{% endwith %}}
             
             <form action="/admin/accessories/input" method="post">
                 <div class="input-group">
@@ -3826,15 +3839,6 @@ ACCESSORIES_SEARCH_TEMPLATE = f"""
                     Proceed to Entry <i class="fas fa-arrow-right" style="margin-left: 10px;"></i>
                 </button>
             </form>
-            
-            {{% with messages = get_flashed_messages() %}}
-                {{% if messages %}}
-                    <div class="flash-message flash-error" style="margin-top: 20px;">
-                        <i class="fas fa-exclamation-circle"></i>
-                        <span>{{{{ messages[0] }}}}</span>
-                    </div>
-                {{% endif %}}
-            {{% endwith %}}
             
             <!-- NEW: History Section -->
             <div class="history-section">
@@ -3905,7 +3909,7 @@ ACCESSORIES_SEARCH_TEMPLATE = f"""
 """
 
 # ==============================================================================
-# ACCESSORIES INPUT TEMPLATE (হুবহু তোমার মূল কোড)
+# ACCESSORIES INPUT TEMPLATE (UPDATED)
 # ==============================================================================
 
 ACCESSORIES_INPUT_TEMPLATE = f"""
@@ -3917,6 +3921,19 @@ ACCESSORIES_INPUT_TEMPLATE = f"""
     <title>Accessories Entry - MNM Software</title>
     {COMMON_STYLES}
     <style>
+        .header-section .button-group {{
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }}
+        .header-section .button-style {{
+            width: auto;
+            padding: 14px 20px;
+        }}
+        .btn-refresh {{ background: var(--accent-blue) !important; }}
+        .btn-print {{ background: linear-gradient(135deg, #10B981 0%, #34D399 100%) !important; }}
+        .btn-delete-booking {{ background: var(--accent-red) !important; }}
+
         .ref-badge {{
             display: inline-flex;
             align-items: center;
@@ -3983,10 +4000,6 @@ ACCESSORIES_INPUT_TEMPLATE = f"""
         .status-check {{
             color: var(--accent-green);
             font-size: 20px;
-        }}
-        
-        .print-btn {{
-            background: linear-gradient(135deg, #10B981 0%, #34D399 100%) !important;
         }}
         
         .empty-state {{
@@ -4068,12 +4081,31 @@ ACCESSORIES_INPUT_TEMPLATE = f"""
                     <span class="ref-info">{{{{ buyer }}}} • {{{{ style }}}}</span>
                 </div>
             </div>
-            <a href="/admin/accessories/print?ref={{{{ ref }}}}" target="_blank">
-                <button class="print-btn" style="width: auto; padding: 14px 30px;">
-                    <i class="fas fa-print" style="margin-right: 10px;"></i> Print Report
-                </button>
-            </a>
+            <div class="button-group">
+                <a href="/admin/accessories/refresh?ref={{{{ ref }}}}" class="button-style btn-refresh tooltip" data-tooltip="Refresh Data from API">
+                    <i class="fas fa-sync-alt"></i>
+                </a>
+                <a href="/admin/accessories/print?ref={{{{ ref }}}}" target="_blank" class="button-style btn-print tooltip" data-tooltip="Print Challan Report">
+                    <i class="fas fa-print"></i>
+                </a>
+                {{% if session.role == 'admin' %}}
+                <a href="/admin/accessories/delete_booking?ref={{{{ ref }}}}" class="button-style btn-delete-booking tooltip" data-tooltip="Delete Entire Booking" onclick="return confirm('আপনি কি এই বুকিং এর সমস্ত ডেটা ডিলিট করতে চান? এই কাজটি ফেরানো যাবে না।');">
+                    <i class="fas fa-trash-alt"></i>
+                </a>
+                {{% endif %}}
+            </div>
         </div>
+        
+        {{% with messages = get_flashed_messages(with_categories=true) %}}
+            {{% if messages %}}
+                {{% for category, message in messages %}}
+                <div class="flash-message flash-{{ category }}">
+                    <i class="fas fa-info-circle"></i>
+                    <span>{{{{ message }}}}</span>
+                </div>
+                {{% endfor %}}
+            {{% endif %}}
+        {{% endwith %}}
 
         <div class="dashboard-grid-2">
             <div class="card">
@@ -4994,7 +5026,7 @@ ACCESSORIES_REPORT_TEMPLATE = """
 """
 
 # ==============================================================================
-# PO REPORT TEMPLATE (হুবহু তোমার মূল কোড)
+# PO REPORT TEMPLATE (UPDATED DESIGN)
 # ==============================================================================
 
 PO_REPORT_TEMPLATE = """
@@ -5004,101 +5036,132 @@ PO_REPORT_TEMPLATE = """
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PO Report - Cotton Clothing BD</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700;900&family=Open+Sans:wght@600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        body { background-color: #f8f9fa; padding: 30px 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        .container { max-width: 1200px; }
-        .company-header { text-align: center; margin-bottom: 20px; border-bottom: 2px solid #000; padding-bottom: 10px; }
-        .company-name { font-size: 2.2rem; font-weight: 800; color: #2c3e50; text-transform: uppercase; letter-spacing: 1px; line-height: 1; }
-        .report-title { font-size: 1.1rem; color: #555; font-weight: 600; text-transform: uppercase; margin-top: 5px; }
-        .date-section { font-size: 1.2rem; font-weight: 800; color: #000; margin-top: 5px; }
-        .info-container { display: flex; justify-content: space-between; margin-bottom: 15px; gap: 15px; }
-        .info-box { background: white; border: 1px solid #ddd; border-left: 5px solid #2c3e50; padding: 10px 15px; border-radius: 5px; flex: 2; box-shadow: 0 2px 5px rgba(0,0,0,0.05); display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-        .total-box { background: #2c3e50; color: white; padding: 10px 15px; border-radius: 5px; width: 240px; text-align: right; display: flex; flex-direction: column; justify-content: center; box-shadow: 0 4px 10px rgba(44, 62, 80, 0.3); }
-        .info-item { margin-bottom: 6px; font-size: 1.3rem; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .info-label { font-weight: 800; color: #444; width: 90px; display: inline-block; }
-        .info-value { font-weight: 800; color: #000; }
-        .total-label { font-size: 1.1rem; opacity: 0.9; text-transform: uppercase; letter-spacing: 1px; font-weight: 700; }
-        .total-value { font-size: 2.5rem; font-weight: 800; line-height: 1.1; }
-        .table-card { background: white; border-radius: 0; margin-bottom: 20px; overflow: hidden; border: 1px solid #dee2e6; }
-        .color-header { background-color: #e9ecef; color: #2c3e50; padding: 10px 12px; font-size: 1.5rem; font-weight: 900; border-bottom: 1px solid #dee2e6; text-transform: uppercase; }
+        body { 
+            background-color: #e9ecef; 
+            padding: 30px 0; 
+            font-family: 'Open Sans', sans-serif;
+            color: #333;
+        }
+        .container { max-width: 1300px; margin: auto; }
+        .report-page {
+            background: white;
+            padding: 25px 35px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        }
+        .company-header { text-align: center; margin-bottom: 20px; border-bottom: 3px double #2c3e50; padding-bottom: 15px; }
+        .company-name { font-family: 'Roboto', sans-serif; font-size: 2.3rem; font-weight: 900; color: #2c3e50; text-transform: uppercase; letter-spacing: 1px; }
+        .report-title { font-family: 'Roboto', sans-serif; font-size: 1.2rem; color: #555; font-weight: 700; text-transform: uppercase; margin-top: 5px; }
+        .date-section { font-size: 1.1rem; font-weight: 700; color: #000; margin-top: 5px; }
+        
+        .info-container { display: flex; justify-content: space-between; margin-bottom: 20px; gap: 20px; }
+        .info-box { background: #f8f9fa; border: 1px solid #dee2e6; border-left: 5px solid #2c3e50; padding: 15px 20px; border-radius: 5px; flex: 1; display: grid; grid-template-columns: 1fr 1fr; gap: 10px 25px; }
+        .info-item { font-size: 1.1rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: flex; align-items: baseline;}
+        .info-label { font-weight: 700; color: #555; width: 80px; }
+        .info-value { font-weight: 700; color: #000; }
+        
+        .total-box { background: #2c3e50; color: white; padding: 15px 20px; border-radius: 5px; text-align: right; display: flex; flex-direction: column; justify-content: center; box-shadow: 0 4px 10px rgba(44, 62, 80, 0.2); }
+        .total-label { font-size: 1rem; text-transform: uppercase; letter-spacing: 1px; font-weight: 700; opacity: 0.8; }
+        .total-value { font-family: 'Roboto', sans-serif; font-size: 2.8rem; font-weight: 900; line-height: 1.1; }
+        
+        .table-card { margin-bottom: 25px; border: 1px solid #ccc; break-inside: avoid; }
+        .color-header { background-color: #343a40; color: white; padding: 8px 15px; font-size: 1.4rem; font-weight: 700; text-transform: uppercase; }
+        
         .table { margin-bottom: 0; width: 100%; border-collapse: collapse; }
-        .table th { background-color: #2c3e50; color: white; font-weight: 900; font-size: 1.2rem; text-align: center; border: 1px solid #34495e; padding: 8px 4px; vertical-align: middle; }
+        .table th, .table td { text-align: center; vertical-align: middle; border: 1px solid #ddd; padding: 5px 4px; font-size: 1.1rem; font-weight: 600; }
+        .table thead th { background-color: #f1f1f1; color: #333; font-weight: 700; font-size: 1rem; text-transform: uppercase; }
         .table th:empty { background-color: white !important; border: none; }
-        .table td { text-align: center; vertical-align: middle; border: 1px solid #dee2e6; padding: 6px 3px; color: #000; font-weight: 800; font-size: 1.15rem; }
-        .table-striped tbody tr:nth-of-type(odd) { background-color: #f8f9fa; }
-        .order-col { font-weight: 900 !important; text-align: center !important; background-color: #fdfdfd; white-space: nowrap; width: 1%; }
-        .total-col { font-weight: 900; background-color: #e8f6f3 !important; color: #16a085; border-left: 2px solid #1abc9c !important; }
-        .total-col-header { background-color: #e8f6f3 !important; color: #000 !important; font-weight: 900 !important; border: 1px solid #34495e !important; }
-        .table-striped tbody tr.summary-row, .table-striped tbody tr.summary-row td { background-color: #d1ecff !important; --bs-table-accent-bg: #d1ecff !important; color: #000 !important; font-weight: 900 !important; border-top: 2px solid #aaa !important; font-size: 1.2rem !important; }
-        .summary-label { text-align: right !important; padding-right: 15px !important; color: #000 !important; }
+        
+        .order-col { font-weight: 700 !important; text-align: left !important; background-color: #f8f9fa; padding-left: 10px !important; }
+        
+        .total-col-header, .total-col { background-color: #e9ecef; font-weight: 700; }
+        .total-col { border-left: 2px solid #999; }
+
+        .summary-row td { background-color: #ddeeff !important; color: #000 !important; font-weight: 700 !important; border-top: 2px solid #aaa !important; font-size: 1.1rem !important; }
+        .summary-label { text-align: right !important; padding-right: 15px !important; }
+        
         .action-bar { margin-bottom: 20px; display: flex; justify-content: flex-end; gap: 10px; }
-        .btn-print { background-color: #e74c3c; color: white; border-radius: 50px; padding: 8px 30px; font-weight: 600; border: none; }
-        .footer-credit { text-align: center; margin-top: 30px; margin-bottom: 20px; font-size: 0.8rem; color: #2c3e50; padding-top: 10px; border-top: 1px solid #ddd; }
+        .btn-custom { font-weight: 600; border-radius: 50px; padding: 8px 25px; text-decoration: none; border: 2px solid; }
+        .btn-back { border-color: #6c757d; color: #6c757d; }
+        .btn-back:hover { background-color: #6c757d; color: white; }
+        .btn-print { background-color: #2c3e50; color: white; border-color: #2c3e50; }
+        .btn-print:hover { background-color: #1a252f; border-color: #1a252f; }
+        
+        .footer-credit { text-align: center; margin-top: 30px; font-size: 0.9rem; color: #777; padding-top: 15px; border-top: 1px solid #ddd; }
+        
         @media print {
-            @page { margin: 5mm; size: portrait; }
+            @page { margin: 8mm; size: portrait; }
             body { background-color: white; padding: 0; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; color-adjust: exact !important; }
             .container { max-width: 100% !important; width: 100% !important; padding: 0; margin: 0; }
+            .report-page { box-shadow: none; padding: 0; }
             .no-print { display: none !important; }
-            .company-header { border-bottom: 2px solid #000; margin-bottom: 5px; padding-bottom: 5px; }
+            
+            .company-header { border-bottom: 2px solid #000; margin-bottom: 10px; padding-bottom: 10px; }
             .company-name { font-size: 1.8rem; }
-            .info-container { margin-bottom: 10px; }
-            .info-box { border: 1px solid #000 !important; border-left: 5px solid #000 !important; padding: 5px 10px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-            .total-box { border: 2px solid #000 !important; background: white !important; color: black !important; padding: 5px 10px; }
-            .info-item { font-size: 13pt !important; font-weight: 800 !important; }
-            .table th, .table td { border: 1px solid #000 !important; padding: 2px !important; font-size: 13pt !important; font-weight: 800 !important; }
-            .table th:empty { background-color: white !important; border: none !important; }
-            .table-striped tbody tr.summary-row td { background-color: #d1ecff !important; box-shadow: inset 0 0 0 9999px #d1ecff !important; color: #000 !important; font-weight: 900 !important; }
-            .color-header { background-color: #f1f1f1 !important; border: 1px solid #000 !important; font-size: 1.4rem !important; font-weight: 900; padding: 5px; margin-top: 10px; box-shadow: inset 0 0 0 9999px #f1f1f1 !important; }
-            .total-col-header { background-color: #e8f6f3 !important; box-shadow: inset 0 0 0 9999px #e8f6f3 !important; color: #000 !important; }
-            .table-card { border: none; margin-bottom: 10px; break-inside: avoid; }
-            .footer-credit { display: block !important; color: black; border-top: 1px solid #000; margin-top: 10px; font-size: 8pt !important; }
+            .report-title, .date-section { font-size: 1rem; }
+
+            .info-container { margin-bottom: 15px; }
+            .info-box { border: 1px solid #000 !important; border-left: 4px solid #000 !important; padding: 8px 10px; gap: 5px 15px; background: white !important; }
+            .info-item { font-size: 11pt !important; }
+            .total-box { border: 2px solid #000 !important; background: white !important; color: black !important; padding: 8px 10px; }
+            .total-label { font-size: 10pt !important; }
+            .total-value { font-size: 1.8rem !important; }
+            
+            .table-card { border: none; }
+            .color-header { background-color: #e0e0e0 !important; color: #000 !important; font-size: 1.2rem !important; border: 1px solid #000; }
+            .table th, .table td { border: 1px solid #000 !important; padding: 3px !important; font-size: 10pt !important; font-weight: 700 !important; }
+            .table thead th { background-color: #f1f1f1 !important; }
+            .total-col, .total-col-header { background-color: #e9ecef !important; }
+            .summary-row td { background-color: #ddeeff !important; font-weight: 700 !important; }
         }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="action-bar no-print">
-            <a href="/" class="btn btn-outline-secondary rounded-pill px-4">Back to Dashboard</a>
-            <button onclick="window.print()" class="btn btn-print"><i class="fas fa-file-pdf"></i> Print</button>
+            <a href="/" class="btn-custom btn-back">Back to Dashboard</a>
+            <button onclick="window.print()" class="btn-custom btn-print"><i class="fas fa-print me-2"></i> Print Report</button>
         </div>
-        <div class="company-header">
-            <div class="company-name">COTTON CLOTHING BD LTD</div>
-            <div class="report-title">Purchase Order Summary</div>
-            <div class="date-section">Date: <span id="date"></span></div>
-        </div>
-        {% if message %}
-            <div class="alert alert-warning text-center no-print">{{ message }}</div>
-        {% endif %}
-        {% if tables %}
-            <div class="info-container">
-                <div class="info-box">
-                    <div>
+
+        <div class="report-page">
+            <div class="company-header">
+                <div class="company-name">Cotton Clothing BD Ltd</div>
+                <div class="report-title">Purchase Order Summary</div>
+                <div class="date-section">Date: <span id="date"></span></div>
+            </div>
+
+            {% if message %}
+                <div class="alert alert-warning text-center no-print">{{ message }}</div>
+            {% endif %}
+
+            {% if tables %}
+                <div class="info-container">
+                    <div class="info-box">
                         <div class="info-item"><span class="info-label">Buyer:</span> <span class="info-value">{{ meta.buyer }}</span></div>
                         <div class="info-item"><span class="info-label">Booking:</span> <span class="info-value">{{ meta.booking }}</span></div>
                         <div class="info-item"><span class="info-label">Style:</span> <span class="info-value">{{ meta.style }}</span></div>
-                    </div>
-                    <div>
                         <div class="info-item"><span class="info-label">Season:</span> <span class="info-value">{{ meta.season }}</span></div>
                         <div class="info-item"><span class="info-label">Dept:</span> <span class="info-value">{{ meta.dept }}</span></div>
                         <div class="info-item"><span class="info-label">Item:</span> <span class="info-value">{{ meta.item }}</span></div>
                     </div>
+                    <div class="total-box">
+                        <div class="total-label">Grand Total</div>
+                        <div class="total-value">{{ grand_total }}</div>
+                        <small>Pieces</small>
+                    </div>
                 </div>
-                <div class="total-box">
-                    <div class="total-label">Grand Total</div>
-                    <div class="total-value">{{ grand_total }}</div>
-                    <small>Pieces</small>
-                </div>
-            </div>
-            {% for item in tables %}
-                <div class="table-card">
-                    <div class="color-header">COLOR: {{ item.color }}</div>
-                    <div class="table-responsive">{{ item.table | safe }}</div>
-                </div>
-            {% endfor %}
-            <div class="footer-credit">Report Created By <strong>Mehedi Hasan</strong></div>
-        {% endif %}
+
+                {% for item in tables %}
+                    <div class="table-card">
+                        <div class="color-header">COLOR: {{ item.color }}</div>
+                        <div class="table-responsive">{{ item.table | safe }}</div>
+                    </div>
+                {% endfor %}
+                <div class="footer-credit">Report Created By <strong>Mehedi Hasan</strong></div>
+            {% endif %}
+        </div>
     </div>
     <script>
         const dateObj = new Date();
@@ -5152,7 +5215,7 @@ def login():
         
         return redirect(url_for('index'))
     else:
-        flash('Invalid Username or Password.')
+        flash('Invalid Username or Password.', 'error')
         return redirect(url_for('index'))
 
 @app.route('/logout')
@@ -5174,7 +5237,7 @@ def logout():
             pass
 
     session.clear()
-    flash('Session terminated.')
+    flash('Session terminated.', 'info')
     return redirect(url_for('index'))
 
 @app.route('/admin/get-users', methods=['GET'])
@@ -5255,13 +5318,13 @@ def generate_report():
     try:
         report_data = fetch_closing_report_data(internal_ref_no)
         if not report_data: 
-            flash(f"Booking Not Found: {internal_ref_no}")
+            flash(f"Booking Not Found: {internal_ref_no}", "error")
             return redirect(url_for('index'))
         
         update_stats(internal_ref_no, session.get('user', 'Unknown'))
         return render_template_string(CLOSING_REPORT_PREVIEW_TEMPLATE, report_data=report_data, ref_no=internal_ref_no)
     except Exception as e: 
-        flash(f"System Error: {str(e)}")
+        flash(f"System Error: {str(e)}", "error")
         return redirect(url_for('index'))
 
 @app.route('/download-closing-excel', methods=['GET'])
@@ -5282,14 +5345,14 @@ def download_closing_excel():
                 mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
             ))
         else:
-            flash("Data source returned empty.")
+            flash("Data source returned empty.", "error")
             return redirect(url_for('index'))
     except Exception as e:
-        flash("Failed to generate Excel.")
+        flash("Failed to generate Excel.", "error")
         return redirect(url_for('index'))
 
 # ==============================================================================
-# ACCESSORIES ROUTES - UPDATED WITH HISTORY & 24HR REFRESH
+# ACCESSORIES ROUTES - UPDATED WITH LIVE REFRESH & DELETE BOOKING
 # ==============================================================================
 
 @app.route('/admin/accessories', methods=['GET'])
@@ -5297,10 +5360,9 @@ def accessories_search_page():
     if not session.get('logged_in'):
         return redirect(url_for('index'))
     if 'accessories' not in session.get('permissions', []):
-        flash("Access Denied")
+        flash("Access Denied", "error")
         return redirect(url_for('index'))
     
-    # NEW: Get all saved bookings for history
     history_bookings = get_all_accessories_bookings()
     history_count = len(history_bookings)
     
@@ -5318,28 +5380,23 @@ def accessories_input_page():
     ref_no = request.form.get('ref_no') or request.args.get('ref')
     if ref_no:
         ref_no = ref_no.strip().upper()
-    
-    if not ref_no: 
+    else: 
+        flash("Booking reference is required.", "error")
         return redirect(url_for('accessories_search_page'))
 
     db_acc = load_accessories_db()
 
     if ref_no in db_acc:
-        # NEW: Check and refresh colors if 24 hours have passed
-        refresh_result = check_and_refresh_colors(ref_no, db_acc)
-        if refresh_result:
-            db_acc = refresh_result
-        
         data = db_acc[ref_no]
-        colors = data['colors']
-        style = data['style']
-        buyer = data['buyer']
-        challans = data['challans']
+        colors = data.get('colors', [])
+        style = data.get('style', 'N/A')
+        buyer = data.get('buyer', 'N/A')
+        challans = data.get('challans', [])
     else:
         try:
             api_data = fetch_closing_report_data(ref_no)
             if not api_data:
-                flash(f"Booking not found: {ref_no}")
+                flash(f"Booking not found: {ref_no}", "error")
                 return redirect(url_for('accessories_search_page'))
             
             colors = sorted(list(set([item['color'] for item in api_data])))
@@ -5357,7 +5414,7 @@ def accessories_input_page():
             }
             save_accessories_db(db_acc)
         except Exception as e:
-            flash(f"Connection Error with ERP: {str(e)}")
+            flash(f"Connection Error with ERP: {str(e)}", "error")
             return redirect(url_for('accessories_search_page'))
 
     return render_template_string(
@@ -5377,56 +5434,64 @@ def accessories_input_direct():
     ref_no = request.args.get('ref')
     if ref_no:
         ref_no = ref_no.strip().upper()
-    
-    if not ref_no:
+    else:
+        flash("Booking reference not provided.", "error")
         return redirect(url_for('accessories_search_page'))
 
     db_acc = load_accessories_db()
 
-    if ref_no in db_acc:
-        # NEW: Check and refresh colors if 24 hours have passed
-        refresh_result = check_and_refresh_colors(ref_no, db_acc)
-        if refresh_result:
-            db_acc = refresh_result
-        
-        data = db_acc[ref_no]
-        colors = data['colors']
-        style = data['style']
-        buyer = data['buyer']
-        challans = data['challans']
-    else:
-        try: 
-            api_data = fetch_closing_report_data(ref_no)
-            if not api_data:
-                flash(f"Booking not found: {ref_no}")
-                return redirect(url_for('accessories_search_page'))
-            
-            colors = sorted(list(set([item['color'] for item in api_data])))
-            style = api_data[0].get('style', 'N/A')
-            buyer = api_data[0].get('buyer', 'N/A')
-            challans = []
-            
-            db_acc[ref_no] = {
-                "style": style,
-                "buyer": buyer,
-                "colors": colors,
-                "item_type": "",
-                "challans": challans,
-                "last_api_call": get_bd_time().isoformat()
-            }
-            save_accessories_db(db_acc)
-        except Exception as e:
-            flash(f"Connection Error with ERP: {str(e)}")
-            return redirect(url_for('accessories_search_page'))
+    if ref_no not in db_acc:
+        flash(f"Booking '{ref_no}' not found in history.", "error")
+        return redirect(url_for('accessories_search_page'))
 
+    data = db_acc[ref_no]
     return render_template_string(
         ACCESSORIES_INPUT_TEMPLATE,
         ref=ref_no,
-        colors=colors,
-        style=style,
-        buyer=buyer,
-        challans=challans
+        colors=data.get('colors', []),
+        style=data.get('style', 'N/A'),
+        buyer=data.get('buyer', 'N/A'),
+        challans=data.get('challans', [])
     )
+
+@app.route('/admin/accessories/refresh')
+def accessories_refresh():
+    if not session.get('logged_in'):
+        return redirect(url_for('index'))
+
+    ref_no = request.args.get('ref', '').strip().upper()
+    if not ref_no:
+        flash("Booking reference not provided for refresh.", "error")
+        return redirect(url_for('accessories_search_page'))
+
+    db_acc = load_accessories_db()
+    if ref_no not in db_acc:
+        flash(f"Cannot refresh, booking '{ref_no}' not in database.", "error")
+        return redirect(url_for('accessories_search_page'))
+
+    try:
+        api_data = fetch_closing_report_data(ref_no)
+        if api_data:
+            existing_data = db_acc[ref_no]
+            new_colors = sorted(list(set([item['color'] for item in api_data])))
+            merged_colors = sorted(list(set(existing_data.get('colors', []) + new_colors)))
+            
+            if merged_colors != existing_data.get('colors', []):
+                db_acc[ref_no]['colors'] = merged_colors
+                db_acc[ref_no]['buyer'] = api_data[0].get('buyer', existing_data.get('buyer', 'N/A'))
+                db_acc[ref_no]['style'] = api_data[0].get('style', existing_data.get('style', 'N/A'))
+                db_acc[ref_no]['last_api_call'] = get_bd_time().isoformat()
+                save_accessories_db(db_acc)
+                flash("Data successfully refreshed from API.", "success")
+            else:
+                flash("কোনো নতুন তথ্য পাওয়া যায় নি।", "info")
+        else:
+            flash("API থেকে কোনো নতুন তথ্য পাওয়া যায় নি।", "info")
+            
+    except Exception as e:
+        flash(f"Error during refresh: {str(e)}", "error")
+
+    return redirect(url_for('accessories_input_direct', ref=ref_no))
 
 @app.route('/admin/accessories/save', methods=['POST'])
 def accessories_save():
@@ -5473,18 +5538,16 @@ def accessories_print_view():
     line_summary = {}
     for c in challans:
         ln = c['line']
-        try:
-            q = int(c['qty'])
-        except:
-            q = 0
+        try: q = int(c['qty'])
+        except: q = 0
         line_summary[ln] = line_summary.get(ln, 0) + q
     sorted_line_summary = dict(sorted(line_summary.items()))
 
     return render_template_string(
         ACCESSORIES_REPORT_TEMPLATE,
         ref=ref,
-        buyer=data['buyer'],
-        style=data['style'],
+        buyer=data.get('buyer', 'N/A'),
+        style=data.get('style', 'N/A'),
         item_type=data.get('item_type', ''),
         challans=challans,
         line_summary=sorted_line_summary,
@@ -5492,7 +5555,7 @@ def accessories_print_view():
         today=get_bd_date_str()
     )
 
-@app.route('/admin/accessories/edit', methods=['GET'])
+@app Noroute('/admin/accessories/edit', methods=['GET'])
 def accessories_edit():
     if not session.get('logged_in'):
         return redirect(url_for('index'))
@@ -5531,6 +5594,7 @@ def accessories_update():
 @app.route('/admin/accessories/delete', methods=['POST'])
 def accessories_delete():
     if not session.get('logged_in') or session.get('role') != 'admin':
+        flash("Unauthorized access.", "error")
         return redirect(url_for('index'))
     
     ref = request.form.get('ref')
@@ -5542,6 +5606,27 @@ def accessories_delete():
         save_accessories_db(db_acc)
     
     return redirect(url_for('accessories_input_direct', ref=ref))
+
+@app.route('/admin/accessories/delete_booking')
+def accessories_delete_booking():
+    if not session.get('logged_in') or session.get('role') != 'admin':
+        flash("Unauthorized access.", "error")
+        return redirect(url_for('index'))
+
+    ref_no = request.args.get('ref', '').strip().upper()
+    if not ref_no:
+        flash("Booking reference not provided for deletion.", "error")
+        return redirect(url_for('accessories_search_page'))
+
+    db_acc = load_accessories_db()
+    if ref_no in db_acc:
+        del db_acc[ref_no]
+        save_accessories_db(db_acc)
+        flash(f"Booking '{ref_no}' and all its challans have been deleted.", "success")
+    else:
+        flash(f"Booking '{ref_no}' not found in the database.", "error")
+
+    return redirect(url_for('accessories_search_page'))
 
 # ==============================================================================
 # PO REPORT ROUTE - UPDATED WITH BOOKING REF TRACKING
@@ -5559,34 +5644,28 @@ def generate_po_report():
     try:
         uploaded_files = request.files.getlist('pdf_files')
         all_data = []
-        final_meta = {
-            'buyer': 'N/A',
-            'booking': 'N/A',
-            'style': 'N/A',
-            'season': 'N/A',
-            'dept': 'N/A',
-            'item': 'N/A'
-        }
+        final_meta = { 'buyer': 'N/A', 'booking': 'N/A', 'style': 'N/A', 'season': 'N/A', 'dept': 'N/A', 'item': 'N/A' }
         
         for file in uploaded_files:
-            if file.filename == '':
-                continue
+            if file.filename == '': continue
             file_path = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
             file.save(file_path)
             data, meta = extract_data_dynamic(file_path)
-            if meta['buyer'] != 'N/A':
+            if meta['buyer'] != 'N/A' and final_meta['buyer'] == 'N/A':
                 final_meta = meta
             if data:
                 all_data.extend(data)
         
         if not all_data:
-            return render_template_string(PO_REPORT_TEMPLATE, tables=None, message="No PO data found in uploaded files.")
+            return render_template_string(PO_REPORT_TEMPLATE, tables=None, meta=final_meta, message="No PO data found in uploaded files.")
 
-        # NEW: Update PO stats with booking reference
         booking_ref = final_meta.get('booking', 'N/A')
         update_po_stats(session.get('user', 'Unknown'), len(uploaded_files), booking_ref)
 
         df = pd.DataFrame(all_data)
+        if df.empty:
+            return render_template_string(PO_REPORT_TEMPLATE, tables=None, meta=final_meta, message="No processable data after extraction.")
+
         df['Color'] = df['Color'].str.strip()
         df = df[df['Color'] != ""]
         unique_colors = df['Color'].unique()
@@ -5595,21 +5674,19 @@ def generate_po_report():
         grand_total_qty = 0
 
         for color in unique_colors: 
-            color_df = df[df['Color'] == color]
+            color_df = df[df['Color'] == color].copy()
+            
             pivot = color_df.pivot_table(
-                index='P.O NO',
-                columns='Size',
-                values='Quantity',
-                aggfunc='sum',
-                fill_value=0
+                index='P.O NO', columns='Size', values='Quantity',
+                aggfunc='sum', fill_value=0
             )
             pivot.columns.name = None
             
             try:
                 sorted_cols = sort_sizes(pivot.columns.tolist())
                 pivot = pivot[sorted_cols]
-            except:
-                pass
+            except Exception as e:
+                print(f"Could not sort columns: {e}")
             
             pivot['Total'] = pivot.sum(axis=1)
             grand_total_qty += pivot['Total'].sum()
@@ -5619,25 +5696,31 @@ def generate_po_report():
             qty_plus_3 = (actual_qty * 1.03).round().astype(int)
             qty_plus_3.name = '3% Order Qty'
             
-            pivot_final = pd.concat([pivot, actual_qty.to_frame().T, qty_plus_3.to_frame().T])
-            pivot_final = pivot_final.reset_index()
-            pivot_final = pivot_final.rename(columns={'index': 'P.O NO'})
+            pivot.loc['Actual Qty'] = actual_qty
+            pivot.loc['3% Order Qty'] = qty_plus_3
             
-            pd.set_option('colheader_justify', 'center')
-            html_table = pivot_final.to_html(
-                classes='table table-bordered table-striped',
+            pivot = pivot.reset_index().rename(columns={'index': 'P.O NO'})
+            
+            html_table = pivot.to_html(
+                classes='table table-bordered',
                 index=False,
                 border=0
-            )
+            ).replace('<tr>', '<tr style="background-color: white;">')
             
-            html_table = re.sub(r'<tr>\s*<td>', '<tr><td class="order-col">', html_table)
+            html_table = re.sub(r'<th>(P\.O NO)</th>', r'<th></th>', html_table)
             html_table = html_table.replace('<th>Total</th>', '<th class="total-col-header">Total</th>')
-            html_table = html_table.replace('<td>Total</td>', '<td class="total-col">Total</td>')
-            html_table = html_table.replace('<td>Actual Qty</td>', '<td class="summary-label">Actual Qty</td>')
-            html_table = html_table.replace('<td>3% Order Qty</td>', '<td class="summary-label">3% Order Qty</td>')
+            html_table = re.sub(r'<td.*?>Total</td>', '<td class="total-col">Total</td>', html_table)
+            html_table = html_table.replace('<td>P.O NO</td>', '<td class="order-col">P.O NO</td>')
+            html_table = re.sub(r'<td>(IB-.*?|CF-.*?)</td>', r'<td class="order-col">\1</td>', html_table)
+
             html_table = re.sub(
-                r'<tr>\s*<td class="summary-label">',
-                '<tr class="summary-row"><td class="summary-label">',
+                r'<tr.*?>\s*<td>Actual Qty</td>',
+                '<tr class="summary-row"><td class="summary-label">Actual Qty</td>',
+                html_table
+            )
+            html_table = re.sub(
+                r'<tr.*?>\s*<td>3% Order Qty</td>',
+                '<tr class="summary-row"><td class="summary-label">3% Order Qty</td>',
                 html_table
             )
 
@@ -5650,7 +5733,7 @@ def generate_po_report():
             grand_total=f"{grand_total_qty:,}"
         )
     except Exception as e:
-        flash(f"Error processing files: {str(e)}")
+        flash(f"Error processing files: {str(e)}", "error")
         return redirect(url_for('index'))
 
 
