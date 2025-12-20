@@ -64,14 +64,14 @@ MONGO_URI = "mongodb+srv://Mehedi:Mehedi123@office.jxdnuaj.mongodb.net/?appName=
 try:
     client = MongoClient(MONGO_URI)
     db = client['office_db']
-    
+
     users_col = db['users']
     stats_col = db['stats']
     accessories_col = db['accessories']
     print("MongoDB Connected Successfully!")
 except Exception as e:
     print(f"MongoDB Connection Error: {e}")
-    # ==============================================================================
+# ==============================================================================
 # ENHANCED CSS STYLES - PREMIUM MODERN UI WITH ANIMATIONS
 # ==============================================================================
 COMMON_STYLES = """
@@ -109,19 +109,19 @@ COMMON_STYLES = """
             --gradient-card: linear-gradient(145deg, rgba(22, 22, 31, 0.9) 0%, rgba(16, 16, 22, 0.95) 100%);
         }
 
-        * { 
+        * {
             margin: 0;
-            padding: 0; 
-            box-sizing: border-box; 
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; 
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
         }
-        
+
         /* Custom Scrollbar */
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: var(--bg-body); }
         ::-webkit-scrollbar-thumb { background: var(--accent-orange); border-radius: 10px; }
         ::-webkit-scrollbar-thumb:hover { background: var(--accent-orange-light); }
-        
+
         body {
             background: var(--bg-body);
             color:  var(--text-primary);
@@ -149,7 +149,7 @@ COMMON_STYLES = """
             left: 0;
             width: 100%;
             height:  100%;
-            background: 
+            background:
                 radial-gradient(ellipse at 20% 20%, rgba(255, 122, 0, 0.08) 0%, transparent 50%),
                 radial-gradient(ellipse at 80% 80%, rgba(139, 92, 246, 0.06) 0%, transparent 50%),
                 radial-gradient(ellipse at 50% 50%, rgba(16, 185, 129, 0.04) 0%, transparent 70%);
@@ -173,15 +173,15 @@ COMMON_STYLES = """
         /* Enhanced Sidebar Styling */
         .sidebar {
             width: 280px;
-            height: 100vh; 
+            height: 100vh;
             background: var(--gradient-dark);
-            position: fixed; 
-            top: 0; 
-            left: 0; 
-            display: flex; 
+            position: fixed;
+            top: 0;
+            left: 0;
+            display: flex;
             flex-direction: column;
             padding: 30px 20px;
-            border-right: 1px solid var(--border-color); 
+            border-right: 1px solid var(--border-color);
             z-index: 1000;
             transition: var(--transition-smooth);
             box-shadow: 4px 0 30px rgba(0, 0, 0, 0.3);
@@ -197,19 +197,19 @@ COMMON_STYLES = """
             opacity: 0.3;
         }
 
-        .brand-logo { 
+        .brand-logo {
             font-size: 26px;
-            font-weight:  900; 
-            color: white; 
-            margin-bottom: 50px; 
-            display: flex; 
-            align-items: center; 
-            gap: 12px; 
+            font-weight:  900;
+            color: white;
+            margin-bottom: 50px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
             padding: 0 10px;
             position: relative;
         }
 
-        .brand-logo span { 
+        .brand-logo span {
             background: var(--gradient-orange);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
@@ -227,24 +227,24 @@ COMMON_STYLES = """
             0%, 100% { transform: translateY(0) rotate(0deg); }
             50% { transform: translateY(-5px) rotate(5deg); }
         }
-        
-        .nav-menu { 
-            flex-grow: 1; 
-            display: flex; 
+
+        .nav-menu {
+            flex-grow: 1;
+            display: flex;
             flex-direction: column;
-            gap: 8px; 
+            gap: 8px;
         }
 
         .nav-link {
             display: flex;
-            align-items: center; 
-            padding: 14px 18px; 
+            align-items: center;
+            padding: 14px 18px;
             color: var(--text-secondary);
-            text-decoration: none; 
-            border-radius: 12px; 
+            text-decoration: none;
+            border-radius: 12px;
             transition: var(--transition-smooth);
-            cursor: pointer; 
-            font-weight: 500; 
+            cursor: pointer;
+            font-weight: 500;
             font-size: 14px;
             position: relative;
             overflow: hidden;
@@ -263,8 +263,8 @@ COMMON_STYLES = """
         }
         .nav-link:hover::before, .nav-link.active::before { width: 100%; }
 
-        .nav-link:hover, .nav-link.active { 
-            color: var(--accent-orange); 
+        .nav-link:hover, .nav-link.active {
+            color: var(--accent-orange);
             transform: translateX(5px);
         }
 
@@ -274,10 +274,10 @@ COMMON_STYLES = """
             box-shadow: 0 0 20px var(--accent-orange-glow);
         }
 
-        .nav-link i { 
+        .nav-link i {
             width: 24px;
-            margin-right: 12px; 
-            font-size: 18px; 
+            margin-right: 12px;
+            font-size: 18px;
             text-align: center;
             transition: var(--transition-smooth);
         }
@@ -304,30 +304,30 @@ COMMON_STYLES = """
 
         .sidebar-footer {
             margin-top: auto;
-            padding-top: 20px; 
+            padding-top: 20px;
             border-top: 1px solid var(--border-color);
-            text-align: center; 
-            font-size: 11px; 
-            color: var(--text-secondary); 
-            font-weight: 500; 
+            text-align: center;
+            font-size: 11px;
+            color: var(--text-secondary);
+            font-weight: 500;
             opacity: 0.5;
             letter-spacing: 1px;
         }
 
         /* Main Content */
-        .main-content { 
+        .main-content {
             margin-left: 280px;
-            width: calc(100% - 280px); 
-            padding: 30px 40px; 
+            width: calc(100% - 280px);
+            padding: 30px 40px;
             position: relative;
             z-index: 1;
             min-height: 100vh;
         }
 
-        .header-section { 
+        .header-section {
             display: flex;
-            justify-content: space-between; 
-            align-items: flex-start; 
+            justify-content: space-between;
+            align-items: flex-start;
             margin-bottom: 35px;
             animation: fadeInDown 0.6s ease-out;
         }
@@ -337,10 +337,10 @@ COMMON_STYLES = """
             to { opacity: 1; transform: translateY(0); }
         }
 
-        .page-title { 
+        .page-title {
             font-size: 32px;
-            font-weight: 800; 
-            color: white; 
+            font-weight: 800;
+            color: white;
             margin-bottom:  8px;
             letter-spacing: -0.5px;
             background: linear-gradient(135deg, #fff 0%, #ccc 100%);
@@ -349,7 +349,7 @@ COMMON_STYLES = """
             background-clip: text;
         }
 
-        .page-subtitle { 
+        .page-subtitle {
             color: var(--text-secondary);
             font-size: 14px;
             font-weight: 400;
@@ -368,7 +368,7 @@ COMMON_STYLES = """
             box-shadow: var(--shadow-card);
             transition: var(--transition-smooth);
         }
-        
+
         /* Status Dot Animation - FIXED */
         .status-dot {
             width: 10px;
@@ -378,35 +378,35 @@ COMMON_STYLES = """
             animation: statusPulse 1.5s ease-in-out infinite;
             box-shadow: 0 0 10px var(--accent-green);
         }
-        
+
         @keyframes statusPulse {
-            0%, 100% { 
-                opacity: 1; 
+            0%, 100% {
+                opacity: 1;
                 transform: scale(1);
                 box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
             }
-            50% { 
-                opacity: 0.8; 
+            50% {
+                opacity: 0.8;
                 transform: scale(1.2);
                 box-shadow: 0 0 0 10px rgba(16, 185, 129, 0);
             }
         }
                 /* Enhanced Cards & Grid */
-        .stats-grid { 
+        .stats-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); 
-            gap: 24px; 
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 24px;
             margin-bottom: 35px;
         }
 
-        .dashboard-grid-2 { 
+        .dashboard-grid-2 {
             display: grid;
-            grid-template-columns: 2fr 1fr; 
-            gap: 24px; 
-            margin-bottom:  24px; 
+            grid-template-columns: 2fr 1fr;
+            gap: 24px;
+            margin-bottom:  24px;
         }
 
-        .card { 
+        .card {
             background: var(--gradient-card);
             border:  1px solid var(--border-color);
             border-radius: var(--card-radius);
@@ -436,14 +436,14 @@ COMMON_STYLES = """
         }
 
         .card:hover::before { opacity: 1; }
-        
-        .section-header { 
+
+        .section-header {
             display: flex;
-            justify-content: space-between; 
-            align-items: center; 
-            margin-bottom:  24px; 
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom:  24px;
             font-weight: 700;
-            font-size: 16px; 
+            font-size: 16px;
             color: white;
             letter-spacing: -0.3px;
         }
@@ -459,27 +459,27 @@ COMMON_STYLES = """
             transform: rotate(10deg) scale(1.1);
         }
         /* Stat Cards with Animations */
-        .stat-card { 
+        .stat-card {
             display: flex;
-            align-items: center; 
-            gap: 24px; 
+            align-items: center;
+            gap: 24px;
             transition: var(--transition-smooth);
             cursor: pointer;
         }
 
-        .stat-card:hover { 
+        .stat-card:hover {
             transform: translateY(-6px) scale(1.02);
         }
 
-        .stat-icon { 
+        .stat-icon {
             width: 64px;
-            height: 64px; 
+            height: 64px;
             background: linear-gradient(145deg, rgba(255, 122, 0, 0.15), rgba(255, 122, 0, 0.05));
-            border-radius: 16px; 
-            display: flex; 
-            justify-content: center; 
+            border-radius: 16px;
+            display: flex;
+            justify-content: center;
             align-items: center;
-            font-size: 26px; 
+            font-size: 26px;
             color: var(--accent-orange);
             position: relative;
             overflow: hidden;
@@ -510,10 +510,10 @@ COMMON_STYLES = """
             50% { transform: scale(1.3); }
         }
 
-        .stat-info h3 { 
+        .stat-info h3 {
             font-size: 36px;
-            font-weight: 800; 
-            margin:  0; 
+            font-weight: 800;
+            margin:  0;
             color: white;
             letter-spacing: -1px;
             line-height: 1;
@@ -523,10 +523,10 @@ COMMON_STYLES = """
             background-clip: text;
         }
 
-        .stat-info p { 
+        .stat-info p {
             font-size: 13px;
-            color: var(--text-secondary); 
-            margin:  6px 0 0 0; 
+            color: var(--text-secondary);
+            margin:  6px 0 0 0;
             text-transform: uppercase;
             letter-spacing: 1.5px;
             font-weight: 600;
@@ -596,26 +596,26 @@ COMMON_STYLES = """
         /* Enhanced Forms */
         .input-group { margin-bottom: 20px; }
 
-        .input-group label { 
+        .input-group label {
             display: block;
-            font-size: 11px; 
-            color: var(--text-secondary); 
-            margin-bottom: 8px; 
-            text-transform: uppercase; 
+            font-size: 11px;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+            text-transform: uppercase;
             font-weight: 700;
             letter-spacing: 1.5px;
         }
 
-        input, select { 
+        input, select {
             width: 100%;
-            padding: 14px 18px; 
+            padding: 14px 18px;
             background: rgba(255, 255, 255, 0.03);
             border: 1px solid var(--border-color);
-            border-radius: 12px; 
-            color: white; 
-            font-size: 15px; 
+            border-radius: 12px;
+            color: white;
+            font-size: 15px;
             font-weight: 500;
-            outline: none; 
+            outline: none;
             transition: var(--transition-smooth);
         }
 
@@ -624,7 +624,7 @@ COMMON_STYLES = """
             opacity: 0.5;
         }
 
-        input:focus, select:focus { 
+        input:focus, select:focus {
             border-color: var(--accent-orange);
             background: rgba(255, 122, 0, 0.05);
             box-shadow: 0 0 0 4px var(--accent-orange-glow), 0 0 20px var(--accent-orange-glow);
@@ -636,26 +636,25 @@ COMMON_STYLES = """
             background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%23FF7A00' viewBox='0 0 24 24'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
             background-repeat: no-repeat;
             background-position: right 12px center;
-            background-size: 24px;
             background-color: rgba(255, 255, 255, 0.03);
         }
-        
+
         select option {
             background-color: #1a1a25;
             color: white;
             padding: 10px;
         }
-        
-        button { 
+
+        button {
             width: 100%;
-            padding: 14px 24px; 
+            padding: 14px 24px;
             background: var(--gradient-orange);
-            color: white; 
-            border: none; 
-            border-radius: 12px; 
+            color: white;
+            border: none;
+            border-radius: 12px;
             font-weight: 700;
             font-size: 15px;
-            cursor: pointer; 
+            cursor: pointer;
             transition: var(--transition-smooth);
             position: relative;
             overflow: hidden;
@@ -674,7 +673,7 @@ COMMON_STYLES = """
 
         button:hover::before { left: 100%; }
 
-        button:hover { 
+        button:hover {
             transform: translateY(-3px);
             box-shadow:  0 10px 30px var(--accent-orange-glow);
         }
@@ -684,16 +683,16 @@ COMMON_STYLES = """
         }
 
         /* Enhanced Tables */
-        .dark-table { 
+        .dark-table {
             width: 100%;
-            border-collapse: collapse; 
-            margin-top: 10px; 
+            border-collapse: collapse;
+            margin-top: 10px;
         }
 
-        .dark-table th { 
+        .dark-table th {
             text-align: left;
-            padding: 14px 16px; 
-            color: var(--text-secondary); 
+            padding: 14px 16px;
+            color: var(--text-secondary);
             font-size: 11px;
             text-transform: uppercase;
             letter-spacing: 1.5px;
@@ -701,10 +700,10 @@ COMMON_STYLES = """
             font-weight: 700;
         }
 
-        .dark-table td { 
+        .dark-table td {
             padding: 16px;
-            color: white; 
-            font-size: 14px; 
+            color: white;
+            font-size: 14px;
             border-bottom: 1px solid rgba(255,255,255,0.03);
             vertical-align: middle;
             transition: var(--transition-smooth);
@@ -714,7 +713,7 @@ COMMON_STYLES = """
             transition: var(--transition-smooth);
         }
 
-        .dark-table tr:hover td { 
+        .dark-table tr:hover td {
             background: rgba(255, 122, 0, 0.03);
         }
 
@@ -726,69 +725,69 @@ COMMON_STYLES = """
             font-weight:  600;
             display: inline-block;
         }
-        
+
         /* Action Buttons */
-        .action-cell { 
+        .action-cell {
             display: flex;
-            gap: 8px; 
-            justify-content: flex-end; 
+            gap: 8px;
+            justify-content: flex-end;
         }
 
-        .action-btn { 
+        .action-btn {
             padding: 8px 12px;
-            border-radius: 8px; 
-            text-decoration: none; 
-            font-size: 12px; 
-            display: inline-flex; 
-            align-items: center; 
-            justify-content: center; 
-            cursor: pointer; 
-            border: none; 
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: 12px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            border: none;
             transition: var(--transition-smooth);
             position: relative;
             overflow: hidden;
         }
 
-        .btn-edit { 
+        .btn-edit {
             background: rgba(139, 92, 246, 0.15);
-            color: #A78BFA; 
+            color: #A78BFA;
         }
 
-        .btn-edit:hover { 
+        .btn-edit:hover {
             background: var(--accent-purple);
             color: white;
             transform: scale(1.1);
             box-shadow: 0 0 20px rgba(139, 92, 246, 0.4);
         }
 
-        .btn-del { 
+        .btn-del {
             background: rgba(239, 68, 68, 0.15);
-            color: #F87171; 
+            color: #F87171;
         }
 
-        .btn-del:hover { 
+        .btn-del:hover {
             background: var(--accent-red);
             color: white;
             transform: scale(1.1);
             box-shadow: 0 0 20px rgba(239, 68, 68, 0.4);
         }
                 /* Enhanced Loading Overlay */
-        #loading-overlay { 
+        #loading-overlay {
             display: none;
-            position: fixed; 
-            top: 0; 
-            left: 0; 
-            width: 100%; 
-            height: 100%; 
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
             background: rgba(10, 10, 15, 0.95);
-            z-index: 9999; 
+            z-index: 9999;
             flex-direction: column;
-            justify-content: center; 
-            align-items: center; 
+            justify-content: center;
+            align-items: center;
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
         }
-        
+
         /* Modern Spinner */
         .spinner-container {
             position: relative;
@@ -796,9 +795,9 @@ COMMON_STYLES = """
             height: 80px;
         }
 
-        .spinner { 
+        .spinner {
             width: 80px;
-            height: 80px; 
+            height: 80px;
             border: 4px solid rgba(255, 122, 0, 0.1);
             border-top: 4px solid var(--accent-orange);
             border-right: 4px solid var(--accent-orange-light);
@@ -821,23 +820,23 @@ COMMON_STYLES = """
             animation: spin 1.2s linear infinite reverse;
         }
 
-        @keyframes spin { 
-            0% { transform:  rotate(0deg); } 
-            100% { transform:  rotate(360deg); } 
+        @keyframes spin {
+            0% { transform:  rotate(0deg); }
+            100% { transform:  rotate(360deg); }
         }
 
         /* Success Checkmark Animation */
-        .checkmark-container { 
+        .checkmark-container {
             display: none;
-            text-align: center; 
+            text-align: center;
         }
 
         .checkmark-circle {
             width: 100px;
-            height: 100px; 
-            position: relative; 
+            height: 100px;
+            position: relative;
             display: inline-block;
-            border-radius: 50%; 
+            border-radius: 50%;
             border: 3px solid var(--accent-green);
             margin-bottom: 24px;
             animation: success-anim 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
@@ -846,30 +845,30 @@ COMMON_STYLES = """
 
         .checkmark-circle::before {
             content: '';
-            display: block; 
-            width: 30px; 
+            display: block;
+            width: 30px;
             height: 50px;
-            border: solid var(--accent-green); 
+            border: solid var(--accent-green);
             border-width: 0 4px 4px 0;
-            position: absolute; 
-            top: 15px; 
+            position: absolute;
+            top: 15px;
             left: 35px;
-            transform: rotate(45deg); 
+            transform: rotate(45deg);
             opacity: 0;
             animation: checkmark-anim 0.4s 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
         }
         /* Fail Cross Animation */
-        .fail-container { 
-            display: none; 
+        .fail-container {
+            display: none;
             text-align: center;
         }
 
         .fail-circle {
             width: 100px;
-            height: 100px; 
-            position: relative; 
+            height: 100px;
+            position: relative;
             display: inline-block;
-            border-radius: 50%; 
+            border-radius: 50%;
             border: 3px solid var(--accent-red);
             margin-bottom: 24px;
             animation: fail-anim 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
@@ -878,12 +877,12 @@ COMMON_STYLES = """
 
         .fail-circle::before, .fail-circle::after {
             content: '';
-            position: absolute; 
-            width: 4px; 
-            height: 50px; 
+            position: absolute;
+            width: 4px;
+            height: 50px;
             background: var(--accent-red);
-            top: 23px; 
-            left: 46px; 
+            top: 23px;
+            left: 46px;
             border-radius: 4px;
             animation: crossAnim 0.3s 0.4s ease-out forwards;
             opacity: 0;
@@ -892,21 +891,21 @@ COMMON_STYLES = """
         .fail-circle::before { transform: rotate(45deg); }
         .fail-circle::after { transform: rotate(-45deg); }
 
-        @keyframes success-anim { 
-            0% { transform: scale(0); opacity: 0; } 
-            50% { transform:  scale(1.2); } 
-            100% { transform:  scale(1); opacity: 1; } 
+        @keyframes success-anim {
+            0% { transform: scale(0); opacity: 0; }
+            50% { transform:  scale(1.2); }
+            100% { transform:  scale(1); opacity: 1; }
         }
 
-        @keyframes checkmark-anim { 
-            0% { opacity: 0; height: 0; width: 0; } 
-            100% { opacity: 1; height: 50px; width: 30px; } 
+        @keyframes checkmark-anim {
+            0% { opacity: 0; height: 0; width: 0; }
+            100% { opacity: 1; height: 50px; width: 30px; }
         }
 
-        @keyframes fail-anim { 
-            0% { transform: scale(0); opacity: 0; } 
-            50% { transform: scale(1.2); } 
-            100% { transform: scale(1); opacity: 1; } 
+        @keyframes fail-anim {
+            0% { transform: scale(0); opacity: 0; }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); opacity: 1; }
         }
 
         @keyframes crossAnim {
@@ -914,11 +913,11 @@ COMMON_STYLES = """
             100% { opacity: 1; transform: rotate(45deg) scale(1); }
         }
 
-        .anim-text { 
-            font-size:  24px; 
-            font-weight: 800; 
+        .anim-text {
+            font-size:  24px;
+            font-weight: 800;
             color: white;
-            margin-top: 10px; 
+            margin-top: 10px;
             letter-spacing: 1px;
         }
 
@@ -984,11 +983,11 @@ COMMON_STYLES = """
             opacity: 0.3;
         }
         @keyframes welcomeSlideIn {
-            from { 
+            from {
                 opacity: 0;
                 transform:  translateY(-50px) scale(0.9);
             }
-            to { 
+            to {
                 opacity: 1;
                 transform: translateY(0) scale(1);
             }
@@ -1176,11 +1175,11 @@ COMMON_STYLES = """
         }
 
         @keyframes flashSlideIn {
-            from { 
+            from {
                 opacity: 0;
                 transform: translateY(-10px);
             }
-            to { 
+            to {
                 opacity: 1;
                 transform: translateY(0);
             }
@@ -1197,7 +1196,7 @@ COMMON_STYLES = """
             border: 1px solid rgba(16, 185, 129, 0.2);
             color: #34D399;
         }
-        
+
         /* Ripple Effect */
         .ripple {
             position: relative;
@@ -1220,15 +1219,15 @@ COMMON_STYLES = """
             }
         }
                 /* Mobile */
-        .mobile-toggle { 
-            display: none; 
-            position: fixed; 
+        .mobile-toggle {
+            display: none;
+            position: fixed;
             top: 20px;
-            right: 20px; 
-            z-index: 2000; 
-            color: white; 
+            right: 20px;
+            z-index: 2000;
+            color: white;
             background: var(--bg-card);
-            padding: 12px 14px; 
+            padding: 12px 14px;
             border-radius: 12px;
             border: 1px solid var(--border-color);
             cursor: pointer;
@@ -1240,22 +1239,22 @@ COMMON_STYLES = """
         }
 
         @media (max-width: 1024px) {
-            .sidebar { 
+            .sidebar {
                 transform: translateX(-100%);
                 width: 280px;
-            } 
-            .sidebar.active { 
+            }
+            .sidebar.active {
                 transform: translateX(0);
             }
-            .main-content { 
+            .main-content {
                 margin-left: 0;
-                width: 100%; 
-                padding: 20px; 
+                width: 100%;
+                padding: 20px;
             }
-            .dashboard-grid-2 { 
+            .dashboard-grid-2 {
                 grid-template-columns: 1fr;
             }
-            .mobile-toggle { 
+            .mobile-toggle {
                 display:  flex;
                 align-items: center;
                 justify-content: center;
@@ -1293,7 +1292,7 @@ COMMON_STYLES = """
             0% { background-position: 200% 0; }
             100% { background-position: -200% 0; }
         }
-        
+
         /* Notification Dot */
         .notification-dot {
             position: absolute;
@@ -1369,7 +1368,7 @@ COMMON_STYLES = """
             transform: scale(1.1) rotate(90deg);
             box-shadow:  0 12px 40px var(--accent-orange-glow);
         }
-        
+
         /* Glow Text */
         .glow-text {
             text-shadow: 0 0 20px var(--accent-orange-glow);
@@ -1405,7 +1404,7 @@ COMMON_STYLES = """
             50% { background-position: 100% 50%; }
             100% { background-position: 0% 50%; }
         }
-        
+
         /* Permission Checkbox Styles */
         .perm-checkbox {
             background: rgba(255, 255, 255, 0.03);
@@ -1461,14 +1460,14 @@ COMMON_STYLES = """
         .time-badge i {
             color: var(--accent-orange);
         }
-        
+
         /* History Card Styles - NEW ADDED */
         .history-section {
             margin-top: 25px;
             padding-top: 25px;
             border-top: 1px solid var(--border-color);
         }
-        
+
         .history-toggle {
             display: flex;
             align-items: center;
@@ -1480,19 +1479,19 @@ COMMON_STYLES = """
             border-radius: 14px;
             transition: var(--transition-smooth);
         }
-        
+
         .history-toggle:hover {
             border-color: var(--accent-purple);
             background: linear-gradient(145deg, rgba(139, 92, 246, 0.15), rgba(139, 92, 246, 0.05));
             transform: translateY(-2px);
         }
-        
+
         .history-toggle-left {
             display: flex;
             align-items: center;
             gap: 12px;
         }
-        
+
         .history-toggle-icon {
             width: 42px;
             height: 42px;
@@ -1504,19 +1503,19 @@ COMMON_STYLES = """
             font-size: 18px;
             color: var(--accent-purple);
         }
-        
+
         .history-toggle-text {
             font-size: 15px;
             font-weight: 600;
             color: white;
         }
-        
+
         .history-toggle-sub {
             font-size: 12px;
             color: var(--text-secondary);
             margin-top: 2px;
         }
-        
+
         .history-badge {
             background: var(--accent-purple);
             color: white;
@@ -1525,7 +1524,7 @@ COMMON_STYLES = """
             font-size: 13px;
             font-weight:  700;
         }
-        
+
         .history-dropdown {
             display: none;
             margin-top: 15px;
@@ -1533,17 +1532,17 @@ COMMON_STYLES = """
             overflow-y:  auto;
             padding: 5px;
         }
-        
+
         .history-dropdown.active {
             display: block;
             animation: slideDown 0.3s ease-out;
         }
-        
+
         @keyframes slideDown {
             from { opacity: 0; transform: translateY(-10px); }
             to { opacity: 1; transform:  translateY(0); }
         }
-        
+
         .history-booking-item {
             display: flex;
             align-items: center;
@@ -1557,69 +1556,69 @@ COMMON_STYLES = """
             transition: var(--transition-smooth);
             text-decoration: none;
         }
-        
+
         .history-booking-item:hover {
             background: rgba(139, 92, 246, 0.1);
             border-color: rgba(139, 92, 246, 0.3);
             transform: translateX(5px);
         }
-        
+
         .booking-item-left {
             display: flex;
             flex-direction: column;
             gap: 4px;
         }
-        
+
         .booking-ref {
             font-size: 15px;
             font-weight: 700;
             color: var(--accent-purple);
         }
-        
+
         .booking-info {
             font-size: 12px;
             color: var(--text-secondary);
         }
-        
+
         .booking-stats {
             display: flex;
             align-items: center;
             gap: 15px;
         }
-        
+
         .booking-stat {
             text-align: center;
         }
-        
+
         .booking-stat-value {
             font-size: 16px;
             font-weight: 800;
             color: var(--accent-green);
         }
-        
+
         .booking-stat-label {
             font-size: 10px;
             color: var(--text-secondary);
             text-transform: uppercase;
         }
-        
+
         .booking-arrow {
             color: var(--text-secondary);
             font-size: 14px;
             transition: var(--transition-smooth);
         }
-        
+
         .history-booking-item:hover .booking-arrow {
             color: var(--accent-purple);
             transform: translateX(5px);
         }
-        
+
         .empty-history {
             text-align: center;
             padding: 30px;
             color: var(--text-secondary);
         }
-        
+
         .empty-history i {
             font-size: 40px;
             opacity: 0.3;
@@ -1636,8 +1635,8 @@ def load_users():
     record = users_col.find_one({"_id": "global_users"})
     default_users = {
         "Admin": {
-            "password": "@Nijhum@12", 
-            "role": "admin", 
+            "password": "@Nijhum@12",
+            "role": "admin",
             "permissions": ["closing", "po_sheet", "user_manage", "view_history", "accessories"],
             "created_at": "N/A",
             "last_login": "Never",
@@ -1652,8 +1651,8 @@ def load_users():
 
 def save_users(users_data):
     users_col.replace_one(
-        {"_id": "global_users"}, 
-        {"_id":  "global_users", "data":  users_data}, 
+        {"_id": "global_users"},
+        {"_id":  "global_users", "data":  users_data},
         upsert=True
     )
 
@@ -1687,7 +1686,7 @@ def update_stats(ref_no, username):
     data['downloads'].insert(0, new_record)
     if len(data['downloads']) > 3000:
         data['downloads'] = data['downloads'][:3000]
-        
+
     data['last_booking'] = ref_no
     save_stats(data)
 
@@ -1727,65 +1726,69 @@ def save_accessories_db(data):
 # ==============================================================================
 # নতুন ফাংশন: ২৪ ঘন্টা পর পর API কল করে নতুন কালার আপডেট
 # ==============================================================================
-
 def check_and_refresh_colors(ref_no, db_acc):
     """
-    ২৪ ঘন্টা পর পর API কল করে নতুন কালার আপডেট করে।
+    ২৪ ঘন্টা পর পর API কল করে নতুন কালার, বায়ার ও স্টাইল আপডেট করে।
+    এই ফাংশনটি প্রথমে চেক করে যে প্রদত্ত booking reference (`ref_no`) এর জন্য শেষ কবে API কল করা হয়েছিল।
+    যদি কখনো কল না করা হয়ে থাকে বা শেষ কলের পর ২৪ ঘন্টা পেরিয়ে যায়, তবে এটি `fetch_closing_report_data`
+    ব্যবহার করে ERP সিস্টেম থেকে সর্বশেষ ডেটা (বিশেষ করে কালার লিস্ট) নিয়ে আসে।
+    নতুন পাওয়া কালারগুলোকে পুরোনো কালারের সাথে একত্রিত করে একটি ইউনিক ও সর্টেড তালিকা তৈরি করে।
+    একই সাথে বায়ার ও স্টাইলের নামও আপডেট করা হয়।
+    সবশেষে, আপডেটেড ডেটা MongoDB-তে সেভ করা হয় এবং `last_api_call` টাইমস্ট্যাম্প বর্তমান সময়ে সেট করা হয়।
+    এটি নিশ্চিত করে যে ব্যবহারকারীরা সবসময় Accessories Challan পেজে আপ-টু-ডেট কালার লিস্ট দেখতে পান।
     Returns:  updated data dict or None if no update needed or failed
     """
-    if ref_no not in db_acc: 
+    if ref_no not in db_acc:
         return None
-    
+
     data = db_acc[ref_no]
     last_updated = data.get('last_api_call', None)
     now = get_bd_time()
-    
+
     needs_refresh = False
-    if last_updated is None: 
+    if last_updated is None:
         needs_refresh = True
     else:
         try:
-            # last_updated is already a timezone-aware isoformat string
             last_updated_dt = datetime.fromisoformat(last_updated)
-            
+            if last_updated_dt.tzinfo is None:
+                last_updated_dt = bd_tz.localize(last_updated_dt)
+
             time_diff = now - last_updated_dt
-            if time_diff.total_seconds() >= 86400: # 24 hours
+            if time_diff.total_seconds() >= 86400: # 86400 seconds = 24 hours
                 needs_refresh = True
         except Exception as e:
-            print(f"Error parsing last_api_call: {e}. Forcing refresh.")
+            print(f"Error parsing last_api_call: {e}")
             needs_refresh = True
-    
-    if needs_refresh: 
-        print(f"Refreshing colors for {ref_no}...")
+
+    if needs_refresh:
         try:
             api_data = fetch_closing_report_data(ref_no)
             if api_data:
                 new_colors = sorted(list(set([item['color'] for item in api_data])))
                 existing_colors = data.get('colors', [])
-                # Merge and keep unique colors, then sort
                 merged_colors = sorted(list(set(existing_colors + new_colors)))
-                
+
                 db_acc[ref_no]['colors'] = merged_colors
                 db_acc[ref_no]['last_api_call'] = now.isoformat()
-                
+
                 if api_data[0].get('buyer', 'N/A') != 'N/A':
                     db_acc[ref_no]['buyer'] = api_data[0].get('buyer', data.get('buyer', 'N/A'))
                 if api_data[0].get('style', 'N/A') != 'N/A':
                     db_acc[ref_no]['style'] = api_data[0].get('style', data.get('style', 'N/A'))
-                
+
                 save_accessories_db(db_acc)
                 print(f"Colors refreshed for {ref_no}. New colors: {merged_colors}")
-                return db_acc # Return the updated database
+                return db_acc
         except Exception as e:
             print(f"Error refreshing colors for {ref_no}: {e}")
             return None
-    
+
     return None
 
 # ==============================================================================
 # নতুন ফাংশন: সকল সেভ করা বুকিং রেফারেন্স লিস্ট (History এর জন্য)
 # ==============================================================================
-
 def get_all_accessories_bookings():
     """
     সকল সেভ করা বুকিং রেফারেন্স লিস্ট রিটার্ন করে
@@ -1803,23 +1806,21 @@ def get_all_accessories_bookings():
             'total_qty': total_qty,
             'last_updated': data.get('last_api_call', 'N/A')
         })
-    
-    # Sort by ref no descending to show latest first
+
     bookings = sorted(bookings, key=lambda x: x['ref'], reverse=True)
     return bookings
 
 # ==============================================================================
 # ড্যাশবোর্ড সামারি ফাংশন
 # ==============================================================================
-
 def get_dashboard_summary_v2():
     stats_data = load_stats()
     acc_db = load_accessories_db()
     users_data = load_users()
-    
+
     now = get_bd_time()
     today_str = now.strftime('%d-%m-%Y')
-    
+
     user_details = []
     for u, d in users_data.items():
         user_details.append({
@@ -1832,7 +1833,7 @@ def get_dashboard_summary_v2():
 
     acc_lifetime_count = 0
     acc_today_list = []
-    daily_data = defaultdict(lambda: {'closing': 0, 'po': 0, 'acc': 0})
+    daily_data = defaultdict(lambda: {'closing':  0, 'po':  0, 'acc': 0})
 
     for ref, data in acc_db.items():
         for challan in data.get('challans', []):
@@ -1843,64 +1844,71 @@ def get_dashboard_summary_v2():
                     "ref": ref,
                     "buyer": data.get('buyer'),
                     "style": data.get('style'),
-                    "time": "Today", # This can be improved if challans have timestamps
+                    "time": "Today",
                     "qty": challan.get('qty')
                 })
-            
+
             try:
-                # Correctly parse date and create a key for sorting
                 dt_obj = datetime.strptime(c_date, '%d-%m-%Y')
                 sort_key = dt_obj.strftime('%Y-%m-%d')
                 daily_data[sort_key]['acc'] += 1
                 daily_data[sort_key]['label'] = dt_obj.strftime('%d-%b')
-            except: 
+            except:
                 pass
 
     closing_lifetime_count = 0
     po_lifetime_count = 0
     closing_list = []
     po_list = []
-    
+
     history = stats_data.get('downloads', [])
     for item in history:
         item_date = item.get('date', '')
         if item.get('type') == 'PO Sheet':
             po_lifetime_count += 1
-            if item_date == today_str: 
+            if item_date == today_str:
                 po_list.append(item)
-        elif item.get('type') == 'Closing Report': # Check specifically for Closing Report
+        else:
             closing_lifetime_count += 1
             if item_date == today_str:
                 closing_list.append(item)
-        
+
         try:
             dt_obj = datetime.strptime(item_date, '%d-%m-%Y')
             sort_key = dt_obj.strftime('%Y-%m-%d')
-            
+
             if item.get('type') == 'PO Sheet':
                 daily_data[sort_key]['po'] += 1
-            elif item.get('type') == 'Closing Report':
+            else:
                 daily_data[sort_key]['closing'] += 1
             daily_data[sort_key]['label'] = dt_obj.strftime('%d-%b')
         except:
             pass
-    
-    # Chart date range: last 30 days
-    start_date = now - timedelta(days=29)
-    date_range = [start_date + timedelta(days=i) for i in range(30)]
+
+    first_of_last_month = (now.replace(day=1) - timedelta(days=1)).replace(day=1)
+    start_date = first_of_last_month.strftime('%Y-%m-%d')
+    end_date = now.strftime('%Y-%m-%d')
+
+    sorted_keys = sorted([k for k in daily_data.keys() if start_date <= k <= end_date])
 
     chart_labels = []
     chart_closing = []
     chart_po = []
     chart_acc = []
 
-    for dt in date_range:
-        sort_key = dt.strftime('%Y-%m-%d')
-        chart_labels.append(dt.strftime('%d-%b'))
-        d = daily_data.get(sort_key, {'closing': 0, 'po': 0, 'acc': 0})
-        chart_closing.append(d['closing'])
-        chart_po.append(d['po'])
-        chart_acc.append(d['acc'])
+    if not sorted_keys:
+        curr_d = now.strftime('%d-%b')
+        chart_labels = [curr_d]
+        chart_closing = [0]
+        chart_po = [0]
+        chart_acc = [0]
+    else:
+        for k in sorted_keys:
+            d = daily_data[k]
+            chart_labels.append(d.get('label', k))
+            chart_closing.append(d['closing'])
+            chart_po.append(d['po'])
+            chart_acc.append(d['acc'])
 
     return {
         "users": {"count": len(users_data), "details": user_details},
@@ -1915,7 +1923,7 @@ def get_dashboard_summary_v2():
         },
         "history": history
     }
-    # ==============================================================================
+# ==============================================================================
 # লজিক পার্ট:   PURCHASE ORDER SHEET PARSER (PDF)
 # ==============================================================================
 
@@ -1947,7 +1955,7 @@ def sort_sizes(size_list):
 
 def extract_metadata(first_page_text):
     meta = {
-        'buyer': 'N/A', 'booking':  'N/A', 'style': 'N/A', 
+        'buyer': 'N/A', 'booking':  'N/A', 'style': 'N/A',
         'season': 'N/A', 'dept': 'N/A', 'item': 'N/A'
     }
     if "KIABI" in first_page_text.upper():
@@ -1956,26 +1964,26 @@ def extract_metadata(first_page_text):
         buyer_match = re.search(r"Buyer.*?Name[\s\S]*?([\w\s&]+)(?:\n|$)", first_page_text)
         if buyer_match:  meta['buyer'] = buyer_match.group(1).strip()
 
-    booking_block_match = re.search(r"(?:Internal)?Booking NO\.?[:\s]*([\s\S]*?)(?:System NO|Control No|Buyer)", first_page_text, re.IGNORECASE)
+    booking_block_match = re.search(r"(?:Internal )?Booking NO\. ?[:\s]*([\s\S]*?)(?:System NO|Control No|Buyer)", first_page_text, re.IGNORECASE)
     if booking_block_match:
         raw_booking = booking_block_match.group(1).strip()
         clean_booking = raw_booking.replace('\n', '').replace('\r', '').replace(' ', '')
         if "System" in clean_booking:  clean_booking = clean_booking.split("System")[0]
         meta['booking'] = clean_booking
 
-    style_match = re.search(r"Style Ref\.?[:\s]*([\w-]+)", first_page_text, re.IGNORECASE)
+    style_match = re.search(r"Style Ref\. ?[:\s]*([\w-]+)", first_page_text, re.IGNORECASE)
     if style_match:  meta['style'] = style_match.group(1).strip()
-    else: 
+    else:
         style_match = re.search(r"Style Des\.?[\s\S]*?([\w-]+)", first_page_text, re.IGNORECASE)
         if style_match: meta['style'] = style_match.group(1).strip()
 
     season_match = re.search(r"Season\s*[:\n\"]*([\w\d-]+)", first_page_text, re.IGNORECASE)
     if season_match: meta['season'] = season_match.group(1).strip()
-    dept_match = re.search(r"Dept\.?[\s\n: ]*([A-Za-z]+)", first_page_text, re.IGNORECASE)
+    dept_match = re.search(r"Dept\. ?[\s\n: ]*([A-Za-z]+)", first_page_text, re.IGNORECASE)
     if dept_match: meta['dept'] = dept_match.group(1).strip()
 
     item_match = re.search(r"Garments?\s*Item[\s\n: ]*([^\n\r]+)", first_page_text, re.IGNORECASE)
-    if item_match: 
+    if item_match:
         item_text = item_match.group(1).strip()
         if "Style" in item_text:  item_text = item_text.split("Style")[0].strip()
         meta['item'] = item_text
@@ -1985,25 +1993,25 @@ def extract_metadata(first_page_text):
 def extract_data_dynamic(file_path):
     extracted_data = []
     metadata = {
-        'buyer': 'N/A', 'booking': 'N/A', 'style': 'N/A', 
+        'buyer': 'N/A', 'booking': 'N/A', 'style': 'N/A',
         'season': 'N/A', 'dept': 'N/A', 'item': 'N/A'
     }
     order_no = "Unknown"
-    
+
     try:
         reader = pypdf.PdfReader(file_path)
         first_page_text = reader.pages[0].extract_text()
-        
-        if "Main Fabric Booking" in first_page_text or "Fabric Booking Sheet" in first_page_text: 
+
+        if "Main Fabric Booking" in first_page_text or "Fabric Booking Sheet" in first_page_text:
             metadata = extract_metadata(first_page_text)
             return [], metadata
 
         order_match = re.search(r"Order no\D*(\d+)", first_page_text, re.IGNORECASE)
         if order_match:  order_no = order_match.group(1)
-        else: 
+        else:
             alt_match = re.search(r"Order\s*[:\.]?\s*(\d+)", first_page_text, re.IGNORECASE)
             if alt_match: order_no = alt_match.group(1)
-        
+
         order_no = str(order_no).strip()
         if order_no.endswith("00"): order_no = order_no[:-2]
 
@@ -2012,7 +2020,7 @@ def extract_data_dynamic(file_path):
             lines = text.split('\n')
             sizes = []
             capturing_data = False
-            
+
             for i, line in enumerate(lines):
                 line = line.strip()
                 if not line: continue
@@ -2021,9 +2029,9 @@ def extract_data_dynamic(file_path):
                     parts = line.split()
                     try:
                         total_idx = [idx for idx, x in enumerate(parts) if 'Total' in x][0]
-                        raw_sizes = parts[:total_idx]
+                        raw_sizes = parts[: total_idx]
                         temp_sizes = [s for s in raw_sizes if s not in ["Colo", "/", "Size", "Colo/Size", "Colo/", "Size's"]]
-                        
+
                         valid_size_count = sum(1 for s in temp_sizes if is_potential_size(s))
                         if temp_sizes and valid_size_count >= len(temp_sizes) / 2:
                             sizes = temp_sizes
@@ -2033,16 +2041,16 @@ def extract_data_dynamic(file_path):
                             capturing_data = False
                     except:  pass
                     continue
-                
+
                 if capturing_data:
                     if line.startswith("Total Quantity") or line.startswith("Total Amount"):
                         capturing_data = False
                         continue
                     lower_line = line.lower()
-                    if "quantity" in lower_line or "currency" in lower_line or "price" in lower_line or "amount" in lower_line: 
+                    if "quantity" in lower_line or "currency" in lower_line or "price" in lower_line or "amount" in lower_line:
                         continue
-                        
-                    clean_line = line.replace("Spec. price", "").replace("Spec", "").strip()
+
+                    clean_line = line.replace("Spec.  price", "").replace("Spec", "").strip()
                     if not re.search(r'[a-zA-Z]', clean_line): continue
                     if re.match(r'^[A-Z]\d+$', clean_line) or "Assortment" in clean_line:  continue
 
@@ -2053,17 +2061,17 @@ def extract_data_dynamic(file_path):
 
                     if len(quantities) >= len(sizes):
                         if len(quantities) == len(sizes) + 1: final_qtys = quantities[:-1]
-                        else: final_qtys = quantities[:len(sizes)]
+                        else: final_qtys = quantities[: len(sizes)]
                         color_name = re.sub(r'\s\d+$', '', color_name).strip()
                     elif len(quantities) < len(sizes):
                         vertical_qtys = []
-                        for next_line in lines[i+1:]: 
+                        for next_line in lines[i+1:]:
                             next_line = next_line.strip()
                             if "Total" in next_line or re.search(r'[a-zA-Z]', next_line.replace("Spec", "").replace("price", "")): break
                             if re.match(r'^\d+$', next_line): vertical_qtys.append(int(next_line))
-                        
-                        if len(vertical_qtys) >= len(sizes): final_qtys = vertical_qtys[:len(sizes)]
-                    
+
+                        if len(vertical_qtys) >= len(sizes): final_qtys = vertical_qtys[: len(sizes)]
+
                     if final_qtys and color_name:
                         for idx, size in enumerate(sizes):
                             extracted_data.append({
@@ -2074,11 +2082,16 @@ def extract_data_dynamic(file_path):
                             })
     except Exception as e:  print(f"Error processing file: {e}")
     return extracted_data, metadata
-    # ==============================================================================
-# লজিক পার্ট:  CLOSING REPORT API & EXCEL GENERATION
+# ==============================================================================
+# লজিক পার্ট: CLOSING REPORT API & EXCEL GENERATION
 # ==============================================================================
 
 def get_authenticated_session(username, password):
+    """
+    এই ফাংশনটি ERP সিস্টেমে লগইন করে একটি সেশন অবজেক্ট রিটার্ন করে।
+    এটি একটি POST রিকোয়েস্টের মাধ্যমে ইউজারনেম এবং পাসওয়ার্ড পাঠিয়ে দেয়।
+    সফলভাবে লগইন হলে, subsequent API কলগুলোর জন্য এই সেশনটি ব্যবহার করা হয়।
+    """
     login_url = 'http://180.92.235.190:8022/erp/login.php'
     login_payload = {'txt_userid': username, 'txt_password': password, 'submit': 'Login'}
     session_req = requests.Session()
@@ -2089,21 +2102,28 @@ def get_authenticated_session(username, password):
         response = session_req.post(login_url, data=login_payload, timeout=300)
         if "dashboard.php" in response.url or "Invalid" not in response.text:
             return session_req
-        else: 
+        else:
             return None
     except requests.exceptions.RequestException as e:
         print(f"Connection Error: {e}")
         return None
 
 def fetch_closing_report_data(internal_ref_no):
+    """
+    এই ফাংশনটি booking reference number ব্যবহার করে ERP থেকে ক্লোজিং রিপোর্ট ডেটা আনে।
+    প্রথমে এটি `get_authenticated_session` কল করে একটি ভ্যালিড সেশন নেয়।
+    এরপর, এটি একটি নির্দিষ্ট report URL-এ POST রিকোয়েস্ট পাঠায়। ডেটা খুঁজে না পাওয়া পর্যন্ত
+    এটি বিভিন্ন সাল (e.g., 2025, 2024) এবং কোম্পানি আইডি (1-5) পরিবর্তন করে চেষ্টা করতে থাকে।
+    সফলভাবে ডেটা পাওয়া গেলে, HTML কনটেন্টটি `parse_report_data` ফাংশনে পাঠানো হয়।
+    """
     active_session = get_authenticated_session("input2.clothing-cutting", "123456")
     if not active_session:  return None
 
     report_url = 'http://180.92.235.190:8022/erp/prod_planning/reports/requires/cutting_lay_production_report_controller.php'
     payload_template = {'action': 'report_generate', 'cbo_wo_company_name': '2', 'cbo_location_name': '2', 'cbo_floor_id': '0', 'cbo_buyer_name': '0', 'txt_internal_ref_no': internal_ref_no, 'reportType': '3'}
     found_data = None
-   
-    for year in ['2025', '2024']: 
+
+    for year in ['2025', '2024']:
         for company_id in range(1, 6):
             payload = payload_template.copy()
             payload['cbo_year_selection'] = year
@@ -2115,12 +2135,23 @@ def fetch_closing_report_data(internal_ref_no):
                     break
             except:   continue
         if found_data:  break
-    
+
     if found_data:
         return parse_report_data(found_data)
     return None
 
 def parse_report_data(html_content):
+    """
+    এই ফাংশনটি ERP থেকে পাওয়া HTML ডেটা পার্স করে।
+    BeautifulSoup ব্যবহার করে এটি HTML টেবিল থেকে প্রয়োজনীয় তথ্যগুলো বের করে আনে, যেমন:
+    - Headers: সাইজের তালিকা (e.g., S, M, L, XL)
+    - Style, Color, Buyer Name
+    - Gmts. Qty (Actual Order Quantity)
+    - Sewing Input
+    - Cutting QC Pass
+    ফাংশনটি প্রতিটি কালার ব্লকের জন্য এই তথ্যগুলো সংগ্রহ করে একটি লিস্ট অফ ডিকশনারি আকারে রিটার্ন করে,
+    যা পরবর্তীতে এক্সেল বা ওয়েব প্রিভিউ তৈরিতে ব্যবহৃত হয়।
+    """
     all_report_data = []
     try:
         soup = BeautifulSoup(html_content, 'lxml')
@@ -2138,8 +2169,8 @@ def parse_report_data(html_content):
             else:
                 current_block.append(row)
         if current_block:  item_blocks.append(current_block)
-        
-        for block in item_blocks:  
+
+        for block in item_blocks:
             style, color, buyer_name, gmts_qty_data, sewing_input_data, cutting_qc_data = "N/A", "N/A", "N/A", None, None, None
             for row in block:
                 cells = row.find_all('td')
@@ -2147,37 +2178,37 @@ def parse_report_data(html_content):
                     criteria_main = cells[0].get_text(strip=True)
                     criteria_sub = cells[2].get_text(strip=True)
                     main_lower, sub_lower = criteria_main.lower(), criteria_sub.lower()
-                    
+
                     if main_lower == "style":  style = cells[1].get_text(strip=True)
-                    elif main_lower == "color & gmts.item":  color = cells[1].get_text(strip=True) # Corrected typo
+                    elif main_lower == "color & gmts.item":  color = cells[1].get_text(strip=True)
                     elif "buyer" in main_lower:  buyer_name = cells[1].get_text(strip=True)
-                    
+
                     if sub_lower == "gmts. color /country qty":  gmts_qty_data = [cell.get_text(strip=True) for cell in cells[3:len(headers)+3]]
-                    
+
                     if "sewing input" in main_lower:  sewing_input_data = [cell.get_text(strip=True) for cell in cells[1:len(headers)+1]]
                     elif "sewing input" in sub_lower:  sewing_input_data = [cell.get_text(strip=True) for cell in cells[3:len(headers)+3]]
-    
-                    if "cutting qc" in main_lower and "balance" not in main_lower: 
+
+                    if "cutting qc" in main_lower and "balance" not in main_lower:
                         cutting_qc_data = [cell.get_text(strip=True) for cell in cells[1:len(headers)+1]]
-                    elif "cutting qc" in sub_lower and "balance" not in sub_lower: 
+                    elif "cutting qc" in sub_lower and "balance" not in sub_lower:
                         cutting_qc_data = [cell.get_text(strip=True) for cell in cells[3:len(headers)+3]]
-            if gmts_qty_data:  
+            if gmts_qty_data:
                 plus_3_percent_data = []
-                for value in gmts_qty_data:  
+                for value in gmts_qty_data:
                     try:
                         new_qty = round(int(value.replace(',', '')) * 1.03)
                         plus_3_percent_data.append(str(new_qty))
                     except (ValueError, TypeError):
                         plus_3_percent_data.append(value)
                 all_report_data.append({
-                    'style': style, 'buyer': buyer_name, 'color': color, 
-                    'headers': headers, 'gmts_qty':   gmts_qty_data, 
-                    'plus_3_percent': plus_3_percent_data, 
-                    'sewing_input':   sewing_input_data if sewing_input_data else [], 
+                    'style': style, 'buyer': buyer_name, 'color': color,
+                    'headers': headers, 'gmts_qty':   gmts_qty_data,
+                    'plus_3_percent': plus_3_percent_data,
+                    'sewing_input':   sewing_input_data if sewing_input_data else [],
                     'cutting_qc':  cutting_qc_data if cutting_qc_data else []
                 })
         return all_report_data
-    except Exception as e: 
+    except Exception as e:
         return None
 
 def create_formatted_excel_report(report_data, internal_ref_no=""):
@@ -2185,45 +2216,45 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
     wb = openpyxl.Workbook()
     ws = wb.active
     ws.title = "Closing Report"
-    
+
     bold_font = Font(bold=True)
-    title_font = Font(size=32, bold=True, color="7B261A") 
+    title_font = Font(size=32, bold=True, color="7B261A")
     white_bold_font = Font(size=16.5, bold=True, color="FFFFFF")
     center_align = Alignment(horizontal='center', vertical='center')
     left_align = Alignment(horizontal='left', vertical='center')
     color_align = Alignment(horizontal='center', vertical='center', wrap_text=True)
     thin_border = Border(left=Side(style='thin'), right=Side(style='thin'), top=Side(style='thin'), bottom=Side(style='thin'))
     medium_border = Border(left=Side(style='medium'), right=Side(style='medium'), top=Side(style='medium'), bottom=Side(style='medium'))
-    
-    ir_ib_fill = PatternFill(start_color="7B261A", end_color="7B261A", fill_type="solid") 
-    header_row_fill = PatternFill(start_color="DE7465", end_color="DE7465", fill_type="solid") 
-    light_brown_fill = PatternFill(start_color="DE7465", end_color="DE7465", fill_type="solid") 
-    light_blue_fill = PatternFill(start_color="B9C2DF", end_color="B9C2DF", fill_type="solid") 
-    light_green_fill = PatternFill(start_color="C4D09D", end_color="C4D09D", fill_type="solid") 
-    dark_green_fill = PatternFill(start_color="f1f2e8", end_color="f1f2e8", fill_type="solid") 
+
+    ir_ib_fill = PatternFill(start_color="7B261A", end_color="7B261A", fill_type="solid")
+    header_row_fill = PatternFill(start_color="DE7465", end_color="DE7465", fill_type="solid")
+    light_brown_fill = PatternFill(start_color="DE7465", end_color="DE7465", fill_type="solid")
+    light_blue_fill = PatternFill(start_color="B9C2DF", end_color="B9C2DF", fill_type="solid")
+    light_green_fill = PatternFill(start_color="C4D09D", end_color="C4D09D", fill_type="solid")
+    dark_green_fill = PatternFill(start_color="f1f2e8", end_color="f1f2e8", fill_type="solid")
 
     NUM_COLUMNS, TABLE_START_ROW = 9, 8
     ws.merge_cells(start_row=1, start_column=1, end_row=1, end_column=NUM_COLUMNS)
-    
+
     ws['A1'].value = "COTTON CLOTHING BD LTD"
-    ws['A1'].font = title_font 
+    ws['A1'].font = title_font
     ws['A1'].alignment = center_align
 
     ws.merge_cells(start_row=2, start_column=1, end_row=2, end_column=NUM_COLUMNS)
     ws['A2'].value = "CLOSING REPORT [ INPUT SECTION ]"
-    ws['A2'].font = Font(size=15, bold=True) 
+    ws['A2'].font = Font(size=15, bold=True)
     ws['A2'].alignment = center_align
     ws.row_dimensions[3].height = 6
 
     formatted_ref_no = internal_ref_no.upper()
     current_date = get_bd_time().strftime("%d/%m/%Y")
-    
+
     left_sub_headers = {
-        'A4': 'BUYER', 'B4': report_data[0].get('buyer', ''), 
-        'A5': 'IR/IB NO', 'B5': formatted_ref_no, 
+        'A4': 'BUYER', 'B4': report_data[0].get('buyer', ''),
+        'A5': 'IR/IB NO', 'B5': formatted_ref_no,
         'A6': 'STYLE NO', 'B6': report_data[0].get('style', '')
     }
-    
+
     for cell_ref, value in left_sub_headers.items():
         cell = ws[cell_ref]
         cell.value = value
@@ -2231,13 +2262,13 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
         cell.alignment = left_align
         cell.border = thin_border
         if cell_ref == 'B5':
-            cell.fill = ir_ib_fill 
-            cell.font = white_bold_font 
+            cell.fill = ir_ib_fill
+            cell.font = white_bold_font
         else:
-            cell.fill = dark_green_fill 
+            cell.fill = dark_green_fill
 
     ws.merge_cells('B4:G4'); ws.merge_cells('B5:G5'); ws.merge_cells('B6:G6')
-    
+
     right_sub_headers = {'H4': 'CLOSING DATE', 'I4': current_date, 'H5': 'SHIPMENT', 'I5': 'ALL', 'H6': 'PO NO', 'I6': 'ALL'}
     for cell_ref, value in right_sub_headers.items():
         cell = ws[cell_ref]
@@ -2245,13 +2276,13 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
         cell.font = bold_font
         cell.alignment = left_align
         cell.border = thin_border
-        cell.fill = dark_green_fill 
+        cell.fill = dark_green_fill
 
     for row in range(4, 7):
-        for col in range(3, 8): 
+        for col in range(3, 8):
             cell = ws.cell(row=row, column=col)
             cell.border = thin_border
-       
+
     current_row = TABLE_START_ROW
     for block in report_data:
         table_headers = ["COLOUR NAME", "SIZE", "ORDER QTY 3%", "ACTUAL QTY", "CUTTING QC", "INPUT QTY", "BALANCE", "SHORT/PLUS QTY", "Percentage %"]
@@ -2260,7 +2291,7 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
             cell.font = bold_font
             cell.alignment = center_align
             cell.border = medium_border
-            cell.fill = header_row_fill 
+            cell.fill = header_row_fill
 
         current_row += 1
         start_merge_row = current_row
@@ -2271,43 +2302,43 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
             actual_qty = int(block['gmts_qty'][i].replace(',', '') or 0)
             input_qty = int(block['sewing_input'][i].replace(',', '') or 0) if i < len(block['sewing_input']) else 0
             cutting_qc_val = int(block.get('cutting_qc', [])[i].replace(',', '') or 0) if i < len(block.get('cutting_qc', [])) else 0
-            
+
             ws.cell(row=current_row, column=1, value=color_to_write)
             ws.cell(row=current_row, column=2, value=size)
             ws.cell(row=current_row, column=4, value=actual_qty)
             ws.cell(row=current_row, column=5, value=cutting_qc_val)
             ws.cell(row=current_row, column=6, value=input_qty)
-            
-            ws.cell(row=current_row, column=3, value=f"=ROUND(D{current_row}*1.03, 0)")      
-            ws.cell(row=current_row, column=7, value=f"=E{current_row}-F{current_row}")      
-            ws.cell(row=current_row, column=8, value=f"=F{current_row}-C{current_row}")      
-            ws.cell(row=current_row, column=9, value=f'=IF(C{current_row}<>0, H{current_row}/C{current_row}, 0)') 
-            
+
+            ws.cell(row=current_row, column=3, value=f"=ROUND(D{current_row}*1.03, 0)")
+            ws.cell(row=current_row, column=7, value=f"=E{current_row}-F{current_row}")
+            ws.cell(row=current_row, column=8, value=f"=F{current_row}-C{current_row}")
+            ws.cell(row=current_row, column=9, value=f'=IF(C{current_row}<>0, H{current_row}/C{current_row}, 0)')
+
             for col_idx in range(1, NUM_COLUMNS + 1):
                 cell = ws.cell(row=current_row, column=col_idx)
                 cell.border = medium_border if col_idx == 2 else thin_border
                 cell.alignment = center_align
-    
-                if col_idx in [1, 2, 3, 6, 9]:  cell.font = bold_font
-                
-                if col_idx == 3:  cell.fill = light_blue_fill      
-                elif col_idx == 6: cell.fill = light_green_fill   
-                else: cell.fill = dark_green_fill 
 
-                if col_idx == 9:  
-                    cell.number_format = '0.00%' 
+                if col_idx in [1, 2, 3, 6, 9]:  cell.font = bold_font
+
+                if col_idx == 3:  cell.fill = light_blue_fill
+                elif col_idx == 6: cell.fill = light_green_fill
+                else: cell.fill = dark_green_fill
+
+                if col_idx == 9:
+                    cell.number_format = '0.00%'
             current_row += 1
-            
+
         end_merge_row = current_row - 1
         if start_merge_row <= end_merge_row:
             ws.merge_cells(start_row=start_merge_row, start_column=1, end_row=end_merge_row, end_column=1)
             merged_cell = ws.cell(row=start_merge_row, column=1)
             merged_cell.alignment = color_align
             if not merged_cell.font.bold:  merged_cell.font = bold_font
-        
+
         total_row_str = str(current_row)
         ws.merge_cells(start_row=current_row, start_column=1, end_row=current_row, end_column=2)
-        
+
         totals_formulas = {
             "A": "TOTAL",
             "C": f"=SUM(C{start_merge_row}:C{end_merge_row})",
@@ -2318,26 +2349,26 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
             "H": f"=SUM(H{start_merge_row}:H{end_merge_row})",
             "I": f"=IF(C{total_row_str}<>0, H{total_row_str}/C{total_row_str}, 0)"
         }
-        
+
         for col_letter, value_or_formula in totals_formulas.items():
             cell = ws[f"{col_letter}{current_row}"]
             cell.value = value_or_formula
             cell.font = bold_font
             cell.border = medium_border
             cell.alignment = center_align
-            cell.fill = light_brown_fill 
-            if col_letter == 'I':  
+            cell.fill = light_brown_fill
+            if col_letter == 'I':
                 cell.number_format = '0.00%'
-        
+
         for col_idx in range(2, NUM_COLUMNS + 1):
             cell = ws.cell(row=current_row, column=col_idx)
-            if not cell.value:  
-                cell.fill = dark_green_fill 
+            if not cell.value:
+                cell.fill = dark_green_fill
                 cell.border = medium_border
         current_row += 2
-    
+
     image_row = current_row + 1
-   
+
     try:
         direct_image_url = 'https://i.ibb.co/v6bp0jQW/rockybilly-regular.webp'
         image_response = requests.get(direct_image_url)
@@ -2353,7 +2384,7 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
         img.height = int(img.width * aspect_ratio)
         ws.row_dimensions[image_row].height = img.height * 0.90
         ws.add_image(img, f'A{image_row}')
-    except Exception:  
+    except Exception:
         pass
 
     signature_row = image_row + 1
@@ -2366,14 +2397,14 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
 
     last_data_row = current_row - 2
     for row in ws.iter_rows(min_row=4, max_row=last_data_row):
-        for cell in row:  
+        for cell in row:
             if cell.coordinate == 'B5':  continue
-            if cell.font:  
+            if cell.font:
                 existing_font = cell.font
-                if cell.row != 1:  
+                if cell.row != 1:
                     new_font = Font(name=existing_font.name, size=16.5, bold=existing_font.bold, italic=existing_font.italic, vertAlign=existing_font.vertAlign, underline=existing_font.underline, strike=existing_font.strike, color=existing_font.color)
                     cell.font = new_font
-    
+
     ws.column_dimensions['A'].width = 23
     ws.column_dimensions['B'].width = 8.5
     ws.column_dimensions['C'].width = 20
@@ -2383,25 +2414,25 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
     ws.column_dimensions['G'].width = 13.5
     ws.column_dimensions['H'].width = 23
     ws.column_dimensions['I'].width = 18
-   
+
     ws.page_setup.orientation = ws.ORIENTATION_PORTRAIT
     ws.page_setup.fitToPage = True
     ws.page_setup.fitToWidth = 1
-    ws.page_setup.fitToHeight = 1 
+    ws.page_setup.fitToHeight = 1
     ws.page_setup.horizontalCentered = True
-    ws.page_setup.verticalCentered = False 
+    ws.page_setup.verticalCentered = False
     ws.page_setup.left = 0.25
     ws.page_setup.right = 0.25
     ws.page_setup.top = 0.45
     ws.page_setup.bottom = 0.45
     ws.page_setup.header = 0
     ws.page_setup.footer = 0
-   
+
     file_stream = BytesIO()
     wb.save(file_stream)
     file_stream.seek(0)
     return file_stream
-    # ==============================================================================
+# ==============================================================================
 # HTML TEMPLATES:   LOGIN PAGE
 # ==============================================================================
 
@@ -2420,7 +2451,7 @@ LOGIN_TEMPLATE = f"""
             padding: 0;
             overflow-x: hidden;
         }}
-        
+
         body {{
             background:  var(--bg-body);
             min-height: 100vh;
@@ -2430,7 +2461,7 @@ LOGIN_TEMPLATE = f"""
             position: relative;
             overflow-y: auto;
         }}
-        
+
         .bg-orb {{
             position: fixed;
             border-radius: 50%;
@@ -2439,7 +2470,7 @@ LOGIN_TEMPLATE = f"""
             animation: orbFloat 20s ease-in-out infinite;
             pointer-events: none;
         }}
-        
+
         .orb-1 {{
             width: 300px;
             height: 300px;
@@ -2448,7 +2479,7 @@ LOGIN_TEMPLATE = f"""
             left: -100px;
             animation-delay: 0s;
         }}
-        
+
         .orb-2 {{
             width:  250px;
             height: 250px;
@@ -2457,7 +2488,7 @@ LOGIN_TEMPLATE = f"""
             right: -50px;
             animation-delay:  -5s;
         }}
-        
+
         .orb-3 {{
             width: 150px;
             height: 150px;
@@ -2467,14 +2498,14 @@ LOGIN_TEMPLATE = f"""
             transform: translate(-50%, -50%);
             animation-delay: -10s;
         }}
-        
+
         @keyframes orbFloat {{
             0%, 100% {{ transform: translate(0, 0) scale(1); }}
             25% {{ transform: translate(30px, -30px) scale(1.05); }}
             50% {{ transform: translate(-20px, 20px) scale(0.95); }}
             75% {{ transform: translate(15px, 30px) scale(1.02); }}
         }}
-        
+
         .login-container {{
             position: relative;
             z-index: 10;
@@ -2487,7 +2518,7 @@ LOGIN_TEMPLATE = f"""
             justify-content: center;
             min-height: 100vh;
         }}
-        
+
         .login-card {{
             background: var(--gradient-card);
             border:  1px solid var(--border-color);
@@ -2497,7 +2528,7 @@ LOGIN_TEMPLATE = f"""
             box-shadow:  0 25px 80px rgba(0, 0, 0, 0.5), 0 0 60px var(--accent-orange-glow);
             animation: loginCardAppear 0.8s cubic-bezier(0.4, 0, 0.2, 1);
         }}
-        
+
         @keyframes loginCardAppear {{
             from {{
                 opacity: 0;
@@ -2508,12 +2539,12 @@ LOGIN_TEMPLATE = f"""
                 transform: translateY(0) scale(1);
             }}
         }}
-        
+
         .brand-section {{
             text-align: center;
             margin-bottom: 35px;
         }}
-        
+
         .brand-icon {{
             width: 70px;
             height: 70px;
@@ -2528,26 +2559,26 @@ LOGIN_TEMPLATE = f"""
             box-shadow: 0 15px 40px var(--accent-orange-glow);
             animation: brandIconPulse 3s ease-in-out infinite;
         }}
-        
+
         @keyframes brandIconPulse {{
             0%, 100% {{ transform: scale(1) rotate(0deg); box-shadow: 0 15px 40px var(--accent-orange-glow); }}
             50% {{ transform: scale(1.05) rotate(5deg); box-shadow: 0 20px 50px var(--accent-orange-glow); }}
         }}
-        
+
         .brand-name {{
             font-size: 28px;
             font-weight:  900;
             color: white;
             letter-spacing: -1px;
         }}
-        
+
         .brand-name span {{
             background: var(--gradient-orange);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
         }}
-        
+
         .brand-tagline {{
             color: var(--text-secondary);
             font-size: 11px;
@@ -2556,29 +2587,29 @@ LOGIN_TEMPLATE = f"""
             font-weight: 600;
             text-transform: uppercase;
         }}
-        
+
         .login-form .input-group {{
             margin-bottom: 20px;
         }}
-        
+
         .login-form .input-group label {{
             display: flex;
             align-items: center;
             gap: 8px;
             margin-bottom: 8px;
         }}
-        
+
         .login-form .input-group label i {{
             color: var(--accent-orange);
             font-size: 13px;
         }}
-        
+
         .login-form input {{
             padding: 14px 18px;
             font-size: 14px;
             border-radius: 12px;
         }}
-        
+
         .login-btn {{
             margin-top: 8px;
             padding: 14px 24px;
@@ -2589,15 +2620,15 @@ LOGIN_TEMPLATE = f"""
             justify-content: center;
             gap: 10px;
         }}
-        
+
         .login-btn i {{
             transition: transform 0.3s;
         }}
-        
+
         .login-btn:hover i {{
             transform: translateX(5px);
         }}
-        
+
         .error-box {{
             margin-top: 20px;
             padding: 14px 18px;
@@ -2611,13 +2642,13 @@ LOGIN_TEMPLATE = f"""
             gap: 10px;
             animation: errorShake 0.5s ease-out;
         }}
-        
+
         @keyframes errorShake {{
             0%, 100% {{ transform: translateX(0); }}
             20%, 60% {{ transform: translateX(-5px); }}
             40%, 80% {{ transform:  translateX(5px); }}
         }}
-        
+
         .footer-credit {{
             text-align: center;
             margin-top: 25px;
@@ -2626,58 +2657,58 @@ LOGIN_TEMPLATE = f"""
             opacity: 0.5;
             font-weight: 500;
         }}
-        
+
         .footer-credit a {{
             color: var(--accent-orange);
             text-decoration: none;
         }}
-        
+
         @media (max-width: 480px) {{
             .login-container {{
                 padding: 15px;
             }}
-            
+
             .login-card {{
                 padding: 30px 25px;
                 border-radius: 20px;
             }}
-            
+
             .brand-icon {{
                 width: 60px;
                 height: 60px;
                 font-size: 28px;
             }}
-            
+
             .brand-name {{
                 font-size: 24px;
             }}
-            
+
             .brand-tagline {{
                 font-size: 10px;
             }}
-            
+
             .login-form input {{
                 padding: 12px 16px;
                 font-size: 14px;
             }}
-            
+
             .login-btn {{
                 padding: 12px 20px;
                 font-size:  14px;
             }}
         }}
-        
+
         @media (max-height: 700px) {{
             .login-container {{
                 min-height: auto;
                 padding-top: 30px;
                 padding-bottom: 30px;
             }}
-            
+
             .brand-section {{
                 margin-bottom: 25px;
             }}
-            
+
             .brand-icon {{
                 width: 60px;
                 height: 60px;
@@ -2691,7 +2722,7 @@ LOGIN_TEMPLATE = f"""
     <div class="bg-orb orb-1"></div>
     <div class="bg-orb orb-2"></div>
     <div class="bg-orb orb-3"></div>
-    
+
     <div class="login-container">
         <div class="login-card">
             <div class="brand-section">
@@ -2701,7 +2732,7 @@ LOGIN_TEMPLATE = f"""
                 <div class="brand-name">MNM<span>Software</span></div>
                 <div class="brand-tagline">Secure Access Portal</div>
             </div>
-            
+
             <form action="/login" method="post" class="login-form">
                 <div class="input-group">
                     <label><i class="fas fa-user"></i> USERNAME</label>
@@ -2715,7 +2746,7 @@ LOGIN_TEMPLATE = f"""
                     Sign In <i class="fas fa-arrow-right"></i>
                 </button>
             </form>
-            
+
             {{% with messages = get_flashed_messages() %}}
                 {{% if messages %}}
                     <div class="error-box">
@@ -2724,13 +2755,13 @@ LOGIN_TEMPLATE = f"""
                     </div>
                 {{% endif %}}
             {{% endwith %}}
-            
+
             <div class="footer-credit">
                 © 2025 <a href="#">Mehedi Hasan</a> • All Rights Reserved
             </div>
         </div>
     </div>
-    
+
     <script>
         document.querySelector('.login-btn').addEventListener('click', function(e) {{
             const ripple = document.createElement('span');
@@ -2768,11 +2799,11 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
             <div class="welcome-greeting" id="greetingText">Good Morning</div>
             <div class="welcome-title">Welcome Back, <span>{{{{ session.user }}}}</span>!</div>
             <div class="welcome-message">
-                You're now logged into the MNM Software Dashboard. 
+                You're now logged into the MNM Software Dashboard.
                 All systems are operational and ready for your commands.
             </div>
             <button class="welcome-close" onclick="closeWelcome()">
-                <i class="fas fa-rocket" style="margin-right: 8px;"></i> Let's Go! 
+                <i class="fas fa-rocket" style="margin-right: 8px;"></i> Let's Go!
             </button>
         </div>
     </div>
@@ -2782,7 +2813,7 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
             <div class="spinner" id="spinner-anim"></div>
             <div class="spinner-inner"></div>
         </div>
-        
+
         <div class="checkmark-container" id="success-anim">
             <div class="checkmark-circle"></div>
             <div class="anim-text">Successful!</div>
@@ -2793,7 +2824,7 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
             <div class="anim-text">Action Failed!</div>
             <div style="font-size: 13px; color:#F87171; margin-top:  8px;">Please check server or inputs</div>
         </div>
-        
+
         <div class="loading-text" id="loading-text">Processing Request...</div>
     </div>
 
@@ -2803,7 +2834,7 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
 
     <div class="sidebar">
         <div class="brand-logo">
-            <i class="fas fa-layer-group"></i> 
+            <i class="fas fa-layer-group"></i>
             MNM<span>Software</span>
         </div>
         <div class="nav-menu">
@@ -2836,7 +2867,7 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
     </div>
 
     <div class="main-content">
-        
+
         <div id="section-dashboard">
             <div class="header-section">
                 <div>
@@ -2848,7 +2879,7 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
                     <span>System Online</span>
                 </div>
             </div>
-            
+
             {{% with messages = get_flashed_messages() %}}
                 {{% if messages %}}
                     <div class="flash-message flash-error">
@@ -2898,7 +2929,7 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
             <div class="dashboard-grid-2">
                 <div class="card">
                     <div class="section-header">
-                        <span>Daily Activity Chart (Last 30 Days)</span>
+                        <span>Daily Activity Chart</span>
                         <div class="realtime-indicator">
                             <div class="realtime-dot"></div>
                             <span>Real-time</span>
@@ -2913,7 +2944,7 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
                         <span>Module Usage</span>
                         <i class="fas fa-chart-bar" style="color: var(--accent-orange);"></i>
                     </div>
-                    
+
                     <div class="progress-item">
                         <div class="progress-header">
                             <span>Closing Report</span>
@@ -2923,7 +2954,7 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
                             <div class="progress-bar-fill progress-orange" style="width: 85%;"></div>
                         </div>
                     </div>
-                    
+
                     <div class="progress-item">
                         <div class="progress-header">
                             <span>Accessories</span>
@@ -2933,7 +2964,7 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
                             <div class="progress-bar-fill progress-purple" style="width: 65%;"></div>
                         </div>
                     </div>
-                    
+
                     <div class="progress-item">
                         <div class="progress-header">
                             <span>PO Generator</span>
@@ -2962,7 +2993,7 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
                             </tr>
                         </thead>
                         <tbody>
-                            {{% for log in stats.history[:10] %}}
+                            {{% for log in stats.history[: 10] %}}
                             <tr style="animation:  fadeInUp 0.5s ease-out {{{{ loop.index * 0.05 }}}}s backwards;">
                                 <td>
                                     <div class="time-badge">
@@ -3049,134 +3080,454 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
             </div>
         </div>
 
-        <div id="section-settings" style="display: none;">
+        <div id="section-settings" style="display:none;">
             <div class="header-section">
                 <div>
                     <div class="page-title">User Management</div>
-                    <div class="page-subtitle">Create, update, and manage user access</div>
+                    <div class="page-subtitle">Manage user accounts and permissions</div>
                 </div>
             </div>
-            <div class="card">
-                <div class="section-header">
-                    <span>System Users</span>
-                    <button id="addUserBtn" style="width: auto; padding: 10px 20px; font-size: 13px;">
-                        <i class="fas fa-plus" style="margin-right: 8px;"></i> Add New User
-                    </button>
+            <div class="dashboard-grid-2">
+                <div class="card">
+                    <div class="section-header">
+                        <span>User Directory</span>
+                        <span class="table-badge" style="background: var(--accent-orange); color: white;">{{{{ stats.users.count }}}} Users</span>
+                    </div>
+                    <div id="userTableContainer" style="max-height: 450px; overflow-y: auto;">
+                        <div class="skeleton" style="height: 50px; margin-bottom: 10px;"></div>
+                        <div class="skeleton" style="height: 50px; margin-bottom: 10px;"></div>
+                        <div class="skeleton" style="height: 50px;"></div>
+                    </div>
                 </div>
-                <div style="overflow-x: auto;">
-                    <table class="dark-table" id="usersTable">
-                        <thead>
-                            <tr>
-                                <th>Username</th>
-                                <th>Role</th>
-                                <th>Permissions</th>
-                                <th>Last Login</th>
-                                <th style="text-align: right;">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <!-- User rows will be injected by JavaScript -->
-                        </tbody>
-                    </table>
+                <div class="card">
+                    <div class="section-header">
+                        <span>Create / Edit User</span>
+                        <i class="fas fa-user-plus" style="color: var(--accent-orange);"></i>
+                    </div>
+                    <form id="userForm">
+                        <input type="hidden" id="action_type" value="create">
+                        <div class="input-group">
+                            <label><i class="fas fa-user" style="margin-right: 5px;"></i> USERNAME</label>
+                            <input type="text" id="new_username" required placeholder="Enter username">
+                        </div>
+                        <div class="input-group">
+                            <label><i class="fas fa-key" style="margin-right: 5px;"></i> PASSWORD</label>
+                            <input type="text" id="new_password" required placeholder="Enter password">
+                        </div>
+                        <div class="input-group">
+                            <label><i class="fas fa-shield-alt" style="margin-right: 5px;"></i> PERMISSIONS</label>
+                            <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 5px;">
+                                <label class="perm-checkbox">
+                                    <input type="checkbox" id="perm_closing" checked>
+                                    <span>Closing</span>
+                                </label>
+                                <label class="perm-checkbox">
+                                    <input type="checkbox" id="perm_po">
+                                    <span>PO Sheet</span>
+                                </label>
+                                <label class="perm-checkbox">
+                                    <input type="checkbox" id="perm_acc">
+                                    <span>Accessories</span>
+                                </label>
+                            </div>
+                        </div>
+                        <button type="button" onclick="handleUserSubmit()" id="saveUserBtn">
+                            <i class="fas fa-save" style="margin-right: 10px;"></i> Save User
+                        </button>
+                        <button type="button" onclick="resetForm()" style="margin-top: 12px; background: rgba(255,255,255,0.05); border: 1px solid var(--border-color);">
+                            <i class="fas fa-undo" style="margin-right: 10px;"></i> Reset Form
+                        </button>
+                    </form>
                 </div>
             </div>
         </div>
     </div>
-    
     <script>
-    // --- General UI Scripts ---
-    document.addEventListener('DOMContentLoaded', function() {{
-        // Welcome Popup
-        if (!sessionStorage.getItem('welcomeShown')) {{
+        // ===== WELCOME POPUP WITH TIME-BASED GREETING =====
+        function showWelcomePopup() {{
             const hour = new Date().getHours();
             let greeting, icon;
-            if (hour >= 5 && hour < 12) {{ greeting = "Good Morning"; icon = '<i class="fas fa-sun"></i>'; }} 
-            else if (hour >= 12 && hour < 17) {{ greeting = "Good Afternoon"; icon = '<i class="fas fa-sun"></i>'; }} 
-            else if (hour >= 17 && hour < 21) {{ greeting = "Good Evening"; icon = '<i class="fas fa-city"></i>'; }} 
-            else {{ greeting = "Good Night"; icon = '<i class="fas fa-moon"></i>'; }}
+
+            if (hour >= 5 && hour < 12) {{
+                greeting = "Good Morning";
+                icon = '<i class="fas fa-sun"></i>';
+            }} else if (hour >= 12 && hour < 17) {{
+                greeting = "Good Afternoon";
+                icon = '<i class="fas fa-sun"></i>';
+            }} else if (hour >= 17 && hour < 21) {{
+                greeting = "Good Evening";
+                icon = '<i class="fas fa-city"></i>';
+            }} else {{
+                greeting = "Good Night";
+                icon = '<i class="fas fa-moon"></i>';
+            }}
+
             document.getElementById('greetingText').textContent = greeting;
             document.getElementById('welcomeIcon').innerHTML = icon;
             document.getElementById('welcomeModal').style.display = 'flex';
         }}
 
-        // Particle BG
-        particlesJS("particles-js", {{ "particles": {{"number":{{"value":50,"density":{{"enable":true,"value_area":800}}}},"color":{{"value":"#ff7a00"}},"shape":{{"type":"circle","stroke":{{"width":0,"color":"#000000"}},"polygon":{{"nb_sides":5}}}},"opacity":{{"value":0.5,"random":true,"anim":{{"enable":false,"speed":1,"opacity_min":0.1,"sync":false}}}},"size":{{"value":3,"random":true,"anim":{{"enable":false,"speed":40,"size_min":0.1,"sync":false}}}},"line_linked":{{"enable":false}},"move":{{"enable":true,"speed":2,"direction":"none","random":true,"straight":false,"out_mode":"out","bounce":false,"attract":{{"enable":false,"rotateX":600,"rotateY":1200}}}}}},"interactivity":{{"detect_on":"canvas","events":{{"onhover":{{"enable":true,"mode":"grab"}},"onclick":{{"enable":true,"mode":"push"}},"resize":true}},"modes":{{"grab":{{"distance":140,"line_linked":{{"opacity":0.3}}}},"bubble":{{"distance":400,"size":40,"duration":2,"opacity":8,"speed":3}},"repulse":{{"distance":200,"duration":0.4}},"push":{{"particles_nb":4}},"remove":{{"particles_nb":2}}}}}},"retina_detect":true}});
+        function closeWelcome() {{
+            const modal = document.getElementById('welcomeModal');
+            modal.style.animation = 'modalFadeOut 0.3s ease-out forwards';
+            setTimeout(() => {{
+                modal.style.display = 'none';
+                sessionStorage.setItem('welcomeShown', 'true');
+            }}, 300);
+        }}
 
-        // Count-Up Animation
-        const counters = document.querySelectorAll('.count-up');
-        const speed = 200;
-        counters.forEach(counter => {{
-            const animate = () => {{
-                const target = +counter.getAttribute('data-target');
-                const count = +counter.innerText.replace(/,/g, '');
-                const inc = Math.ceil(target / speed);
-                if (count < target) {{
-                    counter.innerText = (count + inc).toLocaleString('en-US');
-                    setTimeout(animate, 15);
-                }} else {{
-                    counter.innerText = target.toLocaleString('en-US');
-                }}
+        if (!sessionStorage.getItem('welcomeShown')) {{
+            setTimeout(showWelcomePopup, 500);
+        }}
+
+        // ===== SECTION NAVIGATION =====
+        function showSection(id, element) {{
+            ['dashboard', 'analytics', 'help', 'settings'].forEach(sid => {{
+                document.getElementById('section-' + sid).style.display = 'none';
+            }});
+            document.getElementById('section-' + id).style.display = 'block';
+
+            if (element) {{
+                document.querySelectorAll('.nav-link').forEach(el => el.classList.remove('active'));
+                element.classList.add('active');
             }}
-            animate();
-        }});
-        
-        // File Upload UI
-        const uploadInput = document.getElementById('file-upload');
-        if(uploadInput) {{
-            uploadInput.addEventListener('change', () => {{
-                const count = uploadInput.files.length;
-                document.getElementById('file-count').textContent = count > 0 ? `${{count}} file(s) selected` : 'No files selected';
+
+            if (id === 'settings') loadUsers();
+            if (window.innerWidth < 1024) document.querySelector('.sidebar').classList.remove('active');
+        }}
+
+        // ===== FILE UPLOAD HANDLER =====
+        const fileUpload = document.getElementById('file-upload');
+        const uploadZone = document.getElementById('uploadZone');
+
+        if (fileUpload) {{
+            fileUpload.addEventListener('change', function() {{
+                const count = this.files.length;
+                document.getElementById('file-count').innerHTML = count > 0
+                    ? `<i class="fas fa-check-circle" style="margin-right: 5px;"></i>${{count}} file(s) selected`
+                    : 'No files selected';
+            }});
+            uploadZone.addEventListener('dragover', (e) => {{
+                e.preventDefault();
+                uploadZone.classList.add('dragover');
+            }});
+            uploadZone.addEventListener('dragleave', () => {{
+                uploadZone.classList.remove('dragover');
+            }});
+            uploadZone.addEventListener('drop', (e) => {{
+                e.preventDefault();
+                uploadZone.classList.remove('dragover');
+                fileUpload.files = e.dataTransfer.files;
+                fileUpload.dispatchEvent(new Event('change'));
             }});
         }}
-    }});
 
-    function closeWelcome() {{
-        const modal = document.getElementById('welcomeModal');
-        modal.style.opacity = '0';
-        setTimeout(() => {{ modal.style.display = 'none'; sessionStorage.setItem('welcomeShown', 'true'); }}, 300);
-    }}
-
-    function showLoading() {{
-        document.getElementById('loading-overlay').style.display = 'flex';
-        return true;
-    }}
-    
-    // --- Section Switching ---
-    function showSection(sectionId, element) {{
-        document.querySelectorAll('.main-content > div').forEach(sec => sec.style.display = 'none');
-        document.getElementById('section-' + sectionId).style.display = 'block';
-        document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
-        if (element) {{
-            element.classList.add('active');
-        }}
-    }}
-
-    // --- Chart.js ---
-    const ctx = document.getElementById('mainChart');
-    if (ctx) {{
-        const chartData = {{{{ stats.chart | tojson }}}};
+        // ===== DEW STYLE DAILY CHART =====
+        const ctx = document.getElementById('mainChart').getContext('2d');
+        const gradientOrange = ctx.createLinearGradient(0, 0, 0, 300);
+        gradientOrange.addColorStop(0, 'rgba(255, 122, 0, 0.5)');
+        gradientOrange.addColorStop(1, 'rgba(255, 122, 0, 0.0)');
+        const gradientPurple = ctx.createLinearGradient(0, 0, 0, 300);
+        gradientPurple.addColorStop(0, 'rgba(139, 92, 246, 0.5)');
+        gradientPurple.addColorStop(1, 'rgba(139, 92, 246, 0.0)');
+        const gradientGreen = ctx.createLinearGradient(0, 0, 0, 300);
+        gradientGreen.addColorStop(0, 'rgba(16, 185, 129, 0.5)');
+        gradientGreen.addColorStop(1, 'rgba(16, 185, 129, 0.0)');
         new Chart(ctx, {{
             type: 'line',
             data: {{
-                labels: chartData.labels,
+                labels: {{{{ stats.chart.labels | tojson }}}},
                 datasets: [
-                    {{ label: 'Closing', data: chartData.closing, borderColor: 'var(--accent-orange)', backgroundColor: 'rgba(255, 122, 0, 0.1)', tension: 0.4, fill: true }},
-                    {{ label: 'Accessories', data: chartData.acc, borderColor: 'var(--accent-purple)', backgroundColor: 'rgba(139, 92, 246, 0.1)', tension: 0.4, fill: true }},
-                    {{ label: 'PO Sheets', data: chartData.po, borderColor: 'var(--accent-green)', backgroundColor: 'rgba(16, 185, 129, 0.1)', tension: 0.4, fill: true }}
+                    {{
+                        label: 'Closing',
+                        data: {{{{ stats.chart.closing | tojson }}}},
+                        borderColor: '#FF7A00',
+                        backgroundColor: gradientOrange,
+                        tension: 0.4,
+                        fill: true,
+                        pointBackgroundColor: '#FF7A00',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2,
+                        pointRadius: 4,
+                        pointHoverRadius: 7,
+                        borderWidth: 3
+                    }},
+                    {{
+                        label: 'Accessories',
+                        data: {{{{ stats.chart.acc | tojson }}}},
+                        borderColor: '#8B5CF6',
+                        backgroundColor: gradientPurple,
+                        tension: 0.4,
+                        fill: true,
+                        pointBackgroundColor: '#8B5CF6',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2,
+                        pointRadius: 4,
+                        pointHoverRadius: 7,
+                        borderWidth: 3
+                    }},
+                    {{
+                        label: 'PO Sheets',
+                        data: {{{{ stats.chart.po | tojson }}}},
+                        borderColor: '#10B981',
+                        backgroundColor: gradientGreen,
+                        tension: 0.4,
+                        fill: true,
+                        pointBackgroundColor: '#10B981',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2,
+                        pointRadius: 4,
+                        pointHoverRadius: 7,
+                        borderWidth: 3
+                    }}
                 ]
             }},
             options: {{
-                responsive: true, maintainAspectRatio: false,
-                scales: {{ y: {{ grid: {{ color: 'rgba(255,255,255,0.05)' }}, ticks: {{ color: 'var(--text-secondary)' }} }}, x: {{ grid: {{ color: 'rgba(255,255,255,0.05)' }}, ticks: {{ color: 'var(--text-secondary)' }} }} }},
-                plugins: {{ legend: {{ labels: {{ color: 'var(--text-secondary)' }} }} }}
+                plugins: {{
+                    legend: {{
+                        display: true,
+                        position: 'top',
+                        labels: {{
+                            color: '#8b8b9e',
+                            font: {{ size: 11, weight: 500 }},
+                            usePointStyle: true,
+                            padding: 15,
+                            boxWidth: 8
+                        }}
+                    }},
+                    tooltip: {{
+                        mode: 'index',
+                        intersect: false,
+                        backgroundColor: 'rgba(22, 22, 31, 0.95)',
+                        titleColor: '#fff',
+                        bodyColor: '#8b8b9e',
+                        borderColor: 'rgba(255, 122, 0, 0.3)',
+                        borderWidth: 1,
+                        padding: 12,
+                        cornerRadius: 10,
+                        displayColors: true
+                    }}
+                }},
+                scales: {{
+                    x: {{
+                        grid: {{
+                            display: false
+                        }},
+                        ticks: {{
+                            color: '#8b8b9e',
+                            font: {{ size: 10 }},
+                            maxRotation: 45,
+                            minRotation: 45
+                        }}
+                    }},
+                    y: {{
+                        grid: {{
+                            color: 'rgba(255,255,255,0.03)',
+                            drawBorder: false
+                        }},
+                        ticks: {{
+                            color: '#8b8b9e',
+                            font: {{ size: 10 }},
+                            stepSize: 1
+                        }},
+                        beginAtZero: true
+                    }}
+                }},
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: {{
+                    intersect: false,
+                    mode: 'index'
+                }},
+                animation: {{
+                    duration: 2000,
+                    easing: 'easeOutQuart'
+                }}
             }}
         }});
-    }}
+
+        // ===== COUNT UP ANIMATION =====
+        function animateCountUp() {{
+            document.querySelectorAll('.count-up').forEach(counter => {{
+                const target = parseInt(counter.getAttribute('data-target'));
+                const duration = 2000;
+                const step = target / (duration / 16);
+                let current = 0;
+
+                const updateCounter = () => {{
+                    current += step;
+                    if (current < target) {{
+                        counter.textContent = Math.floor(current).toLocaleString();
+                        requestAnimationFrame(updateCounter);
+                    }} else {{
+                        counter.textContent = target.toLocaleString();
+                    }}
+                }};
+
+                updateCounter();
+            }});
+        }}
+
+        setTimeout(animateCountUp, 500);
+
+        // ===== LOADING ANIMATION =====
+        function showLoading() {{
+            const overlay = document.getElementById('loading-overlay');
+            const spinner = document.getElementById('spinner-anim').parentElement;
+            const success = document.getElementById('success-anim');
+            const fail = document.getElementById('fail-anim');
+            const text = document.getElementById('loading-text');
+
+            overlay.style.display = 'flex';
+            spinner.style.display = 'block';
+            success.style.display = 'none';
+            fail.style.display = 'none';
+            text.style.display = 'block';
+            text.textContent = 'Processing Request...';
+
+            return true;
+        }}
+
+        function showSuccess() {{
+            const overlay = document.getElementById('loading-overlay');
+            const spinner = document.getElementById('spinner-anim').parentElement;
+            const success = document.getElementById('success-anim');
+            const text = document.getElementById('loading-text');
+
+            spinner.style.display = 'none';
+            success.style.display = 'block';
+            text.style.display = 'none';
+
+            setTimeout(() => {{ overlay.style.display = 'none'; }}, 1500);
+        }}
+
+        // ===== USER MANAGEMENT =====
+        function loadUsers() {{
+            fetch('/admin/get-users')
+                .then(res => res.json())
+                .then(data => {{
+                    let html = '<table class="dark-table"><thead><tr><th>User</th><th>Last Login</th><th style="text-align:right;">Actions</th></tr></thead><tbody>';
+
+                    for (const [u, d] of Object.entries(data)) {{
+                        const roleClass = d.role === 'admin' ? 'background: rgba(255, 122, 0, 0.1); color: var(--accent-orange);' : 'background: rgba(139, 92, 246, 0.1); color: var(--accent-purple);';
+
+                        html += `<tr>
+                            <td style="font-weight: 600;">${{u}} <br><small style="color:var(--text-secondary);font-weight:400;">(${d.role})</small></td>
+                            <td style="color:var(--text-secondary);font-size:12px;">${{d.last_login}} <br> <small>Duration: ${{d.last_duration}}</small></td>
+                            <td style="text-align:right;">
+                                ${{d.role !== 'admin' ? `
+                                    <div class="action-cell">
+                                        <button class="action-btn btn-edit" onclick="editUser('${{u}}', '${{d.password}}', '${{d.permissions.join(',')}}')">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="action-btn btn-del" onclick="deleteUser('${{u}}')">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                ` : '<i class="fas fa-shield-alt" style="color: var(--accent-orange); opacity: 0.5;"></i>'}}
+                            </td>
+                        </tr>`;
+                    }}
+
+                    document.getElementById('userTableContainer').innerHTML = html + '</tbody></table>';
+                }});
+        }}
+
+        function handleUserSubmit() {{
+            const u = document.getElementById('new_username').value;
+            const p = document.getElementById('new_password').value;
+            const a = document.getElementById('action_type').value;
+
+            let perms = [];
+            if (document.getElementById('perm_closing').checked) perms.push('closing');
+            if (document.getElementById('perm_po').checked) perms.push('po_sheet');
+            if (document.getElementById('perm_acc').checked) perms.push('accessories');
+
+            showLoading();
+
+            fetch('/admin/save-user', {{
+                method: 'POST',
+                headers: {{'Content-Type': 'application/json'}},
+                body: JSON.stringify({{ username: u, password: p, permissions: perms, action_type: a }})
+            }})
+            .then(r => r.json())
+            .then(d => {{
+                if (d.status === 'success') {{
+                    showSuccess();
+                    loadUsers();
+                    resetForm();
+                }} else {{
+                    alert(d.message);
+                    document.getElementById('loading-overlay').style.display = 'none';
+                }}
+            }});
+        }}
+
+        function editUser(u, p, permsStr) {{
+            document.getElementById('new_username').value = u;
+            document.getElementById('new_username').readOnly = true;
+            document.getElementById('new_password').value = p;
+            document.getElementById('action_type').value = 'update';
+            document.getElementById('saveUserBtn').innerHTML = '<i class="fas fa-sync" style="margin-right: 10px;"></i> Update User';
+            const pArr = permsStr.split(',');
+            document.getElementById('perm_closing').checked = pArr.includes('closing');
+            document.getElementById('perm_po').checked = pArr.includes('po_sheet');
+            document.getElementById('perm_acc').checked = pArr.includes('accessories');
+        }}
+
+        function resetForm() {{
+            document.getElementById('userForm').reset();
+            document.getElementById('action_type').value = 'create';
+            document.getElementById('saveUserBtn').innerHTML = '<i class="fas fa-save" style="margin-right: 10px;"></i> Save User';
+            document.getElementById('new_username').readOnly = false;
+            document.getElementById('perm_closing').checked = true;
+        }}
+
+        function deleteUser(u) {{
+            if (confirm('Are you sure you want to delete "' + u + '"?')) {{
+                fetch('/admin/delete-user', {{
+                    method: 'POST',
+                    headers: {{'Content-Type': 'application/json'}},
+                    body: JSON.stringify({{ username: u }})
+                }}).then(() => loadUsers());
+            }}
+        }}
+
+        // ===== PARTICLES.JS INITIALIZATION =====
+        if (typeof particlesJS !== 'undefined') {{
+            particlesJS('particles-js', {{
+                particles: {{
+                    number: {{ value: 50, density: {{ enable: true, value_area: 800 }} }},
+                    color: {{ value: '#FF7A00' }},
+                    shape: {{ type: 'circle' }},
+                    opacity: {{ value: 0.3, random: true }},
+                    size: {{ value: 3, random: true }},
+                    line_linked: {{ enable: true, distance: 150, color: '#FF7A00', opacity: 0.1, width: 1 }},
+                    move: {{ enable: true, speed: 1, direction: 'none', random: true, out_mode: 'out' }}
+                }},
+                interactivity: {{
+                    events: {{ onhover: {{ enable: true, mode: 'grab' }} }},
+                    modes: {{ grab: {{ distance: 140, line_linked: {{ opacity: 0.3 }} }} }}
+                }}
+            }});
+        }}
+
+        // Add CSS for animations
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes fadeInUp {{
+                from {{ opacity: 0; transform: translateY(20px); }}
+                to {{ opacity: 1; transform: translateY(0); }}
+            }}
+            @keyframes modalFadeOut {{
+                to {{ opacity: 0; }}
+            }}
+        `;
+        document.head.appendChild(style);
     </script>
 </body>
 </html>
 """
-
 # ==============================================================================
 # USER DASHBOARD TEMPLATE (হুবহু তোমার মূল কোড)
 # ==============================================================================
@@ -3192,7 +3543,7 @@ USER_DASHBOARD_TEMPLATE = f"""
 </head>
 <body>
     <div class="animated-bg"></div>
-    
+
     <div class="welcome-modal" id="welcomeModal">
         <div class="welcome-content">
             <div class="welcome-icon" id="welcomeIcon"><i class="fas fa-hand-sparkles"></i></div>
@@ -3206,7 +3557,7 @@ USER_DASHBOARD_TEMPLATE = f"""
             </button>
         </div>
     </div>
-    
+
     <div id="loading-overlay">
         <div class="spinner-container">
             <div class="spinner"></div>
@@ -3214,10 +3565,10 @@ USER_DASHBOARD_TEMPLATE = f"""
         </div>
         <div class="loading-text">Processing...</div>
     </div>
-    
+
     <div class="sidebar">
         <div class="brand-logo">
-            <i class="fas fa-layer-group"></i> 
+            <i class="fas fa-layer-group"></i>
             MNM<span>Software</span>
         </div>
         <div class="nav-menu">
@@ -3232,7 +3583,7 @@ USER_DASHBOARD_TEMPLATE = f"""
             <i class="fas fa-code" style="margin-right: 5px;"></i> Powered by Mehedi Hasan
         </div>
     </div>
-    
+
     <div class="main-content">
         <div class="header-section">
             <div>
@@ -3261,7 +3612,7 @@ USER_DASHBOARD_TEMPLATE = f"""
                     <span><i class="fas fa-file-export" style="margin-right: 10px; color: var(--accent-orange);"></i>Closing Report</span>
                 </div>
                 <p style="color: var(--text-secondary); margin-bottom: 20px; font-size: 14px; line-height: 1.6;">
-                    Generate production closing reports with real-time data. 
+                    Generate production closing reports with real-time data.
                 </p>
                 <form action="/generate-report" method="post" onsubmit="showLoading()">
                     <div class="input-group">
@@ -3274,7 +3625,7 @@ USER_DASHBOARD_TEMPLATE = f"""
                 </form>
             </div>
             {{% endif %}}
-            
+
             {{% if 'po_sheet' in session.permissions %}}
             <div class="card" style="animation: fadeInUp 0.5s ease-out 0.2s backwards;">
                 <div class="section-header">
@@ -3294,7 +3645,7 @@ USER_DASHBOARD_TEMPLATE = f"""
                 </form>
             </div>
             {{% endif %}}
-            
+
             {{% if 'accessories' in session.permissions %}}
             <div class="card" style="animation: fadeInUp 0.5s ease-out 0.3s backwards;">
                 <div class="section-header">
@@ -3312,12 +3663,12 @@ USER_DASHBOARD_TEMPLATE = f"""
             {{% endif %}}
         </div>
     </div>
-    
+
     <script>
         function showWelcomePopup() {{
             const hour = new Date().getHours();
             let greeting, icon;
-            
+
             if (hour >= 5 && hour < 12) {{
                 greeting = "Good Morning";
                 icon = '<i class="fas fa-sun"></i>';
@@ -3331,12 +3682,12 @@ USER_DASHBOARD_TEMPLATE = f"""
                 greeting = "Good Night";
                 icon = '<i class="fas fa-moon"></i>';
             }}
-            
+
             document.getElementById('greetingText').textContent = greeting;
             document.getElementById('welcomeIcon').innerHTML = icon;
             document.getElementById('welcomeModal').style.display = 'flex';
         }}
-        
+
         function closeWelcome() {{
             const modal = document.getElementById('welcomeModal');
             modal.style.opacity = '0';
@@ -3345,16 +3696,16 @@ USER_DASHBOARD_TEMPLATE = f"""
                 sessionStorage.setItem('welcomeShown', 'true');
             }}, 300);
         }}
-        
+
         if (!sessionStorage.getItem('welcomeShown')) {{
             setTimeout(showWelcomePopup, 500);
         }}
-        
+
         function showLoading() {{
             document.getElementById('loading-overlay').style.display = 'flex';
             return true;
         }}
-        
+
         const style = document.createElement('style');
         style.textContent = `
             @keyframes fadeInUp {{
@@ -3386,7 +3737,7 @@ ACCESSORIES_SEARCH_TEMPLATE = f"""
             align-items: center;
             min-height: 100vh;
         }}
-        
+
         .search-container {{
             position: relative;
             z-index: 10;
@@ -3394,7 +3745,7 @@ ACCESSORIES_SEARCH_TEMPLATE = f"""
             max-width: 520px;
             padding: 20px;
         }}
-        
+
         .search-card {{
             background: var(--gradient-card);
             border:  1px solid var(--border-color);
@@ -3404,17 +3755,17 @@ ACCESSORIES_SEARCH_TEMPLATE = f"""
             box-shadow:  0 25px 80px rgba(0, 0, 0, 0.5), 0 0 60px var(--accent-orange-glow);
             animation: cardAppear 0.6s cubic-bezier(0.4, 0, 0.2, 1);
         }}
-        
+
         @keyframes cardAppear {{
             from {{ opacity: 0; transform: translateY(20px) scale(0.95); }}
             to {{ opacity:  1; transform: translateY(0) scale(1); }}
         }}
-        
+
         .search-header {{
             text-align: center;
             margin-bottom: 40px;
         }}
-        
+
         .search-icon {{
             width: 80px;
             height: 80px;
@@ -3428,24 +3779,24 @@ ACCESSORIES_SEARCH_TEMPLATE = f"""
             margin-bottom: 20px;
             animation: iconFloat 3s ease-in-out infinite;
         }}
-        
+
         @keyframes iconFloat {{
             0%, 100% {{ transform: translateY(0); }}
             50% {{ transform:  translateY(-10px); }}
         }}
-        
+
         .search-title {{
             font-size: 28px;
             font-weight: 800;
             color: white;
             margin-bottom: 8px;
         }}
-        
+
         .search-subtitle {{
             color: var(--text-secondary);
             font-size: 14px;
         }}
-        
+
         .nav-links {{
             display: flex;
             justify-content: space-between;
@@ -3454,7 +3805,7 @@ ACCESSORIES_SEARCH_TEMPLATE = f"""
             padding-top: 20px;
             border-top: 1px solid var(--border-color);
         }}
-        
+
         .nav-links a {{
             color: var(--text-secondary);
             text-decoration: none;
@@ -3465,15 +3816,15 @@ ACCESSORIES_SEARCH_TEMPLATE = f"""
             gap: 6px;
             transition: var(--transition-smooth);
         }}
-        
+
         .nav-links a:hover {{
             color: var(--accent-orange);
         }}
-        
+
         .nav-links a.logout {{
             color: var(--accent-red);
         }}
-        
+
         .nav-links a.logout:hover {{
             color: #ff6b6b;
         }}
@@ -3481,7 +3832,7 @@ ACCESSORIES_SEARCH_TEMPLATE = f"""
 </head>
 <body>
     <div class="animated-bg"></div>
-    
+
     <div class="search-container">
         <div class="search-card">
             <div class="search-header">
@@ -3491,7 +3842,7 @@ ACCESSORIES_SEARCH_TEMPLATE = f"""
                 <div class="search-title">Accessories Challan</div>
                 <div class="search-subtitle">Enter booking reference to continue</div>
             </div>
-            
+
             <form action="/admin/accessories/input" method="post">
                 <div class="input-group">
                     <label><i class="fas fa-search" style="margin-right: 5px;"></i> BOOKING REFERENCE</label>
@@ -3501,18 +3852,16 @@ ACCESSORIES_SEARCH_TEMPLATE = f"""
                     Proceed to Entry <i class="fas fa-arrow-right" style="margin-left: 10px;"></i>
                 </button>
             </form>
-            
-            {{% with messages = get_flashed_messages(with_categories=true) %}}
+
+            {{% with messages = get_flashed_messages() %}}
                 {{% if messages %}}
-                    {{% for category, message in messages %}}
-                        <div class="flash-message flash-{{{{ category }}}}" style="margin-top: 20px;">
-                            <i class="fas fa-exclamation-circle"></i>
-                            <span>{{{{ message }}}}</span>
-                        </div>
-                    {{% endfor %}}
+                    <div class="flash-message flash-error" style="margin-top: 20px;">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <span>{{{{ messages[0] }}}}</span>
+                    </div>
                 {{% endif %}}
             {{% endwith %}}
-            
+
             <!-- NEW:  History Section -->
             <div class="history-section">
                 <div class="history-toggle" onclick="toggleHistory()">
@@ -3527,7 +3876,7 @@ ACCESSORIES_SEARCH_TEMPLATE = f"""
                     </div>
                     <div class="history-badge">{{{{ history_count }}}}</div>
                 </div>
-                
+
                 <div class="history-dropdown" id="historyDropdown">
                     {{% if history_bookings %}}
                         {{% for booking in history_bookings %}}
@@ -3559,18 +3908,18 @@ ACCESSORIES_SEARCH_TEMPLATE = f"""
                     {{% endif %}}
                 </div>
             </div>
-            
+
             <div class="nav-links">
                 <a href="/"><i class="fas fa-arrow-left"></i> Back to Dashboard</a>
                 <a href="/logout" class="logout">Sign Out <i class="fas fa-sign-out-alt"></i></a>
             </div>
         </div>
-        
+
         <div style="text-align: center; margin-top: 25px; color: var(--text-secondary); font-size: 11px; opacity: 0.4;">
             © 2025 Mehedi Hasan
         </div>
     </div>
-    
+
     <script>
         function toggleHistory() {{
             const dropdown = document.getElementById('historyDropdown');
@@ -3594,11 +3943,6 @@ ACCESSORIES_INPUT_TEMPLATE = f"""
     <title>Accessories Entry - MNM Software</title>
     {COMMON_STYLES}
     <style>
-        .header-actions {{
-            display: flex;
-            gap: 15px;
-            align-items: center;
-        }}
         .ref-badge {{
             display: inline-flex;
             align-items: center;
@@ -3609,25 +3953,25 @@ ACCESSORIES_INPUT_TEMPLATE = f"""
             border-radius: 12px;
             margin-top: 10px;
         }}
-        
+
         .ref-badge .ref-no {{
             font-size: 18px;
             font-weight:  800;
             color: var(--accent-orange);
         }}
-        
+
         .ref-badge .ref-info {{
             color: var(--text-secondary);
             font-size: 13px;
             font-weight: 500;
         }}
-        
+
         .history-scroll {{
             max-height: 500px;
             overflow-y: auto;
             padding-right: 5px;
         }}
-        
+
         .challan-row {{
             display: grid;
             grid-template-columns: 60px 1fr 80px 60px 80px;
@@ -3640,12 +3984,12 @@ ACCESSORIES_INPUT_TEMPLATE = f"""
             transition: var(--transition-smooth);
             border: 1px solid transparent;
         }}
-        
+
         .challan-row:hover {{
             background: rgba(255, 122, 0, 0.05);
             border-color: var(--border-glow);
         }}
-        
+
         .line-badge {{
             background: var(--gradient-orange);
             color: white;
@@ -3655,44 +3999,40 @@ ACCESSORIES_INPUT_TEMPLATE = f"""
             font-size: 13px;
             text-align: center;
         }}
-        
+
         .qty-value {{
             font-size: 18px;
             font-weight: 800;
             color: var(--accent-green);
         }}
-        
+
         .status-check {{
             color: var(--accent-green);
             font-size: 20px;
         }}
-        
+
         .print-btn {{
             background: linear-gradient(135deg, #10B981 0%, #34D399 100%) !important;
         }}
-        
-        .delete-all-btn {{
-            background: linear-gradient(135deg, #EF4444 0%, #F87171 100%) !important;
-        }}
-        
+
         .empty-state {{
             text-align: center;
             padding: 50px 20px;
             color: var(--text-secondary);
         }}
-        
+
         .empty-state i {{
             font-size: 50px;
             opacity: 0.2;
             margin-bottom: 15px;
         }}
-        
+
         .grid-2-cols {{
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 20px;
         }}
-        
+
         .count-badge {{
             background: var(--accent-purple);
             color: white;
@@ -3702,12 +4042,12 @@ ACCESSORIES_INPUT_TEMPLATE = f"""
             font-weight: 700;
             margin-left: 10px;
         }}
-        
+
         select {{
             background-color: #1a1a25 !important;
             color: white !important;
         }}
-        
+
         select option {{
             background-color: #1a1a25 !important;
             color: white !important;
@@ -3717,7 +4057,7 @@ ACCESSORIES_INPUT_TEMPLATE = f"""
 </head>
 <body>
     <div class="animated-bg"></div>
-    
+
     <div id="loading-overlay">
         <div class="spinner-container">
             <div class="spinner" id="spinner-anim"></div>
@@ -3732,7 +4072,7 @@ ACCESSORIES_INPUT_TEMPLATE = f"""
 
     <div class="sidebar">
         <div class="brand-logo">
-            <i class="fas fa-boxes"></i> 
+            <i class="fas fa-boxes"></i>
             Accessories
         </div>
         <div class="nav-menu">
@@ -3744,7 +4084,7 @@ ACCESSORIES_INPUT_TEMPLATE = f"""
         </div>
         <div class="sidebar-footer">© 2025 Mehedi Hasan</div>
     </div>
-    
+
     <div class="main-content">
         <div class="header-section">
             <div>
@@ -3754,21 +4094,11 @@ ACCESSORIES_INPUT_TEMPLATE = f"""
                     <span class="ref-info">{{{{ buyer }}}} • {{{{ style }}}}</span>
                 </div>
             </div>
-            <div class="header-actions">
-                {{% if session.role == 'admin' %}}
-                <form action="/admin/accessories/delete_all" method="POST" onsubmit="return confirm('Are you sure you want to delete ALL challans for this booking? This action cannot be undone.');">
-                    <input type="hidden" name="ref" value="{{{{ ref }}}}">
-                    <button type="submit" class="delete-all-btn" style="width: auto; padding: 14px 30px;">
-                        <i class="fas fa-exclamation-triangle" style="margin-right: 10px;"></i> Delete All
-                    </button>
-                </form>
-                {{% endif %}}
-                <a href="/admin/accessories/print?ref={{{{ ref }}}}" target="_blank">
-                    <button class="print-btn" style="width: auto; padding: 14px 30px;">
-                        <i class="fas fa-print" style="margin-right: 10px;"></i> Print Report
-                    </button>
-                </a>
-            </div>
+            <a href="/admin/accessories/print?ref={{{{ ref }}}}" target="_blank">
+                <button class="print-btn" style="width: auto; padding: 14px 30px;">
+                    <i class="fas fa-print" style="margin-right: 10px;"></i> Print Report
+                </button>
+            </a>
         </div>
 
         <div class="dashboard-grid-2">
@@ -3778,7 +4108,7 @@ ACCESSORIES_INPUT_TEMPLATE = f"""
                 </div>
                 <form action="/admin/accessories/save" method="post" onsubmit="return showLoading()">
                     <input type="hidden" name="ref" value="{{{{ ref }}}}">
-                    
+
                     <div class="grid-2-cols">
                         <div class="input-group">
                             <label><i class="fas fa-tag" style="margin-right: 5px;"></i> TYPE</label>
@@ -3797,7 +4127,7 @@ ACCESSORIES_INPUT_TEMPLATE = f"""
                             </select>
                         </div>
                     </div>
-                    
+
                     <div class="grid-2-cols">
                         <div class="input-group">
                             <label><i class="fas fa-industry" style="margin-right: 5px;"></i> LINE NO</label>
@@ -3808,12 +4138,12 @@ ACCESSORIES_INPUT_TEMPLATE = f"""
                             <input type="text" name="size" value="ALL" placeholder="Size">
                         </div>
                     </div>
-                    
+
                     <div class="input-group">
                         <label><i class="fas fa-sort-numeric-up" style="margin-right: 5px;"></i> QUANTITY</label>
                         <input type="number" name="qty" required placeholder="Enter Quantity" min="1">
                     </div>
-                    
+
                     <button type="submit">
                         <i class="fas fa-save" style="margin-right: 10px;"></i> Save Entry
                     </button>
@@ -3860,14 +4190,14 @@ ACCESSORIES_INPUT_TEMPLATE = f"""
             </div>
         </div>
     </div>
-    
+
     <script>
         function showLoading() {{
             const overlay = document.getElementById('loading-overlay');
             const spinner = document.getElementById('spinner-anim').parentElement;
             const success = document.getElementById('success-anim');
             const text = document.getElementById('loading-text');
-            
+
             overlay.style.display = 'flex';
             spinner.style.display = 'block';
             success.style.display = 'none';
@@ -3875,7 +4205,7 @@ ACCESSORIES_INPUT_TEMPLATE = f"""
             text.textContent = 'Saving Entry...';
             return true;
         }}
-        
+
         const style = document.createElement('style');
         style.textContent = `
             @keyframes fadeInUp {{
@@ -3905,7 +4235,7 @@ ACCESSORIES_EDIT_TEMPLATE = f"""
             justify-content: center;
             align-items: center;
         }}
-        
+
         .edit-container {{
             position: relative;
             z-index: 10;
@@ -3913,7 +4243,7 @@ ACCESSORIES_EDIT_TEMPLATE = f"""
             max-width: 450px;
             padding: 20px;
         }}
-        
+
         .edit-card {{
             background: var(--gradient-card);
             border:  1px solid var(--border-color);
@@ -3923,17 +4253,17 @@ ACCESSORIES_EDIT_TEMPLATE = f"""
             box-shadow:  0 25px 80px rgba(0, 0, 0, 0.5);
             animation: cardAppear 0.5s ease-out;
         }}
-        
+
         @keyframes cardAppear {{
             from {{ opacity: 0; transform: scale(0.95); }}
             to {{ opacity:  1; transform: scale(1); }}
         }}
-        
+
         .edit-header {{
             text-align: center;
             margin-bottom: 35px;
         }}
-        
+
         .edit-icon {{
             width: 70px;
             height: 70px;
@@ -3946,13 +4276,13 @@ ACCESSORIES_EDIT_TEMPLATE = f"""
             color: var(--accent-purple);
             margin-bottom: 15px;
         }}
-        
+
         .edit-title {{
             font-size:  24px;
             font-weight: 800;
             color: white;
         }}
-        
+
         .cancel-link {{
             display: block;
             text-align: center;
@@ -3962,7 +4292,7 @@ ACCESSORIES_EDIT_TEMPLATE = f"""
             text-decoration: none;
             transition: var(--transition-smooth);
         }}
-        
+
         .cancel-link:hover {{
             color:  var(--accent-orange);
         }}
@@ -3970,7 +4300,7 @@ ACCESSORIES_EDIT_TEMPLATE = f"""
 </head>
 <body>
     <div class="animated-bg"></div>
-    
+
     <div class="edit-container">
         <div class="edit-card">
             <div class="edit-header">
@@ -3979,36 +4309,36 @@ ACCESSORIES_EDIT_TEMPLATE = f"""
                 </div>
                 <div class="edit-title">Edit Entry</div>
             </div>
-            
+
             <form action="/admin/accessories/update" method="post">
                 <input type="hidden" name="ref" value="{{{{ ref }}}}">
                 <input type="hidden" name="index" value="{{{{ index }}}}">
-                
+
                 <div class="input-group">
                     <label><i class="fas fa-industry" style="margin-right: 5px;"></i> LINE NO</label>
                     <input type="text" name="line_no" value="{{{{ item.line }}}}" required>
                 </div>
-                
+
                 <div class="input-group">
                     <label><i class="fas fa-palette" style="margin-right: 5px;"></i> COLOR</label>
                     <input type="text" name="color" value="{{{{ item.color }}}}" required>
                 </div>
-                
+
                 <div class="input-group">
                     <label><i class="fas fa-ruler" style="margin-right: 5px;"></i> SIZE</label>
                     <input type="text" name="size" value="{{{{ item.size }}}}" required>
                 </div>
-                
+
                 <div class="input-group">
                     <label><i class="fas fa-sort-numeric-up" style="margin-right: 5px;"></i> QUANTITY</label>
                     <input type="number" name="qty" value="{{{{ item.qty }}}}" required>
                 </div>
-                
+
                 <button type="submit" style="background: linear-gradient(135deg, #8B5CF6 0%, #A78BFA 100%);">
                     <i class="fas fa-sync-alt" style="margin-right: 10px;"></i> Update Entry
                 </button>
             </form>
-            
+
             <a href="/admin/accessories/input_direct?ref={{{{ ref }}}}" class="cancel-link">
                 <i class="fas fa-times" style="margin-right: 5px;"></i> Cancel
             </a>
@@ -4041,7 +4371,7 @@ STORE_DASHBOARD_TEMPLATE = f"""
             position: relative;
             overflow: hidden;
         }}
-        
+
         .store-card::before {{
             content: '';
             position: absolute;
@@ -4053,17 +4383,17 @@ STORE_DASHBOARD_TEMPLATE = f"""
             opacity: 0;
             transition:  var(--transition-smooth);
         }}
-        
+
         .store-card:hover {{
             transform: translateY(-8px);
             border-color: var(--accent-orange);
             box-shadow:  0 20px 40px rgba(255, 122, 0, 0.15);
         }}
-        
+
         .store-card:hover::before {{
             opacity: 1;
         }}
-        
+
         .store-card-icon {{
             width: 70px;
             height: 70px;
@@ -4075,55 +4405,55 @@ STORE_DASHBOARD_TEMPLATE = f"""
             margin-bottom: 20px;
             transition: var(--transition-smooth);
         }}
-        
+
         .store-card:hover .store-card-icon {{
             transform: scale(1.1) rotate(-5deg);
         }}
-        
+
         .icon-orange {{
             background: linear-gradient(145deg, rgba(255, 122, 0, 0.2), rgba(255, 122, 0, 0.05));
             color: var(--accent-orange);
         }}
-        
+
         .icon-purple {{
             background: linear-gradient(145deg, rgba(139, 92, 246, 0.2), rgba(139, 92, 246, 0.05));
             color: var(--accent-purple);
         }}
-        
+
         .icon-green {{
             background: linear-gradient(145deg, rgba(16, 185, 129, 0.2), rgba(16, 185, 129, 0.05));
             color: var(--accent-green);
         }}
-        
+
         .icon-blue {{
             background: linear-gradient(145deg, rgba(59, 130, 246, 0.2), rgba(59, 130, 246, 0.05));
             color: var(--accent-blue);
         }}
-        
+
         .icon-cyan {{
             background: linear-gradient(145deg, rgba(6, 182, 212, 0.2), rgba(6, 182, 212, 0.05));
             color: var(--accent-cyan);
         }}
-        
+
         .icon-red {{
             background: linear-gradient(145deg, rgba(239, 68, 68, 0.2), rgba(239, 68, 68, 0.05));
             color: var(--accent-red);
         }}
-        
+
         .store-card-title {{
             font-size: 20px;
             font-weight: 700;
             color:  white;
             margin-bottom:  8px;
         }}
-        
+
         .store-card-desc {{
             font-size: 13px;
             color: var(--text-secondary);
             line-height: 1.5;
             margin-bottom: 20px;
         }}
-        
+
         .store-card-stat {{
             display: flex;
             align-items: center;
@@ -4131,27 +4461,27 @@ STORE_DASHBOARD_TEMPLATE = f"""
             padding-top: 15px;
             border-top: 1px solid var(--border-color);
         }}
-        
+
         .stat-number {{
             font-size: 28px;
             font-weight:  800;
             color: white;
         }}
-        
+
         .stat-label {{
             font-size: 11px;
             color: var(--text-secondary);
             text-transform: uppercase;
             letter-spacing: 1px;
         }}
-        
+
         .store-grid {{
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
             gap: 24px;
             margin-top:  30px;
         }}
-        
+
         .coming-soon-badge {{
             position: absolute;
             top: 15px;
@@ -4165,7 +4495,7 @@ STORE_DASHBOARD_TEMPLATE = f"""
             text-transform: uppercase;
             letter-spacing: 1px;
         }}
-        
+
         .quick-action {{
             display: inline-flex;
             align-items: center;
@@ -4177,7 +4507,7 @@ STORE_DASHBOARD_TEMPLATE = f"""
             color:  var(--text-secondary);
             transition: var(--transition-smooth);
         }}
-        
+
         .quick-action:hover {{
             background: var(--accent-orange);
             color: white;
@@ -4193,7 +4523,7 @@ STORE_DASHBOARD_TEMPLATE = f"""
 
     <div class="sidebar">
         <div class="brand-logo">
-            <i class="fas fa-store"></i> 
+            <i class="fas fa-store"></i>
             Store<span>Panel</span>
         </div>
         <div class="nav-menu">
@@ -4363,7 +4693,7 @@ STORE_DASHBOARD_TEMPLATE = f"""
                 <span><i class="fas fa-info-circle" style="margin-right: 10px; color: var(--accent-orange);"></i>About Store Module</span>
             </div>
             <p style="color: var(--text-secondary); line-height: 1.8; font-size: 14px;">
-                এই Store মডিউলটি একটি এলুমিনিয়াম দোকানের জন্য ডিজাইন করা হয়েছে। এখানে আপনি প্রোডাক্ট ইনভেন্টরি, 
+                এই Store মডিউলটি একটি এলুমিনিয়াম দোকানের জন্য ডিজাইন করা হয়েছে। এখানে আপনি প্রোডাক্ট ইনভেন্টরি,
                 সেলস অর্ডার, কাস্টমার ম্যানেজমেন্ট, ইনভয়েস জেনারেশন, খরচ ট্র্যাকিং এবং বিজনেস রিপোর্ট তৈরি করতে পারবেন।
                 <br><br>
                 <strong style="color: var(--accent-orange);">Coming Soon:</strong> সকল ফিচার শীঘ্রই অ্যাক্টিভ করা হবে।
@@ -4812,7 +5142,7 @@ PO_REPORT_TEMPLATE = """
 
 @app.route('/')
 def index():
-    load_users() # Ensure default admin exists
+    load_users()
     if not session.get('logged_in'):
         return render_template_string(LOGIN_TEMPLATE)
     else:
@@ -4821,7 +5151,7 @@ def index():
             return render_template_string(ADMIN_DASHBOARD_TEMPLATE, stats=stats)
         else:
             perms = session.get('permissions', [])
-            if len(perms) == 1 and 'accessories' in perms: 
+            if len(perms) == 1 and 'accessories' in perms:
                 return redirect(url_for('accessories_search_page'))
             else:
                 return render_template_string(USER_DASHBOARD_TEMPLATE)
@@ -4839,13 +5169,13 @@ def login():
         session['user'] = username
         session['role'] = users_db[username]['role']
         session['permissions'] = users_db[username].get('permissions', [])
-        
+
         now = get_bd_time()
         session['login_start'] = now.isoformat()
-        
+
         users_db[username]['last_login'] = now.strftime('%I:%M %p, %d %b')
         save_users(users_db)
-        
+
         return redirect(url_for('index'))
     else:
         flash('Invalid Username or Password.')
@@ -4883,18 +5213,18 @@ def get_users():
 def save_user():
     if not session.get('logged_in') or session.get('role') != 'admin':
         return jsonify({'status': 'error', 'message': 'Unauthorized'})
-    
+
     data = request.json
     username = data.get('username', '').strip()
     password = data.get('password', '').strip()
     permissions = data.get('permissions', [])
     action = data.get('action_type')
-    
+
     if not username or not password:
         return jsonify({'status': 'error', 'message': 'Invalid Data'})
 
     users_db = load_users()
-    
+
     if action == 'create':
         if username in users_db:
             return jsonify({'status': 'error', 'message': 'User already exists!'})
@@ -4906,12 +5236,12 @@ def save_user():
             "last_login":  "Never",
             "last_duration":  "N/A"
         }
-    elif action == 'update': 
+    elif action == 'update':
         if username not in users_db:
             return jsonify({'status': 'error', 'message': 'User not found!'})
         users_db[username]['password'] = password
         users_db[username]['permissions'] = permissions
-    
+
     save_users(users_db)
     return jsonify({'status': 'success', 'message': 'User saved successfully!'})
 
@@ -4919,10 +5249,10 @@ def save_user():
 def delete_user():
     if not session.get('logged_in') or session.get('role') != 'admin':
         return jsonify({'status': 'error', 'message': 'Unauthorized'})
-    
+
     username = request.json.get('username')
     users_db = load_users()
-    
+
     if username == 'Admin':
         return jsonify({'status': 'error', 'message': 'Cannot delete Main Admin!'})
 
@@ -4930,7 +5260,7 @@ def delete_user():
         del users_db[username]
         save_users(users_db)
         return jsonify({'status': 'success', 'message': 'User deleted!'})
-    
+
     return jsonify({'status': 'error', 'message': 'User not found'})
 
 @app.route('/admin/store')
@@ -4943,20 +5273,20 @@ def store_dashboard():
 def generate_report():
     if not session.get('logged_in'):
         return redirect(url_for('index'))
-    
+
     internal_ref_no = request.form['ref_no']
-    if not internal_ref_no: 
+    if not internal_ref_no:
         return redirect(url_for('index'))
 
     try:
         report_data = fetch_closing_report_data(internal_ref_no)
-        if not report_data: 
-            flash(f"Booking Not Found: {internal_ref_no}")
+        if not report_data:
+            flash(f"Booking Not Found:  {internal_ref_no}")
             return redirect(url_for('index'))
-        
+
         update_stats(internal_ref_no, session.get('user', 'Unknown'))
         return render_template_string(CLOSING_REPORT_PREVIEW_TEMPLATE, report_data=report_data, ref_no=internal_ref_no)
-    except Exception as e: 
+    except Exception as e:
         flash(f"System Error: {str(e)}")
         return redirect(url_for('index'))
 
@@ -4964,14 +5294,13 @@ def generate_report():
 def download_closing_excel():
     if not session.get('logged_in'):
         return redirect(url_for('index'))
-    
+
     internal_ref_no = request.args.get('ref_no')
     try:
         report_data = fetch_closing_report_data(internal_ref_no)
         if report_data:
             excel_file = create_formatted_excel_report(report_data, internal_ref_no)
-            # This is already tracked in generate_report, but we can add it here for safety
-            # update_stats(internal_ref_no, session.get('user', 'Unknown'))
+            update_stats(internal_ref_no, session.get('user', 'Unknown'))
             return make_response(send_file(
                 excel_file,
                 as_attachment=True,
@@ -4994,12 +5323,13 @@ def accessories_search_page():
     if not session.get('logged_in'):
         return redirect(url_for('index'))
     if 'accessories' not in session.get('permissions', []):
-        flash("Access Denied", "error")
+        flash("Access Denied")
         return redirect(url_for('index'))
-    
+
+    # NEW: Get all saved bookings for history
     history_bookings = get_all_accessories_bookings()
     history_count = len(history_bookings)
-    
+
     return render_template_string(
         ACCESSORIES_SEARCH_TEMPLATE,
         history_bookings=history_bookings,
@@ -5010,38 +5340,39 @@ def accessories_search_page():
 def accessories_input_page():
     if not session.get('logged_in'):
         return redirect(url_for('index'))
-    
+
     ref_no = request.form.get('ref_no') or request.args.get('ref')
     if ref_no:
         ref_no = ref_no.strip().upper()
-    
-    if not ref_no: 
+
+    if not ref_no:
         return redirect(url_for('accessories_search_page'))
 
     db_acc = load_accessories_db()
 
     if ref_no in db_acc:
+        # NEW: Check and refresh colors if 24 hours have passed
         refresh_result = check_and_refresh_colors(ref_no, db_acc)
         if refresh_result:
-            db_acc = refresh_result # Use the updated db if refreshed
-        
+            db_acc = refresh_result
+
         data = db_acc[ref_no]
-        colors = data.get('colors', [])
-        style = data.get('style', 'N/A')
-        buyer = data.get('buyer', 'N/A')
-        challans = data.get('challans', [])
+        colors = data['colors']
+        style = data['style']
+        buyer = data['buyer']
+        challans = data['challans']
     else:
         try:
             api_data = fetch_closing_report_data(ref_no)
             if not api_data:
-                flash(f"Booking not found via API: {ref_no}", "error")
+                flash(f"Booking not found: {ref_no}")
                 return redirect(url_for('accessories_search_page'))
-            
+
             colors = sorted(list(set([item['color'] for item in api_data])))
             style = api_data[0].get('style', 'N/A')
             buyer = api_data[0].get('buyer', 'N/A')
             challans = []
-            
+
             db_acc[ref_no] = {
                 "style": style,
                 "buyer":  buyer,
@@ -5052,7 +5383,7 @@ def accessories_input_page():
             }
             save_accessories_db(db_acc)
         except Exception as e:
-            flash(f"Connection Error with ERP: {str(e)}", "error")
+            flash(f"Connection Error with ERP: {str(e)}")
             return redirect(url_for('accessories_search_page'))
 
     return render_template_string(
@@ -5066,28 +5397,78 @@ def accessories_input_page():
 
 @app.route('/admin/accessories/input_direct')
 def accessories_input_direct():
+    if not session.get('logged_in'):
+        return redirect(url_for('index'))
+
     ref_no = request.args.get('ref')
+    if ref_no:
+        ref_no = ref_no.strip().upper()
+
     if not ref_no:
         return redirect(url_for('accessories_search_page'))
-    # This will reuse the same logic as the POST version
-    request.form = {'ref_no': ref_no}
-    return accessories_input_page()
+
+    db_acc = load_accessories_db()
+
+    if ref_no in db_acc:
+        # NEW: Check and refresh colors if 24 hours have passed
+        refresh_result = check_and_refresh_colors(ref_no, db_acc)
+        if refresh_result:
+            db_acc = refresh_result
+
+        data = db_acc[ref_no]
+        colors = data['colors']
+        style = data['style']
+        buyer = data['buyer']
+        challans = data['challans']
+    else:
+        try:
+            api_data = fetch_closing_report_data(ref_no)
+            if not api_data:
+                flash(f"Booking not found: {ref_no}")
+                return redirect(url_for('accessories_search_page'))
+
+            colors = sorted(list(set([item['color'] for item in api_data])))
+            style = api_data[0].get('style', 'N/A')
+            buyer = api_data[0].get('buyer', 'N/A')
+            challans = []
+
+            db_acc[ref_no] = {
+                "style": style,
+                "buyer":  buyer,
+                "colors": colors,
+                "item_type":  "",
+                "challans": challans,
+                "last_api_call": get_bd_time().isoformat()
+            }
+            save_accessories_db(db_acc)
+        except Exception as e:
+            flash(f"Connection Error with ERP: {str(e)}")
+            return redirect(url_for('accessories_search_page'))
+
+    return render_template_string(
+        ACCESSORIES_INPUT_TEMPLATE,
+        ref=ref_no,
+        colors=colors,
+        style=style,
+        buyer=buyer,
+        challans=challans
+    )
 
 @app.route('/admin/accessories/save', methods=['POST'])
 def accessories_save():
     if not session.get('logged_in'):
         return redirect(url_for('index'))
-    
+
     ref = request.form.get('ref').strip().upper()
     db_acc = load_accessories_db()
-    
+
     if ref in db_acc:
         if request.form.get('item_type'):
             db_acc[ref]['item_type'] = request.form.get('item_type')
-        
+
         for item in db_acc[ref]['challans']:
             item['status'] = "✔"
-        
+
         new_entry = {
             "date": get_bd_date_str(),
             "line":  request.form.get('line_no'),
@@ -5098,29 +5479,29 @@ def accessories_save():
         }
         db_acc[ref]['challans'].append(new_entry)
         save_accessories_db(db_acc)
-    
+
     return redirect(url_for('accessories_print_view', ref=ref))
 
 @app.route('/admin/accessories/print', methods=['GET'])
 def accessories_print_view():
     if not session.get('logged_in'):
         return redirect(url_for('index'))
-    
+
     ref = request.args.get('ref').strip().upper()
     db_acc = load_accessories_db()
-    
+
     if ref not in db_acc:
         return redirect(url_for('accessories_search_page'))
-    
+
     data = db_acc[ref]
-    challans = data.get('challans', [])
-    
+    challans = data['challans']
+
     line_summary = {}
     for c in challans:
-        ln = c.get('line', 'N/A')
+        ln = c['line']
         try:
-            q = int(c.get('qty', 0))
-        except (ValueError, TypeError):
+            q = int(c['qty'])
+        except:
             q = 0
         line_summary[ln] = line_summary.get(ln, 0) + q
     sorted_line_summary = dict(sorted(line_summary.items()))
@@ -5128,8 +5509,8 @@ def accessories_print_view():
     return render_template_string(
         ACCESSORIES_REPORT_TEMPLATE,
         ref=ref,
-        buyer=data.get('buyer', 'N/A'),
-        style=data.get('style', 'N/A'),
+        buyer=data['buyer'],
+        style=data['style'],
         item_type=data.get('item_type', ''),
         challans=challans,
         line_summary=sorted_line_summary,
@@ -5139,28 +5520,27 @@ def accessories_print_view():
 
 @app.route('/admin/accessories/edit', methods=['GET'])
 def accessories_edit():
-    if not session.get('logged_in') or session.get('role') != 'admin':
-        flash("Access Denied", "error")
+    if not session.get('logged_in'):
         return redirect(url_for('index'))
-    
+
     ref = request.args.get('ref')
     try:
         index = int(request.args.get('index'))
     except:
         return redirect(url_for('accessories_search_page'))
-    
+
     db_acc = load_accessories_db()
     if ref in db_acc and 0 <= index < len(db_acc[ref]['challans']):
         item = db_acc[ref]['challans'][index]
         return render_template_string(ACCESSORIES_EDIT_TEMPLATE, ref=ref, index=index, item=item)
-    
+
     return redirect(url_for('accessories_print_view', ref=ref))
 
 @app.route('/admin/accessories/update', methods=['POST'])
 def accessories_update():
-    if not session.get('logged_in') or session.get('role') != 'admin':
+    if not session.get('logged_in'):
         return redirect(url_for('index'))
-    
+
     ref = request.form.get('ref')
     index = int(request.form.get('index'))
     db_acc = load_accessories_db()
@@ -5171,14 +5551,14 @@ def accessories_update():
         db_acc[ref]['challans'][index]['size'] = request.form.get('size')
         db_acc[ref]['challans'][index]['qty'] = request.form.get('qty')
         save_accessories_db(db_acc)
-    
+
     return redirect(url_for('accessories_input_direct', ref=ref))
 
 @app.route('/admin/accessories/delete', methods=['POST'])
 def accessories_delete():
     if not session.get('logged_in') or session.get('role') != 'admin':
         return redirect(url_for('index'))
-    
+
     ref = request.form.get('ref')
     index = int(request.form.get('index'))
     db_acc = load_accessories_db()
@@ -5186,27 +5566,8 @@ def accessories_delete():
     if ref in db_acc and 0 <= index < len(db_acc[ref]['challans']):
         del db_acc[ref]['challans'][index]
         save_accessories_db(db_acc)
-    
+
     return redirect(url_for('accessories_input_direct', ref=ref))
-
-# NEW ROUTE: Delete all challans for a booking reference
-@app.route('/admin/accessories/delete_all', methods=['POST'])
-def accessories_delete_all():
-    if not session.get('logged_in') or session.get('role') != 'admin':
-        flash("Access Denied", "error")
-        return redirect(url_for('index'))
-    
-    ref = request.form.get('ref')
-    db_acc = load_accessories_db()
-
-    if ref in db_acc:
-        del db_acc[ref]
-        save_accessories_db(db_acc)
-        flash(f"All challan history for booking '{ref}' has been deleted.", "success")
-    else:
-        flash(f"Booking reference '{ref}' not found.", "error")
-    
-    return redirect(url_for('accessories_search_page'))
 
 # ==============================================================================
 # PO REPORT ROUTE - UPDATED WITH BOOKING REF TRACKING
@@ -5232,21 +5593,22 @@ def generate_po_report():
             'dept': 'N/A',
             'item':  'N/A'
         }
-        
+
         for file in uploaded_files:
             if file.filename == '':
                 continue
             file_path = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
             file.save(file_path)
             data, meta = extract_data_dynamic(file_path)
-            if meta['booking'] != 'N/A': # Prioritize metadata from files that have it
+            if meta['buyer'] != 'N/A':
                 final_meta = meta
             if data:
                 all_data.extend(data)
-        
-        if not all_data:
-            return render_template_string(PO_REPORT_TEMPLATE, tables=None, message="No PO data found in uploaded files. Fabric booking sheets are ignored.")
 
+        if not all_data:
+            return render_template_string(PO_REPORT_TEMPLATE, tables=None, message="No PO data found in uploaded files.")
+
+        # NEW: Update PO stats with booking reference
         booking_ref = final_meta.get('booking', 'N/A')
         update_po_stats(session.get('user', 'Unknown'), len(uploaded_files), booking_ref)
 
@@ -5254,27 +5616,27 @@ def generate_po_report():
         df['Color'] = df['Color'].str.strip()
         df = df[df['Color'] != ""]
         unique_colors = df['Color'].unique()
-        
+
         final_tables = []
         grand_total_qty = 0
 
-        for color in unique_colors: 
+        for color in unique_colors:
             color_df = df[df['Color'] == color]
             pivot = color_df.pivot_table(
-                index='P. O NO',
+                index='P.O NO',
                 columns='Size',
                 values='Quantity',
                 aggfunc='sum',
                 fill_value=0
             )
             pivot.columns.name = None
-            
+
             try:
                 sorted_cols = sort_sizes(pivot.columns.tolist())
                 pivot = pivot[sorted_cols]
             except:
                 pass
-            
+
             pivot['Total'] = pivot.sum(axis=1)
             grand_total_qty += pivot['Total'].sum()
 
@@ -5282,22 +5644,21 @@ def generate_po_report():
             actual_qty.name = 'Actual Qty'
             qty_plus_3 = (actual_qty * 1.03).round().astype(int)
             qty_plus_3.name = '3% Order Qty'
-            
-            pivot.loc['Actual Qty'] = actual_qty
-            pivot.loc['3% Order Qty'] = qty_plus_3
 
-            pivot_final = pivot.reset_index().rename(columns={'index': 'P.O NO'})
-            
+            pivot_final = pd.concat([pivot, actual_qty.to_frame().T, qty_plus_3.to_frame().T])
+            pivot_final = pivot_final.reset_index()
+            pivot_final = pivot_final.rename(columns={'index': 'P.O NO'})
+
             pd.set_option('colheader_justify', 'center')
             html_table = pivot_final.to_html(
                 classes='table table-bordered table-striped',
                 index=False,
                 border=0
             )
-            
-            html_table = re.sub(r'<tr>\s*<td>', '<tr><td class="order-col">', html_table, count=len(pivot_final)-2)
+
+            html_table = re.sub(r'<tr>\s*<td>', '<tr><td class="order-col">', html_table)
             html_table = html_table.replace('<th>Total</th>', '<th class="total-col-header">Total</th>')
-            html_table = re.sub(r'<td>(\d+)</td>\s*</tr>', r'<td class="total-col">\1</td></tr>', html_table)
+            html_table = html_table.replace('<td>Total</td>', '<td class="total-col">Total</td>')
             html_table = html_table.replace('<td>Actual Qty</td>', '<td class="summary-label">Actual Qty</td>')
             html_table = html_table.replace('<td>3% Order Qty</td>', '<td class="summary-label">3% Order Qty</td>')
             html_table = re.sub(
@@ -5307,7 +5668,7 @@ def generate_po_report():
             )
 
             final_tables.append({'color': color, 'table': html_table})
-            
+
         return render_template_string(
             PO_REPORT_TEMPLATE,
             tables=final_tables,
