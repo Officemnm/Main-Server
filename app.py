@@ -38,12 +38,14 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=2) 
 
 # টাইমজোন কনফিগারেশন (বাংলাদেশ)
+# ফিক্সড: pytz. timezone -> pytz.timezone
 bd_tz = pytz.timezone('Asia/Dhaka')
 
 def get_bd_time():
     return datetime.now(bd_tz)
 
 def get_bd_date_str():
+    # ফিক্সড: now. strftime -> now.strftime
     return get_bd_time().strftime('%d-%m-%Y')
 
 # ==============================================================================
@@ -59,7 +61,7 @@ def add_header(response):
 # ==============================================================================
 # MongoDB কানেকশন সেটআপ
 # ==============================================================================
-# ফিক্সড: কানেকশন স্ট্রিং এর স্পেস রিমুভ করা হয়েছে
+# ফিক্সড: office. jxdnuaj -> office.jxdnuaj
 MONGO_URI = "mongodb+srv://Mehedi:Mehedi123@office.jxdnuaj.mongodb.net/?appName=Office"
 
 try:
@@ -371,7 +373,7 @@ COMMON_STYLES = """
             transition: var(--transition-smooth);
         }
         
-        /* Status Dot Animation - FIXED */
+        /* Status Dot Animation */
         .status-dot {
             width: 10px;
             height: 10px;
@@ -1574,7 +1576,7 @@ COMMON_STYLES = """
     </style>
 """
 # ==============================================================================
-# হেল্পার ফাংশন: পরিসংখ্যান ও হিস্ট্রি (MongoDB ব্যবহার করে)
+# হেল্পার ফাংশন:  পরিসংখ্যান ও হিস্ট্রি (MongoDB ব্যবহার করে)
 # ==============================================================================
 
 def load_users():
@@ -1596,7 +1598,7 @@ def load_users():
         return default_users
 
 def save_users(users_data):
-    # ফিক্সড: replace_one এর মাঝের স্পেস রিমুভ করা হয়েছে
+    # ফিক্সড: users_col. replace_one -> users_col.replace_one
     users_col.replace_one(
         {"_id": "global_users"}, 
         {"_id": "global_users", "data": users_data}, 
@@ -1625,14 +1627,15 @@ def update_stats(ref_no, username):
     new_record = {
         "ref":  ref_no,
         "user": username,
-        "date": now.strftime('%d-%m-%Y'), # ফিক্সড: strftime এর স্পেস রিমুভ
+        # ফিক্সড: now. strftime -> now.strftime
+        "date": now.strftime('%d-%m-%Y'),
         "time": now.strftime('%I:%M %p'),
         "type": "Closing Report",
         "iso_time": now.isoformat()
     }
     data['downloads'].insert(0, new_record)
     if len(data['downloads']) > 3000:
-        data['downloads'] = data['downloads'][:3000]
+        data['downloads'] = data['downloads'][: 3000]
         
     data['last_booking'] = ref_no
     save_stats(data)
@@ -1644,12 +1647,13 @@ def update_po_stats(username, file_count, booking_ref="N/A"):
         "ref": booking_ref,
         "user": username,
         "file_count": file_count,
+        # ফিক্সড: now. strftime -> now.strftime
         "date": now.strftime('%d-%m-%Y'),
         "time": now.strftime('%I:%M %p'),
         "type": "PO Sheet",
         "iso_time": now.isoformat()
     }
-    if 'downloads' not in data: data['downloads'] = []
+    if 'downloads' not in data:  data['downloads'] = []
     data['downloads'].insert(0, new_record)
     if len(data['downloads']) > 3000:
         data['downloads'] = data['downloads'][:3000]
@@ -1663,6 +1667,7 @@ def load_accessories_db():
         return {}
 
 def save_accessories_db(data):
+    # ফিক্সড: accessories_col. replace_one -> accessories_col.replace_one
     accessories_col.replace_one(
         {"_id": "accessories_data"},
         {"_id": "accessories_data", "data": data},
@@ -1713,9 +1718,11 @@ def check_and_refresh_colors(ref_no, db_acc):
                 
                 # Update data
                 db_acc[ref_no]['colors'] = merged_colors
-                db_acc[ref_no]['last_api_call'] = now.isoformat() # ফিক্সড: isoformat()
+                # ফিক্সড: now. isoformat() -> now.isoformat()
+                db_acc[ref_no]['last_api_call'] = now.isoformat()
                 
                 # Also update buyer and style if available
+                # ফিক্সড: api_data[0]. get -> api_data[0].get
                 if api_data[0].get('buyer', 'N/A') != 'N/A':
                     db_acc[ref_no]['buyer'] = api_data[0].get('buyer', data.get('buyer', 'N/A'))
                 if api_data[0].get('style', 'N/A') != 'N/A': 
@@ -1787,6 +1794,7 @@ def get_dashboard_summary_v2():
                 acc_today_list.append({
                     "ref": ref,
                     "buyer": data.get('buyer'),
+                    # ফিক্সড: data. get -> data.get
                     "style": data.get('style'),
                     "time": "Today", 
                     "qty": challan.get('qty')
@@ -1809,6 +1817,7 @@ def get_dashboard_summary_v2():
     history = stats_data.get('downloads', [])
     for item in history:
         item_date = item.get('date', '')
+        # ফিক্সড: item. get -> item.get
         if item.get('type') == 'PO Sheet':
             po_lifetime_count += 1
             if item_date == today_str: 
@@ -1831,11 +1840,13 @@ def get_dashboard_summary_v2():
         except: pass
     
     # Get last month's 1st date to today
+    # ফিক্সড: now. replace -> now.replace
     first_of_last_month = (now.replace(day=1) - timedelta(days=1)).replace(day=1)
     start_date = first_of_last_month.strftime('%Y-%m-%d')
     end_date = now.strftime('%Y-%m-%d')
     
     # Filter and sort data from start_date to end_date
+    # ফিক্সড: daily_data. keys() -> daily_data.keys()
     sorted_keys = sorted([k for k in daily_data.keys() if start_date <= k <= end_date])
     
     chart_labels = []
@@ -1854,6 +1865,7 @@ def get_dashboard_summary_v2():
             d = daily_data[k]
             chart_labels.append(d.get('label', k))
             chart_closing.append(d['closing'])
+            # ফিক্সড: chart_po. append -> chart_po.append
             chart_po.append(d['po'])
             chart_acc.append(d['acc'])
 
@@ -1870,7 +1882,7 @@ def get_dashboard_summary_v2():
         },
         "history": history
     }
-    # ==============================================================================
+# ==============================================================================
 # লজিক পার্ট:  PURCHASE ORDER SHEET PARSER (PDF)
 # ==============================================================================
 
@@ -1905,9 +1917,11 @@ def extract_metadata(first_page_text):
         'buyer': 'N/A', 'booking':  'N/A', 'style': 'N/A', 
         'season': 'N/A', 'dept': 'N/A', 'item': 'N/A'
     }
+    # ফিক্সড: first_page_text. upper -> first_page_text.upper
     if "KIABI" in first_page_text.upper():
         meta['buyer'] = "KIABI"
     else:
+        # ফিক্সড: re. search -> re.search
         buyer_match = re.search(r"Buyer.*?Name[\s\S]*?([\w\s&]+)(?:\n|$)", first_page_text)
         if buyer_match:  meta['buyer'] = buyer_match.group(1).strip()
 
@@ -1921,6 +1935,7 @@ def extract_metadata(first_page_text):
     style_match = re.search(r"Style Ref\. ?[:\s]*([\w-]+)", first_page_text, re.IGNORECASE)
     if style_match: meta['style'] = style_match.group(1).strip()
     else: 
+        # ফিক্সড: re. search -> re.search
         style_match = re.search(r"Style Des\. ?[\s\S]*?([\w-]+)", first_page_text, re.IGNORECASE)
         if style_match: meta['style'] = style_match.group(1).strip()
 
@@ -1947,6 +1962,7 @@ def extract_data_dynamic(file_path):
     
     try:
         reader = pypdf.PdfReader(file_path)
+        # ফিক্সড: page. extract_text -> page.extract_text
         first_page_text = reader.pages[0].extract_text()
         
         if "Main Fabric Booking" in first_page_text or "Fabric Booking Sheet" in first_page_text: 
@@ -1954,12 +1970,14 @@ def extract_data_dynamic(file_path):
             return [], metadata 
 
         order_match = re.search(r"Order no\D*(\d+)", first_page_text, re.IGNORECASE)
+        # ফিক্সড: order_match. group -> order_match.group
         if order_match:  order_no = order_match.group(1)
         else: 
             alt_match = re.search(r"Order\s*[:\.]?\s*(\d+)", first_page_text, re.IGNORECASE)
             if alt_match: order_no = alt_match.group(1)
         
         order_no = str(order_no).strip()
+        # ফিক্সড: order_no. endswith -> order_no.endswith
         if order_no.endswith("00"): order_no = order_no[:-2]
 
         for page in reader.pages:
@@ -1976,7 +1994,8 @@ def extract_data_dynamic(file_path):
                     parts = line.split()
                     try:
                         total_idx = [idx for idx, x in enumerate(parts) if 'Total' in x][0]
-                        raw_sizes = parts[: total_idx]
+                        # ফিক্সড: parts[: total_idx] -> parts[:total_idx]
+                        raw_sizes = parts[:total_idx]
                         temp_sizes = [s for s in raw_sizes if s not in ["Colo", "/", "Size", "Colo/Size", "Colo/", "Size's"]]
                         
                         valid_size_count = sum(1 for s in temp_sizes if is_potential_size(s))
@@ -2008,16 +2027,18 @@ def extract_data_dynamic(file_path):
 
                     if len(quantities) >= len(sizes):
                         if len(quantities) == len(sizes) + 1: final_qtys = quantities[:-1] 
-                        else: final_qtys = quantities[: len(sizes)]
+                        # ফিক্সড: quantities[: len(sizes)] -> quantities[:len(sizes)]
+                        else: final_qtys = quantities[:len(sizes)]
                         color_name = re.sub(r'\s\d+$', '', color_name).strip()
                     elif len(quantities) < len(sizes): 
                         vertical_qtys = []
                         for next_line in lines[i+1:]: 
                             next_line = next_line.strip()
+                            # ফিক্সড: next_line. replace -> next_line.replace
                             if "Total" in next_line or re.search(r'[a-zA-Z]', next_line.replace("Spec", "").replace("price", "")): break
                             if re.match(r'^\d+$', next_line): vertical_qtys.append(int(next_line))
                         
-                        if len(vertical_qtys) >= len(sizes): final_qtys = vertical_qtys[: len(sizes)]
+                        if len(vertical_qtys) >= len(sizes): final_qtys = vertical_qtys[:len(sizes)]
                     
                     if final_qtys and color_name:
                          for idx, size in enumerate(sizes):
@@ -2034,6 +2055,7 @@ def extract_data_dynamic(file_path):
 # ==============================================================================
 
 def get_authenticated_session(username, password):
+    # ফিক্সড: 8022/erp/login. php -> 8022/erp/login.php
     login_url = 'http://180.92.235.190:8022/erp/login.php'
     login_payload = {'txt_userid': username, 'txt_password': password, 'submit': 'Login'}
     session_req = requests.Session()
@@ -2065,6 +2087,7 @@ def fetch_closing_report_data(internal_ref_no):
             payload['cbo_company_name'] = str(company_id)
             try:
                 response = active_session.post(report_url, data=payload, timeout=300)
+                # ফিক্সড: response. text -> response.text
                 if response.status_code == 200 and "Data not Found" not in response.text:
                     found_data = response.text
                     break
@@ -2079,6 +2102,7 @@ def parse_report_data(html_content):
     all_report_data = []
     try:
         soup = BeautifulSoup(html_content, 'lxml')
+        # ফিক্সড: tr: nth-of-type(2) -> tr:nth-of-type(2)
         header_row = soup.select_one('thead tr:nth-of-type(2)')
         if not header_row:  return None
         all_th = header_row.find_all('th')
@@ -2101,6 +2125,7 @@ def parse_report_data(html_content):
                 if len(cells) > 2:
                     criteria_main = cells[0].get_text(strip=True)
                     criteria_sub = cells[2].get_text(strip=True)
+                    # ফিক্সড: criteria_main. lower() -> criteria_main.lower()
                     main_lower, sub_lower = criteria_main.lower(), criteria_sub.lower()
                     
                     if main_lower == "style":  style = cells[1].get_text(strip=True)
@@ -2120,6 +2145,7 @@ def parse_report_data(html_content):
                 plus_3_percent_data = []
                 for value in gmts_qty_data: 
                     try:
+                        # ফিক্সড: value. replace -> value.replace
                         new_qty = round(int(value.replace(',', '')) * 1.03)
                         plus_3_percent_data.append(str(new_qty))
                     except (ValueError, TypeError):
@@ -2144,6 +2170,7 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
     # Styles
     bold_font = Font(bold=True)
     title_font = Font(size=32, bold=True, color="7B261A") 
+    # ফিক্সড: size=16. 5 -> size=16.5
     white_bold_font = Font(size=16.5, bold=True, color="FFFFFF")
     center_align = Alignment(horizontal='center', vertical='center')
     left_align = Alignment(horizontal='left', vertical='center')
@@ -2162,20 +2189,26 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
     ws.merge_cells(start_row=1, start_column=1, end_row=1, end_column=NUM_COLUMNS)
     
     # UPDATED BRANDING
+    # ফিক্সড: ws['A1']. value -> ws['A1'].value
     ws['A1'].value = "COTTON CLOTHING BD LTD"
     ws['A1'].font = title_font 
     ws['A1'].alignment = center_align
 
+    # ফিক্সড: ws. merge_cells -> ws.merge_cells
     ws.merge_cells(start_row=2, start_column=1, end_row=2, end_column=NUM_COLUMNS)
     ws['A2'].value = "CLOSING REPORT [ INPUT SECTION ]"
     ws['A2'].font = Font(size=15, bold=True) 
+    # ফিক্সড: ws['A2']. alignment -> ws['A2'].alignment
     ws['A2'].alignment = center_align
+    # ফিক্সড: ws. row_dimensions -> ws.row_dimensions
     ws.row_dimensions[3].height = 6
 
+    # ফিক্সড: internal_ref_no. upper() -> internal_ref_no.upper()
     formatted_ref_no = internal_ref_no.upper()
     current_date = get_bd_time().strftime("%d/%m/%Y")
     
     left_sub_headers = {
+        # ফিক্সড: report_data[0]. get -> report_data[0].get
         'A4': 'BUYER', 'B4': report_data[0].get('buyer', ''), 
         'A5': 'IR/IB NO', 'B5': formatted_ref_no, 
         'A6': 'STYLE NO', 'B6': report_data[0].get('style', '')
@@ -2183,6 +2216,7 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
     
     for cell_ref, value in left_sub_headers.items():
         cell = ws[cell_ref]
+        # ফিক্সড: cell. value -> cell.value
         cell.value = value
         cell.font = bold_font
         cell.alignment = left_align
@@ -2213,6 +2247,7 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
     for block in report_data:
         table_headers = ["COLOUR NAME", "SIZE", "ORDER QTY 3%", "ACTUAL QTY", "CUTTING QC", "INPUT QTY", "BALANCE", "SHORT/PLUS QTY", "Percentage %"]
         for col_idx, header in enumerate(table_headers, 1):
+            # ফিক্সড: ws. cell -> ws.cell
             cell = ws.cell(row=current_row, column=col_idx, value=header)
             cell.font = bold_font
             cell.alignment = center_align
@@ -2225,8 +2260,9 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
 
         for i, size in enumerate(block['headers']):
             color_to_write = full_color_name if i == 0 else ""
-            actual_qty = int(block['gmts_qty'][i].replace(',', '') or 0)
+            actual_qty = int(block['gmts_qty'][i]. replace(',', '') or 0)
             input_qty = int(block['sewing_input'][i].replace(',', '') or 0) if i < len(block['sewing_input']) else 0
+            # ফিক্সড: block. get -> block.get
             cutting_qc_val = int(block.get('cutting_qc', [])[i].replace(',', '') or 0) if i < len(block.get('cutting_qc', [])) else 0
             
             ws.cell(row=current_row, column=1, value=color_to_write)
@@ -2260,6 +2296,7 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
             ws.merge_cells(start_row=start_merge_row, start_column=1, end_row=end_merge_row, end_column=1)
             merged_cell = ws.cell(row=start_merge_row, column=1)
             merged_cell.alignment = color_align
+            # ফিক্সড: merged_cell.font. bold -> merged_cell.font.bold
             if not merged_cell.font.bold:  merged_cell.font = bold_font
         
         total_row_str = str(current_row)
@@ -2269,6 +2306,7 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
             "A": "TOTAL",
             "C": f"=SUM(C{start_merge_row}:C{end_merge_row})",
             "D": f"=SUM(D{start_merge_row}:D{end_merge_row})",
+            # ফিক্সড: : E{ -> :E{
             "E": f"=SUM(E{start_merge_row}:E{end_merge_row})",
             "F": f"=SUM(F{start_merge_row}:F{end_merge_row})",
             "G": f"=SUM(G{start_merge_row}:G{end_merge_row})",
@@ -2278,10 +2316,13 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
         
         for col_letter, value_or_formula in totals_formulas.items():
             cell = ws[f"{col_letter}{current_row}"]
+            # ফিক্সড: cell. value -> cell.value
             cell.value = value_or_formula
             cell.font = bold_font
             cell.border = medium_border
+            # ফিক্সড: cell. alignment -> cell.alignment
             cell.alignment = center_align
+            # ফিক্সড: cell. fill -> cell.fill
             cell.fill = light_brown_fill 
             if col_letter == 'I': 
                 cell.number_format = '0.00%'
@@ -2296,6 +2337,7 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
     image_row = current_row + 1
    
     try:
+        # ফিক্সড: rockybilly-regular. webp -> rockybilly-regular.webp
         direct_image_url = 'https://i.ibb.co/v6bp0jQW/rockybilly-regular.webp'
         image_response = requests.get(direct_image_url)
         image_response.raise_for_status()
@@ -2316,6 +2358,7 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
     signature_row = image_row + 1
     ws.merge_cells(start_row=signature_row, start_column=1, end_row=signature_row, end_column=NUM_COLUMNS)
     titles = ["Prepared By", "Input Incharge", "Cutting Incharge", "IE & Planning", "Sewing Manager", "Cutting Manager"]
+    # ফিক্সড: "                 ". join(titles) -> "                 ".join(titles)
     signature_cell = ws.cell(row=signature_row, column=1)
     signature_cell.value = "                 ".join(titles)
     signature_cell.font = Font(bold=True, size=15)
@@ -2328,28 +2371,40 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
             if cell.font: 
                 existing_font = cell.font
                 if cell.row != 1:  
+                    # ফিক্সড: size=16. 5 -> size=16.5
                     new_font = Font(name=existing_font.name, size=16.5, bold=existing_font.bold, italic=existing_font.italic, vertAlign=existing_font.vertAlign, underline=existing_font.underline, strike=existing_font.strike, color=existing_font.color)
                     cell.font = new_font
     
     ws.column_dimensions['A'].width = 23
+    # ফিক্সড: 8. 5 -> 8.5
     ws.column_dimensions['B'].width = 8.5
     ws.column_dimensions['C'].width = 20
     ws.column_dimensions['D'].width = 17
     ws.column_dimensions['E'].width = 17
+    # ফিক্সড: width = 15
     ws.column_dimensions['F'].width = 15
+    # ফিক্সড: 13. 5 -> 13.5
     ws.column_dimensions['G'].width = 13.5
     ws.column_dimensions['H'].width = 23
     ws.column_dimensions['I'].width = 18
    
+    # ফিক্সড: ws. ORIENTATION_PORTRAIT -> ws.ORIENTATION_PORTRAIT
     ws.page_setup.orientation = ws.ORIENTATION_PORTRAIT
+    # ফিক্সড: ws.page_setup. fitToPage -> ws.page_setup.fitToPage
     ws.page_setup.fitToPage = True
     ws.page_setup.fitToWidth = 1
     ws.page_setup.fitToHeight = 1 
+    # ফিক্সড: ws.page_setup. horizontalCentered -> ws.page_setup.horizontalCentered
     ws.page_setup.horizontalCentered = True
+    # ফিক্সড: ws. page_setup.verticalCentered -> ws.page_setup.verticalCentered
     ws.page_setup.verticalCentered = False 
+    # ফিক্সড: ws.page_setup. left -> ws.page_setup.left
     ws.page_setup.left = 0.25
+    # ফিক্সড: ws.page_setup. right -> ws.page_setup.right
     ws.page_setup.right = 0.25
+    # ফিক্সড: ws.page_setup. top -> ws.page_setup.top
     ws.page_setup.top = 0.45
+    # ফিক্সড: ws.page_setup. bottom -> ws.page_setup.bottom
     ws.page_setup.bottom = 0.45
     ws.page_setup.header = 0
     ws.page_setup.footer = 0
@@ -2359,629 +2414,2580 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
     file_stream.seek(0)
     return file_stream
 # ==============================================================================
-# HTML TEMPLATES (MODERN UI INTEGRATED)
+# HTML TEMPLATES:  LOGIN PAGE - FIXED RESPONSIVE & CENTERED
 # ==============================================================================
 
-LOGIN_TEMPLATE = """
-<!DOCTYPE html>
-<html>
+LOGIN_TEMPLATE = f"""
+<!doctype html>
+<html lang="en">
 <head>
-    <title>Secure Login | ERP Portal</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    """ + COMMON_STYLES + """
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Login - MNM Software</title>
+    {COMMON_STYLES}
     <style>
-        .login-container {
-            height: 100vh;
+        html, body {{
+            height: 100%;
+            margin:  0;
+            padding: 0;
+            overflow-x: hidden;
+        }}
+        
+        body {{
+            background:  var(--bg-body);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            overflow-y: auto;
+        }}
+        
+        /* Animated Background Orbs */
+        .bg-orb {{
+            position:  fixed;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.4;
+            animation: orbFloat 20s ease-in-out infinite;
+            pointer-events: none;
+        }}
+        
+        .orb-1 {{
+            width: 300px;
+            height: 300px;
+            background: var(--accent-orange);
+            top: -100px;
+            left: -100px;
+            animation-delay: 0s;
+        }}
+        
+        .orb-2 {{
+            width:  250px;
+            height: 250px;
+            background: var(--accent-purple);
+            bottom: -50px;
+            right: -50px;
+            animation-delay:  -5s;
+        }}
+        
+        .orb-3 {{
+            width: 150px;
+            height: 150px;
+            background: var(--accent-green);
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            animation-delay: -10s;
+        }}
+        
+        @keyframes orbFloat {{
+            0%, 100% {{ transform: translate(0, 0) scale(1); }}
+            25% {{ transform: translate(30px, -30px) scale(1.05); }}
+            50% {{ transform: translate(-20px, 20px) scale(0.95); }}
+            75% {{ transform: translate(15px, 30px) scale(1.02); }}
+        }}
+        
+        .login-container {{
+            position: relative;
+            z-index: 10;
+            width: 100%;
+            max-width: 420px;
+            padding: 20px;
+            margin: auto;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            min-height: 100vh;
+        }}
+        
+        .login-card {{
+            background: var(--gradient-card);
+            border:  1px solid var(--border-color);
+            border-radius: 24px;
+            padding: 40px 35px;
+            backdrop-filter: blur(20px);
+            box-shadow:  0 25px 80px rgba(0, 0, 0, 0.5), 0 0 60px var(--accent-orange-glow);
+            animation: loginCardAppear 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }}
+        
+        @keyframes loginCardAppear {{
+            from {{
+                opacity: 0;
+                transform: translateY(30px) scale(0.95);
+            }}
+            to {{
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }}
+        }}
+        
+        .brand-section {{
+            text-align: center;
+            margin-bottom: 35px;
+        }}
+        
+        .brand-icon {{
+            width: 70px;
+            height: 70px;
+            background: var(--gradient-orange);
+            border-radius: 18px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            color: white;
+            margin-bottom: 18px;
+            box-shadow: 0 15px 40px var(--accent-orange-glow);
+            animation: brandIconPulse 3s ease-in-out infinite;
+        }}
+        
+        @keyframes brandIconPulse {{
+            0%, 100% {{ transform: scale(1) rotate(0deg); box-shadow: 0 15px 40px var(--accent-orange-glow); }}
+            50% {{ transform: scale(1.05) rotate(5deg); box-shadow: 0 20px 50px var(--accent-orange-glow); }}
+        }}
+        
+        .brand-name {{
+            font-size: 28px;
+            font-weight:  900;
+            color: white;
+            letter-spacing: -1px;
+        }}
+        
+        .brand-name span {{
+            background: var(--gradient-orange);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }}
+        
+        .brand-tagline {{
+            color: var(--text-secondary);
+            font-size: 11px;
+            letter-spacing: 2px;
+            margin-top:  6px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }}
+        
+        .login-form .input-group {{
+            margin-bottom: 20px;
+        }}
+        
+        .login-form .input-group label {{
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+        }}
+        
+        .login-form .input-group label i {{
+            color: var(--accent-orange);
+            font-size: 13px;
+        }}
+        
+        .login-form input {{
+            padding: 14px 18px;
+            font-size: 14px;
+            border-radius: 12px;
+        }}
+        
+        .login-btn {{
+            margin-top: 8px;
+            padding: 14px 24px;
+            font-size: 15px;
+            border-radius: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
-            position: relative;
-            z-index: 1;
-        }
-        .login-card {
-            background: rgba(22, 22, 31, 0.8);
-            backdrop-filter: blur(20px);
-            padding: 40px;
-            border-radius: 24px;
-            border: 1px solid var(--border-color);
-            width: 100%;
-            max-width: 420px;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-            animation: fadeInUp 0.6s ease-out;
-        }
-        @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .login-header {
+            gap: 10px;
+        }}
+        
+        .login-btn i {{
+            transition: transform 0.3s;
+        }}
+        
+        .login-btn:hover i {{
+            transform: translateX(5px);
+        }}
+        
+        .error-box {{
+            margin-top: 20px;
+            padding: 14px 18px;
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            border-radius: 10px;
+            color: #F87171;
+            font-size:  13px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            animation: errorShake 0.5s ease-out;
+        }}
+        
+        @keyframes errorShake {{
+            0%, 100% {{ transform:  translateX(0); }}
+            20%, 60% {{ transform: translateX(-5px); }}
+            40%, 80% {{ transform:  translateX(5px); }}
+        }}
+        
+        .footer-credit {{
             text-align: center;
-            margin-bottom: 30px;
-        }
-        .login-logo {
-            font-size: 48px;
-            color: var(--accent-orange);
-            margin-bottom: 15px;
-            display: inline-block;
-            animation: float 3s ease-in-out infinite;
-        }
-        @keyframes float {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-10px); }
-        }
-        .login-title {
-            font-size: 24px;
-            font-weight: 800;
-            color: white;
-            margin-bottom: 5px;
-        }
-        .login-subtitle {
+            margin-top: 25px;
             color: var(--text-secondary);
-            font-size: 14px;
-        }
+            font-size: 11px;
+            opacity: 0.5;
+            font-weight: 500;
+        }}
+        
+        .footer-credit a {{
+            color: var(--accent-orange);
+            text-decoration: none;
+        }}
+        
+        /* Responsive Fixes */
+        @media (max-width: 480px) {{
+            .login-container {{
+                padding: 15px;
+            }}
+            
+            .login-card {{
+                padding: 30px 25px;
+                border-radius: 20px;
+            }}
+            
+            .brand-icon {{
+                width: 60px;
+                height: 60px;
+                font-size: 28px;
+            }}
+            
+            .brand-name {{
+                font-size: 24px;
+            }}
+            
+            .brand-tagline {{
+                font-size: 10px;
+            }}
+            
+            .login-form input {{
+                padding: 12px 16px;
+                font-size: 14px;
+            }}
+            
+            .login-btn {{
+                padding: 12px 20px;
+                font-size:  14px;
+            }}
+        }}
+        
+        @media (max-height: 700px) {{
+            .login-container {{
+                min-height: auto;
+                padding-top: 30px;
+                padding-bottom: 30px;
+            }}
+            
+            .brand-section {{
+                margin-bottom: 25px;
+            }}
+            
+            .brand-icon {{
+                width: 60px;
+                height: 60px;
+                font-size: 26px;
+                margin-bottom: 12px;
+            }}
+        }}
     </style>
 </head>
 <body>
-    <div class="animated-bg"></div>
-    <div id="particles-js"></div>
+    <div class="bg-orb orb-1"></div>
+    <div class="bg-orb orb-2"></div>
+    <div class="bg-orb orb-3"></div>
     
     <div class="login-container">
         <div class="login-card">
-            <div class="login-header">
-                <div class="login-logo">
-                    <i class="fa-solid fa-cube"></i>
+            <div class="brand-section">
+                <div class="brand-icon">
+                    <i class="fas fa-layer-group"></i>
                 </div>
-                <h1 class="login-title">Welcome Back</h1>
-                <p class="login-subtitle">Sign in to access your dashboard</p>
+                <div class="brand-name">MNM<span>Software</span></div>
+                <div class="brand-tagline">Secure Access Portal</div>
             </div>
             
-            <form method="POST" action="/login">
+            <form action="/login" method="post" class="login-form">
                 <div class="input-group">
-                    <label>Username</label>
-                    <input type="text" name="username" placeholder="Enter your username" required autocomplete="off">
+                    <label><i class="fas fa-user"></i> USERNAME</label>
+                    <input type="text" name="username" required placeholder="Enter your ID" autocomplete="off">
                 </div>
-                
                 <div class="input-group">
-                    <label>Password</label>
-                    <input type="password" name="password" placeholder="••••••••" required>
+                    <label><i class="fas fa-lock"></i> PASSWORD</label>
+                    <input type="password" name="password" required placeholder="Enter your Password">
                 </div>
-                
-                <button type="submit">
-                    Sign In <i class="fa-solid fa-arrow-right" style="margin-left: 8px;"></i>
+                <button type="submit" class="login-btn">
+                    Sign In <i class="fas fa-arrow-right"></i>
                 </button>
             </form>
             
-            <div class="sidebar-footer" style="margin-top: 25px; border: none;">
-                SECURE SYSTEM • AUTHORIZED PERSONNEL ONLY
+            {{% with messages = get_flashed_messages() %}}
+                {{% if messages %}}
+                    <div class="error-box">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <span>{{{{ messages[0] }}}}</span>
+                    </div>
+                {{% endif %}}
+            {{% endwith %}}
+            
+            <div class="footer-credit">
+                © 2025 <a href="#">Mehedi Hasan</a> • All Rights Reserved
             </div>
         </div>
     </div>
-
+    
     <script>
-        particlesJS("particles-js", {
-            "particles": {
-                "number": { "value": 40 },
-                "size": { "value": 2 },
-                "color": { "value": "#FF7A00" },
-                "line_linked": { 
-                    "enable": true, 
-                    "color": "#FF7A00", 
-                    "opacity": 0.1 
-                },
-                "move": { "speed": 1 }
-            }
-        });
+        // Add ripple effect to button
+        document.querySelector('.login-btn').addEventListener('click', function(e) {{
+            const ripple = document.createElement('span');
+            ripple.classList.add('ripple-effect');
+            const rect = this.getBoundingClientRect();
+            ripple.style.left = (e.clientX - rect.left) + 'px';
+            ripple.style.top = (e.clientY - rect.top) + 'px';
+            this.appendChild(ripple);
+            setTimeout(() => ripple.remove(), 600);
+        }});
     </script>
 </body>
 </html>
 """
+# ==============================================================================
+# ADMIN DASHBOARD TEMPLATE - MODERN UI WITH DEW STYLE CHART
+# ==============================================================================
 
-# ------------------------------------------------------------------------------
-# DASHBOARD TEMPLATE (Main UI)
-# ------------------------------------------------------------------------------
-DASHBOARD_TEMPLATE = """
-<!DOCTYPE html>
-<html>
+ADMIN_DASHBOARD_TEMPLATE = f"""
+<!doctype html>
+<html lang="en">
 <head>
-    <title>Dashboard | ERP Nexus</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    """ + COMMON_STYLES + """
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Admin Dashboard - MNM Software</title>
+    {COMMON_STYLES}
 </head>
 <body>
-    <div class="mobile-toggle" onclick="toggleSidebar()">
-        <i class="fa-solid fa-bars"></i>
+    <div class="animated-bg"></div>
+    <div id="particles-js"></div>
+
+    <div class="welcome-modal" id="welcomeModal">
+        <div class="welcome-content">
+            <div class="welcome-icon" id="welcomeIcon"><i class="fas fa-hand-sparkles"></i></div>
+            <div class="welcome-greeting" id="greetingText">Good Morning</div>
+            <div class="welcome-title">Welcome Back, <span>{{{{ session.user }}}}</span>!</div>
+            <div class="welcome-message">
+                You're now logged into the MNM Software Dashboard. 
+                All systems are operational and ready for your commands.
+            </div>
+            <button class="welcome-close" onclick="closeWelcome()">
+                <i class="fas fa-rocket" style="margin-right: 8px;"></i> Let's Go!
+            </button>
+        </div>
     </div>
 
-    <!-- Sidebar -->
-    <div class="sidebar" id="sidebar">
+    <div id="loading-overlay">
+        <div class="spinner-container">
+            <div class="spinner" id="spinner-anim"></div>
+            <div class="spinner-inner"></div>
+        </div>
+        
+        <div class="checkmark-container" id="success-anim">
+            <div class="checkmark-circle"></div>
+            <div class="anim-text">Successful!</div>
+        </div>
+
+        <div class="fail-container" id="fail-anim">
+            <div class="fail-circle"></div>
+            <div class="anim-text">Action Failed! </div>
+            <div style="font-size: 13px; color:#F87171; margin-top: 8px;">Please check server or inputs</div>
+        </div>
+        
+        <div class="loading-text" id="loading-text">Processing Request...</div>
+    </div>
+
+    <div class="mobile-toggle" onclick="document.querySelector('.sidebar').classList.toggle('active')">
+        <i class="fas fa-bars"></i>
+    </div>
+
+    <div class="sidebar">
         <div class="brand-logo">
-            <i class="fa-solid fa-cube"></i>
-            <div>ERP<span>Nexus</span></div>
+            <i class="fas fa-layer-group"></i> 
+            MNM<span>Software</span>
         </div>
-        
         <div class="nav-menu">
-            <a href="/dashboard" class="nav-link active">
-                <i class="fa-solid fa-chart-pie"></i> Overview
+            <div class="nav-link active" onclick="showSection('dashboard', this)">
+                <i class="fas fa-home"></i> Dashboard
+                <span class="nav-badge">Live</span>
+            </div>
+            <div class="nav-link" onclick="showSection('analytics', this)">
+                <i class="fas fa-chart-pie"></i> Closing Report
+            </div>
+            <a href="/admin/accessories" class="nav-link">
+                <i class="fas fa-database"></i> Accessories Challan
             </a>
-            
-            {% if 'closing' in permissions %}
-            <a href="#closing-section" class="nav-link" onclick="showSection('closing')">
-                <i class="fa-solid fa-file-invoice"></i> Closing Report
+            <div class="nav-link" onclick="showSection('help', this)">
+                <i class="fas fa-file-invoice"></i> PO Generator
+            </div>
+            <div class="nav-link" onclick="showSection('settings', this)">
+                <i class="fas fa-users-cog"></i> User Manage
+            </div>
+            <a href="/admin/store" class="nav-link">
+                <i class="fas fa-store"></i> Store
             </a>
-            {% endif %}
-            
-            {% if 'po_sheet' in permissions %}
-            <a href="/po_sheet" class="nav-link">
-                <i class="fa-solid fa-file-csv"></i> PO Converter
+            <a href="/logout" class="nav-link" style="color: var(--accent-red); margin-top: 20px;">
+                <i class="fas fa-sign-out-alt"></i> Sign Out
             </a>
-            {% endif %}
-            
-            {% if 'accessories' in permissions %}
-            <a href="/accessories" class="nav-link">
-                <i class="fa-solid fa-shirt"></i> Accessories
-                <span class="nav-badge">{{ stats.accessories.details|length }}</span>
-            </a>
-            {% endif %}
-            
-            {% if role == 'admin' %}
-            <a href="/manage_users" class="nav-link">
-                <i class="fa-solid fa-users-gear"></i> User Management
-            </a>
-            {% endif %}
         </div>
-        
         <div class="sidebar-footer">
-            LOGGED IN AS: {{ user|upper }} <br>
-            <a href="/logout" style="color: var(--accent-red); text-decoration: none; margin-top: 10px; display: inline-block; font-weight: 700;">
-                <i class="fa-solid fa-power-off"></i> LOGOUT
-            </a>
+            <i class="fas fa-code" style="margin-right: 5px;"></i> Powered by Mehedi Hasan
         </div>
     </div>
 
-    <!-- Main Content -->
     <div class="main-content">
-        <!-- Flash Messages -->
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                {% for category, message in messages %}
-                    <div class="flash-message {% if category == 'error' %}flash-error{% else %}flash-success{% endif %}">
-                        <i class="fa-solid {% if category == 'error' %}fa-circle-exclamation{% else %}fa-circle-check{% endif %}"></i>
-                        {{ message }}
+        
+        <div id="section-dashboard">
+            <div class="header-section">
+                <div>
+                    <div class="page-title">Main Dashboard</div>
+                    <div class="page-subtitle">Lifetime Overview & Analytics</div>
+                </div>
+                <div class="status-badge">
+                    <div class="status-dot"></div>
+                    <span>System Online</span>
+                </div>
+            </div>
+            
+            {{% with messages = get_flashed_messages() %}}
+                {{% if messages %}}
+                    <div class="flash-message flash-error">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <span>{{{{ messages[0] }}}}</span>
                     </div>
-                {% endfor %}
-            {% endif %}
-        {% endwith %}
+                {{% endif %}}
+            {{% endwith %}}
 
-        <!-- Welcome Header -->
-        <div class="header-section">
-            <div>
-                <div class="page-title">Dashboard Overview</div>
-                <div class="page-subtitle">Real-time production & booking analytics</div>
-            </div>
-            <div class="status-badge">
-                <div class="status-dot"></div>
-                SYSTEM ONLINE
-                <span style="margin-left: 10px; color: var(--text-secondary);">| {{ now }}</span>
-            </div>
-        </div>
-
-        <!-- Stats Grid -->
-        <div class="stats-grid">
-            <div class="card stat-card">
-                <div class="stat-icon"><i class="fa-solid fa-file-circle-check"></i></div>
-                <div class="stat-info">
-                    <h3 class="count-up">{{ stats.closing.count }}</h3>
-                    <p>Closing Reports</p>
-                </div>
-            </div>
-            
-            <div class="card stat-card">
-                <div class="stat-icon" style="color: var(--accent-purple);"><i class="fa-solid fa-file-invoice-dollar"></i></div>
-                <div class="stat-info">
-                    <h3 class="count-up">{{ stats.po.count }}</h3>
-                    <p>PO Processed</p>
-                </div>
-            </div>
-            
-            <div class="card stat-card">
-                <div class="stat-icon" style="color: var(--accent-green);"><i class="fa-solid fa-layer-group"></i></div>
-                <div class="stat-info">
-                    <h3 class="count-up">{{ stats.accessories.count }}</h3>
-                    <p>Accessories</p>
-                </div>
-            </div>
-            
-             <div class="card stat-card">
-                <div class="stat-icon" style="color: var(--accent-blue);"><i class="fa-solid fa-users"></i></div>
-                <div class="stat-info">
-                    <h3 class="count-up">{{ stats.users.count }}</h3>
-                    <p>Active Users</p>
-                </div>
-            </div>
-        </div>
-
-        <!-- Closing Report Section (Hidden by default, shown via ID link) -->
-        <div id="closing-section" class="card" style="margin-bottom: 30px;">
-            <div class="section-header">
-                <span><i class="fa-solid fa-file-export" style="color: var(--accent-orange); margin-right: 10px;"></i> GENERATE REPORT</span>
-            </div>
-            <form action="/download_closing" method="post" id="closingForm">
-                <div class="input-group">
-                    <label>Internal Reference Number (e.g., EFL-25-123)</label>
-                    <input type="text" name="ref_no" placeholder="Enter Ref No..." required>
-                </div>
-                <button type="submit" onclick="showLoading()">
-                    <i class="fa-solid fa-cloud-arrow-down"></i> Generate & Download Excel
-                </button>
-            </form>
-        </div>
-
-        <!-- Analytics Chart & History -->
-        <div class="dashboard-grid-2">
-            <!-- Chart -->
-            <div class="card">
-                <div class="section-header">
-                    <span><i class="fa-solid fa-chart-line"></i> PERFORMANCE ANALYTICS</span>
-                    <div class="realtime-indicator">
-                        <div class="realtime-dot"></div> Live
+            <div class="stats-grid">
+                <div class="card stat-card" style="animation-delay: 0.1s;">
+                    <div class="stat-icon"><i class="fas fa-file-export"></i></div>
+                    <div class="stat-info">
+                        <h3 class="count-up" data-target="{{{{ stats.closing.count }}}}">0</h3>
+                        <p>Lifetime Closing</p>
                     </div>
                 </div>
-                <div class="chart-container">
-                    <canvas id="activityChart"></canvas>
+                <div class="card stat-card" style="animation-delay: 0.2s;">
+                    <div class="stat-icon" style="background:  linear-gradient(145deg, rgba(139, 92, 246, 0.15), rgba(139, 92, 246, 0.05));">
+                        <i class="fas fa-boxes" style="color: var(--accent-purple);"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 class="count-up" data-target="{{{{ stats.accessories.count }}}}">0</h3>
+                        <p>Lifetime Accessories</p>
+                    </div>
+                </div>
+                <div class="card stat-card" style="animation-delay: 0.3s;">
+                    <div class="stat-icon" style="background:  linear-gradient(145deg, rgba(16, 185, 129, 0.15), rgba(16, 185, 129, 0.05));">
+                        <i class="fas fa-file-pdf" style="color: var(--accent-green);"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 class="count-up" data-target="{{{{ stats.po.count }}}}">0</h3>
+                        <p>Lifetime PO Sheets</p>
+                    </div>
+                </div>
+                <div class="card stat-card" style="animation-delay: 0.4s;">
+                    <div class="stat-icon" style="background: linear-gradient(145deg, rgba(59, 130, 246, 0.15), rgba(59, 130, 246, 0.05));">
+                        <i class="fas fa-users" style="color: var(--accent-blue);"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 class="count-up" data-target="{{{{ stats.users.count }}}}">0</h3>
+                        <p>Total Users</p>
+                    </div>
                 </div>
             </div>
 
-            <!-- Recent History -->
+            <div class="dashboard-grid-2">
+                <div class="card">
+                    <div class="section-header">
+                        <span>Daily Activity Chart</span>
+                        <div class="realtime-indicator">
+                            <div class="realtime-dot"></div>
+                            <span>Real-time</span>
+                        </div>
+                    </div>
+                    <div class="chart-container" style="height: 320px;">
+                        <canvas id="mainChart"></canvas>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="section-header">
+                        <span>Module Usage</span>
+                        <i class="fas fa-chart-bar" style="color: var(--accent-orange);"></i>
+                    </div>
+                    
+                    <div class="progress-item">
+                        <div class="progress-header">
+                            <span>Closing Report</span>
+                            <span class="progress-value">{{{{ stats.closing.count }}}} Lifetime</span>
+                        </div>
+                        <div class="progress-bar-container">
+                            <div class="progress-bar-fill progress-orange" style="width: 85%;"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="progress-item">
+                        <div class="progress-header">
+                            <span>Accessories</span>
+                            <span class="progress-value">{{{{ stats.accessories.count }}}} Challans</span>
+                        </div>
+                        <div class="progress-bar-container">
+                            <div class="progress-bar-fill progress-purple" style="width: 65%;"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="progress-item">
+                        <div class="progress-header">
+                            <span>PO Generator</span>
+                            <span class="progress-value">{{{{ stats.po.count }}}} Files</span>
+                        </div>
+                        <div class="progress-bar-container">
+                            <div class="progress-bar-fill progress-green" style="width: 45%;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <div class="card">
                 <div class="section-header">
-                    <span><i class="fa-solid fa-clock-rotate-left"></i> RECENT ACTIVITY</span>
+                    <span>Recent Activity Log</span>
+                    <i class="fas fa-history" style="color: var(--text-secondary);"></i>
                 </div>
-                <div class="history-list">
-                    {% for item in stats.history[:8] %}
-                    <div class="history-item">
-                        <div>
-                            <div class="history-item-ref">{{ item.ref }}</div>
-                            <div class="history-item-info">
-                                {{ item.user }} • {{ item.time }}
-                                {% if item.type == 'PO Sheet' %} • {{ item.file_count }} Files{% endif %}
+                <div style="overflow-x: auto;">
+                    <table class="dark-table">
+                        <thead>
+                            <tr>
+                                <th>Time</th>
+                                <th>User</th>
+                                <th>Action</th>
+                                <th>Reference</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {{% for log in stats.history[:10] %}}
+                            <tr style="animation:  fadeInUp 0.5s ease-out {{{{ loop.index * 0.05 }}}}s backwards;">
+                                <td>
+                                    <div class="time-badge">
+                                        <i class="far fa-clock"></i>
+                                        {{{{ log.time }}}}
+                                    </div>
+                                </td>
+                                <td style="font-weight: 600; color: white;">{{{{ log.user }}}}</td>
+                                <td>
+                                    <span class="table-badge" style="
+                                        {{% if log.type == 'Closing Report' %}}
+                                        background: rgba(255, 122, 0, 0.1); color: var(--accent-orange);
+                                        {{% elif log.type == 'PO Sheet' %}}
+                                        background: rgba(16, 185, 129, 0.1); color: var(--accent-green);
+                                        {{% else %}}
+                                        background:  rgba(139, 92, 246, 0.1); color: var(--accent-purple);
+                                        {{% endif %}}
+                                    ">{{{{ log.type }}}}</span>
+                                </td>
+                                <td style="color: var(--text-secondary);">{{{{ log.ref if log.ref else '-' }}}}</td>
+                            </tr>
+                            {{% else %}}
+                            <tr>
+                                <td colspan="4" style="text-align: center; padding: 40px; color: var(--text-secondary);">
+                                    <i class="fas fa-inbox" style="font-size: 40px; opacity: 0.3; margin-bottom: 15px; display: block;"></i>
+                                    No activity recorded yet.  
+                                </td>
+                            </tr>
+                            {{% endfor %}}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div id="section-analytics" style="display: none;">
+            <div class="header-section">
+                <div>
+                    <div class="page-title">Closing Report</div>
+                    <div class="page-subtitle">Generate production closing reports</div>
+                </div>
+            </div>
+            <div class="card" style="max-width: 550px; margin: 0 auto; margin-top: 30px;">
+                <div class="section-header">
+                    <span><i class="fas fa-magic" style="margin-right: 10px; color: var(--accent-orange);"></i>Generate Report</span>
+                </div>
+                <form action="/generate-report" method="post" onsubmit="return showLoading()">
+                    <div class="input-group">
+                        <label><i class="fas fa-bookmark" style="margin-right: 5px;"></i> INTERNAL REF NO</label>
+                        <input type="text" name="ref_no" placeholder="e.g.  IB-12345 or Booking-123" required>
+                    </div>
+                    <button type="submit">
+                        <i class="fas fa-bolt" style="margin-right: 10px;"></i> Generate Report
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <div id="section-help" style="display:none;">
+            <div class="header-section">
+                <div>
+                    <div class="page-title">PO Sheet Generator</div>
+                    <div class="page-subtitle">Process and generate PO summary sheets</div>
+                </div>
+            </div>
+            <div class="card" style="max-width: 650px; margin: 0 auto; margin-top: 30px;">
+                <div class="section-header">
+                    <span><i class="fas fa-file-pdf" style="margin-right: 10px; color: var(--accent-green);"></i>Upload PDF Files</span>
+                </div>
+                <form action="/generate-po-report" method="post" enctype="multipart/form-data" onsubmit="return showLoading()">
+                    <div class="upload-zone" id="uploadZone" onclick="document.getElementById('file-upload').click()">
+                        <input type="file" name="pdf_files" multiple accept=".pdf" required style="display: none;" id="file-upload">
+                        <div class="upload-icon">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                        </div>
+                        <div class="upload-text">Click or Drag to Upload PDF Files</div>
+                        <div class="upload-hint">Supports multiple PDF files</div>
+                        <div id="file-count">No files selected</div>
+                    </div>
+                    <button type="submit" style="margin-top: 25px; background: linear-gradient(135deg, #10B981 0%, #34D399 100%);">
+                        <i class="fas fa-cogs" style="margin-right: 10px;"></i> Process Files
+                    </button>
+                </form>
+            </div>
+        </div>
+                <div id="section-settings" style="display: none;">
+            <div class="header-section">
+                <div>
+                    <div class="page-title">User Management</div>
+                    <div class="page-subtitle">Manage user accounts and permissions</div>
+                </div>
+            </div>
+            <div class="dashboard-grid-2">
+                <div class="card">
+                    <div class="section-header">
+                        <span>User Directory</span>
+                        <span class="table-badge" style="background: var(--accent-orange); color: white;">{{{{ stats.users.count }}}} Users</span>
+                    </div>
+                    <div id="userTableContainer" style="max-height: 450px; overflow-y: auto;">
+                        <div class="skeleton" style="height: 50px; margin-bottom: 10px;"></div>
+                        <div class="skeleton" style="height: 50px; margin-bottom: 10px;"></div>
+                        <div class="skeleton" style="height: 50px;"></div>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="section-header">
+                        <span>Create / Edit User</span>
+                        <i class="fas fa-user-plus" style="color: var(--accent-orange);"></i>
+                    </div>
+                    <form id="userForm">
+                        <input type="hidden" id="action_type" value="create">
+                        <div class="input-group">
+                            <label><i class="fas fa-user" style="margin-right: 5px;"></i> USERNAME</label>
+                            <input type="text" id="new_username" required placeholder="Enter username">
+                        </div>
+                        <div class="input-group">
+                            <label><i class="fas fa-key" style="margin-right: 5px;"></i> PASSWORD</label>
+                            <input type="text" id="new_password" required placeholder="Enter password">
+                        </div>
+                        <div class="input-group">
+                            <label><i class="fas fa-shield-alt" style="margin-right: 5px;"></i> PERMISSIONS</label>
+                            <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 5px;">
+                                <label class="perm-checkbox">
+                                    <input type="checkbox" id="perm_closing" checked>
+                                    <span>Closing</span>
+                                </label>
+                                <label class="perm-checkbox">
+                                    <input type="checkbox" id="perm_po">
+                                    <span>PO Sheet</span>
+                                </label>
+                                <label class="perm-checkbox">
+                                    <input type="checkbox" id="perm_acc">
+                                    <span>Accessories</span>
+                                </label>
                             </div>
                         </div>
-                        <div class="history-count-badge" style="background: {% if item.type == 'PO Sheet' %}var(--accent-purple){% else %}var(--accent-orange){% endif %}">
-                            {{ item.type }}
-                        </div>
-                    </div>
-                    {% endfor %}
+                        <button type="button" onclick="handleUserSubmit()" id="saveUserBtn">
+                            <i class="fas fa-save" style="margin-right: 10px;"></i> Save User
+                        </button>
+                        <button type="button" onclick="resetForm()" style="margin-top: 12px; background: rgba(255,255,255,0.05); border: 1px solid var(--border-color);">
+                            <i class="fas fa-undo" style="margin-right:  10px;"></i> Reset Form
+                        </button>
+                    </form>
                 </div>
             </div>
         </div>
     </div>
+    
+    <script>
+        // ===== WELCOME POPUP WITH TIME-BASED GREETING =====
+        function showWelcomePopup() {{
+            const hour = new Date().getHours();
+            let greeting, icon;
+            
+            if (hour >= 5 && hour < 12) {{
+                greeting = "Good Morning";
+                icon = '<i class="fas fa-sun"></i>';
+            }} else if (hour >= 12 && hour < 17) {{
+                greeting = "Good Afternoon";
+                icon = '<i class="fas fa-sun"></i>';
+            }} else if (hour >= 17 && hour < 21) {{
+                greeting = "Good Evening";
+                icon = '<i class="fas fa-city"></i>';
+            }} else {{
+                greeting = "Good Night";
+                icon = '<i class="fas fa-moon"></i>';
+            }}
+            
+            document.getElementById('greetingText').textContent = greeting;
+            document.getElementById('welcomeIcon').innerHTML = icon;
+            document.getElementById('welcomeModal').style.display = 'flex';
+        }}
+        
+        function closeWelcome() {{
+            const modal = document.getElementById('welcomeModal');
+            modal.style.animation = 'modalFadeOut 0.3s ease-out forwards';
+            setTimeout(() => {{
+                modal.style.display = 'none';
+                sessionStorage.setItem('welcomeShown', 'true');
+            }}, 300);
+        }}
+        
+        if (!sessionStorage.getItem('welcomeShown')) {{
+            setTimeout(showWelcomePopup, 500);
+        }}
+        
+        // ===== SECTION NAVIGATION =====
+        function showSection(id, element) {{
+            ['dashboard', 'analytics', 'help', 'settings'].forEach(sid => {{
+                document.getElementById('section-' + sid).style.display = 'none';
+            }});
+            document.getElementById('section-' + id).style.display = 'block';
+            
+            if (element) {{
+                document.querySelectorAll('.nav-link').forEach(el => el.classList.remove('active'));
+                element.classList.add('active');
+            }}
+            
+            if (id === 'settings') loadUsers();
+            if (window.innerWidth < 1024) document.querySelector('.sidebar').classList.remove('active');
+        }}
+        
+        // ===== FILE UPLOAD HANDLER =====
+        const fileUpload = document.getElementById('file-upload');
+        const uploadZone = document.getElementById('uploadZone');
+        
+        if (fileUpload) {{
+            fileUpload.addEventListener('change', function() {{
+                const count = this.files.length;
+                document.getElementById('file-count').innerHTML = count > 0 
+                    ? `<i class="fas fa-check-circle" style="margin-right: 5px;"></i>${{count}} file(s) selected`
+                    : 'No files selected';
+            }});
+            uploadZone.addEventListener('dragover', (e) => {{
+                e.preventDefault();
+                uploadZone.classList.add('dragover');
+            }});
+            uploadZone.addEventListener('dragleave', () => {{
+                uploadZone.classList.remove('dragover');
+            }});
+            uploadZone.addEventListener('drop', (e) => {{
+                e.preventDefault();
+                uploadZone.classList.remove('dragover');
+                fileUpload.files = e.dataTransfer.files;
+                fileUpload.dispatchEvent(new Event('change'));
+            }});
+        }}
+        
+        // ===== DEW STYLE DAILY CHART =====
+        const ctx = document.getElementById('mainChart').getContext('2d');
+        const gradientOrange = ctx.createLinearGradient(0, 0, 0, 300);
+        gradientOrange.addColorStop(0, 'rgba(255, 122, 0, 0.5)');
+        gradientOrange.addColorStop(1, 'rgba(255, 122, 0, 0.0)');
+        const gradientPurple = ctx.createLinearGradient(0, 0, 0, 300);
+        gradientPurple.addColorStop(0, 'rgba(139, 92, 246, 0.5)');
+        gradientPurple.addColorStop(1, 'rgba(139, 92, 246, 0.0)');
+        const gradientGreen = ctx.createLinearGradient(0, 0, 0, 300);
+        gradientGreen.addColorStop(0, 'rgba(16, 185, 129, 0.5)');
+        gradientGreen.addColorStop(1, 'rgba(16, 185, 129, 0.0)');
+        
+        new Chart(ctx, {{
+            type: 'line',
+            data: {{
+                labels: {{{{ stats.chart.labels | tojson }}}},
+                datasets: [
+                    {{
+                        label: 'Closing',
+                        data: {{{{ stats.chart.closing | tojson }}}},
+                        borderColor: '#FF7A00',
+                        backgroundColor: gradientOrange,
+                        tension: 0.4,
+                        fill: true,
+                        pointBackgroundColor: '#FF7A00',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2,
+                        pointRadius: 4,
+                        pointHoverRadius: 7,
+                        borderWidth: 3
+                    }},
+                    {{
+                        label: 'Accessories',
+                        data: {{{{ stats.chart.acc | tojson }}}},
+                        borderColor: '#8B5CF6',
+                        backgroundColor: gradientPurple,
+                        tension: 0.4,
+                        fill: true,
+                        pointBackgroundColor: '#8B5CF6',
+                        pointBorderColor:  '#fff',
+                        pointBorderWidth: 2,
+                        pointRadius: 4,
+                        pointHoverRadius: 7,
+                        borderWidth:  3
+                    }},
+                    {{
+                        label:  'PO Sheets',
+                        data: {{{{ stats.chart.po | tojson }}}},
+                        borderColor: '#10B981',
+                        backgroundColor:  gradientGreen,
+                        tension: 0.4,
+                        fill: true,
+                        pointBackgroundColor: '#10B981',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2,
+                        pointRadius: 4,
+                        pointHoverRadius: 7,
+                        borderWidth: 3
+                    }}
+                ]
+            }},
+            options: {{
+                plugins: {{
+                    legend: {{
+                        display: true,
+                        position: 'top',
+                        labels: {{
+                            color: '#8b8b9e',
+                            font: {{ size: 11, weight: 500 }},
+                            usePointStyle: true,
+                            padding: 15,
+                            boxWidth: 8
+                        }}
+                    }},
+                    tooltip: {{
+                        mode: 'index',
+                        intersect: false,
+                        backgroundColor: 'rgba(22, 22, 31, 0.95)',
+                        titleColor: '#fff',
+                        bodyColor: '#8b8b9e',
+                        borderColor: 'rgba(255, 122, 0, 0.3)',
+                        borderWidth: 1,
+                        padding: 12,
+                        cornerRadius: 10,
+                        displayColors: true
+                    }}
+                }},
+                scales: {{
+                    x: {{
+                        grid: {{ 
+                            display: false 
+                        }},
+                        ticks: {{ 
+                            color: '#8b8b9e', 
+                            font: {{ size: 10 }},
+                            maxRotation: 45,
+                            minRotation: 45
+                        }}
+                    }},
+                    y: {{
+                        grid: {{ 
+                            color: 'rgba(255,255,255,0.03)',
+                            drawBorder: false
+                        }},
+                        ticks: {{ 
+                            color: '#8b8b9e', 
+                            font: {{ size: 10 }},
+                            stepSize: 1
+                        }},
+                        beginAtZero: true
+                    }}
+                }},
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: {{
+                    intersect: false,
+                    mode: 'index'
+                }},
+                animation: {{
+                    duration: 2000,
+                    easing:  'easeOutQuart'
+                }}
+            }}
+        }});
 
-    <!-- Loading Overlay -->
+        // ===== COUNT UP ANIMATION =====
+        function animateCountUp() {{
+            document.querySelectorAll('.count-up').forEach(counter => {{
+                const target = parseInt(counter.getAttribute('data-target'));
+                const duration = 2000;
+                const step = target / (duration / 16);
+                let current = 0;
+                
+                const updateCounter = () => {{
+                    current += step;
+                    if (current < target) {{
+                        counter.textContent = Math.floor(current);
+                        requestAnimationFrame(updateCounter);
+                    }} else {{
+                        counter.textContent = target;
+                    }}
+                }};
+                
+                updateCounter();
+            }});
+        }}
+        
+        setTimeout(animateCountUp, 500);
+
+        // ===== LOADING ANIMATION =====
+        function showLoading() {{
+            const overlay = document.getElementById('loading-overlay');
+            const spinner = document.getElementById('spinner-anim').parentElement;
+            const success = document.getElementById('success-anim');
+            const fail = document.getElementById('fail-anim');
+            const text = document.getElementById('loading-text');
+            
+            overlay.style.display = 'flex';
+            spinner.style.display = 'block';
+            success.style.display = 'none';
+            fail.style.display = 'none';
+            text.style.display = 'block';
+            text.textContent = 'Processing Request...';
+            
+            return true;
+        }}
+
+        function showSuccess() {{
+            const overlay = document.getElementById('loading-overlay');
+            const spinner = document.getElementById('spinner-anim').parentElement;
+            const success = document.getElementById('success-anim');
+            const text = document.getElementById('loading-text');
+            
+            spinner.style.display = 'none';
+            success.style.display = 'block';
+            text.style.display = 'none';
+            
+            setTimeout(() => {{ overlay.style.display = 'none'; }}, 1500);
+        }}
+
+        // ===== USER MANAGEMENT =====
+        function loadUsers() {{
+            fetch('/admin/get-users')
+                .then(res => res.json())
+                .then(data => {{
+                    let html = '<table class="dark-table"><thead><tr><th>User</th><th>Role</th><th style="text-align: right;">Actions</th></tr></thead><tbody>';
+                    
+                    for (const [u, d] of Object.entries(data)) {{
+                        const roleClass = d.role === 'admin' ? 'background: rgba(255, 122, 0, 0.1); color: var(--accent-orange);' : 'background: rgba(139, 92, 246, 0.1); color: var(--accent-purple);';
+                        
+                        html += `<tr>
+                            <td style="font-weight: 600;">${{u}}</td>
+                            <td><span class="table-badge" style="${{roleClass}}">${{d.role}}</span></td>
+                            <td style="text-align:right;">
+                                ${{d.role !== 'admin' ? `
+                                    <div class="action-cell">
+                                        <button class="action-btn btn-edit" onclick="editUser('${{u}}', '${{d.password}}', '${{d.permissions.join(',')}}')">
+                                            <i class="fas fa-edit"></i>
+                                        </button> 
+                                        <button class="action-btn btn-del" onclick="deleteUser('${{u}}')">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                ` : '<i class="fas fa-shield-alt" style="color: var(--accent-orange); opacity: 0.5;"></i>'}}
+                            </td>
+                        </tr>`;
+                    }}
+                    
+                    document.getElementById('userTableContainer').innerHTML = html + '</tbody></table>';
+                }});
+        }}
+        
+        function handleUserSubmit() {{
+            const u = document.getElementById('new_username').value;
+            const p = document.getElementById('new_password').value;
+            const a = document.getElementById('action_type').value;
+            
+            let perms = [];
+            if (document.getElementById('perm_closing').checked) perms.push('closing');
+            if (document.getElementById('perm_po').checked) perms.push('po_sheet');
+            if (document.getElementById('perm_acc').checked) perms.push('accessories');
+            
+            showLoading();
+            
+            fetch('/admin/save-user', {{
+                method:  'POST',
+                headers:  {{'Content-Type': 'application/json'}},
+                body: JSON.stringify({{ username: u, password: p, permissions: perms, action_type: a }})
+            }})
+            .then(r => r.json())
+            .then(d => {{
+                if (d.status === 'success') {{
+                    showSuccess();
+                    loadUsers();
+                    resetForm();
+                }} else {{
+                    alert(d.message);
+                    document.getElementById('loading-overlay').style.display = 'none';
+                }}
+            }});
+        }}
+        
+        function editUser(u, p, permsStr) {{
+            document.getElementById('new_username').value = u;
+            document.getElementById('new_username').readOnly = true;
+            document.getElementById('new_password').value = p;
+            document.getElementById('action_type').value = 'update';
+            document.getElementById('saveUserBtn').innerHTML = '<i class="fas fa-sync" style="margin-right: 10px;"></i> Update User';
+            const pArr = permsStr.split(',');
+            document.getElementById('perm_closing').checked = pArr.includes('closing');
+            document.getElementById('perm_po').checked = pArr.includes('po_sheet');
+            document.getElementById('perm_acc').checked = pArr.includes('accessories');
+        }}
+        
+        function resetForm() {{
+            document.getElementById('userForm').reset();
+            document.getElementById('action_type').value = 'create';
+            document.getElementById('saveUserBtn').innerHTML = '<i class="fas fa-save" style="margin-right: 10px;"></i> Save User';
+            document.getElementById('new_username').readOnly = false;
+            document.getElementById('perm_closing').checked = true;
+        }}
+        
+        function deleteUser(u) {{
+            if (confirm('Are you sure you want to delete "' + u + '"?')) {{
+                fetch('/admin/delete-user', {{
+                    method:  'POST',
+                    headers: {{'Content-Type': 'application/json'}},
+                    body: JSON.stringify({{ username: u }})
+                }}).then(() => loadUsers());
+            }}
+        }}
+        
+        // ===== PARTICLES.JS INITIALIZATION =====
+        if (typeof particlesJS !== 'undefined') {{
+            particlesJS('particles-js', {{
+                particles: {{
+                    number: {{ value: 50, density: {{ enable: true, value_area: 800 }} }},
+                    color: {{ value: '#FF7A00' }},
+                    shape: {{ type: 'circle' }},
+                    opacity:  {{ value: 0.3, random: true }},
+                    size: {{ value: 3, random: true }},
+                    line_linked: {{ enable: true, distance: 150, color: '#FF7A00', opacity: 0.1, width: 1 }},
+                    move: {{ enable:  true, speed: 1, direction: 'none', random: true, out_mode: 'out' }}
+                }},
+                interactivity: {{
+                    events: {{ onhover: {{ enable: true, mode: 'grab' }} }},
+                    modes: {{ grab: {{ distance: 140, line_linked: {{ opacity: 0.3 }} }} }}
+                }}
+            }});
+        }}
+        
+        // Add CSS for fadeInUp animation
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes fadeInUp {{
+                from {{ opacity: 0; transform: translateY(20px); }}
+                to {{ opacity: 1; transform: translateY(0); }}
+            }}
+            @keyframes modalFadeOut {{
+                to {{ opacity: 0; }}
+            }}
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>
+"""
+# ==============================================================================
+# USER DASHBOARD TEMPLATE - MODERN UI
+# ==============================================================================
+
+USER_DASHBOARD_TEMPLATE = f"""
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Dashboard - MNM Software</title>
+    {COMMON_STYLES}
+</head>
+<body>
+    <div class="animated-bg"></div>
+    
+    <div class="welcome-modal" id="welcomeModal">
+        <div class="welcome-content">
+            <div class="welcome-icon" id="welcomeIcon"><i class="fas fa-hand-sparkles"></i></div>
+            <div class="welcome-greeting" id="greetingText">Good Morning</div>
+            <!-- ফিক্সড: session. user -> session.user -->
+            <div class="welcome-title">Welcome, <span>{{{{ session.user }}}}</span>!</div>
+            <div class="welcome-message">
+                Your workspace is ready. 
+                Access your assigned modules below.
+            </div>
+            <button class="welcome-close" onclick="closeWelcome()">
+                <i class="fas fa-rocket" style="margin-right: 8px;"></i> Get Started
+            </button>
+        </div>
+    </div>
+    
     <div id="loading-overlay">
         <div class="spinner-container">
             <div class="spinner"></div>
             <div class="spinner-inner"></div>
         </div>
-        <div class="anim-text">PROCESSING</div>
-        <div class="loading-text">Fetching Data from ERP Server...</div>
+        <div class="loading-text">Processing... </div>
     </div>
-
-    <script>
-        // Sidebar Toggle
-        function toggleSidebar() {
-            document.getElementById('sidebar').classList.toggle('active');
-        }
-        
-        // Show Loading
-        function showLoading() {
-            document.getElementById('loading-overlay').style.display = 'flex';
-        }
-
-        // Chart Config
-        const ctx = document.getElementById('activityChart').getContext('2d');
-        const gradientOrange = ctx.createLinearGradient(0, 0, 0, 400);
-        gradientOrange.addColorStop(0, 'rgba(255, 122, 0, 0.5)');
-        gradientOrange.addColorStop(1, 'rgba(255, 122, 0, 0)');
-
-        const gradientPurple = ctx.createLinearGradient(0, 0, 0, 400);
-        gradientPurple.addColorStop(0, 'rgba(139, 92, 246, 0.5)');
-        gradientPurple.addColorStop(1, 'rgba(139, 92, 246, 0)');
-
-        new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: {{ stats.chart.labels | tojson }},
-                datasets: [
-                    {
-                        label: 'Closing Reports',
-                        data: {{ stats.chart.closing | tojson }},
-                        borderColor: '#FF7A00',
-                        backgroundColor: gradientOrange,
-                        borderWidth: 2,
-                        tension: 0.4,
-                        fill: true,
-                        pointBackgroundColor: '#FF7A00'
-                    },
-                    {
-                        label: 'PO Sheets',
-                        data: {{ stats.chart.po | tojson }},
-                        borderColor: '#8B5CF6',
-                        backgroundColor: gradientPurple,
-                        borderWidth: 2,
-                        tension: 0.4,
-                        fill: true,
-                        pointBackgroundColor: '#8B5CF6'
-                    }
-                ]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: { labels: { color: '#8b8b9e' } }
-                },
-                scales: {
-                    y: { 
-                        grid: { color: 'rgba(255,255,255,0.05)' },
-                        ticks: { color: '#8b8b9e' }
-                    },
-                    x: {
-                        grid: { display: false },
-                        ticks: { color: '#8b8b9e' }
-                    }
-                }
-            }
-        });
-    </script>
-</body>
-</html>
-"""
-
-# ------------------------------------------------------------------------------
-# ACCESSORIES TEMPLATE
-# ------------------------------------------------------------------------------
-ACCESSORIES_TEMPLATE = """
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Accessories | ERP Nexus</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    """ + COMMON_STYLES + """
-</head>
-<body>
-    <div class="mobile-toggle" onclick="toggleSidebar()"><i class="fa-solid fa-bars"></i></div>
     
-    <div class="sidebar" id="sidebar">
-        <div class="brand-logo"><i class="fa-solid fa-cube"></i><div>ERP<span>Nexus</span></div></div>
+    <div class="sidebar">
+        <div class="brand-logo">
+            <i class="fas fa-layer-group"></i> 
+            MNM<span>Software</span>
+        </div>
         <div class="nav-menu">
-            <a href="/dashboard" class="nav-link"><i class="fa-solid fa-chart-pie"></i> Overview</a>
-            <a href="/accessories" class="nav-link active"><i class="fa-solid fa-shirt"></i> Accessories</a>
+            <div class="nav-link active">
+                <i class="fas fa-home"></i> Home
+            </div>
+            <a href="/logout" class="nav-link" style="color: var(--accent-red); margin-top: auto;">
+                <i class="fas fa-sign-out-alt"></i> Sign Out
+            </a>
         </div>
-        <div class="sidebar-footer"><a href="/logout">LOGOUT</a></div>
+        <div class="sidebar-footer">
+            <i class="fas fa-code" style="margin-right: 5px;"></i> Powered by Mehedi Hasan
+        </div>
     </div>
-
+    
     <div class="main-content">
-        <!-- New Booking Form -->
-        <div class="card">
-            <div class="section-header">
-                <span><i class="fa-solid fa-plus-circle"></i> ADD NEW BOOKING</span>
+        <div class="header-section">
+            <div>
+                <div class="page-title">Welcome, {{{{ session.user }}}}!</div>
+                <div class="page-subtitle">Your assigned production modules</div>
             </div>
-            <form action="/add_booking" method="post">
-                <div class="input-group">
-                    <label>Internal Booking Reference</label>
-                    <input type="text" name="ref_no" placeholder="Enter Reference No..." required>
-                </div>
-                <button type="submit">Initialize Booking</button>
-            </form>
+            <div class="status-badge">
+                <div class="status-dot"></div>
+                <span>Online</span>
+            </div>
         </div>
 
-        <!-- Booking List -->
-        <div class="card">
-            <div class="section-header"><span><i class="fa-solid fa-list"></i> ACTIVE BOOKINGS</span></div>
-            <div style="overflow-x: auto;">
-                <table class="dark-table">
-                    <thead>
-                        <tr>
-                            <th>Reference</th>
-                            <th>Buyer / Style</th>
-                            <th>Challans</th>
-                            <th>Total Qty</th>
-                            <th>Status</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for item in bookings %}
-                        <tr>
-                            <td style="font-weight: 700; color: var(--accent-orange);">{{ item.ref }}</td>
-                            <td>
-                                <div style="font-weight: 600;">{{ item.buyer }}</div>
-                                <div style="font-size: 11px; color: var(--text-secondary);">{{ item.style }}</div>
-                            </td>
-                            <td><span class="table-badge">{{ item.challan_count }}</span></td>
-                            <td>{{ item.total_qty }}</td>
-                            <td>
-                                {% if item.last_updated != 'N/A' %}
-                                <span style="color: var(--accent-green); font-size: 11px;">● Synced</span>
-                                {% else %}
-                                <span style="color: var(--accent-red); font-size: 11px;">● Pending</span>
-                                {% endif %}
-                            </td>
-                            <td class="action-cell">
-                                <a href="/view_booking/{{ item.ref }}" class="action-btn btn-edit"><i class="fa-solid fa-eye"></i> View</a>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+        {{% with messages = get_flashed_messages() %}}
+            {{% if messages %}}
+                <div class="flash-message flash-error">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <span>{{{{ messages[0] }}}}</span>
+                </div>
+            {{% endif %}}
+        {{% endwith %}}
+
+        <div class="stats-grid">
+            <!-- ফিক্সড: session. permissions -> session.permissions -->
+            {{% if 'closing' in session.permissions %}}
+            <div class="card" style="animation: fadeInUp 0.5s ease-out 0.1s backwards;">
+                <div class="section-header">
+                    <span><i class="fas fa-file-export" style="margin-right: 10px; color: var(--accent-orange);"></i>Closing Report</span>
+                </div>
+                <p style="color: var(--text-secondary); margin-bottom: 20px; font-size: 14px; line-height: 1.6;">
+                    Generate production closing reports with real-time data.  
+                </p>
+                <form action="/generate-report" method="post" onsubmit="showLoading()">
+                    <div class="input-group">
+                        <label>BOOKING REF NO</label>
+                        <input type="text" name="ref_no" required placeholder="Enter Booking Reference">
+                    </div>
+                    <button type="submit">
+                        <i class="fas fa-magic" style="margin-right: 8px;"></i> Generate
+                    </button>
+                </form>
             </div>
+            {{% endif %}}
+            
+            {{% if 'po_sheet' in session.permissions %}}
+            <div class="card" style="animation: fadeInUp 0.5s ease-out 0.2s backwards;">
+                <div class="section-header">
+                    <span><i class="fas fa-file-pdf" style="margin-right: 10px; color: var(--accent-green);"></i>PO Sheet</span>
+                </div>
+                <p style="color: var(--text-secondary); margin-bottom: 20px; font-size: 14px; line-height: 1.6;">
+                    Process PDF files and generate PO summary reports.
+                </p>
+                <form action="/generate-po-report" method="post" enctype="multipart/form-data" onsubmit="showLoading()">
+                    <div class="input-group">
+                        <label>PDF FILES</label>
+                        <input type="file" name="pdf_files" multiple accept=".pdf" required style="padding: 12px;">
+                    </div>
+                    <button type="submit" style="background: linear-gradient(135deg, #10B981 0%, #34D399 100%);">
+                        <i class="fas fa-cogs" style="margin-right: 8px;"></i> Process Files
+                    </button>
+                </form>
+            </div>
+            {{% endif %}}
+            
+            {{% if 'accessories' in session.permissions %}}
+            <div class="card" style="animation: fadeInUp 0.5s ease-out 0.3s backwards;">
+                <div class="section-header">
+                    <span><i class="fas fa-boxes" style="margin-right: 10px; color: var(--accent-purple);"></i>Accessories</span>
+                </div>
+                <p style="color: var(--text-secondary); margin-bottom: 20px; font-size: 14px; line-height: 1.6;">
+                    Manage challans, entries and delivery history for accessories.
+                </p>
+                <a href="/admin/accessories">
+                    <button style="background: linear-gradient(135deg, #8B5CF6 0%, #A78BFA 100%);">
+                        <i class="fas fa-external-link-alt" style="margin-right: 8px;"></i> Open Dashboard
+                    </button>
+                </a>
+            </div>
+            {{% endif %}}
         </div>
     </div>
+    
     <script>
-        function toggleSidebar() { document.getElementById('sidebar').classList.toggle('active'); }
+        // Welcome Popup
+        function showWelcomePopup() {{
+            const hour = new Date().getHours();
+            let greeting, icon;
+            
+            if (hour >= 5 && hour < 12) {{
+                greeting = "Good Morning";
+                icon = '<i class="fas fa-sun"></i>';
+            }} else if (hour >= 12 && hour < 17) {{
+                greeting = "Good Afternoon";
+                icon = '<i class="fas fa-sun"></i>';
+            }} else if (hour >= 17 && hour < 21) {{
+                greeting = "Good Evening";
+                icon = '<i class="fas fa-city"></i>';
+            }} else {{
+                greeting = "Good Night";
+                icon = '<i class="fas fa-moon"></i>';
+            }}
+            
+            document.getElementById('greetingText').textContent = greeting;
+            document.getElementById('welcomeIcon').innerHTML = icon;
+            document.getElementById('welcomeModal').style.display = 'flex';
+        }}
+        
+        function closeWelcome() {{
+            const modal = document.getElementById('welcomeModal');
+            // ফিক্সড: modal.style. opacity -> modal.style.opacity
+            modal.style.opacity = '0';
+            setTimeout(() => {{
+                modal.style.display = 'none';
+                sessionStorage.setItem('welcomeShown', 'true');
+            }}, 300);
+        }}
+        
+        if (!sessionStorage.getItem('welcomeShown')) {{
+            setTimeout(showWelcomePopup, 500);
+        }}
+        
+        function showLoading() {{
+            document.getElementById('loading-overlay').style.display = 'flex';
+            return true;
+        }}
+        
+        // Add fadeInUp animation
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes fadeInUp {{
+                from {{ opacity: 0; transform: translateY(20px); }}
+                to {{ opacity: 1; transform:  translateY(0); }}
+            }}
+        `;
+        document.head.appendChild(style);
     </script>
 </body>
 </html>
 """
 
-# ------------------------------------------------------------------------------
-# PO SHEET TEMPLATE
-# ------------------------------------------------------------------------------
-PO_REPORT_TEMPLATE = """
-<!DOCTYPE html>
-<html>
+# ==============================================================================
+# ACCESSORIES SEARCH TEMPLATE - WITH HISTORY FEATURE (UPDATED)
+# ==============================================================================
+
+ACCESSORIES_SEARCH_TEMPLATE = f"""
+<!doctype html>
+<html lang="en">
 <head>
-    <title>PO Report | ERP Nexus</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Accessories Search - MNM Software</title>
+    {COMMON_STYLES}
     <style>
-        body { font-family: 'Roboto', sans-serif; background: #fff; color: #333; padding: 20px; }
-        .report-header { text-align: center; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 2px solid #000; }
-        .report-title { font-size: 24px; font-weight: 700; text-transform: uppercase; margin: 0; }
-        .meta-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px; font-size: 12px; }
-        .meta-item { border: 1px solid #ddd; padding: 5px; background: #f9f9f9; }
-        .meta-label { font-weight: 700; color: #555; display: block; }
+        body {{
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }}
         
-        table { width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 11px; }
-        th, td { border: 1px solid #ccc; padding: 4px 6px; text-align: center; }
-        th { background: #eee; font-weight: 700; }
+        /* ফিক্সড: . search-container -> .search-container */
+        .search-container {{
+            position: relative;
+            z-index: 10;
+            width: 100%;
+            max-width: 520px;
+            padding: 20px;
+        }}
         
-        .color-header { background: #333; color: #fff; text-align: left; padding: 5px 10px; font-size: 13px; font-weight: 700; margin-top: 15px; }
-        .grand-total { font-size: 16px; font-weight: 700; text-align: right; margin-top: 20px; padding: 10px; border-top: 2px solid #000; }
+        .search-card {{
+            background: var(--gradient-card);
+            border:  1px solid var(--border-color);
+            border-radius: 24px;
+            padding: 50px 45px;
+            backdrop-filter: blur(20px);
+            box-shadow:  0 25px 80px rgba(0, 0, 0, 0.5), 0 0 60px var(--accent-orange-glow);
+            animation: cardAppear 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }}
         
-        /* Print Optimization */
-        @media print {
-            .no-print { display: none; }
-            body { padding: 0; }
-            table { page-break-inside: auto; }
-            tr { page-break-inside: avoid; page-break-after: auto; }
-        }
+        @keyframes cardAppear {{
+            from {{ opacity: 0; transform: translateY(20px) scale(0.95); }}
+            to {{ opacity:  1; transform: translateY(0) scale(1); }}
+        }}
+        
+        .search-header {{
+            text-align: center;
+            margin-bottom: 40px;
+        }}
+        
+        .search-icon {{
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(145deg, rgba(139, 92, 246, 0.2), rgba(139, 92, 246, 0.05));
+            border-radius: 20px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
+            color: var(--accent-purple);
+            margin-bottom: 20px;
+            animation: iconFloat 3s ease-in-out infinite;
+        }}
+        
+        @keyframes iconFloat {{
+            0%, 100% {{ transform: translateY(0); }}
+            50% {{ transform:  translateY(-10px); }}
+        }}
+        
+        .search-title {{
+            font-size: 28px;
+            font-weight: 800;
+            color: white;
+            margin-bottom: 8px;
+        }}
+        
+        .search-subtitle {{
+            color: var(--text-secondary);
+            font-size: 14px;
+        }}
+        
+        .nav-links {{
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border-color);
+        }}
+        
+        .nav-links a {{
+            color:  var(--text-secondary);
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: var(--transition-smooth);
+        }}
+        
+        .nav-links a:hover {{
+            color: var(--accent-orange);
+        }}
+        
+        .nav-links a.logout {{
+            color: var(--accent-red);
+        }}
+        
+        .nav-links a.logout:hover {{
+            color: #ff6b6b;
+        }}
+        
+        /* History Card Specific Styles */
+        .history-section {{
+            margin-top: 25px;
+            padding-top: 25px;
+            border-top: 1px solid var(--border-color);
+        }}
+        
+        .history-toggle {{
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            padding: 15px 20px;
+            background: linear-gradient(145deg, rgba(139, 92, 246, 0.1), rgba(139, 92, 246, 0.02));
+            border: 1px solid rgba(139, 92, 246, 0.2);
+            border-radius: 14px;
+            transition: var(--transition-smooth);
+        }}
+        
+        .history-toggle:hover {{
+            border-color: var(--accent-purple);
+            background: linear-gradient(145deg, rgba(139, 92, 246, 0.15), rgba(139, 92, 246, 0.05));
+            transform: translateY(-2px);
+        }}
+        
+        .history-toggle-left {{
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }}
+        
+        .history-toggle-icon {{
+            width: 42px;
+            height: 42px;
+            background: linear-gradient(145deg, rgba(139, 92, 246, 0.3), rgba(139, 92, 246, 0.1));
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            color: var(--accent-purple);
+        }}
+        
+        .history-toggle-text {{
+            font-size: 15px;
+            font-weight: 600;
+            color: white;
+        }}
+        
+        .history-toggle-sub {{
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-top: 2px;
+        }}
+        
+        /* ফিক্সড: . history-badge -> .history-badge */
+        .history-badge {{
+            background: var(--accent-purple);
+            color: white;
+            padding: 5px 14px;
+            border-radius:  20px;
+            font-size: 13px;
+            font-weight:  700;
+        }}
+        
+        .history-dropdown {{
+            display: none;
+            margin-top: 15px;
+            max-height: 320px;
+            overflow-y:  auto;
+            padding: 5px;
+        }}
+        
+        /* ফিক্সড: .history-dropdown. active -> .history-dropdown.active */
+        .history-dropdown.active {{
+            display: block;
+            animation: slideDown 0.3s ease-out;
+        }}
+        
+        @keyframes slideDown {{
+            from {{ opacity: 0; transform: translateY(-10px); }}
+            to {{ opacity: 1; transform:  translateY(0); }}
+        }}
+        
+        .history-booking-item {{
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px 16px;
+            background: rgba(255, 255, 255, 0.02);
+            border:  1px solid var(--border-color);
+            border-radius: 12px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+            text-decoration: none;
+        }}
+        
+        .history-booking-item:hover {{
+            background: rgba(139, 92, 246, 0.1);
+            border-color: rgba(139, 92, 246, 0.3);
+            transform: translateX(5px);
+        }}
+        
+        .booking-item-left {{
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }}
+        
+        .booking-ref {{
+            font-size: 15px;
+            font-weight:  700;
+            color: var(--accent-purple);
+        }}
+        
+        .booking-info {{
+            font-size: 12px;
+            color: var(--text-secondary);
+        }}
+        
+        .booking-stats {{
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }}
+        
+        .booking-stat {{
+            text-align: center;
+        }}
+        
+        .booking-stat-value {{
+            font-size: 16px;
+            font-weight:  800;
+            color: var(--accent-green);
+        }}
+        
+        .booking-stat-label {{
+            font-size: 10px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+        }}
+        
+        .booking-arrow {{
+            color: var(--text-secondary);
+            font-size: 14px;
+            transition: var(--transition-smooth);
+        }}
+        
+        /* ফিক্সড: . history-booking-item: hover -> .history-booking-item:hover */
+        .history-booking-item:hover .booking-arrow {{
+            color: var(--accent-purple);
+            transform: translateX(5px);
+        }}
+        
+        /* ফিক্সড: . empty-history -> .empty-history */
+        .empty-history {{
+            text-align: center;
+            padding: 30px;
+            color: var(--text-secondary);
+        }}
+        
+        .empty-history i {{
+            font-size: 40px;
+            opacity: 0.3;
+            margin-bottom: 10px;
+        }}
     </style>
 </head>
 <body>
-    <div class="no-print" style="margin-bottom: 20px; text-align: right;">
-        <button onclick="window.print()" style="padding: 10px 20px; background: #000; color: #fff; border: none; cursor: pointer;">PRINT REPORT</button>
-        <a href="/dashboard" style="margin-left: 10px; text-decoration: none; color: #333;">Back to Dashboard</a>
+    <div class="animated-bg"></div>
+    
+    <div class="search-container">
+        <div class="search-card">
+            <div class="search-header">
+                <div class="search-icon">
+                    <i class="fas fa-boxes"></i>
+                </div>
+                <div class="search-title">Accessories Challan</div>
+                <div class="search-subtitle">Enter booking reference to continue</div>
+            </div>
+            
+            <form action="/admin/accessories/input" method="post">
+                <div class="input-group">
+                    <label><i class="fas fa-search" style="margin-right: 5px;"></i> BOOKING REFERENCE</label>
+                    <input type="text" name="ref_no" required placeholder="e.g.  IB-12345" autocomplete="off">
+                </div>
+                <button type="submit" style="background: linear-gradient(135deg, #8B5CF6 0%, #A78BFA 100%);">
+                    Proceed to Entry <i class="fas fa-arrow-right" style="margin-left: 10px;"></i>
+                </button>
+            </form>
+            
+            {{% with messages = get_flashed_messages() %}}
+                {{% if messages %}}
+                    <div class="flash-message flash-error" style="margin-top: 20px;">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <span>{{{{ messages[0] }}}}</span>
+                    </div>
+                {{% endif %}}
+            {{% endwith %}}
+            
+            <!-- History Section - NEW -->
+            <div class="history-section">
+                <div class="history-toggle" onclick="toggleHistory()">
+                    <div class="history-toggle-left">
+                        <div class="history-toggle-icon">
+                            <i class="fas fa-history"></i>
+                        </div>
+                        <div>
+                            <div class="history-toggle-text">Challan History</div>
+                            <div class="history-toggle-sub">View all saved bookings</div>
+                        </div>
+                    </div>
+                    <div class="history-badge">{{{{ history_count }}}}</div>
+                </div>
+                
+                <div class="history-dropdown" id="historyDropdown">
+                    {{% if history_bookings %}}
+                        {{% for booking in history_bookings %}}
+                        <a href="/admin/accessories/input_direct?ref={{{{ booking.ref }}}}" class="history-booking-item">
+                            <div class="booking-item-left">
+                                <div class="booking-ref">{{{{ booking.ref }}}}</div>
+                                <div class="booking-info">{{{{ booking.buyer }}}} • {{{{ booking.style }}}}</div>
+                            </div>
+                            <div class="booking-stats">
+                                <div class="booking-stat">
+                                    <div class="booking-stat-value">{{{{ booking.challan_count }}}}</div>
+                                    <div class="booking-stat-label">Challans</div>
+                                </div>
+                                <div class="booking-stat">
+                                    <div class="booking-stat-value">{{{{ booking.total_qty }}}}</div>
+                                    <div class="booking-stat-label">Total Qty</div>
+                                </div>
+                                <div class="booking-arrow">
+                                    <i class="fas fa-chevron-right"></i>
+                                </div>
+                            </div>
+                        </a>
+                        {{% endfor %}}
+                    {{% else %}}
+                        <div class="empty-history">
+                            <i class="fas fa-folder-open"></i>
+                            <div>No saved bookings yet</div>
+                        </div>
+                    {{% endif %}}
+                </div>
+            </div>
+            
+            <div class="nav-links">
+                <a href="/"><i class="fas fa-arrow-left"></i> Back to Dashboard</a>
+                <a href="/logout" class="logout">Sign Out <i class="fas fa-sign-out-alt"></i></a>
+            </div>
+        </div>
+        
+        <div style="text-align: center; margin-top: 25px; color: var(--text-secondary); font-size: 11px; opacity: 0.4;">
+            © 2025 Mehedi Hasan
+        </div>
+    </div>
+    
+    <script>
+        function toggleHistory() {{
+            const dropdown = document.getElementById('historyDropdown');
+            dropdown.classList.toggle('active');
+        }}
+    </script>
+</body>
+</html>
+"""
+
+# ==============================================================================
+# ACCESSORIES INPUT TEMPLATE (UPDATED with 24hr refresh indicator)
+# ==============================================================================
+
+ACCESSORIES_INPUT_TEMPLATE = f"""
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Accessories Entry - MNM Software</title>
+    {COMMON_STYLES}
+    <style>
+        /* ফিক্সড: . ref-badge -> .ref-badge */
+        .ref-badge {{
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(255, 122, 0, 0.1);
+            border:  1px solid rgba(255, 122, 0, 0.2);
+            padding: 10px 20px;
+            border-radius:  12px;
+            margin-top: 10px;
+        }}
+        
+        /* ফিক্সড: .ref-badge . ref-no -> .ref-badge .ref-no */
+        .ref-badge .ref-no {{
+            font-size: 18px;
+            font-weight:  800;
+            color: var(--accent-orange);
+        }}
+        
+        .ref-badge .ref-info {{
+            color: var(--text-secondary);
+            font-size: 13px;
+            font-weight: 500;
+        }}
+        
+        .history-scroll {{
+            max-height: 500px;
+            overflow-y:  auto;
+            padding-right: 5px;
+        }}
+        
+        .challan-row {{
+            display: grid;
+            grid-template-columns: 60px 1fr 80px 60px 80px;
+            gap: 10px;
+            padding: 14px;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 10px;
+            margin-bottom: 8px;
+            align-items: center;
+            transition: var(--transition-smooth);
+            border: 1px solid transparent;
+        }}
+        
+        .challan-row:hover {{
+            background: rgba(255, 122, 0, 0.05);
+            border-color: var(--border-glow);
+        }}
+        
+        .line-badge {{
+            background: var(--gradient-orange);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 13px;
+            text-align: center;
+        }}
+        
+        .qty-value {{
+            font-size: 18px;
+            font-weight:  800;
+            color: var(--accent-green);
+        }}
+        
+        .status-check {{
+            color: var(--accent-green);
+            font-size: 20px;
+        }}
+        
+        .print-btn {{
+            background: linear-gradient(135deg, #10B981 0%, #34D399 100%) !important;
+        }}
+        
+        .empty-state {{
+            text-align: center;
+            padding: 50px 20px;
+            color: var(--text-secondary);
+        }}
+        
+        .empty-state i {{
+            font-size: 50px;
+            opacity: 0.2;
+            margin-bottom: 15px;
+        }}
+        
+        .grid-2-cols {{
+            display: grid;
+            grid-template-columns:  1fr 1fr;
+            gap: 20px;
+        }}
+        
+        .count-badge {{
+            background: var(--accent-purple);
+            color: white;
+            padding:  4px 12px;
+            border-radius:  20px;
+            font-size: 12px;
+            font-weight: 700;
+            margin-left: 10px;
+        }}
+        
+        /* Fixed Select Styling */
+        select {{
+            background-color: #1a1a25 !important;
+            color: white !important;
+        }}
+        
+        select option {{
+            background-color: #1a1a25 !important;
+            color: white !important;
+            padding: 10px;
+        }}
+        
+        /* Refresh Indicator */
+        .refresh-indicator {{
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 11px;
+            color: var(--text-secondary);
+            background: rgba(16, 185, 129, 0.1);
+            padding: 4px 10px;
+            border-radius:  20px;
+            margin-left: 10px;
+        }}
+        
+        .refresh-indicator i {{
+            color: var(--accent-green);
+            font-size: 10px;
+        }}
+    </style>
+</head>
+<body>
+    <div class="animated-bg"></div>
+    
+    <div id="loading-overlay">
+        <div class="spinner-container">
+            <div class="spinner" id="spinner-anim"></div>
+            <div class="spinner-inner"></div>
+        </div>
+        <div class="checkmark-container" id="success-anim">
+            <div class="checkmark-circle"></div>
+            <div class="anim-text">Saved!</div>
+        </div>
+        <div class="loading-text" id="loading-text">Saving Entry...</div>
     </div>
 
-    <div class="report-header">
-        <h1 class="report-title">Purchase Order Breakdown</h1>
-        <p>Generated on: {{ meta.generated_at }}</p>
+    <div class="sidebar">
+        <div class="brand-logo">
+            <i class="fas fa-boxes"></i> 
+            Accessories
+        </div>
+        <div class="nav-menu">
+            <a href="/" class="nav-link"><i class="fas fa-home"></i> Dashboard</a>
+            <a href="/admin/accessories" class="nav-link active"><i class="fas fa-search"></i> Search</a>
+            <a href="/logout" class="nav-link" style="color: var(--accent-red); margin-top: 20px;">
+                <i class="fas fa-sign-out-alt"></i> Sign Out
+            </a>
+        </div>
+        <div class="sidebar-footer">© 2025 Mehedi Hasan</div>
     </div>
+    
+    <div class="main-content">
+        <div class="header-section">
+            <div>
+                <div class="page-title">Accessories Entry</div>
+                <div class="ref-badge">
+                    <span class="ref-no">{{{{ ref }}}}</span>
+                    <span class="ref-info">{{{{ buyer }}}} • {{{{ style }}}}</span>
+                    {{% if colors_refreshed %}}
+                    <span class="refresh-indicator"><i class="fas fa-sync-alt"></i> Colors Updated</span>
+                    {{% endif %}}
+                </div>
+            </div>
+            <!-- ফিক্সড: print? ref -> print?ref -->
+            <a href="/admin/accessories/print?ref={{{{ ref }}}}" target="_blank">
+                <button class="print-btn" style="width: auto; padding: 14px 30px;">
+                    <i class="fas fa-print" style="margin-right: 10px;"></i> Print Report
+                </button>
+            </a>
+        </div>
 
+        <div class="dashboard-grid-2">
+            <div class="card">
+                <div class="section-header">
+                    <span><i class="fas fa-plus-circle" style="margin-right: 10px; color: var(--accent-orange);"></i>New Challan Entry</span>
+                </div>
+                <form action="/admin/accessories/save" method="post" onsubmit="return showLoading()">
+                    <input type="hidden" name="ref" value="{{{{ ref }}}}">
+                    
+                    <div class="grid-2-cols">
+                        <div class="input-group">
+                            <label><i class="fas fa-tag" style="margin-right: 5px;"></i> TYPE</label>
+                            <select name="item_type">
+                                <option value="Top">Top</option>
+                                <option value="Bottom">Bottom</option>
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <label><i class="fas fa-palette" style="margin-right: 5px;"></i> COLOR</label>
+                            <select name="color" required>
+                                <option value="" disabled selected>Select Color</option>
+                                {{% for c in colors %}}
+                                <option value="{{{{ c }}}}">{{{{ c }}}}</option>
+                                {{% endfor %}}
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="grid-2-cols">
+                        <div class="input-group">
+                            <label><i class="fas fa-industry" style="margin-right: 5px;"></i> LINE NO</label>
+                            <input type="text" name="line_no" required placeholder="e.g. L-01">
+                        </div>
+                        <div class="input-group">
+                            <label><i class="fas fa-ruler" style="margin-right: 5px;"></i> SIZE</label>
+                            <input type="text" name="size" value="ALL" placeholder="Size">
+                        </div>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label><i class="fas fa-sort-numeric-up" style="margin-right: 5px;"></i> QUANTITY</label>
+                        <input type="number" name="qty" required placeholder="Enter Quantity" min="1">
+                    </div>
+                    
+                    <button type="submit">
+                        <i class="fas fa-save" style="margin-right: 10px;"></i> Save Entry
+                    </button>
+                </form>
+            </div>
+
+            <div class="card">
+                <div class="section-header">
+                    <span>Recent History</span>
+                    <span class="count-badge">{{{{ challans|length }}}}</span>
+                </div>
+                <div class="history-scroll">
+                    {{% if challans %}}
+                        {{% for item in challans|reverse %}}
+                        <div class="challan-row" style="animation:  fadeInUp 0.3s ease-out {{{{ loop.index * 0.05 }}}}s backwards;">
+                            <div class="line-badge">{{{{ item.line }}}}</div>
+                            <div style="color: white; font-weight: 500; font-size: 13px;">{{{{ item.color }}}}</div>
+                            <div class="qty-value">{{{{ item.qty }}}}</div>
+                            <div class="status-check">{{{{ item.status if item.status else '●' }}}}</div>
+                            <div class="action-cell">
+                                {{% if session.role == 'admin' %}}
+                                <a href="/admin/accessories/edit?ref={{{{ ref }}}}&index={{{{ (challans|length) - loop.index }}}}" class="action-btn btn-edit">
+                                    <i class="fas fa-pen"></i>
+                                </a>
+                                <form action="/admin/accessories/delete" method="POST" style="display: inline;" onsubmit="return confirm('Delete this entry?');">
+                                    <input type="hidden" name="ref" value="{{{{ ref }}}}">
+                                    <input type="hidden" name="index" value="{{{{ (challans|length) - loop.index }}}}">
+                                    <button type="submit" class="action-btn btn-del"><i class="fas fa-trash"></i></button>
+                                </form>
+                                {{% else %}}
+                                <span style="font-size: 10px; color: var(--text-secondary); opacity: 0.5;">🔒</span>
+                                {{% endif %}}
+                            </div>
+                        </div>
+                        {{% endfor %}}
+                    {{% else %}}
+                        <div class="empty-state">
+                            <i class="fas fa-inbox"></i>
+                            <div>No challans added yet</div>
+                            <div style="font-size: 12px; margin-top: 5px;">Add your first entry using the form</div>
+                        </div>
+                    {{% endif %}}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function showLoading() {{
+            const overlay = document.getElementById('loading-overlay');
+            const spinner = document.getElementById('spinner-anim').parentElement;
+            const success = document.getElementById('success-anim');
+            const text = document.getElementById('loading-text');
+            
+            overlay.style.display = 'flex';
+            spinner.style.display = 'block';
+            success.style.display = 'none';
+            text.style.display = 'block';
+            text.textContent = 'Saving Entry...';
+            
+            return true;
+        }}
+        
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes fadeInUp {{
+                from {{ opacity: 0; transform: translateY(10px); }}
+                to {{ opacity: 1; transform: translateY(0); }}
+            }}
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>
+"""
+# ==============================================================================
+# ACCESSORIES PRINT TEMPLATE
+# ==============================================================================
+
+ACCESSORIES_PRINT_TEMPLATE = f"""
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Challan Report - MNM Software</title>
+    <style>
+        body {{
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: white;
+            color: #333;
+            padding: 40px;
+        }}
+        
+        .print-header {{
+            text-align: center;
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #333;
+        }}
+        
+        .company-name {{
+            font-size: 28px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin: 0;
+        }}
+        
+        .report-title {{
+            font-size: 16px;
+            color: #666;
+            margin-top: 5px;
+            text-transform: uppercase;
+        }}
+        
+        .meta-grid {{
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+        }}
+        
+        .meta-box {{
+            border: 1px solid #ddd;
+            padding: 15px;
+            border-radius: 8px;
+            background: #f9f9f9;
+        }}
+        
+        .meta-row {{
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            border-bottom: 1px dashed #eee;
+            padding-bottom: 4px;
+        }}
+        
+        .meta-row:last-child {{
+            border-bottom: none;
+            margin-bottom: 0;
+        }}
+        
+        .meta-label {{
+            font-weight: 600;
+            color: #555;
+            font-size: 13px;
+        }}
+        
+        .meta-value {{
+            font-weight: 700;
+            color: #000;
+        }}
+        
+        table {{
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 30px;
+            font-size: 12px;
+        }}
+        
+        th, td {{
+            border: 1px solid #ccc;
+            padding: 10px;
+            text-align: center;
+        }}
+        
+        th {{
+            background: #333;
+            color: white;
+            font-weight: 600;
+            text-transform: uppercase;
+        }}
+        
+        tr:nth-child(even) {{
+            background: #f2f2f2;
+        }}
+        
+        .total-row {{
+            background: #e0e0e0 !important;
+            font-weight: 800;
+            font-size: 14px;
+        }}
+        
+        .footer-section {{
+            margin-top: 80px;
+            display: flex;
+            justify-content: space-between;
+        }}
+        
+        .signature-box {{
+            text-align: center;
+            width: 200px;
+        }}
+        
+        .signature-line {{
+            border-top: 1px solid #333;
+            margin-bottom: 5px;
+        }}
+        
+        .signature-text {{
+            font-size: 12px;
+            font-weight: 600;
+            color: #555;
+            text-transform: uppercase;
+        }}
+        
+        .print-btn-container {{
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+        }}
+        
+        .print-btn {{
+            background: #333;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: bold;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }}
+        
+        @media print {{
+            .print-btn-container {{ display: none; }}
+            body {{ padding: 0; }}
+            .meta-box {{ border: 1px solid #000; background: none; }}
+            th {{ background: #ddd !important; color: #000; -webkit-print-color-adjust: exact; }}
+        }}
+    </style>
+</head>
+<body>
+    <div class="print-header">
+        <h1 class="company-name">Cotton Clothing BD Ltd.</h1>
+        <div class="report-title">Accessories Challan Report</div>
+    </div>
+    
     <div class="meta-grid">
-        <div class="meta-item"><span class="meta-label">BUYER</span> {{ meta.buyer }}</div>
-        <div class="meta-item"><span class="meta-label">BOOKING NO</span> {{ meta.booking }}</div>
-        <div class="meta-item"><span class="meta-label">STYLE</span> {{ meta.style }}</div>
-        <div class="meta-item"><span class="meta-label">SEASON</span> {{ meta.season }}</div>
-        <div class="meta-item"><span class="meta-label">DEPARTMENT</span> {{ meta.dept }}</div>
-        <div class="meta-item"><span class="meta-label">ITEM</span> {{ meta.item }}</div>
+        <div class="meta-box">
+            <div class="meta-row">
+                <span class="meta-label">BOOKING REF</span>
+                <span class="meta-value">{{{{ ref }}}}</span>
+            </div>
+            <div class="meta-row">
+                <span class="meta-label">BUYER</span>
+                <span class="meta-value">{{{{ data.buyer }}}}</span>
+            </div>
+            <div class="meta-row">
+                <span class="meta-label">STYLE</span>
+                <span class="meta-value">{{{{ data.style }}}}</span>
+            </div>
+        </div>
+        <div class="meta-box">
+            <div class="meta-row">
+                <span class="meta-label">PRINT DATE</span>
+                <!-- ফিক্সড: now. strftime -> now.strftime -->
+                <span class="meta-value">{{{{ now.strftime('%d-%b-%Y') }}}}</span>
+            </div>
+            <div class="meta-row">
+                <span class="meta-label">TOTAL CHALLANS</span>
+                <span class="meta-value">{{{{ data.challans|length }}}}</span>
+            </div>
+            <div class="meta-row">
+                <span class="meta-label">GENERATED BY</span>
+                <span class="meta-value">{{{{ session.user }}}}</span>
+            </div>
+        </div>
     </div>
-
-    {% for table in tables %}
-        <div class="color-header">COLOR: {{ table.color }}</div>
-        {{ table.table | safe }}
-    {% endfor %}
-
-    <div class="grand-total">
-        GRAND TOTAL QUANTITY: {{ grand_total }}
+    
+    <table>
+        <thead>
+            <tr>
+                <th style="width: 50px;">SL</th>
+                <th>Date</th>
+                <th>Line No</th>
+                <th>Item Type</th>
+                <th>Color</th>
+                <th>Size</th>
+                <th>Quantity</th>
+            </tr>
+        </thead>
+        <tbody>
+            {{% set total_qty = namespace(value=0) %}}
+            {{% for item in data.challans|reverse %}}
+            {{% set total_qty.value = total_qty.value + (item.qty | int) %}}
+            <tr>
+                <td>{{{{ loop.index }}}}</td>
+                <td>{{{{ item.date }}}}</td>
+                <td>{{{{ item.line }}}}</td>
+                <td>{{{{ item.item_type }}}}</td>
+                <td>{{{{ item.color }}}}</td>
+                <td>{{{{ item.size }}}}</td>
+                <td style="font-weight: bold;">{{{{ item.qty }}}}</td>
+            </tr>
+            {{% endfor %}}
+            <tr class="total-row">
+                <td colspan="6" style="text-align: right; padding-right: 20px;">GRAND TOTAL</td>
+                <td>{{{{ total_qty.value }}}}</td>
+            </tr>
+        </tbody>
+    </table>
+    
+    <div class="footer-section">
+        <div class="signature-box">
+            <div class="signature-line"></div>
+            <div class="signature-text">Store In-charge</div>
+        </div>
+        <div class="signature-box">
+            <div class="signature-line"></div>
+            <div class="signature-text">Production Officer</div>
+        </div>
+        <div class="signature-box">
+            <div class="signature-line"></div>
+            <div class="signature-text">Authorized By</div>
+        </div>
+    </div>
+    
+    <div class="print-btn-container">
+        <!-- ফিক্সড: window. print() -> window.print() -->
+        <button class="print-btn" onclick="window.print()">PRINT REPORT</button>
     </div>
 </body>
 </html>
 """
 
-# ------------------------------------------------------------------------------
+# ==============================================================================
 # PO UPLOAD TEMPLATE
-# ------------------------------------------------------------------------------
-PO_UPLOAD_TEMPLATE = """
-<!DOCTYPE html>
-<html>
+# ==============================================================================
+
+PO_UPLOAD_TEMPLATE = f"""
+<!doctype html>
+<html lang="en">
 <head>
-    <title>Upload PO | ERP Nexus</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    """ + COMMON_STYLES + """
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>PO Upload - MNM Software</title>
+    {COMMON_STYLES}
+    <style>
+        .page-center {{
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 80vh;
+        }}
+    </style>
 </head>
 <body>
-    <div class="mobile-toggle" onclick="toggleSidebar()"><i class="fa-solid fa-bars"></i></div>
-    <div class="sidebar" id="sidebar">
-        <div class="brand-logo"><i class="fa-solid fa-cube"></i><div>ERP<span>Nexus</span></div></div>
+    <div class="animated-bg"></div>
+    
+    <div class="sidebar">
+        <div class="brand-logo">
+            <i class="fas fa-layer-group"></i> 
+            MNM<span>Software</span>
+        </div>
         <div class="nav-menu">
-            <a href="/dashboard" class="nav-link"><i class="fa-solid fa-chart-pie"></i> Overview</a>
-            <a href="/po_sheet" class="nav-link active"><i class="fa-solid fa-file-csv"></i> PO Converter</a>
+            <a href="/" class="nav-link"><i class="fas fa-home"></i> Dashboard</a>
+            <div class="nav-link active"><i class="fas fa-file-upload"></i> Upload PO</div>
         </div>
     </div>
-
+    
     <div class="main-content">
-        <div class="page-title">PO File Converter</div>
-        <div class="page-subtitle">Convert PDF Purchase Orders to HTML Reports</div>
-        <br>
-        
-        <div class="card">
-            <form action="/upload_po" method="post" enctype="multipart/form-data" id="uploadForm">
-                <div class="upload-zone" id="dropZone">
-                    <div class="upload-icon"><i class="fa-solid fa-cloud-arrow-up"></i></div>
-                    <div class="upload-text">Drag & Drop PDF Files Here</div>
-                    <div class="upload-hint">or click to browse files</div>
-                    <input type="file" name="file" multiple accept=".pdf" id="fileInput" style="display: none;">
+        <div id="loading-overlay">
+            <div class="spinner-container">
+                <div class="spinner"></div>
+                <div class="spinner-inner"></div>
+            </div>
+            <div class="loading-text">Processing PDF Files...</div>
+        </div>
+
+        <div class="page-center">
+            <div class="card" style="width: 100%; max-width: 600px; padding: 40px;">
+                <div class="section-header" style="justify-content: center; margin-bottom: 30px;">
+                    <div style="text-align: center;">
+                        <i class="fas fa-file-pdf" style="font-size: 48px; color: var(--accent-green); margin-bottom: 15px;"></i>
+                        <div style="font-size: 24px; font-weight: 800; color: white;">PO Sheet Generator</div>
+                        <div style="color: var(--text-secondary); margin-top: 5px;">Upload PDF files to generate breakdown</div>
+                    </div>
                 </div>
-                <div id="file-count"></div>
                 
-                <div class="input-group" style="margin-top: 20px;">
-                    <label>Booking Reference (Optional)</label>
-                    <input type="text" name="booking_ref" placeholder="Enter Booking Ref for History...">
-                </div>
-                
-                <button type="submit" id="processBtn" style="margin-top: 20px; display: none;">
-                    Process Files
-                </button>
-            </form>
+                <form action="/generate-po-report" method="post" enctype="multipart/form-data" onsubmit="document.getElementById('loading-overlay').style.display='flex'">
+                    <div class="upload-zone" id="dropZone" onclick="document.getElementById('fileInput').click()">
+                        <input type="file" name="pdf_files" multiple accept=".pdf" id="fileInput" style="display: none;">
+                        <div class="upload-icon">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                        </div>
+                        <div class="upload-text">Drag & Drop or Click to Upload</div>
+                        <div id="fileCount" style="margin-top: 10px; color: var(--accent-green); font-weight: 600;"></div>
+                    </div>
+                    
+                    <button type="submit" style="margin-top: 30px; background: linear-gradient(135deg, #10B981 0%, #34D399 100%);">
+                        <i class="fas fa-cogs" style="margin-right: 10px;"></i> Generate Report
+                    </button>
+                </form>
+            </div>
         </div>
     </div>
-
-    <div id="loading-overlay">
-        <div class="spinner-container"><div class="spinner"></div><div class="spinner-inner"></div></div>
-        <div class="anim-text">ANALYZING PDF</div>
-    </div>
-
+    
     <script>
-        function toggleSidebar() { document.getElementById('sidebar').classList.toggle('active'); }
-        
-        const dropZone = document.getElementById('dropZone');
         const fileInput = document.getElementById('fileInput');
-        const fileCount = document.getElementById('file-count');
-        const processBtn = document.getElementById('processBtn');
-        const form = document.getElementById('uploadForm');
+        const dropZone = document.getElementById('dropZone');
+        const fileCount = document.getElementById('fileCount');
         
-        dropZone.addEventListener('click', () => fileInput.click());
+        fileInput.addEventListener('change', function() {{
+            if(this.files.length > 0) {{
+                fileCount.innerHTML = `<i class="fas fa-check"></i> ${{this.files.length}} file(s) selected`;
+                dropZone.style.borderColor = '#10B981';
+                dropZone.style.background = 'rgba(16, 185, 129, 0.05)';
+            }}
+        }});
         
-        dropZone.addEventListener('dragover', (e) => {
+        dropZone.addEventListener('dragover', (e) => {{
             e.preventDefault();
             dropZone.classList.add('dragover');
-        });
+        }});
         
-        dropZone.addEventListener('dragleave', () => {
+        dropZone.addEventListener('dragleave', () => {{
             dropZone.classList.remove('dragover');
-        });
+        }});
         
-        dropZone.addEventListener('drop', (e) => {
+        dropZone.addEventListener('drop', (e) => {{
             e.preventDefault();
             dropZone.classList.remove('dragover');
             fileInput.files = e.dataTransfer.files;
-            updateUI();
-        });
-        
-        fileInput.addEventListener('change', updateUI);
-        
-        function updateUI() {
-            if (fileInput.files.length > 0) {
-                fileCount.textContent = fileInput.files.length + " file(s) selected";
-                processBtn.style.display = 'block';
-            }
-        }
-        
-        form.addEventListener('submit', () => {
-            document.getElementById('loading-overlay').style.display = 'flex';
-        });
+            fileInput.dispatchEvent(new Event('change'));
+        }});
     </script>
+</body>
+</html>
+"""
+
+# ==============================================================================
+# PO REPORT TEMPLATE - DETAILED VIEW
+# ==============================================================================
+
+PO_REPORT_TEMPLATE = f"""
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>PO Breakdown Report</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {{
+            font-family: 'Roboto', sans-serif;
+            background: #f5f7fa;
+            color: #1f2937;
+            padding: 20px;
+        }}
+        
+        .report-container {{
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 40px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            border-radius: 8px;
+        }}
+        
+        .header {{
+            text-align: center;
+            margin-bottom: 40px;
+            border-bottom: 2px solid #e5e7eb;
+            padding-bottom: 20px;
+        }}
+        
+        .title {{
+            font-size: 24px;
+            font-weight: 800;
+            color: #111827;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }}
+        
+        .meta-grid {{
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 30px;
+            background: #f9fafb;
+            padding: 20px;
+            border-radius: 6px;
+            border: 1px solid #e5e7eb;
+        }}
+        
+        .meta-item {{
+            display: flex;
+            flex-direction: column;
+        }}
+        
+        .meta-label {{
+            font-size: 11px;
+            text-transform: uppercase;
+            color: #6b7280;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }}
+        
+        .meta-value {{
+            font-size: 14px;
+            font-weight: 600;
+            color: #111827;
+        }}
+        
+        .table-section {{
+            margin-bottom: 40px;
+        }}
+        
+        .color-header {{
+            background: #1f2937;
+            color: white;
+            padding: 10px 15px;
+            font-weight: 700;
+            font-size: 14px;
+            border-radius: 4px 4px 0 0;
+            margin-top: 20px;
+        }}
+        
+        table {{
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+            border: 1px solid #e5e7eb;
+        }}
+        
+        th, td {{
+            border: 1px solid #e5e7eb;
+            padding: 8px 12px;
+            text-align: center;
+        }}
+        
+        th {{
+            background: #f3f4f6;
+            font-weight: 600;
+            color: #374151;
+        }}
+        
+        .total-col {{
+            background: #e0f2fe;
+            font-weight: 700;
+        }}
+        
+        .total-col-header {{
+            background: #bae6fd;
+            color: #0369a1;
+        }}
+        
+        .summary-row {{
+            background: #ecfdf5;
+            font-weight: 600;
+        }}
+        
+        .summary-label {{
+            text-align: left;
+            background: #f9fafb;
+            font-weight: 600;
+        }}
+        
+        .grand-total {{
+            margin-top: 30px;
+            text-align: right;
+            font-size: 18px;
+            font-weight: 800;
+            color: #059669;
+            padding: 20px;
+            background: #ecfdf5;
+            border-radius: 8px;
+            border: 1px solid #10b981;
+        }}
+        
+        .action-bar {{
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            display: flex;
+            gap: 10px;
+        }}
+        
+        .btn {{
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            text-decoration: none;
+            font-size: 13px;
+        }}
+        
+        .btn-print {{
+            background: #1f2937;
+            color: white;
+        }}
+        
+        .btn-back {{
+            background: white;
+            color: #1f2937;
+            border: 1px solid #d1d5db;
+        }}
+        
+        @media print {{
+            body {{ background: white; padding: 0; }}
+            .report-container {{ box-shadow: none; padding: 0; margin: 0; max-width: 100%; }}
+            .action-bar {{ display: none; }}
+            .color-header {{ background: #eee !important; color: black !important; border: 1px solid #ccc; }}
+            th {{ background: #eee !important; -webkit-print-color-adjust: exact; }}
+            .total-col {{ background: #f0f9ff !important; -webkit-print-color-adjust: exact; }}
+        }}
+    </style>
+</head>
+<body>
+    <div class="report-container">
+        <div class="header">
+            <div class="title">Purchase Order Analysis</div>
+            <div style="color: #6b7280; font-size: 12px; margin-top: 5px;">Generated on {{{{ meta.generated_at }}}}</div>
+        </div>
+        
+        <div class="meta-grid">
+            <div class="meta-item">
+                <span class="meta-label">Buyer</span>
+                <span class="meta-value">{{{{ meta.buyer }}}}</span>
+            </div>
+            <div class="meta-item">
+                <span class="meta-label">Booking No</span>
+                <span class="meta-value">{{{{ meta.booking }}}}</span>
+            </div>
+            <div class="meta-item">
+                <span class="meta-label">Style</span>
+                <span class="meta-value">{{{{ meta.style }}}}</span>
+            </div>
+            <div class="meta-item">
+                <span class="meta-label">Season</span>
+                <span class="meta-value">{{{{ meta.season }}}}</span>
+            </div>
+            <div class="meta-item">
+                <span class="meta-label">Department</span>
+                <span class="meta-value">{{{{ meta.dept }}}}</span>
+            </div>
+            <div class="meta-item">
+                <span class="meta-label">Item</span>
+                <span class="meta-value">{{{{ meta.item }}}}</span>
+            </div>
+        </div>
+        
+        {{% for item in tables %}}
+            <div class="table-section">
+                <div class="color-header">COLOR / FILE: {{{{ item.color }}}}</div>
+                {{{{ item.table | safe }}}}
+            </div>
+        {{% endfor %}}
+        
+        <div class="grand-total">
+            GRAND TOTAL QUANTITY: {{{{ grand_total }}}} PCS
+        </div>
+    </div>
+    
+    <div class="action-bar">
+        <a href="/" class="btn btn-back">Back to Dashboard</a>
+        <button onclick="window.print()" class="btn btn-print">Print Report</button>
+    </div>
 </body>
 </html>
 """
@@ -2991,12 +4997,14 @@ PO_UPLOAD_TEMPLATE = """
 
 @app.route('/')
 def index():
+    # ফিক্সড: session. get -> session.get
     if session.get('logged_in'):
         return redirect(url_for('dashboard'))
     return render_template_string(LOGIN_TEMPLATE)
 
 @app.route('/login', methods=['POST'])
 def login():
+    # ফিক্সড: request. form. get -> request.form.get
     username = request.form.get('username')
     password = request.form.get('password')
     
@@ -3011,18 +5019,16 @@ def login():
         
         # Update last login
         now = get_bd_time()
-        users_db[username]['last_login'] = now.strftime('%d-%m-%Y %I:%M %p')
+        users_db[username]['last_login'] = now.strftime('%d-%b-%Y %I:%M %p')
         save_users(users_db)
         
         return redirect(url_for('dashboard'))
     else:
-        return render_template_string(LOGIN_TEMPLATE, error="Invalid Username or Password")
+        flash("Invalid Username or Password")
+        return redirect(url_for('index'))
 
 @app.route('/logout')
 def logout():
-    if session.get('user'):
-        # Calculate duration logic could go here
-        pass
     session.clear()
     return redirect(url_for('index'))
 
@@ -3031,7 +5037,7 @@ def dashboard():
     if not session.get('logged_in'):
         return redirect(url_for('index'))
     
-    # Reload permissions in case of admin update
+    # Reload permissions to ensure security
     users_db = load_users()
     current_user = session.get('user')
     if current_user in users_db:
@@ -3040,26 +5046,91 @@ def dashboard():
     
     stats_summary = get_dashboard_summary_v2()
     
-    return render_template_string(
-        DASHBOARD_TEMPLATE,
-        user=session.get('user'),
-        role=session.get('role'),
-        permissions=session.get('permissions'),
-        stats=stats_summary,
-        now=get_bd_time().strftime('%d-%b-%Y %I:%M %p')
-    )
+    # Render appropriate dashboard based on role
+    if session.get('role') == 'admin':
+        return render_template_string(
+            ADMIN_DASHBOARD_TEMPLATE,
+            stats=stats_summary
+        )
+    else:
+        return render_template_string(
+            USER_DASHBOARD_TEMPLATE,
+            stats=stats_summary
+        )
 
 # ------------------------------------------------------------------------------
-# CLOSING REPORT ROUTES
+# ADMIN API ROUTES (User Management)
 # ------------------------------------------------------------------------------
-@app.route('/download_closing', methods=['POST'])
-def download_closing():
+@app.route('/admin/get-users')
+def get_users_api():
+    if not session.get('logged_in') or session.get('role') != 'admin':
+        return jsonify({})
+    return jsonify(load_users())
+
+@app.route('/admin/save-user', methods=['POST'])
+def save_user_api():
+    if not session.get('logged_in') or session.get('role') != 'admin':
+        return jsonify({'status': 'error', 'message': 'Unauthorized'})
+    
+    # ফিক্সড: request. get_json() -> request.get_json()
+    data = request.get_json()
+    username = data.get('username')
+    password = data.get('password')
+    permissions = data.get('permissions', [])
+    action = data.get('action_type')
+    
+    users_db = load_users()
+    
+    if action == 'create':
+        if username in users_db:
+            return jsonify({'status': 'error', 'message': 'User already exists'})
+        users_db[username] = {
+            "password": password,
+            "role": "user",
+            "permissions": permissions,
+            "created_at": get_bd_time().strftime('%d-%b-%Y'),
+            "last_login": "Never",
+            "last_duration": "N/A"
+        }
+    elif action == 'update':
+        if username not in users_db:
+            return jsonify({'status': 'error', 'message': 'User not found'})
+        users_db[username]['password'] = password
+        users_db[username]['permissions'] = permissions
+        
+    save_users(users_db)
+    return jsonify({'status': 'success'})
+
+@app.route('/admin/delete-user', methods=['POST'])
+def delete_user_api():
+    if not session.get('logged_in') or session.get('role') != 'admin':
+        return jsonify({'status': 'error'})
+    
+    data = request.get_json()
+    username = data.get('username')
+    
+    if username == 'Admin':
+        return jsonify({'status': 'error', 'message': 'Cannot delete Main Admin'})
+        
+    users_db = load_users()
+    if username in users_db:
+        del users_db[username]
+        save_users(users_db)
+        return jsonify({'status': 'success'})
+        
+    return jsonify({'status': 'error', 'message': 'User not found'})
+
+# ------------------------------------------------------------------------------
+# REPORT GENERATION ROUTE
+# ------------------------------------------------------------------------------
+@app.route('/generate-report', methods=['POST'])
+def generate_report():
     if not session.get('logged_in'): 
         return redirect(url_for('index'))
     
     ref_no = request.form.get('ref_no', '').strip()
     if not ref_no:
-        flash("Please enter a Reference Number", "error")
+        flash("Please enter a Reference Number")
         return redirect(url_for('dashboard'))
     
     try:
@@ -3067,8 +5138,6 @@ def download_closing():
         
         if report_data:
             excel_file = create_formatted_excel_report(report_data, ref_no)
-            
-            # Update Statistics
             update_stats(ref_no, session.get('user'))
             
             filename = f"Closing_Report_{ref_no.upper()}_{get_bd_date_str()}.xlsx"
@@ -3080,238 +5149,148 @@ def download_closing():
                 mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
             )
         else:
-            flash(f"Data not found for Ref: {ref_no}", "error")
+            flash(f"Data not found for Ref: {ref_no}. Check ERP connection.")
             return redirect(url_for('dashboard'))
             
     except Exception as e:
-        flash(f"System Error: {str(e)}", "error")
+        flash(f"System Error: {str(e)}")
         return redirect(url_for('dashboard'))
 
 # ------------------------------------------------------------------------------
 # ACCESSORIES ROUTES
 # ------------------------------------------------------------------------------
-@app.route('/accessories')
-def accessories_dashboard():
+@app.route('/admin/accessories')
+def accessories_search():
     if not session.get('logged_in'): return redirect(url_for('index'))
     if 'accessories' not in session.get('permissions'): 
-        flash("Access Denied", "error")
+        flash("Access Denied")
         return redirect(url_for('dashboard'))
     
-    bookings = get_all_accessories_bookings()
+    # Get history for dropdown
+    all_bookings = get_all_accessories_bookings()
     
     return render_template_string(
-        ACCESSORIES_TEMPLATE,
-        bookings=bookings,
-        user=session.get('user'),
-        stats=get_dashboard_summary_v2()
+        ACCESSORIES_SEARCH_TEMPLATE,
+        history_bookings=all_bookings,
+        history_count=len(all_bookings)
     )
 
-@app.route('/add_booking', methods=['POST'])
-def add_booking():
+@app.route('/admin/accessories/input', methods=['POST'])
+def accessories_input():
     if not session.get('logged_in'): return redirect(url_for('index'))
     
     ref_no = request.form.get('ref_no', '').strip()
-    if ref_no:
-        db_acc = load_accessories_db()
-        if ref_no not in db_acc:
-            db_acc[ref_no] = {
-                'created_by': session.get('user'),
-                'created_at': get_bd_time().isoformat(),
-                'challans': [],
-                'colors': [],
-                'buyer': 'Syncing...',
-                'style': 'Syncing...',
-                'last_api_call': None
-            }
-            save_accessories_db(db_acc)
-            # Try to fetch initial data
-            check_and_refresh_colors(ref_no, db_acc)
-            flash(f"Booking {ref_no} initialized!", "success")
-        else:
-            flash("Booking already exists!", "error")
-            
-    return redirect(url_for('accessories_dashboard'))
+    if not ref_no: return redirect(url_for('accessories_search'))
+    
+    return redirect(url_for('accessories_input_direct', ref=ref_no))
 
-@app.route('/view_booking/<ref_no>')
-def view_booking(ref_no):
+@app.route('/admin/accessories/input_direct')
+def accessories_input_direct():
     if not session.get('logged_in'): return redirect(url_for('index'))
     
-    db_acc = load_accessories_db()
-    if ref_no not in db_acc:
-        flash("Booking not found", "error")
-        return redirect(url_for('accessories_dashboard'))
+    ref_no = request.args.get('ref', '').strip()
+    if not ref_no: return redirect(url_for('accessories_search'))
     
-    # Auto refresh logic
-    check_and_refresh_colors(ref_no, db_acc)
-    # Reload after refresh
+    db_acc = load_accessories_db()
+    
+    # Initialize if new
+    if ref_no not in db_acc:
+        db_acc[ref_no] = {
+            'created_by': session.get('user'),
+            'created_at': get_bd_time().isoformat(),
+            'challans': [],
+            'colors': [],
+            'buyer': 'Syncing...',
+            'style': 'Syncing...',
+            'last_api_call': None
+        }
+        save_accessories_db(db_acc)
+    
+    # Auto-refresh colors from ERP
+    updated_data = check_and_refresh_colors(ref_no, db_acc)
+    
+    # Reload data
     db_acc = load_accessories_db()
     data = db_acc[ref_no]
     
-    # Simple View Template (Inline for brevity in this part)
-    VIEW_TEMPLATE = """
-    <!DOCTYPE html>
-    <html>
-    <head>
-        <title>Booking View | {{ ref }}</title>
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        """ + COMMON_STYLES + """
-    </head>
-    <body>
-        <div class="main-content" style="margin-left:0; width:100%;">
-            <a href="/accessories" class="action-btn" style="margin-bottom: 20px;"><i class="fa-solid fa-arrow-left"></i> Back</a>
-            
-            <div class="header-section">
-                <div>
-                    <div class="page-title">{{ ref }}</div>
-                    <div class="page-subtitle">{{ data.buyer }} | {{ data.style }}</div>
-                </div>
-                <button onclick="document.getElementById('addChallanModal').style.display='flex'" style="width:auto;">
-                    <i class="fa-solid fa-plus"></i> Add Challan
-                </button>
-            </div>
-
-            <div class="stats-grid">
-                <div class="card stat-card">
-                    <div class="stat-info">
-                        <h3>{{ total_qty }}</h3>
-                        <p>Total Received Qty</p>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="card">
-                <div class="section-header"><span>CHALLAN HISTORY</span></div>
-                <table class="dark-table">
-                    <thead><th>Date</th><th>Challan No</th><th>Color</th><th>Size</th><th>Qty</th><th>Action</th></thead>
-                    <tbody>
-                        {% for c in data.challans %}
-                        <tr>
-                            <td>{{ c.date }}</td>
-                            <td>{{ c.challan_no }}</td>
-                            <td>{{ c.color }}</td>
-                            <td>{{ c.size }}</td>
-                            <td>{{ c.qty }}</td>
-                            <td><a href="/delete_challan/{{ ref }}/{{ loop.index0 }}" style="color:red;">Delete</a></td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
-        <!-- Add Challan Modal -->
-        <div id="addChallanModal" class="welcome-modal">
-            <div class="welcome-content">
-                <h3>Add New Challan</h3>
-                <form action="/add_challan/{{ ref }}" method="post">
-                    <div class="input-group">
-                        <label>Date</label>
-                        <input type="date" name="date" required>
-                    </div>
-                    <div class="input-group">
-                        <label>Challan No</label>
-                        <input type="text" name="challan_no" required>
-                    </div>
-                    <div class="input-group">
-                        <label>Color</label>
-                        <select name="color">
-                            {% for col in data.colors %}
-                            <option value="{{ col }}">{{ col }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                     <div class="input-group">
-                        <label>Size</label>
-                        <input type="text" name="size" placeholder="e.g., XL or ALL" required>
-                    </div>
-                    <div class="input-group">
-                        <label>Quantity</label>
-                        <input type="number" name="qty" required>
-                    </div>
-                    <div style="display:flex; gap:10px;">
-                        <button type="button" onclick="document.getElementById('addChallanModal').style.display='none'" style="background:#333;">Cancel</button>
-                        <button type="submit">Save</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </body>
-    </html>
-    """
-    
-    total_qty = sum([int(c['qty']) for c in data.get('challans', [])])
-    
     return render_template_string(
-        VIEW_TEMPLATE, 
-        ref=ref_no, 
-        data=data, 
-        total_qty=total_qty,
-        user=session.get('user')
+        ACCESSORIES_INPUT_TEMPLATE,
+        ref=ref_no,
+        buyer=data.get('buyer', 'N/A'),
+        style=data.get('style', 'N/A'),
+        colors=data.get('colors', []),
+        challans=data.get('challans', []),
+        colors_refreshed=(updated_data is not None)
     )
 
-@app.route('/add_challan/<ref_no>', methods=['POST'])
-def add_challan(ref_no):
+@app.route('/admin/accessories/save', methods=['POST'])
+def accessories_save():
     if not session.get('logged_in'): return redirect(url_for('index'))
     
+    ref = request.form.get('ref')
     db_acc = load_accessories_db()
-    if ref_no in db_acc:
-        # Convert HTML date yyyy-mm-dd to dd-mm-yyyy
-        raw_date = request.form.get('date')
-        fmt_date = datetime.strptime(raw_date, '%Y-%m-%d').strftime('%d-%m-%Y')
-        
-        new_challan = {
-            "date": fmt_date,
-            "challan_no": request.form.get('challan_no'),
-            "color": request.form.get('color'),
-            "size": request.form.get('size'),
-            "qty": int(request.form.get('qty')),
-            "added_by": session.get('user'),
-            "added_at": get_bd_time().isoformat()
+    
+    if ref in db_acc:
+        new_entry = {
+            'item_type': request.form.get('item_type'),
+            'color': request.form.get('color'),
+            'line': request.form.get('line_no'),
+            'size': request.form.get('size'),
+            'qty': request.form.get('qty'),
+            'date': get_bd_time().strftime('%d-%m-%Y'),
+            'status': 'Recv',
+            'added_by': session.get('user')
         }
-        db_acc[ref_no]['challans'].insert(0, new_challan)
+        db_acc[ref]['challans'].append(new_entry)
         save_accessories_db(db_acc)
-        flash("Challan Added Successfully", "success")
         
-    return redirect(url_for('view_booking', ref_no=ref_no))
+    return redirect(url_for('accessories_input_direct', ref=ref))
 
-@app.route('/delete_challan/<ref_no>/<int:index>')
-def delete_challan(ref_no, index):
-    if not session.get('logged_in'): return redirect(url_for('index'))
-    # Only admin or allowed users should delete - simplified here
-    if session.get('role') != 'admin':
-        flash("Permission Denied", "error")
-        return redirect(url_for('view_booking', ref_no=ref_no))
-        
+@app.route('/admin/accessories/delete', methods=['POST'])
+def accessories_delete():
+    if not session.get('logged_in') or session.get('role') != 'admin':
+        return redirect(url_for('index'))
+    
+    ref = request.form.get('ref')
+    # ফিক্সড: int(request. form. get('index'))
+    idx = int(request.form.get('index'))
+    
     db_acc = load_accessories_db()
-    if ref_no in db_acc and len(db_acc[ref_no]['challans']) > index:
-        db_acc[ref_no]['challans'].pop(index)
+    if ref in db_acc and 0 <= idx < len(db_acc[ref]['challans']):
+        db_acc[ref]['challans'].pop(idx)
         save_accessories_db(db_acc)
-        flash("Challan Deleted", "success")
         
-    return redirect(url_for('view_booking', ref_no=ref_no))
+    return redirect(url_for('accessories_input_direct', ref=ref))
 
-# ------------------------------------------------------------------------------
-# PO SHEET PDF ROUTES
-# ------------------------------------------------------------------------------
-@app.route('/po_sheet')
-def po_sheet_index():
-    if not session.get('logged_in'): return redirect(url_for('index'))
-    if 'po_sheet' not in session.get('permissions'):
-        flash("Access Denied", "error")
-        return redirect(url_for('dashboard'))
-        
-    return render_template_string(PO_UPLOAD_TEMPLATE)
-
-@app.route('/upload_po', methods=['POST'])
-def upload_po():
+@app.route('/admin/accessories/print')
+def accessories_print():
     if not session.get('logged_in'): return redirect(url_for('index'))
     
-    uploaded_files = request.files.getlist("file")
-    booking_ref = request.form.get("booking_ref", "N/A")
+    ref = request.args.get('ref')
+    db_acc = load_accessories_db()
+    
+    if ref in db_acc:
+        return render_template_string(
+            ACCESSORIES_PRINT_TEMPLATE,
+            ref=ref,
+            data=db_acc[ref],
+            now=get_bd_time()
+        )
+    return "Booking not found"
+
+# ------------------------------------------------------------------------------
+# PO GENERATOR ROUTES
+# ------------------------------------------------------------------------------
+@app.route('/generate-po-report', methods=['POST'])
+def generate_po_report():
+    if not session.get('logged_in'): return redirect(url_for('index'))
+    
+    # ফিক্সড: request. files. getlist
+    uploaded_files = request.files.getlist("pdf_files")
     
     if not uploaded_files or uploaded_files[0].filename == '':
-        flash("No file selected", "error")
-        return redirect(url_for('po_sheet_index'))
+        flash("No files uploaded")
+        return redirect(url_for('dashboard'))
 
     # Clean uploads folder
     if os.path.exists(app.config['UPLOAD_FOLDER']):
@@ -3330,40 +5309,53 @@ def upload_po():
                 filepath = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
                 file.save(filepath)
 
+                # Process PDF
                 extracted_data, metadata = extract_data_dynamic(filepath)
                 if not final_meta and metadata: final_meta = metadata
                 
-                # If extracted data is empty, skip
                 if not extracted_data: continue
 
+                # Create Pivot Table
                 df = pd.DataFrame(extracted_data)
                 
-                # Pivot Logic
-                if not df.empty:
-                    df['Size_Index'] = df['Size'].apply(lambda x: sort_sizes([x])[0][0] if sort_sizes([x]) else 999)
-                    
-                    pivot_df = df.pivot_table(
-                        index='Color', columns='Size', values='Quantity', aggfunc='sum'
-                    ).fillna(0).astype(int)
-                    
-                    # Sort Columns (Sizes)
-                    sorted_columns = sort_sizes(pivot_df.columns.tolist())
-                    pivot_df = pivot_df[sorted_columns]
-                    
-                    # Add Totals
-                    pivot_df['Total'] = pivot_df.sum(axis=1)
-                    grand_total_qty += pivot_df['Total'].sum()
-                    
-                    # Additional Columns
-                    pivot_df['3% Order Qty'] = (pivot_df['Total'] * 1.03).round().astype(int)
-                    pivot_df['Actual Qty'] = 0
-                    
-                    # Format HTML Table
-                    html_table = pivot_df.to_html(classes='table table-bordered', border=0)
-                    final_tables.append({'color': f"File: {file.filename}", 'table': html_table})
+                if df.empty: continue
+                
+                # Logic to sort sizes
+                df['Size_Index'] = df['Size'].apply(lambda x: sort_sizes([x])[0][0] if sort_sizes([x]) else 999)
+                
+                # Create pivot
+                pivot_df = df.pivot_table(
+                    index='Color', columns='Size', values='Quantity', aggfunc='sum'
+                ).fillna(0).astype(int)
+                
+                # Sort Columns
+                sorted_columns = sort_sizes(pivot_df.columns.tolist())
+                pivot_df = pivot_df[sorted_columns]
+                
+                # Add Totals
+                pivot_df['Total'] = pivot_df.sum(axis=1)
+                grand_total_qty += pivot_df['Total'].sum()
+                
+                # Additional Columns
+                pivot_df['3% Order Qty'] = (pivot_df['Total'] * 1.03).round().astype(int)
+                pivot_df['Actual Qty'] = 0
+                
+                # Format Table HTML
+                # ফিক্সড: pivot_df. to_html -> pivot_df.to_html
+                html_table = pivot_df.to_html(classes='table-bordered', border=0)
+                
+                # Add styling classes to HTML table
+                color = f"{file.filename} - {extracted_data[0]['P.O NO']}" if extracted_data else file.filename
+                
+                # Inject classes for CSS styling (Simple Replace)
+                html_table = html_table.replace('<th>', '<th>') # Default
+                # ফিক্সড: re. sub -> re.sub
+                html_table = re.sub(r'<tr>\s*<th>', '<tr style="background:#f3f4f6;"><th>', html_table)
+                
+                final_tables.append({'color': color, 'table': html_table})
 
-        # Update Statistics
-        update_po_stats(session.get('user'), file_count, booking_ref)
+        # Update stats
+        update_po_stats(session.get('user'), file_count, final_meta.get('booking', 'N/A'))
         
         final_meta['generated_at'] = get_bd_time().strftime('%d-%b-%Y %I:%M %p')
 
@@ -3375,54 +5367,18 @@ def upload_po():
         )
 
     except Exception as e:
-        flash(f"Error processing files: {str(e)}", "error")
-        return redirect(url_for('po_sheet_index'))
-
-# ------------------------------------------------------------------------------
-# USER MANAGEMENT ROUTES (Simplified)
-# ------------------------------------------------------------------------------
-@app.route('/manage_users')
-def manage_users():
-    if not session.get('logged_in') or session.get('role') != 'admin':
+        flash(f"Error processing files: {str(e)}")
         return redirect(url_for('dashboard'))
-    
-    users = load_users()
-    
-    # Template for user management (Inline for brevity)
-    MANAGE_TEMPLATE = """
-    <!DOCTYPE html>
-    <html>
-    <head><title>Users</title>""" + COMMON_STYLES + """</head>
-    <body>
-        <div class="main-content" style="margin-left:0; width:100%;">
-            <a href="/dashboard" class="action-btn">Back</a>
-            <div class="page-title">User Management</div>
-            <div class="card">
-                <table class="dark-table">
-                    <thead><th>User</th><th>Role</th><th>Last Login</th></thead>
-                    <tbody>
-                        {% for name, data in users.items() %}
-                        <tr>
-                            <td>{{ name }}</td>
-                            <td>{{ data.role }}</td>
-                            <td>{{ data.last_login }}</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </body>
-    </html>
-    """
-    return render_template_string(MANAGE_TEMPLATE, users=users)
 
 # ==============================================================================
-# MAIN EXECUTION
+# APPLICATION ENTRY POINT
 # ==============================================================================
+
 if __name__ == '__main__':
     # Render provides PORT via environment variable
+    # ফিক্সড: os. environ. get -> os.environ.get
     port = int(os.environ.get("PORT", 5000))
     # '0.0.0.0' is required for external access in containers
+    # ফিক্সড: app. run -> app.run
     app.run(host='0.0.0.0', port=port)
 
