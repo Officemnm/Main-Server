@@ -34,8 +34,8 @@ if not os.path.exists(UPLOAD_FOLDER):
     os.makedirs(UPLOAD_FOLDER)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
-# সেশন টাইমআউট কনফিগারেশন (2 মিনিট)
-app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=2) 
+# সেশন টাইমআউট কনফিগারেশন (5 মিনিট)
+app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=5) 
 
 # টাইমজোন কনফিগারেশন (বাংলাদেশ)
 bd_tz = pytz.timezone('Asia/Dhaka')
@@ -71,9 +71,7 @@ try:
     print("MongoDB Connected Successfully!")
 except Exception as e:
     print(f"MongoDB Connection Error: {e}")
-
-
-# ==============================================================================
+    # ==============================================================================
 # ENHANCED CSS STYLES - PREMIUM MODERN UI WITH ANIMATIONS
 # ==============================================================================
 COMMON_STYLES = """
@@ -84,7 +82,7 @@ COMMON_STYLES = """
     <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
     <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
     <style>
-        :root {
+        : root {
             --bg-body: #0a0a0f;
             --bg-sidebar: #12121a;
             --bg-card: #16161f;
@@ -126,7 +124,7 @@ COMMON_STYLES = """
         
         body {
             background: var(--bg-body);
-            color: var(--text-primary);
+            color:  var(--text-primary);
             min-height: 100vh;
             display: flex;
             overflow-x: hidden;
@@ -135,9 +133,9 @@ COMMON_STYLES = """
 
         /* Particle Background */
         #particles-js {
-            position: fixed;
+            position:  fixed;
             top: 0;
-            left: 0;
+            left:  0;
             width: 100%;
             height: 100%;
             z-index: 0;
@@ -150,7 +148,7 @@ COMMON_STYLES = """
             top: 0;
             left: 0;
             width: 100%;
-            height: 100%;
+            height:  100%;
             background: 
                 radial-gradient(ellipse at 20% 20%, rgba(255, 122, 0, 0.08) 0%, transparent 50%),
                 radial-gradient(ellipse at 80% 80%, rgba(139, 92, 246, 0.06) 0%, transparent 50%),
@@ -188,12 +186,12 @@ COMMON_STYLES = """
             transition: var(--transition-smooth);
             box-shadow: 4px 0 30px rgba(0, 0, 0, 0.3);
         }
-        .sidebar::before {
+        .sidebar:: before {
             content: '';
             position: absolute;
             top: 0;
             right: 0;
-            width: 1px;
+            width:  1px;
             height: 100%;
             background: linear-gradient(180deg, transparent, var(--accent-orange), transparent);
             opacity: 0.3;
@@ -201,7 +199,7 @@ COMMON_STYLES = """
 
         .brand-logo { 
             font-size: 26px;
-            font-weight: 900; 
+            font-weight:  900; 
             color: white; 
             margin-bottom: 50px; 
             display: flex; 
@@ -252,7 +250,7 @@ COMMON_STYLES = """
             overflow: hidden;
         }
 
-        .nav-link::before {
+        .nav-link:: before {
             content: '';
             position: absolute;
             left: 0;
@@ -292,11 +290,11 @@ COMMON_STYLES = """
         .nav-link .nav-badge {
             margin-left: auto;
             background: var(--accent-orange);
-            color: white;
+            color:  white;
             padding: 2px 8px;
-            border-radius: 10px;
-            font-size: 11px;
-            font-weight: 700;
+            border-radius:  10px;
+            font-size:  11px;
+            font-weight:  700;
             animation: badgePulse 2s ease-in-out infinite;
         }
         @keyframes badgePulse {
@@ -340,11 +338,11 @@ COMMON_STYLES = """
         }
 
         .page-title { 
-            font-size: 32px;
+            font-size:  32px;
             font-weight: 800; 
             color: white; 
             margin-bottom: 8px;
-            letter-spacing: -0.5px;
+            letter-spacing:  -0.5px;
             background: linear-gradient(135deg, #fff 0%, #ccc 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
@@ -360,31 +358,38 @@ COMMON_STYLES = """
         .status-badge {
             background: var(--bg-card);
             padding: 12px 24px;
-            border-radius: 50px;
+            border-radius:  50px;
             border: 1px solid var(--border-color);
             font-size: 13px;
-            font-weight: 600;
+            font-weight:  600;
             display: flex;
             align-items: center;
             gap: 10px;
             box-shadow: var(--shadow-card);
             transition: var(--transition-smooth);
         }
-
-        /* FIX: Green Light Indicator */
+        
+        /* Status Dot Animation - FIXED */
         .status-dot {
             width: 10px;
             height: 10px;
             background: var(--accent-green);
             border-radius: 50%;
+            animation: statusPulse 1.5s ease-in-out infinite;
             box-shadow: 0 0 10px var(--accent-green);
-            animation: statusPulse 2s infinite;
         }
-
+        
         @keyframes statusPulse {
-            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
-            70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
-            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+            0%, 100% { 
+                opacity: 1; 
+                transform: scale(1);
+                box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+            }
+            50% { 
+                opacity: 0.8; 
+                transform: scale(1.2);
+                box-shadow: 0 0 0 10px rgba(16, 185, 129, 0);
+            }
         }
                 /* Enhanced Cards & Grid */
         .stats-grid { 
@@ -398,12 +403,12 @@ COMMON_STYLES = """
             display: grid;
             grid-template-columns: 2fr 1fr; 
             gap: 24px; 
-            margin-bottom: 24px; 
+            margin-bottom:  24px; 
         }
 
         .card { 
             background: var(--gradient-card);
-            border: 1px solid var(--border-color);
+            border:  1px solid var(--border-color);
             border-radius: var(--card-radius);
             padding: 28px;
             backdrop-filter: blur(10px);
@@ -412,7 +417,7 @@ COMMON_STYLES = """
             overflow: hidden;
         }
 
-        .card::before {
+        .card:: before {
             content: '';
             position: absolute;
             top: 0;
@@ -430,13 +435,13 @@ COMMON_STYLES = """
             transform: translateY(-4px);
         }
 
-        .card:hover::before { opacity: 1; }
+        .card:hover:: before { opacity: 1; }
         
         .section-header { 
             display: flex;
             justify-content: space-between; 
             align-items: center; 
-            margin-bottom: 24px; 
+            margin-bottom:  24px; 
             font-weight: 700;
             font-size: 16px; 
             color: white;
@@ -453,6 +458,7 @@ COMMON_STYLES = """
             opacity: 1;
             transform: rotate(10deg) scale(1.1);
         }
+        
         /* Stat Cards with Animations */
         .stat-card { 
             display: flex;
@@ -485,10 +491,10 @@ COMMON_STYLES = """
             content: '';
             position: absolute;
             width: 100%;
-            height: 100%;
+            height:  100%;
             background: var(--gradient-orange);
             opacity: 0;
-            transition: var(--transition-smooth);
+            transition:  var(--transition-smooth);
         }
 
         .stat-card:hover .stat-icon {
@@ -501,14 +507,14 @@ COMMON_STYLES = """
         }
 
         @keyframes iconBounce {
-            0%, 100% { transform: scale(1); }
+            0%, 100% { transform:  scale(1); }
             50% { transform: scale(1.3); }
         }
 
         .stat-info h3 { 
             font-size: 36px;
             font-weight: 800; 
-            margin: 0; 
+            margin:  0; 
             color: white;
             letter-spacing: -1px;
             line-height: 1;
@@ -521,7 +527,7 @@ COMMON_STYLES = """
         .stat-info p { 
             font-size: 13px;
             color: var(--text-secondary); 
-            margin: 6px 0 0 0; 
+            margin:  6px 0 0 0; 
             text-transform: uppercase;
             letter-spacing: 1.5px;
             font-weight: 600;
@@ -531,6 +537,7 @@ COMMON_STYLES = """
         .count-up {
             display: inline-block;
         }
+        
         /* Progress Bars with Animation */
         .progress-item { margin-bottom: 24px; }
 
@@ -567,17 +574,17 @@ COMMON_STYLES = """
         .progress-bar-fill::after {
             content: '';
             position: absolute;
-            top: 0;
+            top:  0;
             left: 0;
             right: 0;
             bottom: 0;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            background:  linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
             animation: shimmer 2s infinite;
         }
 
         @keyframes progressFill {
             from { transform: scaleX(0); }
-            to { transform: scaleX(1); }
+            to { transform:  scaleX(1); }
         }
 
         @keyframes shimmer {
@@ -588,6 +595,7 @@ COMMON_STYLES = """
         .progress-orange { background: var(--gradient-orange); }
         .progress-purple { background: linear-gradient(135deg, #8B5CF6 0%, #A78BFA 100%); }
         .progress-green { background: linear-gradient(135deg, #10B981 0%, #34D399 100%); }
+        
         /* Enhanced Forms */
         .input-group { margin-bottom: 20px; }
 
@@ -614,12 +622,12 @@ COMMON_STYLES = """
             transition: var(--transition-smooth);
         }
 
-        input::placeholder {
+        input:: placeholder {
             color: var(--text-secondary);
             opacity: 0.5;
         }
 
-        input:focus, select:focus { 
+        input: focus, select:focus { 
             border-color: var(--accent-orange);
             background: rgba(255, 122, 0, 0.05);
             box-shadow: 0 0 0 4px var(--accent-orange-glow), 0 0 20px var(--accent-orange-glow);
@@ -630,7 +638,7 @@ COMMON_STYLES = """
             appearance: none;
             background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%23FF7A00' viewBox='0 0 24 24'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
             background-repeat: no-repeat;
-            background-position: right 12px center;
+            background-position:  right 12px center;
             background-size: 24px;
             background-color: rgba(255, 255, 255, 0.03);
         }
@@ -643,7 +651,7 @@ COMMON_STYLES = """
         
         button { 
             width: 100%;
-            padding: 14px 24px; 
+            padding:  14px 24px; 
             background: var(--gradient-orange);
             color: white; 
             border: none; 
@@ -656,8 +664,9 @@ COMMON_STYLES = """
             overflow: hidden;
             letter-spacing: 0.5px;
         }
+        
         button::before {
-            content: '';
+            content:  '';
             position: absolute;
             top: 0;
             left: -100%;
@@ -671,7 +680,7 @@ COMMON_STYLES = """
 
         button:hover { 
             transform: translateY(-3px);
-            box-shadow: 0 10px 30px var(--accent-orange-glow);
+            box-shadow:  0 10px 30px var(--accent-orange-glow);
         }
 
         button:active {
@@ -716,9 +725,9 @@ COMMON_STYLES = """
         .table-badge {
             background: rgba(255,255,255,0.05);
             padding: 6px 14px;
-            border-radius: 8px;
-            font-size: 12px;
-            font-weight: 600;
+            border-radius:  8px;
+            font-size:  12px;
+            font-weight:  600;
             display: inline-block;
         }
         
@@ -743,7 +752,8 @@ COMMON_STYLES = """
             position: relative;
             overflow: hidden;
         }
-                .btn-edit { 
+
+        .btn-edit { 
             background: rgba(139, 92, 246, 0.15);
             color: #A78BFA; 
         }
@@ -766,7 +776,7 @@ COMMON_STYLES = """
             transform: scale(1.1);
             box-shadow: 0 0 20px rgba(239, 68, 68, 0.4);
         }
-        /* Enhanced Loading Overlay */
+                /* Enhanced Loading Overlay */
         #loading-overlay { 
             display: none;
             position: fixed; 
@@ -816,8 +826,8 @@ COMMON_STYLES = """
         }
 
         @keyframes spin { 
-            0% { transform: rotate(0deg); } 
-            100% { transform: rotate(360deg); } 
+            0% { transform:  rotate(0deg); } 
+            100% { transform:  rotate(360deg); } 
         }
 
         /* Success Checkmark Animation */
@@ -843,7 +853,7 @@ COMMON_STYLES = """
             display: block; 
             width: 30px; 
             height: 50px;
-            border: solid var(--accent-green); 
+            border:  solid var(--accent-green); 
             border-width: 0 4px 4px 0;
             position: absolute; 
             top: 15px; 
@@ -852,6 +862,7 @@ COMMON_STYLES = """
             opacity: 0;
             animation: checkmark-anim 0.4s 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
         }
+        
         /* Fail Cross Animation */
         .fail-container { 
             display: none; 
@@ -888,8 +899,8 @@ COMMON_STYLES = """
 
         @keyframes success-anim { 
             0% { transform: scale(0); opacity: 0; } 
-            50% { transform: scale(1.2); } 
-            100% { transform: scale(1); opacity: 1; } 
+            50% { transform:  scale(1.2); } 
+            100% { transform:  scale(1); opacity: 1; } 
         }
 
         @keyframes checkmark-anim { 
@@ -909,7 +920,7 @@ COMMON_STYLES = """
         }
 
         .anim-text { 
-            font-size: 24px; 
+            font-size:  24px; 
             font-weight: 800; 
             color: white;
             margin-top: 10px; 
@@ -919,7 +930,7 @@ COMMON_STYLES = """
         .loading-text {
             color: var(--text-secondary);
             font-size: 15px;
-            margin-top: 20px;
+            margin-top:  20px;
             font-weight: 500;
             letter-spacing: 2px;
             text-transform: uppercase;
@@ -936,7 +947,7 @@ COMMON_STYLES = """
             display: none;
             position: fixed;
             top: 0;
-            left: 0;
+            left:  0;
             width: 100%;
             height: 100%;
             background: rgba(10, 10, 15, 0.9);
@@ -952,9 +963,10 @@ COMMON_STYLES = """
             from { opacity: 0; }
             to { opacity: 1; }
         }
+        
         .welcome-content {
             background: var(--gradient-card);
-            border: 1px solid var(--border-color);
+            border:  1px solid var(--border-color);
             border-radius: 24px;
             padding: 50px 60px;
             text-align: center;
@@ -977,10 +989,11 @@ COMMON_STYLES = """
             animation: welcomeGlow 3s ease-in-out infinite;
             opacity: 0.3;
         }
+        
         @keyframes welcomeSlideIn {
             from { 
                 opacity: 0;
-                transform: translateY(-50px) scale(0.9);
+                transform:  translateY(-50px) scale(0.9);
             }
             to { 
                 opacity: 1;
@@ -995,7 +1008,7 @@ COMMON_STYLES = """
 
         .welcome-icon {
             font-size: 80px;
-            margin-bottom: 20px;
+            margin-bottom:  20px;
             display: inline-block;
             animation: welcomeIconBounce 1s ease-out;
         }
@@ -1012,7 +1025,7 @@ COMMON_STYLES = """
             font-weight: 600;
             text-transform: uppercase;
             letter-spacing: 3px;
-            margin-bottom: 10px;
+            margin-bottom:  10px;
         }
 
         .welcome-title {
@@ -1042,9 +1055,9 @@ COMMON_STYLES = """
             color: white;
             border: none;
             padding: 14px 40px;
-            border-radius: 12px;
-            font-size: 15px;
-            font-weight: 700;
+            border-radius:  12px;
+            font-size:  15px;
+            font-weight:  700;
             cursor: pointer;
             transition: var(--transition-smooth);
             position: relative;
@@ -1053,7 +1066,7 @@ COMMON_STYLES = """
 
         .welcome-close:hover {
             transform: translateY(-3px);
-            box-shadow: 0 15px 40px var(--accent-orange-glow);
+            box-shadow:  0 15px 40px var(--accent-orange-glow);
         }
 
         /* Tooltip */
@@ -1061,7 +1074,7 @@ COMMON_STYLES = """
             position: relative;
         }
 
-        .tooltip::after {
+        .tooltip:: after {
             content: attr(data-tooltip);
             position: absolute;
             bottom: 120%;
@@ -1070,7 +1083,7 @@ COMMON_STYLES = """
             background: var(--bg-card);
             color: white;
             padding: 8px 14px;
-            border-radius: 8px;
+            border-radius:  8px;
             font-size: 12px;
             white-space: nowrap;
             opacity: 0;
@@ -1080,11 +1093,12 @@ COMMON_STYLES = """
             z-index: 1000;
         }
 
-        .tooltip:hover::after {
+        .tooltip:hover:: after {
             opacity: 1;
-            visibility: visible;
+            visibility:  visible;
             bottom: 130%;
         }
+        
         /* File Upload Zone */
         .upload-zone {
             border: 2px dashed var(--border-color);
@@ -1119,7 +1133,7 @@ COMMON_STYLES = """
         }
 
         .upload-zone.dragover {
-            border-color: var(--accent-orange);
+            border-color:  var(--accent-orange);
             background: rgba(255, 122, 0, 0.1);
             transform: scale(1.02);
         }
@@ -1134,7 +1148,7 @@ COMMON_STYLES = """
 
         @keyframes uploadFloat {
             0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-10px); }
+            50% { transform:  translateY(-10px); }
         }
 
         .upload-text {
@@ -1160,7 +1174,7 @@ COMMON_STYLES = """
         .flash-message {
             margin-bottom: 20px;
             padding: 16px 20px;
-            border-radius: 12px;
+            border-radius:  12px;
             font-size: 14px;
             font-weight: 500;
             display: flex;
@@ -1179,7 +1193,8 @@ COMMON_STYLES = """
                 transform: translateY(0);
             }
         }
-                .flash-error {
+
+        .flash-error {
             background: rgba(239, 68, 68, 0.1);
             border: 1px solid rgba(239, 68, 68, 0.2);
             color: #F87171;
@@ -1212,467 +1227,910 @@ COMMON_STYLES = """
                 opacity: 0;
             }
         }
-        /* Mobile */
-        .mobile-toggle { 
-            display: none; 
+                /* Enhanced Loading Overlay */
+        #loading-overlay { 
+            display: none;
             position: fixed; 
-            top: 20px;
-            right: 20px; 
-            z-index: 2000; 
-            color: white; 
-            background: var(--bg-card);
-            padding: 12px 14px; 
-            border-radius: 12px;
-            border: 1px solid var(--border-color);
-            cursor: pointer;
-            transition: var(--transition-smooth);
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%; 
+            background: rgba(10, 10, 15, 0.95);
+            z-index: 9999; 
+            flex-direction: column;
+            justify-content: center; 
+            align-items: center; 
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+        
+        /* Modern Spinner */
+        .spinner-container {
+            position: relative;
+            width: 80px;
+            height: 80px;
         }
 
-        .mobile-toggle:hover {
-            background: var(--accent-orange);
+        .spinner { 
+            width: 80px;
+            height: 80px; 
+            border: 4px solid rgba(255, 122, 0, 0.1);
+            border-top: 4px solid var(--accent-orange);
+            border-right: 4px solid var(--accent-orange-light);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            box-shadow: 0 0 30px var(--accent-orange-glow);
         }
 
-        @media (max-width: 1024px) {
-            .sidebar { 
-                transform: translateX(-100%);
-                width: 280px;
-            } 
-            .sidebar.active { 
-                transform: translateX(0);
-            }
-            .main-content { 
-                margin-left: 0;
-                width: 100%; 
-                padding: 20px; 
-            }
-            .dashboard-grid-2 { 
-                grid-template-columns: 1fr;
-            }
-            .mobile-toggle { 
-                display: flex;
-                align-items: center;
-                justify-content: center;
-            }
-            .header-section {
-                flex-direction: column;
-                gap: 15px;
-            }
-        }
-
-        @media (max-width: 768px) {
-            .stats-grid {
-                grid-template-columns: 1fr;
-            }
-            .page-title {
-                font-size: 24px;
-            }
-            .welcome-content {
-                padding: 40px 30px;
-            }
-            .welcome-title {
-                font-size: 28px;
-            }
-        }
-
-        /* Skeleton Loading */
-        .skeleton {
-            background: linear-gradient(90deg, var(--bg-card) 25%, rgba(255,255,255,0.05) 50%, var(--bg-card) 75%);
-            background-size: 200% 100%;
-            animation: skeletonLoad 1.5s infinite;
-            border-radius: 8px;
-        }
-
-        @keyframes skeletonLoad {
-            0% { background-position: 200% 0; }
-            100% { background-position: -200% 0; }
-        }
-        /* Notification Dot */
-        .notification-dot {
+        .spinner-inner {
             position: absolute;
-            top: -2px;
-            right: -2px;
-            width: 10px;
-            height: 10px;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 50px;
+            height: 50px;
+            border: 3px solid rgba(139, 92, 246, 0.1);
+            border-bottom: 3px solid var(--accent-purple);
+            border-left: 3px solid var(--accent-purple);
+            border-radius: 50%;
+            animation: spin 1.2s linear infinite reverse;
+        }
+
+        @keyframes spin { 
+            0% { transform:  rotate(0deg); } 
+            100% { transform:  rotate(360deg); } 
+        }
+
+        /* Success Checkmark Animation */
+        .checkmark-container { 
+            display: none;
+            text-align: center; 
+        }
+
+        .checkmark-circle {
+            width: 100px;
+            height: 100px; 
+            position: relative; 
+            display: inline-block;
+            border-radius: 50%; 
+            border: 3px solid var(--accent-green);
+            margin-bottom: 24px;
+            animation: success-anim 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+            box-shadow: 0 0 40px rgba(16, 185, 129, 0.3);
+        }
+
+        .checkmark-circle::before {
+            content: '';
+            display: block; 
+            width: 30px; 
+            height: 50px;
+            border:  solid var(--accent-green); 
+            border-width: 0 4px 4px 0;
+            position: absolute; 
+            top: 15px; 
+            left: 35px;
+            transform: rotate(45deg); 
+            opacity: 0;
+            animation: checkmark-anim 0.4s 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+        
+        /* Fail Cross Animation */
+        .fail-container { 
+            display: none; 
+            text-align: center;
+        }
+
+        .fail-circle {
+            width: 100px;
+            height: 100px; 
+            position: relative; 
+            display: inline-block;
+            border-radius: 50%; 
+            border: 3px solid var(--accent-red);
+            margin-bottom: 24px;
+            animation: fail-anim 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+            box-shadow: 0 0 40px rgba(239, 68, 68, 0.3);
+        }
+
+        .fail-circle::before, .fail-circle::after {
+            content: '';
+            position: absolute; 
+            width: 4px; 
+            height: 50px; 
             background: var(--accent-red);
-            border-radius: 50%;
-            border: 2px solid var(--bg-sidebar);
-            animation: notifyPulse 2s infinite;
+            top: 23px; 
+            left: 46px; 
+            border-radius: 4px;
+            animation: crossAnim 0.3s 0.4s ease-out forwards;
+            opacity: 0;
         }
 
-        @keyframes notifyPulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.2); }
+        .fail-circle::before { transform: rotate(45deg); }
+        .fail-circle::after { transform: rotate(-45deg); }
+
+        @keyframes success-anim { 
+            0% { transform: scale(0); opacity: 0; } 
+            50% { transform:  scale(1.2); } 
+            100% { transform:  scale(1); opacity: 1; } 
         }
 
-        /* Chart Container */
-        .chart-container {
-            position: relative;
-            height: 280px;
-            padding: 10px;
+        @keyframes checkmark-anim { 
+            0% { opacity: 0; height: 0; width: 0; } 
+            100% { opacity: 1; height: 50px; width: 30px; } 
         }
 
-        /* Real-time Indicator */
-        .realtime-indicator {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 12px;
-            color: var(--text-secondary);
-            padding: 6px 12px;
-            background: rgba(16, 185, 129, 0.1);
-            border-radius: 20px;
-            border: 1px solid rgba(16, 185, 129, 0.2);
+        @keyframes fail-anim { 
+            0% { transform: scale(0); opacity: 0; } 
+            50% { transform: scale(1.2); } 
+            100% { transform: scale(1); opacity: 1; } 
         }
 
-        .realtime-dot {
-            width: 8px;
-            height: 8px;
-            background: var(--accent-green);
-            border-radius: 50%;
-            animation: realtimePulse 1s infinite;
+        @keyframes crossAnim {
+            0% { opacity: 0; transform: rotate(45deg) scale(0); }
+            100% { opacity: 1; transform: rotate(45deg) scale(1); }
         }
 
-        @keyframes realtimePulse {
-            0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
-            70% { opacity: 1; box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
-        }
-
-        /* Floating Action Button */
-        .fab {
-            position: fixed;
-            bottom: 30px;
-            right: 30px;
-            width: 60px;
-            height: 60px;
-            background: var(--gradient-orange);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 24px;
+        .anim-text { 
+            font-size:  24px; 
+            font-weight: 800; 
             color: white;
-            cursor: pointer;
-            box-shadow: 0 8px 30px var(--accent-orange-glow);
-            transition: var(--transition-smooth);
-            z-index: 100;
+            margin-top: 10px; 
+            letter-spacing: 1px;
         }
 
-        .fab:hover {
-            transform: scale(1.1) rotate(90deg);
-            box-shadow: 0 12px 40px var(--accent-orange-glow);
-        }
-        /* Glow Text */
-        .glow-text {
-            text-shadow: 0 0 20px var(--accent-orange-glow);
+        .loading-text {
+            color: var(--text-secondary);
+            font-size: 15px;
+            margin-top:  20px;
+            font-weight: 500;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            animation: textPulse 1.5s ease-in-out infinite;
         }
 
-        /* Animated Border */
-        .animated-border {
+        @keyframes textPulse {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+
+        /* Welcome Popup Modal */
+        .welcome-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left:  0;
+            width: 100%;
+            height: 100%;
+            background: rgba(10, 10, 15, 0.9);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            z-index: 10000;
+            justify-content: center;
+            align-items: center;
+            animation: modalFadeIn 0.3s ease-out;
+        }
+
+        @keyframes modalFadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .welcome-content {
+            background: var(--gradient-card);
+            border:  1px solid var(--border-color);
+            border-radius: 24px;
+            padding: 50px 60px;
+            text-align: center;
+            max-width: 500px;
+            width: 90%;
+            animation: welcomeSlideIn 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.5), 0 0 60px var(--accent-orange-glow);
             position: relative;
+            overflow: hidden;
         }
 
-        .animated-border::after {
+        .welcome-content::before {
             content: '';
             position: absolute;
-            top: -2px;
-            left: -2px;
-            right: -2px;
-            bottom: -2px;
-            background: linear-gradient(45deg, var(--accent-orange), var(--accent-purple), var(--accent-green), var(--accent-orange));
-            background-size: 400% 400%;
-            border-radius: inherit;
-            z-index: -1;
-            animation: gradientBorder 3s ease infinite;
-            opacity: 0;
-            transition: opacity 0.3s;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, var(--accent-orange-glow) 0%, transparent 60%);
+            animation: welcomeGlow 3s ease-in-out infinite;
+            opacity: 0.3;
+        }
+        
+        @keyframes welcomeSlideIn {
+            from { 
+                opacity: 0;
+                transform:  translateY(-50px) scale(0.9);
+            }
+            to { 
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
         }
 
-        .animated-border:hover::after {
-            opacity: 1;
+        @keyframes welcomeGlow {
+            0%, 100% { transform: rotate(0deg); }
+            50% { transform: rotate(180deg); }
         }
 
-        @keyframes gradientBorder {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
+        .welcome-icon {
+            font-size: 80px;
+            margin-bottom:  20px;
+            display: inline-block;
+            animation: welcomeIconBounce 1s ease-out;
         }
-        /* Permission Checkbox Styles */
-        .perm-checkbox {
-            background: rgba(255, 255, 255, 0.03);
-            padding: 14px 18px;
-            border-radius: 12px;
+
+        @keyframes welcomeIconBounce {
+            0% { transform: scale(0) rotate(-180deg); }
+            60% { transform: scale(1.2) rotate(10deg); }
+            100% { transform: scale(1) rotate(0deg); }
+        }
+
+        .welcome-greeting {
+            font-size: 16px;
+            color: var(--accent-orange);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            margin-bottom:  10px;
+        }
+
+        .welcome-title {
+            font-size: 36px;
+            font-weight: 900;
+            color: white;
+            margin-bottom: 15px;
+            line-height: 1.2;
+        }
+
+        .welcome-title span {
+            background: var(--gradient-orange);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .welcome-message {
+            color: var(--text-secondary);
+            font-size: 15px;
+            line-height: 1.6;
+            margin-bottom: 30px;
+        }
+
+        .welcome-close {
+            background: var(--gradient-orange);
+            color: white;
+            border: none;
+            padding: 14px 40px;
+            border-radius:  12px;
+            font-size:  15px;
+            font-weight:  700;
             cursor: pointer;
-            display: flex;
-            align-items: center;
-            border: 1px solid var(--border-color);
             transition: var(--transition-smooth);
-            flex: 1;
-            min-width: 100px;
+            position: relative;
+            z-index: 1;
         }
 
-        .perm-checkbox:hover {
+        .welcome-close:hover {
+            transform: translateY(-3px);
+            box-shadow:  0 15px 40px var(--accent-orange-glow);
+        }
+
+        /* Tooltip */
+        .tooltip {
+            position: relative;
+        }
+
+        .tooltip:: after {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: 120%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--bg-card);
+            color: white;
+            padding: 8px 14px;
+            border-radius:  8px;
+            font-size: 12px;
+            white-space: nowrap;
+            opacity: 0;
+            visibility: hidden;
+            transition: var(--transition-smooth);
+            border: 1px solid var(--border-color);
+            z-index: 1000;
+        }
+
+        .tooltip:hover:: after {
+            opacity: 1;
+            visibility:  visible;
+            bottom: 130%;
+        }
+        
+        /* File Upload Zone */
+        .upload-zone {
+            border: 2px dashed var(--border-color);
+            padding: 50px;
+            text-align: center;
+            border-radius: 16px;
+            transition: var(--transition-smooth);
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .upload-zone::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: var(--gradient-orange);
+            opacity: 0;
+            transition: var(--transition-smooth);
+        }
+
+        .upload-zone:hover {
             border-color: var(--accent-orange);
             background: rgba(255, 122, 0, 0.05);
         }
 
-        .perm-checkbox input {
-            width: auto;
-            margin-right: 10px;
-            accent-color: var(--accent-orange);
+        .upload-zone:hover::before {
+            opacity: 0.03;
         }
 
-        .perm-checkbox span {
-            font-size: 13px;
-            font-weight: 500;
-            color: var(--text-secondary);
-        }
-
-        .perm-checkbox:has(input:checked) {
-            border-color: var(--accent-orange);
+        .upload-zone.dragover {
+            border-color:  var(--accent-orange);
             background: rgba(255, 122, 0, 0.1);
+            transform: scale(1.02);
         }
 
-        .perm-checkbox:has(input:checked) span {
+        .upload-icon {
+            font-size: 60px;
             color: var(--accent-orange);
+            margin-bottom: 20px;
+            display: inline-block;
+            animation: uploadFloat 3s ease-in-out infinite;
         }
 
-        /* Time Badge */
-        .time-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            background: rgba(255, 255, 255, 0.03);
-            padding: 8px 14px;
-            border-radius: 8px;
-            font-size: 13px;
+        @keyframes uploadFloat {
+            0%, 100% { transform: translateY(0); }
+            50% { transform:  translateY(-10px); }
+        }
+
+        .upload-text {
+            color: var(--accent-orange);
+            font-weight: 600;
+            font-size: 16px;
+            margin-bottom: 8px;
+        }
+
+        .upload-hint {
             color: var(--text-secondary);
+            font-size: 13px;
         }
 
-        .time-badge i {
+        #file-count {
+            margin-top: 20px;
+            font-size: 14px;
+            color: var(--accent-green);
+            font-weight: 600;
+        }
+
+        /* Flash Messages */
+        .flash-message {
+            margin-bottom: 20px;
+            padding: 16px 20px;
+            border-radius:  12px;
+            font-size: 14px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            animation: flashSlideIn 0.4s ease-out;
+        }
+
+        @keyframes flashSlideIn {
+            from { 
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to { 
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .flash-error {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            color: #F87171;
+        }
+
+        .flash-success {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            color: #34D399;
+        }
+        
+        /* Ripple Effect */
+        .ripple {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .ripple-effect {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(0);
+            animation: rippleAnim 0.6s ease-out;
+            pointer-events: none;
+        }
+
+        @keyframes rippleAnim {
+            to {
+                transform: scale(4);
+                opacity: 0;
+            }
+        }
+                /* Enhanced Loading Overlay */
+        #loading-overlay { 
+            display: none;
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%; 
+            background: rgba(10, 10, 15, 0.95);
+            z-index: 9999; 
+            flex-direction: column;
+            justify-content: center; 
+            align-items: center; 
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+        
+        /* Modern Spinner */
+        .spinner-container {
+            position: relative;
+            width: 80px;
+            height: 80px;
+        }
+
+        .spinner { 
+            width: 80px;
+            height: 80px; 
+            border: 4px solid rgba(255, 122, 0, 0.1);
+            border-top: 4px solid var(--accent-orange);
+            border-right: 4px solid var(--accent-orange-light);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            box-shadow: 0 0 30px var(--accent-orange-glow);
+        }
+
+        .spinner-inner {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 50px;
+            height: 50px;
+            border: 3px solid rgba(139, 92, 246, 0.1);
+            border-bottom: 3px solid var(--accent-purple);
+            border-left: 3px solid var(--accent-purple);
+            border-radius: 50%;
+            animation: spin 1.2s linear infinite reverse;
+        }
+
+        @keyframes spin { 
+            0% { transform:  rotate(0deg); } 
+            100% { transform:  rotate(360deg); } 
+        }
+
+        /* Success Checkmark Animation */
+        .checkmark-container { 
+            display: none;
+            text-align: center; 
+        }
+
+        .checkmark-circle {
+            width: 100px;
+            height: 100px; 
+            position: relative; 
+            display: inline-block;
+            border-radius: 50%; 
+            border: 3px solid var(--accent-green);
+            margin-bottom: 24px;
+            animation: success-anim 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+            box-shadow: 0 0 40px rgba(16, 185, 129, 0.3);
+        }
+
+        .checkmark-circle::before {
+            content: '';
+            display: block; 
+            width: 30px; 
+            height: 50px;
+            border:  solid var(--accent-green); 
+            border-width: 0 4px 4px 0;
+            position: absolute; 
+            top: 15px; 
+            left: 35px;
+            transform: rotate(45deg); 
+            opacity: 0;
+            animation: checkmark-anim 0.4s 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+        
+        /* Fail Cross Animation */
+        .fail-container { 
+            display: none; 
+            text-align: center;
+        }
+
+        .fail-circle {
+            width: 100px;
+            height: 100px; 
+            position: relative; 
+            display: inline-block;
+            border-radius: 50%; 
+            border: 3px solid var(--accent-red);
+            margin-bottom: 24px;
+            animation: fail-anim 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+            box-shadow: 0 0 40px rgba(239, 68, 68, 0.3);
+        }
+
+        .fail-circle::before, .fail-circle::after {
+            content: '';
+            position: absolute; 
+            width: 4px; 
+            height: 50px; 
+            background: var(--accent-red);
+            top: 23px; 
+            left: 46px; 
+            border-radius: 4px;
+            animation: crossAnim 0.3s 0.4s ease-out forwards;
+            opacity: 0;
+        }
+
+        .fail-circle::before { transform: rotate(45deg); }
+        .fail-circle::after { transform: rotate(-45deg); }
+
+        @keyframes success-anim { 
+            0% { transform: scale(0); opacity: 0; } 
+            50% { transform:  scale(1.2); } 
+            100% { transform:  scale(1); opacity: 1; } 
+        }
+
+        @keyframes checkmark-anim { 
+            0% { opacity: 0; height: 0; width: 0; } 
+            100% { opacity: 1; height: 50px; width: 30px; } 
+        }
+
+        @keyframes fail-anim { 
+            0% { transform: scale(0); opacity: 0; } 
+            50% { transform: scale(1.2); } 
+            100% { transform: scale(1); opacity: 1; } 
+        }
+
+        @keyframes crossAnim {
+            0% { opacity: 0; transform: rotate(45deg) scale(0); }
+            100% { opacity: 1; transform: rotate(45deg) scale(1); }
+        }
+
+        .anim-text { 
+            font-size:  24px; 
+            font-weight: 800; 
+            color: white;
+            margin-top: 10px; 
+            letter-spacing: 1px;
+        }
+
+        .loading-text {
+            color: var(--text-secondary);
+            font-size: 15px;
+            margin-top:  20px;
+            font-weight: 500;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            animation: textPulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes textPulse {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+
+        /* Welcome Popup Modal */
+        .welcome-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left:  0;
+            width: 100%;
+            height: 100%;
+            background: rgba(10, 10, 15, 0.9);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            z-index: 10000;
+            justify-content: center;
+            align-items: center;
+            animation: modalFadeIn 0.3s ease-out;
+        }
+
+        @keyframes modalFadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .welcome-content {
+            background: var(--gradient-card);
+            border:  1px solid var(--border-color);
+            border-radius: 24px;
+            padding: 50px 60px;
+            text-align: center;
+            max-width: 500px;
+            width: 90%;
+            animation: welcomeSlideIn 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.5), 0 0 60px var(--accent-orange-glow);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .welcome-content::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, var(--accent-orange-glow) 0%, transparent 60%);
+            animation: welcomeGlow 3s ease-in-out infinite;
+            opacity: 0.3;
+        }
+        
+        @keyframes welcomeSlideIn {
+            from { 
+                opacity: 0;
+                transform:  translateY(-50px) scale(0.9);
+            }
+            to { 
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        @keyframes welcomeGlow {
+            0%, 100% { transform: rotate(0deg); }
+            50% { transform: rotate(180deg); }
+        }
+
+        .welcome-icon {
+            font-size: 80px;
+            margin-bottom:  20px;
+            display: inline-block;
+            animation: welcomeIconBounce 1s ease-out;
+        }
+
+        @keyframes welcomeIconBounce {
+            0% { transform: scale(0) rotate(-180deg); }
+            60% { transform: scale(1.2) rotate(10deg); }
+            100% { transform: scale(1) rotate(0deg); }
+        }
+
+        .welcome-greeting {
+            font-size: 16px;
             color: var(--accent-orange);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            margin-bottom:  10px;
         }
-    </style>
-"""
-# ==============================================================================
-# হেল্পার ফাংশন: পরিসংখ্যান ও হিস্ট্রি (MongoDB ব্যবহার করে)
-# ==============================================================================
 
-def load_users():
-    record = users_col.find_one({"_id": "global_users"})
-    default_users = {
-        "Admin": {
-            "password": "@Nijhum@12", 
-            "role": "admin", 
-            "permissions": ["closing", "po_sheet", "user_manage", "view_history", "accessories"],
-            "created_at": "N/A",
-            "last_login": "Never",
-            "last_duration": "N/A"
+        .welcome-title {
+            font-size: 36px;
+            font-weight: 900;
+            color: white;
+            margin-bottom: 15px;
+            line-height: 1.2;
         }
-    }
-    if record:
-        return record['data']
-    else:
-        users_col.insert_one({"_id": "global_users", "data": default_users})
-        return default_users
 
-def save_users(users_data):
-    users_col.replace_one(
-        {"_id": "global_users"}, 
-        {"_id": "global_users", "data": users_data}, 
-        upsert=True
-    )
+        .welcome-title span {
+            background: var(--gradient-orange);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
 
-def load_stats():
-    record = stats_col.find_one({"_id": "dashboard_stats"})
-    if record:
-        return record['data']
-    else:
-        default_stats = {"downloads": [], "last_booking": "None"}
-        stats_col.insert_one({"_id": "dashboard_stats", "data": default_stats})
-        return default_stats
+        .welcome-message {
+            color: var(--text-secondary);
+            font-size: 15px;
+            line-height: 1.6;
+            margin-bottom: 30px;
+        }
 
-def save_stats(data):
-    stats_col.replace_one(
-        {"_id": "dashboard_stats"},
-        {"_id": "dashboard_stats", "data": data},
-        upsert=True
-    )
-def update_stats(ref_no, username):
-    data = load_stats()
-    now = get_bd_time() # BD Time
-    new_record = {
-        "ref": ref_no,
-        "user": username,
-        "date": now.strftime('%d-%m-%Y'),
-        "time": now.strftime('%I:%M %p'),
-        "type": "Closing Report",
-        "iso_time": now.isoformat()
-    }
-    data['downloads'].insert(0, new_record)
-    # Analytics এর জন্য ডাটা লিমিট বাড়ানো হয়েছে
-    if len(data['downloads']) > 3000:
-        data['downloads'] = data['downloads'][:3000]
+        .welcome-close {
+            background: var(--gradient-orange);
+            color: white;
+            border: none;
+            padding: 14px 40px;
+            border-radius:  12px;
+            font-size:  15px;
+            font-weight:  700;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+            position: relative;
+            z-index: 1;
+        }
+
+        .welcome-close:hover {
+            transform: translateY(-3px);
+            box-shadow:  0 15px 40px var(--accent-orange-glow);
+        }
+
+        /* Tooltip */
+        .tooltip {
+            position: relative;
+        }
+
+        .tooltip:: after {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: 120%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--bg-card);
+            color: white;
+            padding: 8px 14px;
+            border-radius:  8px;
+            font-size: 12px;
+            white-space: nowrap;
+            opacity: 0;
+            visibility: hidden;
+            transition: var(--transition-smooth);
+            border: 1px solid var(--border-color);
+            z-index: 1000;
+        }
+
+        .tooltip:hover:: after {
+            opacity: 1;
+            visibility:  visible;
+            bottom: 130%;
+        }
         
-    data['last_booking'] = ref_no
-    save_stats(data)
+        /* File Upload Zone */
+        .upload-zone {
+            border: 2px dashed var(--border-color);
+            padding: 50px;
+            text-align: center;
+            border-radius: 16px;
+            transition: var(--transition-smooth);
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
 
-def update_po_stats(username, file_count):
-    # PO Sheet এর জন্য এখন ref হিসেবে ফাইলের সংখ্যা না দেখিয়ে একটা সাধারণ টেক্সট বা প্রথম ফাইলের নাম দেখাতে পারি। 
-    # তবে ইউজারের রিকোয়ারমেন্ট অনুযায়ী এখানে ref শো করতে হবে।
-    # আপাতত file_count কেই স্ট্রিং হিসেবে রাখছি, পরবর্তীতে রাউটে এটি পরিবর্তন করা হবে।
-    data = load_stats()
-    now = get_bd_time()
-    
-    # file_count এখন স্ট্রিং হতে পারে (যেমন: "Style: 12345")
-    ref_text = str(file_count)
-    
-    new_record = {
-        "user": username,
-        "ref": ref_text,
-        "date": now.strftime('%d-%m-%Y'),
-        "time": now.strftime('%I:%M %p'),
-        "type": "PO Sheet",
-        "iso_time": now.isoformat()
-    }
-    if 'downloads' not in data: data['downloads'] = []
-    data['downloads'].insert(0, new_record)
-    if len(data['downloads']) > 3000:
-        data['downloads'] = data['downloads'][:3000]
-    save_stats(data)
+        .upload-zone::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: var(--gradient-orange);
+            opacity: 0;
+            transition: var(--transition-smooth);
+        }
 
-def load_accessories_db():
-    record = accessories_col.find_one({"_id": "accessories_data"})
-    if record:
-        return record['data']
-    else:
-        return {}
+        .upload-zone:hover {
+            border-color: var(--accent-orange);
+            background: rgba(255, 122, 0, 0.05);
+        }
 
-def save_accessories_db(data):
-    accessories_col.replace_one(
-        {"_id": "accessories_data"},
-        {"_id": "accessories_data", "data": data},
-        upsert=True
-    )
+        .upload-zone:hover::before {
+            opacity: 0.03;
+        }
 
-# --- আপডেটেড: রিয়েল-টাইম ড্যাশবোর্ড সামারি এবং এনালিটিক্স ---
-def get_dashboard_summary_v2():
-    stats_data = load_stats()
-    acc_db = load_accessories_db()
-    users_data = load_users()
-    
-    now = get_bd_time()
-    today_str = now.strftime('%d-%m-%Y')
-    
-    # 1. User Stats
-    user_details = []
-    for u, d in users_data.items():
-        user_details.append({
-            "username": u,
-            "role": d.get('role', 'user'),
-            "created_at": d.get('created_at', 'N/A'),
-            "last_login": d.get('last_login', 'Never'),
-            "last_duration": d.get('last_duration', 'N/A')
-        })
-            # 2. Accessories Today & Analytics - LIFETIME COUNT
-    acc_lifetime_count = 0
-    acc_today_list = []
-    
-    # Analytics Container: {'YYYY-MM-DD': {'label': '01-Dec', 'closing': 0, 'po': 0, 'acc': 0}}
-    daily_data = defaultdict(lambda: {'closing': 0, 'po': 0, 'acc': 0})
+        .upload-zone.dragover {
+            border-color:  var(--accent-orange);
+            background: rgba(255, 122, 0, 0.1);
+            transform: scale(1.02);
+        }
 
-    for ref, data in acc_db.items():
-        for challan in data.get('challans', []):
-            acc_lifetime_count += 1  # LIFETIME COUNT
-            c_date = challan.get('date')
-            if c_date == today_str:
-                acc_today_list.append({
-                    "ref": ref,
-                    "buyer": data.get('buyer'),
-                    "style": data.get('style'),
-                    "time": "Today", 
-                    "qty": challan.get('qty')
-                })
-            
-            # Analytics Calculation - Daily basis
-            try:
-                dt_obj = datetime.strptime(c_date, '%d-%m-%Y')
-                sort_key = dt_obj.strftime('%Y-%m-%d')
-                daily_data[sort_key]['acc'] += 1
-                daily_data[sort_key]['label'] = dt_obj.strftime('%d-%b')
-            except: pass
+        .upload-icon {
+            font-size: 60px;
+            color: var(--accent-orange);
+            margin-bottom: 20px;
+            display: inline-block;
+            animation: uploadFloat 3s ease-in-out infinite;
+        }
 
-    # 3. Closing & PO - LIFETIME COUNT & Analytics
-    closing_lifetime_count = 0
-    po_lifetime_count = 0
-    closing_list = []
-    po_list = []
-    
-    history = stats_data.get('downloads', [])
-    for item in history:
-        item_date = item.get('date', '')
-        if item.get('type') == 'PO Sheet':
-            po_lifetime_count += 1  # LIFETIME COUNT
-            if item_date == today_str:
-                po_list.append(item)
-        else: 
-            closing_lifetime_count += 1  # LIFETIME COUNT
-            if item_date == today_str:
-                closing_list.append(item)
+        @keyframes uploadFloat {
+            0%, 100% { transform: translateY(0); }
+            50% { transform:  translateY(-10px); }
+        }
+
+        .upload-text {
+            color: var(--accent-orange);
+            font-weight: 600;
+            font-size: 16px;
+            margin-bottom: 8px;
+        }
+
+        .upload-hint {
+            color: var(--text-secondary);
+            font-size: 13px;
+        }
+
+        #file-count {
+            margin-top: 20px;
+            font-size: 14px;
+            color: var(--accent-green);
+            font-weight: 600;
+        }
+
+        /* Flash Messages */
+        .flash-message {
+            margin-bottom: 20px;
+            padding: 16px 20px;
+            border-radius:  12px;
+            font-size: 14px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            animation: flashSlideIn 0.4s ease-out;
+        }
+
+        @keyframes flashSlideIn {
+            from { 
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to { 
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .flash-error {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            color: #F87171;
+        }
+
+        .flash-success {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            color: #34D399;
+        }
         
-        # Analytics Calculation - Daily basis
-        try:
-            dt_obj = datetime.strptime(item_date, '%d-%m-%Y')
-            sort_key = dt_obj.strftime('%Y-%m-%d')
-            
-            if item.get('type') == 'PO Sheet':
-                daily_data[sort_key]['po'] += 1
-            else:
-                daily_data[sort_key]['closing'] += 1
-            daily_data[sort_key]['label'] = dt_obj.strftime('%d-%b')
-        except: pass
-    # Get last month's 1st date to today
-    first_of_last_month = (now.replace(day=1) - timedelta(days=1)).replace(day=1)
-    start_date = first_of_last_month.strftime('%Y-%m-%d')
-    end_date = now.strftime('%Y-%m-%d')
-    
-    # Filter and sort data from start_date to end_date
-    sorted_keys = sorted([k for k in daily_data.keys() if start_date <= k <= end_date])
-    
-    chart_labels = []
-    chart_closing = []
-    chart_po = []
-    chart_acc = []
+        /* Ripple Effect */
+        .ripple {
+            position: relative;
+            overflow: hidden;
+        }
 
-    if not sorted_keys:
-        curr_d = now.strftime('%d-%b')
-        chart_labels = [curr_d]
-        chart_closing = [0]
-        chart_po = [0]
-        chart_acc = [0]
-    else:
-        for k in sorted_keys:
-            d = daily_data[k]
-            chart_labels.append(d.get('label', k))
-            chart_closing.append(d['closing'])
-            chart_po.append(d['po'])
-            chart_acc.append(d['acc'])
+        .ripple-effect {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(0);
+            animation: rippleAnim 0.6s ease-out;
+            pointer-events: none;
+        }
 
-    return {
-        "users": { "count": len(users_data), "details": user_details },
-        "accessories": { "count": acc_lifetime_count, "details": acc_today_list },
-        "closing": { "count": closing_lifetime_count, "details": closing_list },
-        "po": { "count": po_lifetime_count, "details": po_list },
-        "chart": {
-            "labels": chart_labels,
-            "closing": chart_closing,
-            "po": chart_po,
-            "acc": chart_acc
-        },
-        "history": history
-    }
-
-# ==============================================================================
-# লজিক পার্ট: PURCHASE ORDER SHEET PARSER (PDF)
+        @keyframes rippleAnim {
+            to {
+                transform: scale(4);
+                opacity: 0;
+            }
+        }
+        # ==============================================================================
+# লজিক পার্ট:  PURCHASE ORDER SHEET PARSER (PDF)
 # ==============================================================================
 
 def is_potential_size(header):
@@ -1694,43 +2152,43 @@ def sort_sizes(size_list):
     ]
     def sort_key(s):
         s = s.strip()
-        if s in STANDARD_ORDER: return (0, STANDARD_ORDER.index(s))
+        if s in STANDARD_ORDER:  return (0, STANDARD_ORDER.index(s))
         if s.isdigit(): return (1, int(s))
         match = re.match(r'^(\d+)([A-Z]+)$', s)
-        if match: return (2, int(match.group(1)), match.group(2))
+        if match:  return (2, int(match.group(1)), match.group(2))
         return (3, s)
     return sorted(size_list, key=sort_key)
 
 def extract_metadata(first_page_text):
     meta = {
-        'buyer': 'N/A', 'booking': 'N/A', 'style': 'N/A', 
+        'buyer': 'N/A', 'booking':  'N/A', 'style': 'N/A', 
         'season': 'N/A', 'dept': 'N/A', 'item': 'N/A'
     }
     if "KIABI" in first_page_text.upper():
         meta['buyer'] = "KIABI"
     else:
-        buyer_match = re.search(r"Buyer.*?Name[\s\S]*?([\w\s&]+)(?:\n|$)", first_page_text)
-        if buyer_match: meta['buyer'] = buyer_match.group(1).strip()
+        buyer_match = re.search(r"Buyer.*?Name[\s\S]*?([\w\s&]+)(? :\n|$)", first_page_text)
+        if buyer_match:  meta['buyer'] = buyer_match.group(1).strip()
 
-    booking_block_match = re.search(r"(?:Internal )?Booking NO\. ?[:\s]*([\s\S]*?)(?:System NO|Control No|Buyer)", first_page_text, re.IGNORECASE)
-    if booking_block_match: 
+    booking_block_match = re.search(r"(? :Internal )?Booking NO\. ? [:\s]*([\s\S]*?)(?:System NO|Control No|Buyer)", first_page_text, re.IGNORECASE)
+    if booking_block_match:  
         raw_booking = booking_block_match.group(1).strip()
         clean_booking = raw_booking.replace('\n', '').replace('\r', '').replace(' ', '')
-        if "System" in clean_booking: clean_booking = clean_booking.split("System")[0]
+        if "System" in clean_booking:  clean_booking = clean_booking.split("System")[0]
         meta['booking'] = clean_booking
 
     style_match = re.search(r"Style Ref\. ?[:\s]*([\w-]+)", first_page_text, re.IGNORECASE)
     if style_match: meta['style'] = style_match.group(1).strip()
-    else:
-        style_match = re.search(r"Style Des\. ?[\s\S]*?([\w-]+)", first_page_text, re.IGNORECASE)
+    else: 
+        style_match = re.search(r"Style Des\.?[\s\S]*?([\w-]+)", first_page_text, re.IGNORECASE)
         if style_match: meta['style'] = style_match.group(1).strip()
 
     season_match = re.search(r"Season\s*[:\n\"]*([\w\d-]+)", first_page_text, re.IGNORECASE)
     if season_match: meta['season'] = season_match.group(1).strip()
-    dept_match = re.search(r"Dept\. ?[\s\n:]*([A-Za-z]+)", first_page_text, re.IGNORECASE)
+    dept_match = re.search(r"Dept\. ?[\s\n: ]*([A-Za-z]+)", first_page_text, re.IGNORECASE)
     if dept_match: meta['dept'] = dept_match.group(1).strip()
 
-    item_match = re.search(r"Garments?   Item[\s\n:]*([^\n\r]+)", first_page_text, re.IGNORECASE)
+    item_match = re.search(r"Garments?    Item[\s\n: ]*([^\n\r]+)", first_page_text, re.IGNORECASE)
     if item_match: 
         item_text = item_match.group(1).strip()
         if "Style" in item_text: item_text = item_text.split("Style")[0].strip()
@@ -1750,13 +2208,13 @@ def extract_data_dynamic(file_path):
         reader = pypdf.PdfReader(file_path)
         first_page_text = reader.pages[0].extract_text()
         
-        if "Main Fabric Booking" in first_page_text or "Fabric Booking Sheet" in first_page_text:
+        if "Main Fabric Booking" in first_page_text or "Fabric Booking Sheet" in first_page_text: 
             metadata = extract_metadata(first_page_text)
             return [], metadata 
 
         order_match = re.search(r"Order no\D*(\d+)", first_page_text, re.IGNORECASE)
-        if order_match: order_no = order_match.group(1)
-        else:
+        if order_match:  order_no = order_match.group(1)
+        else: 
             alt_match = re.search(r"Order\s*[:\.]?\s*(\d+)", first_page_text, re.IGNORECASE)
             if alt_match: order_no = alt_match.group(1)
         
@@ -1777,7 +2235,7 @@ def extract_data_dynamic(file_path):
                     parts = line.split()
                     try:
                         total_idx = [idx for idx, x in enumerate(parts) if 'Total' in x][0]
-                        raw_sizes = parts[:total_idx]
+                        raw_sizes = parts[: total_idx]
                         temp_sizes = [s for s in raw_sizes if s not in ["Colo", "/", "Size", "Colo/Size", "Colo/", "Size's"]]
                         
                         valid_size_count = sum(1 for s in temp_sizes if is_potential_size(s))
@@ -1787,7 +2245,7 @@ def extract_data_dynamic(file_path):
                         else:
                             sizes = []
                             capturing_data = False
-                    except: pass
+                    except:  pass
                     continue
                 
                 if capturing_data:
@@ -1795,12 +2253,12 @@ def extract_data_dynamic(file_path):
                         capturing_data = False
                         continue
                     lower_line = line.lower()
-                    if "quantity" in lower_line or "currency" in lower_line or "price" in lower_line or "amount" in lower_line:
+                    if "quantity" in lower_line or "currency" in lower_line or "price" in lower_line or "amount" in lower_line: 
                         continue
                         
                     clean_line = line.replace("Spec. price", "").replace("Spec", "").strip()
                     if not re.search(r'[a-zA-Z]', clean_line): continue
-                    if re.match(r'^[A-Z]\d+$', clean_line) or "Assortment" in clean_line: continue
+                    if re.match(r'^[A-Z]\d+$', clean_line) or "Assortment" in clean_line:  continue
 
                     numbers_in_line = re.findall(r'\b\d+\b', line)
                     quantities = [int(n) for n in numbers_in_line]
@@ -1809,16 +2267,16 @@ def extract_data_dynamic(file_path):
 
                     if len(quantities) >= len(sizes):
                         if len(quantities) == len(sizes) + 1: final_qtys = quantities[:-1] 
-                        else: final_qtys = quantities[:len(sizes)]
+                        else: final_qtys = quantities[: len(sizes)]
                         color_name = re.sub(r'\s\d+$', '', color_name).strip()
                     elif len(quantities) < len(sizes): 
                         vertical_qtys = []
-                        for next_line in lines[i+1:]:
+                        for next_line in lines[i+1:]: 
                             next_line = next_line.strip()
                             if "Total" in next_line or re.search(r'[a-zA-Z]', next_line.replace("Spec", "").replace("price", "")): break
                             if re.match(r'^\d+$', next_line): vertical_qtys.append(int(next_line))
                         
-                        if len(vertical_qtys) >= len(sizes): final_qtys = vertical_qtys[:len(sizes)]
+                        if len(vertical_qtys) >= len(sizes): final_qtys = vertical_qtys[: len(sizes)]
                     
                     if final_qtys and color_name:
                          for idx, size in enumerate(sizes):
@@ -1828,13 +2286,14 @@ def extract_data_dynamic(file_path):
                                 'Size': size,
                                 'Quantity': final_qtys[idx]
                             })
-    except Exception as e: print(f"Error processing file: {e}")
+    except Exception as e:  print(f"Error processing file: {e}")
     return extracted_data, metadata
     # ==============================================================================
-# লজিক পার্ট: CLOSING REPORT API & EXCEL GENERATION
+# লজিক পার্ট:  CLOSING REPORT API & EXCEL GENERATION
 # ==============================================================================
+
 def get_authenticated_session(username, password):
-    login_url = 'http://180.92.235.190:8022/erp/login.php'
+    login_url = 'http://180.92.235.190: 8022/erp/login.php'
     login_payload = {'txt_userid': username, 'txt_password': password, 'submit': 'Login'}
     session_req = requests.Session()
     session_req.headers.update({
@@ -1852,13 +2311,13 @@ def get_authenticated_session(username, password):
 
 def fetch_closing_report_data(internal_ref_no):
     active_session = get_authenticated_session("input2.clothing-cutting", "123456")
-    if not active_session: return None
+    if not active_session:  return None
 
     report_url = 'http://180.92.235.190:8022/erp/prod_planning/reports/requires/cutting_lay_production_report_controller.php'
     payload_template = {'action': 'report_generate', 'cbo_wo_company_name': '2', 'cbo_location_name': '2', 'cbo_floor_id': '0', 'cbo_buyer_name': '0', 'txt_internal_ref_no': internal_ref_no, 'reportType': '3'}
     found_data = None
    
-    for year in ['2025', '2024']:
+    for year in ['2025', '2024']: 
         for company_id in range(1, 6):
             payload = payload_template.copy()
             payload['cbo_year_selection'] = year
@@ -1868,8 +2327,8 @@ def fetch_closing_report_data(internal_ref_no):
                 if response.status_code == 200 and "Data not Found" not in response.text:
                     found_data = response.text
                     break
-            except: continue
-        if found_data: break
+            except:  continue
+        if found_data:  break
     
     if found_data:
         return parse_report_data(found_data)
@@ -1879,8 +2338,8 @@ def parse_report_data(html_content):
     all_report_data = []
     try:
         soup = BeautifulSoup(html_content, 'lxml')
-        header_row = soup.select_one('thead tr:nth-of-type(2)')
-        if not header_row: return None
+        header_row = soup.select_one('thead tr: nth-of-type(2)')
+        if not header_row:  return None
         all_th = header_row.find_all('th')
         headers = [th.get_text(strip=True) for th in all_th if 'total' not in th.get_text(strip=True).lower()]
         data_rows = soup.select('div#scroll_body table tbody tr')
@@ -1888,13 +2347,13 @@ def parse_report_data(html_content):
         current_block = []
         for row in data_rows:
             if row.get('bgcolor') == '#cddcdc':
-                if current_block: item_blocks.append(current_block)
+                if current_block:  item_blocks.append(current_block)
                 current_block = []
             else:
                 current_block.append(row)
         if current_block: item_blocks.append(current_block)
         
-        for block in item_blocks:
+        for block in item_blocks: 
             style, color, buyer_name, gmts_qty_data, sewing_input_data, cutting_qc_data = "N/A", "N/A", "N/A", None, None, None
             for row in block:
                 cells = row.find_all('td')
@@ -1903,22 +2362,22 @@ def parse_report_data(html_content):
                     criteria_sub = cells[2].get_text(strip=True)
                     main_lower, sub_lower = criteria_main.lower(), criteria_sub.lower()
                     
-                    if main_lower == "style": style = cells[1].get_text(strip=True)
+                    if main_lower == "style":  style = cells[1].get_text(strip=True)
                     elif main_lower == "color & gmts. item": color = cells[1].get_text(strip=True)
                     elif "buyer" in main_lower: buyer_name = cells[1].get_text(strip=True)
                     
-                    if sub_lower == "gmts. color /country qty": gmts_qty_data = [cell.get_text(strip=True) for cell in cells[3:len(headers)+3]]
+                    if sub_lower == "gmts.color /country qty": gmts_qty_data = [cell.get_text(strip=True) for cell in cells[3:len(headers)+3]]
                     
-                    if "sewing input" in main_lower: sewing_input_data = [cell.get_text(strip=True) for cell in cells[1:len(headers)+1]]
-                    elif "sewing input" in sub_lower: sewing_input_data = [cell.get_text(strip=True) for cell in cells[3:len(headers)+3]]
+                    if "sewing input" in main_lower:  sewing_input_data = [cell.get_text(strip=True) for cell in cells[1:len(headers)+1]]
+                    elif "sewing input" in sub_lower:  sewing_input_data = [cell.get_text(strip=True) for cell in cells[3:len(headers)+3]]
     
                     if "cutting qc" in main_lower and "balance" not in main_lower:
                         cutting_qc_data = [cell.get_text(strip=True) for cell in cells[1:len(headers)+1]]
                     elif "cutting qc" in sub_lower and "balance" not in sub_lower:
                         cutting_qc_data = [cell.get_text(strip=True) for cell in cells[3:len(headers)+3]]
-            if gmts_qty_data:
+            if gmts_qty_data: 
                 plus_3_percent_data = []
-                for value in gmts_qty_data:
+                for value in gmts_qty_data: 
                     try:
                         new_qty = round(int(value.replace(',', '')) * 1.03)
                         plus_3_percent_data.append(str(new_qty))
@@ -1926,9 +2385,9 @@ def parse_report_data(html_content):
                         plus_3_percent_data.append(value)
                 all_report_data.append({
                     'style': style, 'buyer': buyer_name, 'color': color, 
-                    'headers': headers, 'gmts_qty': gmts_qty_data, 
+                    'headers': headers, 'gmts_qty':  gmts_qty_data, 
                     'plus_3_percent': plus_3_percent_data, 
-                    'sewing_input': sewing_input_data if sewing_input_data else [], 
+                    'sewing_input':  sewing_input_data if sewing_input_data else [], 
                     'cutting_qc': cutting_qc_data if cutting_qc_data else []
                 })
         return all_report_data
@@ -1936,10 +2395,11 @@ def parse_report_data(html_content):
         return None
 
 def create_formatted_excel_report(report_data, internal_ref_no=""):
-    if not report_data: return None
+    if not report_data:  return None
     wb = openpyxl.Workbook()
     ws = wb.active
     ws.title = "Closing Report"
+    
     # Styles
     bold_font = Font(bold=True)
     title_font = Font(size=32, bold=True, color="7B261A") 
@@ -1959,6 +2419,7 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
 
     NUM_COLUMNS, TABLE_START_ROW = 9, 8
     ws.merge_cells(start_row=1, start_column=1, end_row=1, end_column=NUM_COLUMNS)
+    
     # UPDATED BRANDING
     ws['A1'].value = "COTTON CLOTHING BD LTD"
     ws['A1'].font = title_font 
@@ -2043,13 +2504,13 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
                 cell.border = medium_border if col_idx == 2 else thin_border
                 cell.alignment = center_align
     
-                if col_idx in [1, 2, 3, 6, 9]: cell.font = bold_font
+                if col_idx in [1, 2, 3, 6, 9]:  cell.font = bold_font
                 
                 if col_idx == 3: cell.fill = light_blue_fill      
                 elif col_idx == 6: cell.fill = light_green_fill   
                 else: cell.fill = dark_green_fill 
 
-                if col_idx == 9:
+                if col_idx == 9: 
                     cell.number_format = '0.00%' 
             current_row += 1
             
@@ -2058,7 +2519,7 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
             ws.merge_cells(start_row=start_merge_row, start_column=1, end_row=end_merge_row, end_column=1)
             merged_cell = ws.cell(row=start_merge_row, column=1)
             merged_cell.alignment = color_align
-            if not merged_cell.font.bold: merged_cell.font = bold_font
+            if not merged_cell.font.bold:  merged_cell.font = bold_font
         
         total_row_str = str(current_row)
         ws.merge_cells(start_row=current_row, start_column=1, end_row=current_row, end_column=2)
@@ -2067,7 +2528,7 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
             "A": "TOTAL",
             "C": f"=SUM(C{start_merge_row}:C{end_merge_row})",
             "D": f"=SUM(D{start_merge_row}:D{end_merge_row})",
-            "E": f"=SUM(E{start_merge_row}:E{end_merge_row})",
+            "E": f"=SUM(E{start_merge_row}: E{end_merge_row})",
             "F": f"=SUM(F{start_merge_row}:F{end_merge_row})",
             "G": f"=SUM(G{start_merge_row}:G{end_merge_row})",
             "H": f"=SUM(H{start_merge_row}:H{end_merge_row})",
@@ -2081,7 +2542,7 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
             cell.border = medium_border
             cell.alignment = center_align
             cell.fill = light_brown_fill 
-            if col_letter == 'I':
+            if col_letter == 'I': 
                 cell.number_format = '0.00%'
         
         for col_idx in range(2, NUM_COLUMNS + 1):
@@ -2090,6 +2551,7 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
                 cell.fill = dark_green_fill 
                 cell.border = medium_border
         current_row += 2
+    
     image_row = current_row + 1
    
     try:
@@ -2107,7 +2569,7 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
         img.height = int(img.width * aspect_ratio)
         ws.row_dimensions[image_row].height = img.height * 0.90
         ws.add_image(img, f'A{image_row}')
-    except Exception:
+    except Exception: 
         pass
 
     signature_row = image_row + 1
@@ -2120,13 +2582,14 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
 
     last_data_row = current_row - 2
     for row in ws.iter_rows(min_row=4, max_row=last_data_row):
-        for cell in row:
-            if cell.coordinate == 'B5': continue
-            if cell.font:
+        for cell in row: 
+            if cell.coordinate == 'B5':  continue
+            if cell.font: 
                 existing_font = cell.font
-                if cell.row != 1: 
+                if cell.row != 1:  
                     new_font = Font(name=existing_font.name, size=16.5, bold=existing_font.bold, italic=existing_font.italic, vertAlign=existing_font.vertAlign, underline=existing_font.underline, strike=existing_font.strike, color=existing_font.color)
                     cell.font = new_font
+    
     ws.column_dimensions['A'].width = 23
     ws.column_dimensions['B'].width = 8.5
     ws.column_dimensions['C'].width = 20
@@ -2155,11 +2618,11 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
     file_stream.seek(0)
     return file_stream
     # ==============================================================================
-# HTML TEMPLATES: LOGIN PAGE - FIXED RESPONSIVE & CENTERED
+# HTML TEMPLATES:  LOGIN PAGE - FIXED RESPONSIVE & CENTERED
 # ==============================================================================
 
 LOGIN_TEMPLATE = f"""
-<!doctype html>
+<! doctype html>
 <html lang="en">
 <head>
     <meta charset="utf-8">
@@ -2169,13 +2632,13 @@ LOGIN_TEMPLATE = f"""
     <style>
         html, body {{
             height: 100%;
-            margin: 0;
+            margin:  0;
             padding: 0;
             overflow-x: hidden;
         }}
         
         body {{
-            background: var(--bg-body);
+            background:  var(--bg-body);
             min-height: 100vh;
             display: flex;
             justify-content: center;
@@ -2186,7 +2649,7 @@ LOGIN_TEMPLATE = f"""
         
         /* Animated Background Orbs */
         .bg-orb {{
-            position: fixed;
+            position:  fixed;
             border-radius: 50%;
             filter: blur(80px);
             opacity: 0.4;
@@ -2204,12 +2667,12 @@ LOGIN_TEMPLATE = f"""
         }}
         
         .orb-2 {{
-            width: 250px;
+            width:  250px;
             height: 250px;
             background: var(--accent-purple);
             bottom: -50px;
             right: -50px;
-            animation-delay: -5s;
+            animation-delay:  -5s;
         }}
         
         .orb-3 {{
@@ -2244,13 +2707,14 @@ LOGIN_TEMPLATE = f"""
         
         .login-card {{
             background: var(--gradient-card);
-            border: 1px solid var(--border-color);
+            border:  1px solid var(--border-color);
             border-radius: 24px;
             padding: 40px 35px;
             backdrop-filter: blur(20px);
-            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.5), 0 0 60px var(--accent-orange-glow);
+            box-shadow:  0 25px 80px rgba(0, 0, 0, 0.5), 0 0 60px var(--accent-orange-glow);
             animation: loginCardAppear 0.8s cubic-bezier(0.4, 0, 0.2, 1);
         }}
+        
         @keyframes loginCardAppear {{
             from {{
                 opacity: 0;
@@ -2289,7 +2753,7 @@ LOGIN_TEMPLATE = f"""
         
         .brand-name {{
             font-size: 28px;
-            font-weight: 900;
+            font-weight:  900;
             color: white;
             letter-spacing: -1px;
         }}
@@ -2305,7 +2769,7 @@ LOGIN_TEMPLATE = f"""
             color: var(--text-secondary);
             font-size: 11px;
             letter-spacing: 2px;
-            margin-top: 6px;
+            margin-top:  6px;
             font-weight: 600;
             text-transform: uppercase;
         }}
@@ -2358,7 +2822,7 @@ LOGIN_TEMPLATE = f"""
             border: 1px solid rgba(239, 68, 68, 0.2);
             border-radius: 10px;
             color: #F87171;
-            font-size: 13px;
+            font-size:  13px;
             display: flex;
             align-items: center;
             gap: 10px;
@@ -2366,9 +2830,9 @@ LOGIN_TEMPLATE = f"""
         }}
         
         @keyframes errorShake {{
-            0%, 100% {{ transform: translateX(0); }}
+            0%, 100% {{ transform:  translateX(0); }}
             20%, 60% {{ transform: translateX(-5px); }}
-            40%, 80% {{ transform: translateX(5px); }}
+            40%, 80% {{ transform:  translateX(5px); }}
         }}
         
         .footer-credit {{
@@ -2417,7 +2881,7 @@ LOGIN_TEMPLATE = f"""
             
             .login-btn {{
                 padding: 12px 20px;
-                font-size: 14px;
+                font-size:  14px;
             }}
         }}
         
@@ -2500,13 +2964,12 @@ LOGIN_TEMPLATE = f"""
 </body>
 </html>
 """
-
 # ==============================================================================
 # ADMIN DASHBOARD TEMPLATE - MODERN UI WITH DEW STYLE CHART
 # ==============================================================================
 
 ADMIN_DASHBOARD_TEMPLATE = f"""
-<!doctype html>
+<! doctype html>
 <html lang="en">
 <head>
     <meta charset="utf-8">
@@ -2546,8 +3009,8 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
 
         <div class="fail-container" id="fail-anim">
             <div class="fail-circle"></div>
-            <div class="anim-text">Action Failed!</div>
-            <div style="font-size:13px; color:#F87171; margin-top:8px;">Please check server or inputs</div>
+            <div class="anim-text">Action Failed! </div>
+            <div style="font-size: 13px; color:#F87171; margin-top: 8px;">Please check server or inputs</div>
         </div>
         
         <div class="loading-text" id="loading-text">Processing Request...</div>
@@ -2590,7 +3053,8 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
             <i class="fas fa-code" style="margin-right: 5px;"></i> Powered by Mehedi Hasan
         </div>
     </div>
-        <div class="main-content">
+
+    <div class="main-content">
         
         <div id="section-dashboard">
             <div class="header-section">
@@ -2622,7 +3086,7 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
                     </div>
                 </div>
                 <div class="card stat-card" style="animation-delay: 0.2s;">
-                    <div class="stat-icon" style="background: linear-gradient(145deg, rgba(139, 92, 246, 0.15), rgba(139, 92, 246, 0.05));">
+                    <div class="stat-icon" style="background:  linear-gradient(145deg, rgba(139, 92, 246, 0.15), rgba(139, 92, 246, 0.05));">
                         <i class="fas fa-boxes" style="color: var(--accent-purple);"></i>
                     </div>
                     <div class="stat-info">
@@ -2631,7 +3095,7 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
                     </div>
                 </div>
                 <div class="card stat-card" style="animation-delay: 0.3s;">
-                    <div class="stat-icon" style="background: linear-gradient(145deg, rgba(16, 185, 129, 0.15), rgba(16, 185, 129, 0.05));">
+                    <div class="stat-icon" style="background:  linear-gradient(145deg, rgba(16, 185, 129, 0.15), rgba(16, 185, 129, 0.05));">
                         <i class="fas fa-file-pdf" style="color: var(--accent-green);"></i>
                     </div>
                     <div class="stat-info">
@@ -2717,8 +3181,8 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
                             </tr>
                         </thead>
                         <tbody>
-                            {{% for log in stats.history[:10] %}}
-                            <tr style="animation: fadeInUp 0.5s ease-out {{{{ loop.index * 0.05 }}}}s backwards;">
+                            {{% for log in stats.history[: 10] %}}
+                            <tr style="animation:  fadeInUp 0.5s ease-out {{{{ loop.index * 0.05 }}}}s backwards;">
                                 <td>
                                     <div class="time-badge">
                                         <i class="far fa-clock"></i>
@@ -2733,7 +3197,7 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
                                         {{% elif log.type == 'PO Sheet' %}}
                                         background: rgba(16, 185, 129, 0.1); color: var(--accent-green);
                                         {{% else %}}
-                                        background: rgba(139, 92, 246, 0.1); color: var(--accent-purple);
+                                        background:  rgba(139, 92, 246, 0.1); color: var(--accent-purple);
                                         {{% endif %}}
                                     ">{{{{ log.type }}}}</span>
                                 </td>
@@ -2753,7 +3217,7 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
             </div>
         </div>
 
-        <div id="section-analytics" style="display:none;">
+        <div id="section-analytics" style="display: none;">
             <div class="header-section">
                 <div>
                     <div class="page-title">Closing Report</div>
@@ -2803,8 +3267,7 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
                 </form>
             </div>
         </div>
-
-        <div id="section-settings" style="display:none;">
+                <div id="section-settings" style="display: none;">
             <div class="header-section">
                 <div>
                     <div class="page-title">User Management</div>
@@ -2859,14 +3322,15 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
                             <i class="fas fa-save" style="margin-right: 10px;"></i> Save User
                         </button>
                         <button type="button" onclick="resetForm()" style="margin-top: 12px; background: rgba(255,255,255,0.05); border: 1px solid var(--border-color);">
-                            <i class="fas fa-undo" style="margin-right: 10px;"></i> Reset Form
+                            <i class="fas fa-undo" style="margin-right:  10px;"></i> Reset Form
                         </button>
                     </form>
                 </div>
             </div>
         </div>
     </div>
-        <script>
+    
+    <script>
         // ===== WELCOME POPUP WITH TIME-BASED GREETING =====
         function showWelcomePopup() {{
             const hour = new Date().getHours();
@@ -2900,7 +3364,7 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
             }}, 300);
         }}
         
-        if (!sessionStorage.getItem('welcomeShown')) {{
+        if (! sessionStorage.getItem('welcomeShown')) {{
             setTimeout(showWelcomePopup, 500);
         }}
         
@@ -2957,6 +3421,7 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
         const gradientGreen = ctx.createLinearGradient(0, 0, 0, 300);
         gradientGreen.addColorStop(0, 'rgba(16, 185, 129, 0.5)');
         gradientGreen.addColorStop(1, 'rgba(16, 185, 129, 0.0)');
+        
         new Chart(ctx, {{
             type: 'line',
             data: {{
@@ -2984,17 +3449,17 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
                         tension: 0.4,
                         fill: true,
                         pointBackgroundColor: '#8B5CF6',
-                        pointBorderColor: '#fff',
+                        pointBorderColor:  '#fff',
                         pointBorderWidth: 2,
                         pointRadius: 4,
                         pointHoverRadius: 7,
-                        borderWidth: 3
+                        borderWidth:  3
                     }},
                     {{
-                        label: 'PO Sheets',
+                        label:  'PO Sheets',
                         data: {{{{ stats.chart.po | tojson }}}},
                         borderColor: '#10B981',
-                        backgroundColor: gradientGreen,
+                        backgroundColor:  gradientGreen,
                         tension: 0.4,
                         fill: true,
                         pointBackgroundColor: '#10B981',
@@ -3065,7 +3530,7 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
                 }},
                 animation: {{
                     duration: 2000,
-                    easing: 'easeOutQuart'
+                    easing:  'easeOutQuart'
                 }}
             }}
         }});
@@ -3130,7 +3595,7 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
             fetch('/admin/get-users')
                 .then(res => res.json())
                 .then(data => {{
-                    let html = '<table class="dark-table"><thead><tr><th>User</th><th>Role</th><th style="text-align:right;">Actions</th></tr></thead><tbody>';
+                    let html = '<table class="dark-table"><thead><tr><th>User</th><th>Role</th><th style="text-align: right;">Actions</th></tr></thead><tbody>';
                     
                     for (const [u, d] of Object.entries(data)) {{
                         const roleClass = d.role === 'admin' ? 'background: rgba(255, 122, 0, 0.1); color: var(--accent-orange);' : 'background: rgba(139, 92, 246, 0.1); color: var(--accent-purple);';
@@ -3170,8 +3635,8 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
             showLoading();
             
             fetch('/admin/save-user', {{
-                method: 'POST',
-                headers: {{'Content-Type': 'application/json'}},
+                method:  'POST',
+                headers:  {{'Content-Type': 'application/json'}},
                 body: JSON.stringify({{ username: u, password: p, permissions: perms, action_type: a }})
             }})
             .then(r => r.json())
@@ -3210,7 +3675,7 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
         function deleteUser(u) {{
             if (confirm('Are you sure you want to delete "' + u + '"?')) {{
                 fetch('/admin/delete-user', {{
-                    method: 'POST',
+                    method:  'POST',
                     headers: {{'Content-Type': 'application/json'}},
                     body: JSON.stringify({{ username: u }})
                 }}).then(() => loadUsers());
@@ -3224,10 +3689,10 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
                     number: {{ value: 50, density: {{ enable: true, value_area: 800 }} }},
                     color: {{ value: '#FF7A00' }},
                     shape: {{ type: 'circle' }},
-                    opacity: {{ value: 0.3, random: true }},
+                    opacity:  {{ value: 0.3, random: true }},
                     size: {{ value: 3, random: true }},
                     line_linked: {{ enable: true, distance: 150, color: '#FF7A00', opacity: 0.1, width: 1 }},
-                    move: {{ enable: true, speed: 1, direction: 'none', random: true, out_mode: 'out' }}
+                    move: {{ enable:  true, speed: 1, direction: 'none', random: true, out_mode: 'out' }}
                 }},
                 interactivity: {{
                     events: {{ onhover: {{ enable: true, mode: 'grab' }} }},
@@ -3257,7 +3722,7 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
 # ==============================================================================
 
 USER_DASHBOARD_TEMPLATE = f"""
-<!doctype html>
+<! doctype html>
 <html lang="en">
 <head>
     <meta charset="utf-8">
@@ -3290,7 +3755,8 @@ USER_DASHBOARD_TEMPLATE = f"""
         </div>
         <div class="loading-text">Processing...</div>
     </div>
-        <div class="sidebar">
+    
+    <div class="sidebar">
         <div class="brand-logo">
             <i class="fas fa-layer-group"></i> 
             MNM<span>Software</span>
@@ -3336,7 +3802,7 @@ USER_DASHBOARD_TEMPLATE = f"""
                     <span><i class="fas fa-file-export" style="margin-right: 10px; color: var(--accent-orange);"></i>Closing Report</span>
                 </div>
                 <p style="color: var(--text-secondary); margin-bottom: 20px; font-size: 14px; line-height: 1.6;">
-                    Generate production closing reports with real-time data.  
+                    Generate production closing reports with real-time data. 
                 </p>
                 <form action="/generate-report" method="post" onsubmit="showLoading()">
                     <div class="input-group">
@@ -3422,7 +3888,7 @@ USER_DASHBOARD_TEMPLATE = f"""
             }}, 300);
         }}
         
-        if (!sessionStorage.getItem('welcomeShown')) {{
+        if (! sessionStorage.getItem('welcomeShown')) {{
             setTimeout(showWelcomePopup, 500);
         }}
         
@@ -3436,7 +3902,7 @@ USER_DASHBOARD_TEMPLATE = f"""
         style.textContent = `
             @keyframes fadeInUp {{
                 from {{ opacity: 0; transform: translateY(20px); }}
-                to {{ opacity: 1; transform: translateY(0); }}
+                to {{ opacity: 1; transform:  translateY(0); }}
             }}
         `;
         document.head.appendChild(style);
@@ -3444,6 +3910,10 @@ USER_DASHBOARD_TEMPLATE = f"""
 </body>
 </html>
 """
+
+# ==============================================================================
+# ACCESSORIES SEARCH TEMPLATE - WITH HISTORY FEATURE (UPDATED)
+# ==============================================================================
 
 ACCESSORIES_SEARCH_TEMPLATE = f"""
 <!doctype html>
@@ -3464,23 +3934,23 @@ ACCESSORIES_SEARCH_TEMPLATE = f"""
             position: relative;
             z-index: 10;
             width: 100%;
-            max-width: 480px;
+            max-width: 520px;
             padding: 20px;
         }}
         
         .search-card {{
             background: var(--gradient-card);
-            border: 1px solid var(--border-color);
+            border:  1px solid var(--border-color);
             border-radius: 24px;
             padding: 50px 45px;
             backdrop-filter: blur(20px);
-            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.5), 0 0 60px var(--accent-orange-glow);
+            box-shadow:  0 25px 80px rgba(0, 0, 0, 0.5), 0 0 60px var(--accent-orange-glow);
             animation: cardAppear 0.6s cubic-bezier(0.4, 0, 0.2, 1);
         }}
         
         @keyframes cardAppear {{
             from {{ opacity: 0; transform: translateY(20px) scale(0.95); }}
-            to {{ opacity: 1; transform: translateY(0) scale(1); }}
+            to {{ opacity:  1; transform: translateY(0) scale(1); }}
         }}
         
         .search-header {{
@@ -3504,7 +3974,7 @@ ACCESSORIES_SEARCH_TEMPLATE = f"""
         
         @keyframes iconFloat {{
             0%, 100% {{ transform: translateY(0); }}
-            50% {{ transform: translateY(-10px); }}
+            50% {{ transform:  translateY(-10px); }}
         }}
         
         .search-title {{
@@ -3529,7 +3999,7 @@ ACCESSORIES_SEARCH_TEMPLATE = f"""
         }}
         
         .nav-links a {{
-            color: var(--text-secondary);
+            color:  var(--text-secondary);
             text-decoration: none;
             font-size: 13px;
             font-weight: 500;
@@ -3549,6 +4019,170 @@ ACCESSORIES_SEARCH_TEMPLATE = f"""
         
         .nav-links a.logout:hover {{
             color: #ff6b6b;
+        }}
+        
+        /* History Card Specific Styles */
+        .history-section {{
+            margin-top: 25px;
+            padding-top: 25px;
+            border-top: 1px solid var(--border-color);
+        }}
+        
+        .history-toggle {{
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            padding: 15px 20px;
+            background: linear-gradient(145deg, rgba(139, 92, 246, 0.1), rgba(139, 92, 246, 0.02));
+            border: 1px solid rgba(139, 92, 246, 0.2);
+            border-radius: 14px;
+            transition: var(--transition-smooth);
+        }}
+        
+        .history-toggle:hover {{
+            border-color: var(--accent-purple);
+            background: linear-gradient(145deg, rgba(139, 92, 246, 0.15), rgba(139, 92, 246, 0.05));
+            transform: translateY(-2px);
+        }}
+        
+        .history-toggle-left {{
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }}
+        
+        .history-toggle-icon {{
+            width: 42px;
+            height: 42px;
+            background: linear-gradient(145deg, rgba(139, 92, 246, 0.3), rgba(139, 92, 246, 0.1));
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            color: var(--accent-purple);
+        }}
+        
+        .history-toggle-text {{
+            font-size: 15px;
+            font-weight: 600;
+            color: white;
+        }}
+        
+        .history-toggle-sub {{
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-top: 2px;
+        }}
+        
+        .history-badge {{
+            background: var(--accent-purple);
+            color: white;
+            padding: 5px 14px;
+            border-radius:  20px;
+            font-size: 13px;
+            font-weight:  700;
+        }}
+        
+        .history-dropdown {{
+            display: none;
+            margin-top: 15px;
+            max-height: 320px;
+            overflow-y:  auto;
+            padding: 5px;
+        }}
+        
+        .history-dropdown.active {{
+            display: block;
+            animation: slideDown 0.3s ease-out;
+        }}
+        
+        @keyframes slideDown {{
+            from {{ opacity: 0; transform: translateY(-10px); }}
+            to {{ opacity: 1; transform:  translateY(0); }}
+        }}
+        
+        .history-booking-item {{
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px 16px;
+            background: rgba(255, 255, 255, 0.02);
+            border:  1px solid var(--border-color);
+            border-radius: 12px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+            text-decoration: none;
+        }}
+        
+        .history-booking-item:hover {{
+            background: rgba(139, 92, 246, 0.1);
+            border-color: rgba(139, 92, 246, 0.3);
+            transform: translateX(5px);
+        }}
+        
+        .booking-item-left {{
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }}
+        
+        .booking-ref {{
+            font-size: 15px;
+            font-weight:  700;
+            color: var(--accent-purple);
+        }}
+        
+        .booking-info {{
+            font-size: 12px;
+            color: var(--text-secondary);
+        }}
+        
+        .booking-stats {{
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }}
+        
+        .booking-stat {{
+            text-align: center;
+        }}
+        
+        .booking-stat-value {{
+            font-size: 16px;
+            font-weight:  800;
+            color: var(--accent-green);
+        }}
+        
+        .booking-stat-label {{
+            font-size: 10px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+        }}
+        
+        .booking-arrow {{
+            color: var(--text-secondary);
+            font-size: 14px;
+            transition: var(--transition-smooth);
+        }}
+        
+        .history-booking-item: hover .booking-arrow {{
+            color: var(--accent-purple);
+            transform: translateX(5px);
+        }}
+        
+        .empty-history {{
+            text-align: center;
+            padding: 30px;
+            color: var(--text-secondary);
+        }}
+        
+        .empty-history i {{
+            font-size: 40px;
+            opacity: 0.3;
+            margin-bottom: 10px;
         }}
     </style>
 </head>
@@ -3584,6 +4218,53 @@ ACCESSORIES_SEARCH_TEMPLATE = f"""
                 {{% endif %}}
             {{% endwith %}}
             
+            <!-- History Section - NEW -->
+            <div class="history-section">
+                <div class="history-toggle" onclick="toggleHistory()">
+                    <div class="history-toggle-left">
+                        <div class="history-toggle-icon">
+                            <i class="fas fa-history"></i>
+                        </div>
+                        <div>
+                            <div class="history-toggle-text">Challan History</div>
+                            <div class="history-toggle-sub">View all saved bookings</div>
+                        </div>
+                    </div>
+                    <div class="history-badge">{{{{ history_count }}}}</div>
+                </div>
+                
+                <div class="history-dropdown" id="historyDropdown">
+                    {{% if history_bookings %}}
+                        {{% for booking in history_bookings %}}
+                        <a href="/admin/accessories/input_direct?ref={{{{ booking.ref }}}}" class="history-booking-item">
+                            <div class="booking-item-left">
+                                <div class="booking-ref">{{{{ booking.ref }}}}</div>
+                                <div class="booking-info">{{{{ booking.buyer }}}} • {{{{ booking.style }}}}</div>
+                            </div>
+                            <div class="booking-stats">
+                                <div class="booking-stat">
+                                    <div class="booking-stat-value">{{{{ booking.challan_count }}}}</div>
+                                    <div class="booking-stat-label">Challans</div>
+                                </div>
+                                <div class="booking-stat">
+                                    <div class="booking-stat-value">{{{{ booking.total_qty }}}}</div>
+                                    <div class="booking-stat-label">Total Qty</div>
+                                </div>
+                                <div class="booking-arrow">
+                                    <i class="fas fa-chevron-right"></i>
+                                </div>
+                            </div>
+                        </a>
+                        {{% endfor %}}
+                    {{% else %}}
+                        <div class="empty-history">
+                            <i class="fas fa-folder-open"></i>
+                            <div>No saved bookings yet</div>
+                        </div>
+                    {{% endif %}}
+                </div>
+            </div>
+            
             <div class="nav-links">
                 <a href="/"><i class="fas fa-arrow-left"></i> Back to Dashboard</a>
                 <a href="/logout" class="logout">Sign Out <i class="fas fa-sign-out-alt"></i></a>
@@ -3594,9 +4275,20 @@ ACCESSORIES_SEARCH_TEMPLATE = f"""
             © 2025 Mehedi Hasan
         </div>
     </div>
+    
+    <script>
+        function toggleHistory() {{
+            const dropdown = document.getElementById('historyDropdown');
+            dropdown.classList.toggle('active');
+        }}
+    </script>
 </body>
 </html>
 """
+
+# ==============================================================================
+# ACCESSORIES INPUT TEMPLATE (UPDATED with 24hr refresh indicator)
+# ==============================================================================
 
 ACCESSORIES_INPUT_TEMPLATE = f"""
 <!doctype html>
@@ -3612,15 +4304,15 @@ ACCESSORIES_INPUT_TEMPLATE = f"""
             align-items: center;
             gap: 10px;
             background: rgba(255, 122, 0, 0.1);
-            border: 1px solid rgba(255, 122, 0, 0.2);
+            border:  1px solid rgba(255, 122, 0, 0.2);
             padding: 10px 20px;
-            border-radius: 12px;
+            border-radius:  12px;
             margin-top: 10px;
         }}
         
         .ref-badge .ref-no {{
             font-size: 18px;
-            font-weight: 800;
+            font-weight:  800;
             color: var(--accent-orange);
         }}
         
@@ -3632,10 +4324,11 @@ ACCESSORIES_INPUT_TEMPLATE = f"""
         
         .history-scroll {{
             max-height: 500px;
-            overflow-y: auto;
+            overflow-y:  auto;
             padding-right: 5px;
         }}
-                .challan-row {{
+        
+        .challan-row {{
             display: grid;
             grid-template-columns: 60px 1fr 80px 60px 80px;
             gap: 10px;
@@ -3665,7 +4358,7 @@ ACCESSORIES_INPUT_TEMPLATE = f"""
         
         .qty-value {{
             font-size: 18px;
-            font-weight: 800;
+            font-weight:  800;
             color: var(--accent-green);
         }}
         
@@ -3692,15 +4385,15 @@ ACCESSORIES_INPUT_TEMPLATE = f"""
         
         .grid-2-cols {{
             display: grid;
-            grid-template-columns: 1fr 1fr;
+            grid-template-columns:  1fr 1fr;
             gap: 20px;
         }}
         
         .count-badge {{
             background: var(--accent-purple);
             color: white;
-            padding: 4px 12px;
-            border-radius: 20px;
+            padding:  4px 12px;
+            border-radius:  20px;
             font-size: 12px;
             font-weight: 700;
             margin-left: 10px;
@@ -3717,26 +4410,24 @@ ACCESSORIES_INPUT_TEMPLATE = f"""
             color: white !important;
             padding: 10px;
         }}
-
-        .history-btn {
-            background: linear-gradient(135deg, #3B82F6 0%, #60A5FA 100%) !important;
-            width: auto;
-            padding: 14px 20px;
-            border-radius: 12px;
-            color: white;
-            font-weight: 700;
-            border: none;
-            cursor: pointer;
-            transition: var(--transition-smooth);
-            text-decoration: none;
+        
+        /* Refresh Indicator */
+        .refresh-indicator {{
             display: inline-flex;
             align-items: center;
-            gap: 8px;
-        }
-        .history-btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 10px 30px rgba(59, 130, 246, 0.4);
-        }
+            gap: 6px;
+            font-size: 11px;
+            color: var(--text-secondary);
+            background: rgba(16, 185, 129, 0.1);
+            padding: 4px 10px;
+            border-radius:  20px;
+            margin-left: 10px;
+        }}
+        
+        .refresh-indicator i {{
+            color: var(--accent-green);
+            font-size: 10px;
+        }}
     </style>
 </head>
 <body>
@@ -3776,18 +4467,16 @@ ACCESSORIES_INPUT_TEMPLATE = f"""
                 <div class="ref-badge">
                     <span class="ref-no">{{{{ ref }}}}</span>
                     <span class="ref-info">{{{{ buyer }}}} • {{{{ style }}}}</span>
+                    {{% if colors_refreshed %}}
+                    <span class="refresh-indicator"><i class="fas fa-sync-alt"></i> Colors Updated</span>
+                    {{% endif %}}
                 </div>
             </div>
-            <div style="display: flex; gap: 10px;">
-                <a href="/admin/accessories/history" class="history-btn">
-                    <i class="fas fa-history"></i> History
-                </a>
-                <a href="/admin/accessories/print?ref={{{{ ref }}}}" target="_blank">
-                    <button class="print-btn" style="width: auto; padding: 14px 30px;">
-                        <i class="fas fa-print" style="margin-right: 10px;"></i> Print Report
-                    </button>
-                </a>
-            </div>
+            <a href="/admin/accessories/print? ref={{{{ ref }}}}" target="_blank">
+                <button class="print-btn" style="width: auto; padding: 14px 30px;">
+                    <i class="fas fa-print" style="margin-right: 10px;"></i> Print Report
+                </button>
+            </a>
         </div>
 
         <div class="dashboard-grid-2">
@@ -3820,7 +4509,7 @@ ACCESSORIES_INPUT_TEMPLATE = f"""
                     <div class="grid-2-cols">
                         <div class="input-group">
                             <label><i class="fas fa-industry" style="margin-right: 5px;"></i> LINE NO</label>
-                            <input type="text" name="line_no" required placeholder="e.g. L-01">
+                            <input type="text" name="line_no" required placeholder="e.g.L-01">
                         </div>
                         <div class="input-group">
                             <label><i class="fas fa-ruler" style="margin-right: 5px;"></i> SIZE</label>
@@ -3847,7 +4536,7 @@ ACCESSORIES_INPUT_TEMPLATE = f"""
                 <div class="history-scroll">
                     {{% if challans %}}
                         {{% for item in challans|reverse %}}
-                        <div class="challan-row" style="animation: fadeInUp 0.3s ease-out {{{{ loop.index * 0.05 }}}}s backwards;">
+                        <div class="challan-row" style="animation:  fadeInUp 0.3s ease-out {{{{ loop.index * 0.05 }}}}s backwards;">
                             <div class="line-badge">{{{{ item.line }}}}</div>
                             <div style="color: white; font-weight: 500; font-size: 13px;">{{{{ item.color }}}}</div>
                             <div class="qty-value">{{{{ item.qty }}}}</div>
@@ -3908,110 +4597,9 @@ ACCESSORIES_INPUT_TEMPLATE = f"""
 </body>
 </html>
 """
-
-ACCESSORIES_FULL_HISTORY_TEMPLATE = f"""
-<!doctype html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Accessories History - MNM Software</title>
-    {COMMON_STYLES}
-    <style>
-        .history-grid {{
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 20px;
-            margin-top: 30px;
-        }}
-        .history-card {{
-            background: var(--bg-card);
-            border: 1px solid var(--border-color);
-            border-radius: 16px;
-            padding: 20px;
-            cursor: pointer;
-            transition: var(--transition-smooth);
-            position: relative;
-            overflow: hidden;
-        }}
-        .history-card::before {{
-            content: '';
-            position: absolute;
-            top: 0; left: 0; width: 4px; height: 100%;
-            background: var(--gradient-orange);
-            opacity: 0;
-            transition: var(--transition-smooth);
-        }}
-        .history-card:hover {{
-            transform: translateY(-5px);
-            border-color: var(--accent-orange);
-            box-shadow: var(--shadow-card);
-        }}
-        .history-card:hover::before {{ opacity: 1; }}
-        
-        .booking-ref {{ font-size: 18px; font-weight: 800; color: white; margin-bottom: 5px; }}
-        .booking-info {{ font-size: 13px; color: var(--text-secondary); margin-bottom: 15px; }}
-        .meta-row {{ display: flex; justify-content: space-between; font-size: 12px; color: var(--text-secondary); border-top: 1px solid rgba(255,255,255,0.05); padding-top: 10px; }}
-        .meta-item i {{ color: var(--accent-orange); margin-right: 5px; }}
-    </style>
-</head>
-<body>
-    <div class="animated-bg"></div>
-    <div class="sidebar">
-        <div class="brand-logo"><i class="fas fa-boxes"></i> History</div>
-        <div class="nav-menu">
-            <a href="/admin/accessories" class="nav-link"><i class="fas fa-arrow-left"></i> Back to Search</a>
-            <a href="/" class="nav-link"><i class="fas fa-home"></i> Dashboard</a>
-        </div>
-    </div>
-    <div class="main-content">
-        <div class="header-section">
-            <div>
-                <div class="page-title">Booking History</div>
-                <div class="page-subtitle">All saved accessories bookings</div>
-            </div>
-        </div>
-        
-        <div class="input-group" style="max-width: 400px; margin-bottom: 20px;">
-            <input type="text" id="searchInput" placeholder="Search bookings..." onkeyup="filterBookings()">
-        </div>
-
-        <div class="history-grid" id="bookingGrid">
-            {{% for ref, data in bookings.items() %}}
-            <div class="history-card" onclick="window.location.href='/admin/accessories/input_direct?ref={{{{ ref }}}}'">
-                <div class="booking-ref">{{{{ ref }}}}</div>
-                <div class="booking-info">{{{{ data.buyer }}}} • {{{{ data.style }}}}</div>
-                <div class="meta-row">
-                    <div class="meta-item"><i class="fas fa-list"></i> {{{{ data.challans|length }}}} Challans</div>
-                    <div class="meta-item"><i class="fas fa-clock"></i> {{{{ data.updated_at if data.updated_at else 'N/A' }}}}</div>
-                </div>
-            </div>
-            {{% else %}}
-            <div style="grid-column: 1/-1; text-align: center; padding: 50px; color: var(--text-secondary);">
-                <i class="fas fa-inbox" style="font-size: 40px; opacity: 0.3; margin-bottom: 15px;"></i>
-                <br>No history found.
-            </div>
-            {{% endfor %}}
-        </div>
-    </div>
-    <script>
-        function filterBookings() {{
-            let input = document.getElementById('searchInput').value.toUpperCase();
-            let cards = document.getElementsByClassName('history-card');
-            for (let i = 0; i < cards.length; i++) {{
-                let ref = cards[i].getElementsByClassName('booking-ref')[0].innerText;
-                let info = cards[i].getElementsByClassName('booking-info')[0].innerText.toUpperCase();
-                if (ref.indexOf(input) > -1 || info.indexOf(input) > -1) {{
-                    cards[i].style.display = "";
-                }} else {{
-                    cards[i].style.display = "none";
-                }}
-            }}
-        }}
-    </script>
-</body>
-</html>
-"""
+# ==============================================================================
+# ACCESSORIES EDIT TEMPLATE
+# ==============================================================================
 
 ACCESSORIES_EDIT_TEMPLATE = f"""
 <!doctype html>
@@ -4037,11 +4625,11 @@ ACCESSORIES_EDIT_TEMPLATE = f"""
         
         .edit-card {{
             background: var(--gradient-card);
-            border: 1px solid var(--border-color);
+            border:  1px solid var(--border-color);
             border-radius: 24px;
             padding: 45px;
             backdrop-filter: blur(20px);
-            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.5);
+            box-shadow:  0 25px 80px rgba(0, 0, 0, 0.5);
             animation: cardAppear 0.5s ease-out;
         }}
         
@@ -4069,7 +4657,7 @@ ACCESSORIES_EDIT_TEMPLATE = f"""
         }}
         
         .edit-title {{
-            font-size: 24px;
+            font-size:  24px;
             font-weight: 800;
             color: white;
         }}
@@ -4085,7 +4673,7 @@ ACCESSORIES_EDIT_TEMPLATE = f"""
         }}
         
         .cancel-link:hover {{
-            color: var(--accent-orange);
+            color:  var(--accent-orange);
         }}
     </style>
 </head>
@@ -4138,6 +4726,7 @@ ACCESSORIES_EDIT_TEMPLATE = f"""
 </body>
 </html>
 """
+
 # ==============================================================================
 # STORE DASHBOARD TEMPLATE - NEW (ALUMINUM SHOP)
 # ==============================================================================
@@ -4153,7 +4742,7 @@ STORE_DASHBOARD_TEMPLATE = f"""
     <style>
         .store-card {{
             background: var(--gradient-card);
-            border: 1px solid var(--border-color);
+            border:  1px solid var(--border-color);
             border-radius: 20px;
             padding: 30px;
             transition: var(--transition-smooth);
@@ -4162,7 +4751,7 @@ STORE_DASHBOARD_TEMPLATE = f"""
             overflow: hidden;
         }}
         
-        .store-card::before {{
+        .store-card:: before {{
             content: '';
             position: absolute;
             top: 0;
@@ -4171,13 +4760,13 @@ STORE_DASHBOARD_TEMPLATE = f"""
             height: 4px;
             background: var(--gradient-orange);
             opacity: 0;
-            transition: var(--transition-smooth);
+            transition:  var(--transition-smooth);
         }}
         
         .store-card:hover {{
-            transform: translateY(-8px);
+            transform:  translateY(-8px);
             border-color: var(--accent-orange);
-            box-shadow: 0 20px 40px rgba(255, 122, 0, 0.15);
+            box-shadow:  0 20px 40px rgba(255, 122, 0, 0.15);
         }}
         
         .store-card:hover::before {{
@@ -4196,7 +4785,7 @@ STORE_DASHBOARD_TEMPLATE = f"""
             transition: var(--transition-smooth);
         }}
         
-        .store-card:hover .store-card-icon {{
+        .store-card: hover .store-card-icon {{
             transform: scale(1.1) rotate(-5deg);
         }}
         
@@ -4232,7 +4821,7 @@ STORE_DASHBOARD_TEMPLATE = f"""
         
         .store-card-title {{
             font-size: 20px;
-            font-weight: 700;
+            font-weight:  700;
             color: white;
             margin-bottom: 8px;
         }}
@@ -4249,12 +4838,12 @@ STORE_DASHBOARD_TEMPLATE = f"""
             align-items: center;
             justify-content: space-between;
             padding-top: 15px;
-            border-top: 1px solid var(--border-color);
+            border-top:  1px solid var(--border-color);
         }}
         
         .stat-number {{
             font-size: 28px;
-            font-weight: 800;
+            font-weight:  800;
             color: white;
         }}
         
@@ -4269,7 +4858,7 @@ STORE_DASHBOARD_TEMPLATE = f"""
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
             gap: 24px;
-            margin-top: 30px;
+            margin-top:  30px;
         }}
         
         .coming-soon-badge {{
@@ -4279,9 +4868,9 @@ STORE_DASHBOARD_TEMPLATE = f"""
             background: rgba(255, 122, 0, 0.2);
             color: var(--accent-orange);
             padding: 5px 12px;
-            border-radius: 20px;
+            border-radius:  20px;
             font-size: 10px;
-            font-weight: 700;
+            font-weight:  700;
             text-transform: uppercase;
             letter-spacing: 1px;
         }}
@@ -4486,13 +5075,14 @@ STORE_DASHBOARD_TEMPLATE = f"""
                 এই Store মডিউলটি একটি এলুমিনিয়াম দোকানের জন্য ডিজাইন করা হয়েছে। এখানে আপনি প্রোডাক্ট ইনভেন্টরি, 
                 সেলস অর্ডার, কাস্টমার ম্যানেজমেন্ট, ইনভয়েস জেনারেশন, খরচ ট্র্যাকিং এবং বিজনেস রিপোর্ট তৈরি করতে পারবেন।
                 <br><br>
-                <strong style="color: var(--accent-orange);">Coming Soon:</strong> সকল ফিচার শীঘ্রই অ্যাক্টিভ করা হবে।
+                <strong style="color: var(--accent-orange);">Coming Soon: </strong> সকল ফিচার শীঘ্রই অ্যাক্টিভ করা হবে।
             </p>
         </div>
     </div>
 </body>
 </html>
 """
+
 # ==============================================================================
 # REPORT TEMPLATES (ORIGINAL WHITE DESIGN - PRINT FRIENDLY)
 # ==============================================================================
@@ -4513,24 +5103,24 @@ CLOSING_REPORT_PREVIEW_TEMPLATE = """
         .company-name { font-size: 2.2rem; font-weight: 800; color: #2c3e50; text-transform: uppercase; letter-spacing: 1px; line-height: 1; }
         .report-title { font-size: 1.1rem; color: #555; font-weight: 600; text-transform: uppercase; margin-top: 5px; }
         .date-section { font-size: 1.2rem; font-weight: 800; color: #000; margin-top: 5px; }
-        .info-container { margin-bottom: 15px; background: white; padding: 15px; display: flex; justify-content: space-between; align-items: flex-end;}
+        .info-container { margin-bottom: 15px; background:  white; padding: 15px; display: flex; justify-content: space-between; align-items: flex-end;}
         .info-row { display: flex; flex-direction: column; gap: 5px; }
-        .info-item { font-size: 1.2rem; font-weight: 600; color: #444; }
+        .info-item { font-size: 1.2rem; font-weight: 600; color:  #444; }
         .info-label { font-weight: 800; color: #444; width: 90px; display: inline-block; }
         .info-value { font-weight: 800; color: #000; }
         .booking-box { background: #2c3e50; color: white; padding: 10px 20px; border-radius: 5px; text-align: right; box-shadow: 0 4px 10px rgba(44, 62, 80, 0.3); display: flex; flex-direction: column; justify-content: center; min-width: 200px; }
         .booking-label { font-size: 1.1rem; opacity: 0.9; text-transform: uppercase; letter-spacing: 1px; font-weight: 700; }
         .booking-value { font-size: 1.8rem; font-weight: 800; line-height: 1.1; }
         .table-card { background: white; border-radius: 0; margin-bottom: 30px; border: none; }
-        .color-header { background-color: #2c3e50 !important; color: white; padding: 10px 15px; font-size: 1.4rem; font-weight: 800; text-transform: uppercase; border: 1px solid #000;}
-        .table { margin-bottom: 0; width: 100%; border-collapse: collapse; font-size: 1rem; }
-        .table th { background-color: #fff !important; color: #000 !important; text-align: center; border: 1px solid #000; padding: 8px; vertical-align: middle; font-weight: 900; font-size: 1.2rem; }
+        .color-header { background-color: #2c3e50 !important; color: white; padding: 10px 15px; font-size: 1.4rem; font-weight: 800; text-transform: uppercase; border:  1px solid #000;}
+        .table { margin-bottom: 0; width: 100%; border-collapse:  collapse; font-size: 1rem; }
+        .table th { background-color: #fff ! important; color: #000 !important; text-align: center; border: 1px solid #000; padding: 8px; vertical-align: middle; font-weight: 900; font-size: 1.2rem; }
         .table td { text-align: center; vertical-align: middle; border: 1px solid #000; padding: 6px; color: #000; font-weight: 600; font-size: 1.1rem; }
         .col-3pct { background-color: #B9C2DF !important; font-weight: 700; }
         .col-input { background-color: #C4D09D !important; font-weight: 700; }
         .col-balance { font-weight: 700; color: #c0392b; }
         .total-row td { background-color: #fff !important; color: #000 !important; font-weight: 900; font-size: 1.2rem; border-top: 2px solid #000; }
-        .action-bar { margin-bottom: 20px; display: flex; justify-content: flex-end; gap: 15px; position: sticky; top: 0; z-index: 1000; background: #f8f9fa; padding: 10px 0; }
+        .action-bar { margin-bottom: 20px; display: flex; justify-content: flex-end; gap: 15px; position: sticky; top: 0; z-index: 1000; background:  #f8f9fa; padding: 10px 0; }
         .btn-print { background-color: #2c3e50; color: white; border-radius: 50px; padding: 10px 30px; font-weight: 600; border: none; }
         .btn-excel { background-color: #27ae60; color: white; border-radius: 50px; padding: 10px 30px; font-weight: 600; text-decoration: none; display: inline-block; }
         .btn-excel:hover { color: white; background-color: #219150; }
@@ -4542,10 +5132,10 @@ CLOSING_REPORT_PREVIEW_TEMPLATE = """
             .no-print { display: none !important; }
             .action-bar { display: none; }
             .table th, .table td { border: 1px solid #000 !important; }
-            .color-header { background-color: #2c3e50 !important; -webkit-print-color-adjust: exact; color: white !important;}
+            .color-header { background-color: #2c3e50 !important; -webkit-print-color-adjust:  exact; color: white ! important;}
             .col-3pct { background-color: #B9C2DF !important; -webkit-print-color-adjust: exact; }
             .col-input { background-color: #C4D09D !important; -webkit-print-color-adjust: exact; }
-            .booking-box { background-color: #2c3e50 !important; -webkit-print-color-adjust: exact; color: white !important; border: 1px solid #000;}
+            .booking-box { background-color: #2c3e50 !important; -webkit-print-color-adjust: exact; color: white !important; border:  1px solid #000;}
             .total-row td { font-weight: 900 !important; color: #000 !important; }
         }
     </style>
@@ -4555,12 +5145,12 @@ CLOSING_REPORT_PREVIEW_TEMPLATE = """
         <div class="action-bar no-print">
             <a href="/" class="btn btn-outline-secondary rounded-pill px-4">Back to Dashboard</a>
             <button onclick="window.print()" class="btn btn-print"><i class="fas fa-print"></i> Print Report</button>
-            <a href="/download-closing-excel?ref_no={{ ref_no }}" class="btn btn-excel"><i class="fas fa-file-excel"></i> Download Excel</a>
+            <a href="/download-closing-excel? ref_no={{ ref_no }}" class="btn btn-excel"><i class="fas fa-file-excel"></i> Download Excel</a>
         </div>
         <div class="company-header">
             <div class="company-name">COTTON CLOTHING BD LTD</div>
             <div class="report-title">CLOSING REPORT [ INPUT SECTION ]</div>
-            <div class="date-section">Date: <span id="date"></span></div>
+            <div class="date-section">Date:  <span id="date"></span></div>
         </div>
         {% if report_data %}
         <div class="info-container">
@@ -4575,7 +5165,7 @@ CLOSING_REPORT_PREVIEW_TEMPLATE = """
         </div>
         {% for block in report_data %}
         <div class="table-card">
-            <div class="color-header">COLOR: {{ block.color }}</div>
+            <div class="color-header">COLOR:  {{ block.color }}</div>
             <table class="table">
                 <thead>
                     <tr>
@@ -4655,23 +5245,27 @@ CLOSING_REPORT_PREVIEW_TEMPLATE = """
 </body>
 </html>
 """
+# ==============================================================================
+# ACCESSORIES REPORT TEMPLATE (PRINT FRIENDLY)
+# ==============================================================================
+
 ACCESSORIES_REPORT_TEMPLATE = """
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <title>Accessories Delivery Report</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2? family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        body { font-family: 'Poppins', sans-serif; background: #fff; padding: 20px; color: #000; }
-        .container { max-width: 1000px; margin: 0 auto; border: 2px solid #000; padding: 20px; min-height: 90vh; position: relative; }
+        body { font-family: 'Poppins', sans-serif; background:  #fff; padding: 20px; color: #000; }
+        .container { max-width: 1000px; margin: 0 auto; border:  2px solid #000; padding: 20px; min-height: 90vh; position: relative; }
         .header { text-align: center; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 20px; position: relative; }
         .company-name { font-size: 28px; font-weight: 800; text-transform: uppercase; color: #2c3e50; line-height: 1; }
-        .company-address { font-size: 12px; font-weight: 600; color: #444; margin-top: 5px; margin-bottom: 10px; }
-        .report-title { background: #2c3e50; color: white; padding: 5px 25px; display: inline-block; font-weight: bold; font-size: 18px; border-radius: 4px; }
+        .company-address { font-size: 12px; font-weight: 600; color:  #444; margin-top: 5px; margin-bottom: 10px; }
+        .report-title { background: #2c3e50; color:  white; padding: 5px 25px; display: inline-block; font-weight: bold; font-size: 18px; border-radius: 4px; }
         .info-grid { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; }
-        .info-left { flex: 2; border: 1px dashed #555; padding: 15px; margin-right: 15px; }
+        .info-left { flex: 2; border:  1px dashed #555; padding: 15px; margin-right: 15px; }
         .info-row { display: flex; margin-bottom: 5px; font-size: 14px; align-items: center; }
         .info-label { font-weight: 800; width: 80px; color: #444; }
         .info-val { font-weight: 700; font-size: 15px; color: #000; }
@@ -4679,25 +5273,25 @@ ACCESSORIES_REPORT_TEMPLATE = """
         .info-right { flex: 1; display: flex; flex-direction: column; justify-content: space-between; height: 100%; border-left: 1px solid #ddd; padding-left: 15px; }
         .right-item { font-size: 14px; margin-bottom: 8px; font-weight: 700; }
         .right-label { color: #555; }
-        .summary-container { margin-bottom: 20px; border: 2px solid #000; padding: 10px; background: #f9f9f9; }
+        .summary-container { margin-bottom: 20px; border:  2px solid #000; padding: 10px; background: #f9f9f9; }
         .summary-header { font-weight: 900; text-align: center; border-bottom: 1px solid #000; margin-bottom: 5px; text-transform: uppercase; }
         .summary-table { width: 100%; font-size: 13px; font-weight: 700; }
         .summary-table td { padding: 2px 5px; }
         .main-table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 14px; }
-        .main-table th { background: #2c3e50 !important; color: white !important; padding: 10px; border: 1px solid #000; font-size: 14px; text-transform: uppercase; -webkit-print-color-adjust: exact; }
-        .main-table td { border: 1px solid #000; padding: 6px; text-align: center; vertical-align: middle; color: #000; font-weight: 600; }
-        .line-card { display: inline-block; padding: 4px 10px; border: 2px solid #000; font-size: 16px; font-weight: 900; border-radius: 4px; box-shadow: 2px 2px 0 #000; background: #fff; }
+        .main-table th { background: #2c3e50 !important; color: white !important; padding: 10px; border: 1px solid #000; font-size: 14px; text-transform: uppercase; -webkit-print-color-adjust:  exact; }
+        .main-table td { border: 1px solid #000; padding: 6px; text-align: center; vertical-align: middle; color: #000; font-weight:  600; }
+        .line-card { display: inline-block; padding: 4px 10px; border:  2px solid #000; font-size: 16px; font-weight: 900; border-radius: 4px; box-shadow: 2px 2px 0 #000; background: #fff; }
         .line-text-bold { font-size: 14px; font-weight: 800; opacity: 0.7; }
         .status-cell { font-size: 20px; color: green; font-weight: 900; }
         .qty-cell { font-size: 16px; font-weight: 800; }
-        .action-btn { color: white; padding: 4px 8px; border-radius: 4px; text-decoration: none; font-size: 12px; margin: 0 2px; display: inline-block; }
+        .action-btn { color: white; padding: 4px 8px; border-radius: 4px; text-decoration: none; font-size: 12px; margin:  0 2px; display: inline-block; }
         .btn-edit-row { background-color: #f39c12; }
         .btn-del-row { background-color: #e74c3c; }
         .footer-total { margin-top: 20px; display: flex; justify-content: flex-end; }
-        .total-box { border: 3px solid #000; padding: 8px 30px; font-size: 20px; font-weight: 900; background: #ddd; -webkit-print-color-adjust: exact; }
+        .total-box { border: 3px solid #000; padding: 8px 30px; font-size: 20px; font-weight: 900; background: #ddd; -webkit-print-color-adjust:  exact; }
         .no-print { margin-bottom: 20px; text-align: right; }
-        .btn { padding: 8px 20px; background: #2c3e50; color: white; border: none; cursor: pointer; text-decoration: none; display: inline-block; border-radius: 4px; font-size: 14px; }
-        .btn-add { background: #27ae60; }
+        .btn { padding: 8px 20px; background: #2c3e50; color: white; border:  none; cursor: pointer; text-decoration: none; display: inline-block; border-radius: 4px; font-size: 14px; }
+        .btn-add { background:  #27ae60; }
         .generator-sig { text-align: right; font-size: 10px; margin-top: 5px; color: #555; }
         @media print {
             .no-print { display: none; }
@@ -4709,7 +5303,7 @@ ACCESSORIES_REPORT_TEMPLATE = """
 </head>
 <body>
 <div class="no-print">
-    <a href="/admin/accessories/input_direct?ref={{ ref }}" class="btn">Back</a>
+    <a href="/admin/accessories/input_direct? ref={{ ref }}" class="btn">Back</a>
     <button onclick="window.print()" class="btn">🖨️ Print</button>
 </div>
 <div class="container">
@@ -4720,15 +5314,15 @@ ACCESSORIES_REPORT_TEMPLATE = """
     </div>
     <div class="info-grid">
         <div class="info-left">
-            <div class="info-row"><span class="info-label">Booking:</span> <span class="booking-border">{{ ref }}</span></div>
+            <div class="info-row"><span class="info-label">Booking: </span> <span class="booking-border">{{ ref }}</span></div>
             <div class="info-row"><span class="info-label">Buyer:</span> <span class="info-val">{{ buyer }}</span></div>
             <div class="info-row"><span class="info-label">Style:</span> <span class="info-val">{{ style }}</span></div>
             <div class="info-row"><span class="info-label">Date:</span> <span class="info-val">{{ today }}</span></div>
         </div>
         <div class="info-right">
             <div class="right-item"><span class="right-label">Store:</span> Clothing General Store</div>
-            <div class="right-item"><span class="right-label">Send:</span> Cutting</div>
-            <div class="right-item"><span class="right-label">Item:</span> <span style="border: 1px solid #000; padding: 0 5px;">{{ item_type if item_type else 'Top/Btm' }}</span></div>
+            <div class="right-item"><span class="right-label">Send: </span> Cutting</div>
+            <div class="right-item"><span class="right-label">Item:</span> <span style="border:  1px solid #000; padding: 0 5px;">{{ item_type if item_type else 'Top/Btm' }}</span></div>
         </div>
     </div>
     <div class="summary-container">
@@ -4776,11 +5370,11 @@ ACCESSORIES_REPORT_TEMPLATE = """
                     <td class="qty-cell">{{ item.qty }}</td>
                     {% if session.role == 'admin' %}
                     <td class="action-col">
-                        <a href="/admin/accessories/edit?ref={{ ref }}&index={{ loop.index0 }}" class="action-btn btn-edit-row"><i class="fas fa-pencil-alt"></i></a>
-                        <form action="/admin/accessories/delete" method="POST" style="display:inline;" onsubmit="return confirm('Delete this challan?');">
+                        <a href="/admin/accessories/edit? ref={{ ref }}&index={{ loop.index0 }}" class="action-btn btn-edit-row"><i class="fas fa-pencil-alt"></i></a>
+                        <form action="/admin/accessories/delete" method="POST" style="display: inline;" onsubmit="return confirm('Delete this challan?');">
                             <input type="hidden" name="ref" value="{{ ref }}">
                             <input type="hidden" name="index" value="{{ loop.index0 }}">
-                            <button type="submit" class="action-btn btn-del-row" style="border:none; cursor:pointer;"><i class="fas fa-trash"></i></button>
+                            <button type="submit" class="action-btn btn-del-row" style="border: none; cursor:pointer;"><i class="fas fa-trash"></i></button>
                         </form>
                     </td>
                     {% endif %}
@@ -4794,15 +5388,19 @@ ACCESSORIES_REPORT_TEMPLATE = """
         </div>
     </div>
     <div class="generator-sig">Report Generated By Mehedi Hasan</div>
-    <div style="margin-top: 60px; display: flex; justify-content: space-between; text-align: center; font-weight: bold; padding: 0 50px;">
+    <div style="margin-top: 60px; display: flex; justify-content: space-between; text-align: center; font-weight: bold; padding:  0 50px;">
         <div style="border-top: 2px solid #000; width: 180px; padding-top: 5px;">Received By</div>
         <div style="border-top: 2px solid #000; width: 180px; padding-top: 5px;">Input Incharge</div>
-        <div style="border-top: 2px solid #000; width: 180px; padding-top: 5px;">Store</div>
+        <div style="border-top:  2px solid #000; width: 180px; padding-top: 5px;">Store</div>
     </div>
 </div>
 </body>
 </html>
 """
+
+# ==============================================================================
+# PO REPORT TEMPLATE (PRINT FRIENDLY)
+# ==============================================================================
 
 PO_REPORT_TEMPLATE = """
 <!DOCTYPE html>
@@ -4821,7 +5419,7 @@ PO_REPORT_TEMPLATE = """
         .report-title { font-size: 1.1rem; color: #555; font-weight: 600; text-transform: uppercase; margin-top: 5px; }
         .date-section { font-size: 1.2rem; font-weight: 800; color: #000; margin-top: 5px; }
         .info-container { display: flex; justify-content: space-between; margin-bottom: 15px; gap: 15px; }
-        .info-box { background: white; border: 1px solid #ddd; border-left: 5px solid #2c3e50; padding: 10px 15px; border-radius: 5px; flex: 2; box-shadow: 0 2px 5px rgba(0,0,0,0.05); display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .info-box { background:  white; border: 1px solid #ddd; border-left: 5px solid #2c3e50; padding: 10px 15px; border-radius: 5px; flex: 2; box-shadow: 0 2px 5px rgba(0,0,0,0.05); display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
         .total-box { background: #2c3e50; color: white; padding: 10px 15px; border-radius: 5px; width: 240px; text-align: right; display: flex; flex-direction: column; justify-content: center; box-shadow: 0 4px 10px rgba(44, 62, 80, 0.3); }
         .info-item { margin-bottom: 6px; font-size: 1.3rem; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .info-label { font-weight: 800; color: #444; width: 90px; display: inline-block; }
@@ -4832,20 +5430,20 @@ PO_REPORT_TEMPLATE = """
         .color-header { background-color: #e9ecef; color: #2c3e50; padding: 10px 12px; font-size: 1.5rem; font-weight: 900; border-bottom: 1px solid #dee2e6; text-transform: uppercase; }
         .table { margin-bottom: 0; width: 100%; border-collapse: collapse; }
         .table th { background-color: #2c3e50; color: white; font-weight: 900; font-size: 1.2rem; text-align: center; border: 1px solid #34495e; padding: 8px 4px; vertical-align: middle; }
-        .table th:empty { background-color: white !important; border: none; }
-        .table td { text-align: center; vertical-align: middle; border: 1px solid #dee2e6; padding: 6px 3px; color: #000; font-weight: 800; font-size: 1.15rem; }
+        .table th: empty { background-color: white ! important; border: none; }
+        .table td { text-align: center; vertical-align: middle; border: 1px solid #dee2e6; padding: 6px 3px; color: #000; font-weight:  800; font-size: 1.15rem; }
         .table-striped tbody tr:nth-of-type(odd) { background-color: #f8f9fa; }
-        .order-col { font-weight: 900 !important; text-align: center !important; background-color: #fdfdfd; white-space: nowrap; width: 1%; }
+        .order-col { font-weight: 900 !important; text-align: center ! important; background-color: #fdfdfd; white-space: nowrap; width: 1%; }
         .total-col { font-weight: 900; background-color: #e8f6f3 !important; color: #16a085; border-left: 2px solid #1abc9c !important; }
-        .total-col-header { background-color: #e8f6f3 !important; color: #000 !important; font-weight: 900 !important; border: 1px solid #34495e !important; }
-        .table-striped tbody tr.summary-row, .table-striped tbody tr.summary-row td { background-color: #d1ecff !important; --bs-table-accent-bg: #d1ecff !important; color: #000 !important; font-weight: 900 !important; border-top: 2px solid #aaa !important; font-size: 1.2rem !important; }
-        .summary-label { text-align: right !important; padding-right: 15px !important; color: #000 !important; }
+        .total-col-header { background-color: #e8f6f3 !important; color: #000 !important; font-weight: 900 !important; border:  1px solid #34495e !important; }
+        .table-striped tbody tr.summary-row, .table-striped tbody tr.summary-row td { background-color: #d1ecff !important; --bs-table-accent-bg: #d1ecff !important; color: #000 !important; font-weight: 900 !important; border-top: 2px solid #aaa !important; font-size: 1.2rem ! important; }
+        .summary-label { text-align: right ! important; padding-right: 15px ! important; color: #000 !important; }
         .action-bar { margin-bottom: 20px; display: flex; justify-content: flex-end; gap: 10px; }
         .btn-print { background-color: #e74c3c; color: white; border-radius: 50px; padding: 8px 30px; font-weight: 600; border: none; }
         .footer-credit { text-align: center; margin-top: 30px; margin-bottom: 20px; font-size: 0.8rem; color: #2c3e50; padding-top: 10px; border-top: 1px solid #ddd; }
         @media print {
             @page { margin: 5mm; size: portrait; }
-            body { background-color: white; padding: 0; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; color-adjust: exact !important; }
+            body { background-color: white; padding: 0; -webkit-print-color-adjust:  exact ! important; print-color-adjust: exact !important; color-adjust: exact !important; }
             .container { max-width: 100% !important; width: 100% !important; padding: 0; margin: 0; }
             .no-print { display: none !important; }
             .company-header { border-bottom: 2px solid #000; margin-bottom: 5px; padding-bottom: 5px; }
@@ -4853,14 +5451,14 @@ PO_REPORT_TEMPLATE = """
             .info-container { margin-bottom: 10px; }
             .info-box { border: 1px solid #000 !important; border-left: 5px solid #000 !important; padding: 5px 10px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
             .total-box { border: 2px solid #000 !important; background: white !important; color: black !important; padding: 5px 10px; }
-            .info-item { font-size: 13pt !important; font-weight: 800 !important; }
-            .table th, .table td { border: 1px solid #000 !important; padding: 2px !important; font-size: 13pt !important; font-weight: 800 !important; }
-            .table th:empty { background-color: white !important; border: none !important; }
-            .table-striped tbody tr.summary-row td { background-color: #d1ecff !important; box-shadow: inset 0 0 0 9999px #d1ecff !important; color: #000 !important; font-weight: 900 !important; }
-            .color-header { background-color: #f1f1f1 !important; border: 1px solid #000 !important; font-size: 1.4rem !important; font-weight: 900; padding: 5px; margin-top: 10px; box-shadow: inset 0 0 0 9999px #f1f1f1 !important; }
-            .total-col-header { background-color: #e8f6f3 !important; box-shadow: inset 0 0 0 9999px #e8f6f3 !important; color: #000 !important; }
-            .table-card { border: none; margin-bottom: 10px; break-inside: avoid; }
-            .footer-credit { display: block !important; color: black; border-top: 1px solid #000; margin-top: 10px; font-size: 8pt !important; }
+            .info-item { font-size: 13pt ! important; font-weight: 800 !important; }
+            .table th, .table td { border: 1px solid #000 !important; padding: 2px ! important; font-size: 13pt !important; font-weight: 800 !important; }
+            .table th: empty { background-color: white ! important; border: none !important; }
+            .table-striped tbody tr.summary-row td { background-color: #d1ecff !important; box-shadow: inset 0 0 0 9999px #d1ecff ! important; color: #000 !important; font-weight: 900 !important; }
+            .color-header { background-color: #f1f1f1 !important; border:  1px solid #000 ! important; font-size: 1.4rem !important; font-weight:  900; padding: 5px; margin-top: 10px; box-shadow: inset 0 0 0 9999px #f1f1f1 !important; }
+            .total-col-header { background-color: #e8f6f3 !important; box-shadow: inset 0 0 0 9999px #e8f6f3 ! important; color: #000 ! important; }
+            .table-card { border:  none; margin-bottom: 10px; break-inside: avoid; }
+            .footer-credit { display: block ! important; color: black; border-top: 1px solid #000; margin-top: 10px; font-size: 8pt ! important; }
         }
     </style>
 </head>
@@ -4883,13 +5481,13 @@ PO_REPORT_TEMPLATE = """
                 <div class="info-box">
                     <div>
                         <div class="info-item"><span class="info-label">Buyer:</span> <span class="info-value">{{ meta.buyer }}</span></div>
-                        <div class="info-item"><span class="info-label">Booking:</span> <span class="info-value">{{ meta.booking }}</span></div>
+                        <div class="info-item"><span class="info-label">Booking: </span> <span class="info-value">{{ meta.booking }}</span></div>
                         <div class="info-item"><span class="info-label">Style:</span> <span class="info-value">{{ meta.style }}</span></div>
                     </div>
                     <div>
                         <div class="info-item"><span class="info-label">Season:</span> <span class="info-value">{{ meta.season }}</span></div>
                         <div class="info-item"><span class="info-label">Dept:</span> <span class="info-value">{{ meta.dept }}</span></div>
-                        <div class="info-item"><span class="info-label">Item:</span> <span class="info-value">{{ meta.item }}</span></div>
+                        <div class="info-item"><span class="info-label">Item: </span> <span class="info-value">{{ meta.item }}</span></div>
                     </div>
                 </div>
                 <div class="total-box">
@@ -4900,7 +5498,7 @@ PO_REPORT_TEMPLATE = """
             </div>
             {% for item in tables %}
                 <div class="table-card">
-                    <div class="color-header">COLOR: {{ item.color }}</div>
+                    <div class="color-header">COLOR:  {{ item.color }}</div>
                     <div class="table-responsive">{{ item.table | safe }}</div>
                 </div>
             {% endfor %}
@@ -4944,7 +5542,7 @@ def login():
 
     users_db = load_users()
 
-    if username in users_db and users_db[username]['password'] == password:
+    if username in users_db and users_db[username]['password'] == password: 
         session.permanent = True
         session['logged_in'] = True
         session['user'] = username
@@ -4977,7 +5575,8 @@ def logout():
             if username in users_db:
                 users_db[username]['last_duration'] = dur_str
                 save_users(users_db)
-        except: pass
+        except:
+            pass
 
     session.clear()
     flash('Session terminated.')
@@ -4985,13 +5584,13 @@ def logout():
 
 @app.route('/admin/get-users', methods=['GET'])
 def get_users():
-    if not session.get('logged_in') or session.get('role') != 'admin': 
+    if not session.get('logged_in') or session.get('role') != 'admin':
         return jsonify({})
     return jsonify(load_users())
 
 @app.route('/admin/save-user', methods=['POST'])
 def save_user():
-    if not session.get('logged_in') or session.get('role') != 'admin': 
+    if not session.get('logged_in') or session.get('role') != 'admin':
         return jsonify({'status': 'error', 'message': 'Unauthorized'})
     
     data = request.json
@@ -5000,24 +5599,24 @@ def save_user():
     permissions = data.get('permissions', [])
     action = data.get('action_type')
     
-    if not username or not password: 
+    if not username or not password:
         return jsonify({'status': 'error', 'message': 'Invalid Data'})
 
     users_db = load_users()
     
     if action == 'create':
-        if username in users_db: 
+        if username in users_db:
             return jsonify({'status': 'error', 'message': 'User already exists!'})
         users_db[username] = {
-            "password": password, 
-            "role": "user", 
+            "password": password,
+            "role": "user",
             "permissions": permissions,
-            "created_at": get_bd_date_str(), 
-            "last_login": "Never", 
-            "last_duration": "N/A"
+            "created_at": get_bd_date_str(),
+            "last_login":  "Never",
+            "last_duration":  "N/A"
         }
-    elif action == 'update':
-        if username not in users_db: 
+    elif action == 'update': 
+        if username not in users_db:
             return jsonify({'status': 'error', 'message': 'User not found!'})
         users_db[username]['password'] = password
         users_db[username]['permissions'] = permissions
@@ -5027,13 +5626,13 @@ def save_user():
 
 @app.route('/admin/delete-user', methods=['POST'])
 def delete_user():
-    if not session.get('logged_in') or session.get('role') != 'admin': 
+    if not session.get('logged_in') or session.get('role') != 'admin':
         return jsonify({'status': 'error', 'message': 'Unauthorized'})
     
     username = request.json.get('username')
     users_db = load_users()
     
-    if username == 'Admin': 
+    if username == 'Admin':
         return jsonify({'status': 'error', 'message': 'Cannot delete Main Admin!'})
 
     if username in users_db:
@@ -5051,26 +5650,29 @@ def store_dashboard():
 
 @app.route('/generate-report', methods=['POST'])
 def generate_report():
-    if not session.get('logged_in'): return redirect(url_for('index'))
+    if not session.get('logged_in'):
+        return redirect(url_for('index'))
     
     internal_ref_no = request.form['ref_no']
-    if not internal_ref_no: return redirect(url_for('index'))
+    if not internal_ref_no: 
+        return redirect(url_for('index'))
 
     try:
         report_data = fetch_closing_report_data(internal_ref_no)
-        if not report_data:
-            flash(f"Booking Not Found: {internal_ref_no}")
+        if not report_data: 
+            flash(f"Booking Not Found:  {internal_ref_no}")
             return redirect(url_for('index'))
         
         update_stats(internal_ref_no, session.get('user', 'Unknown'))
         return render_template_string(CLOSING_REPORT_PREVIEW_TEMPLATE, report_data=report_data, ref_no=internal_ref_no)
-    except Exception as e:
+    except Exception as e: 
         flash(f"System Error: {str(e)}")
         return redirect(url_for('index'))
 
 @app.route('/download-closing-excel', methods=['GET'])
 def download_closing_excel():
-    if not session.get('logged_in'): return redirect(url_for('index'))
+    if not session.get('logged_in'):
+        return redirect(url_for('index'))
     
     internal_ref_no = request.args.get('ref_no')
     try:
@@ -5079,9 +5681,9 @@ def download_closing_excel():
             excel_file = create_formatted_excel_report(report_data, internal_ref_no)
             update_stats(internal_ref_no, session.get('user', 'Unknown'))
             return make_response(send_file(
-                excel_file, 
-                as_attachment=True, 
-                download_name=f"Report-{internal_ref_no.replace('/', '_')}.xlsx", 
+                excel_file,
+                as_attachment=True,
+                download_name=f"Report-{internal_ref_no.replace('/', '_')}.xlsx",
                 mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
             ))
         else:
@@ -5091,100 +5693,170 @@ def download_closing_excel():
         flash("Failed to generate Excel.")
         return redirect(url_for('index'))
 
+# ==============================================================================
+# ACCESSORIES ROUTES - UPDATED WITH HISTORY & 24HR REFRESH
+# ==============================================================================
+
 @app.route('/admin/accessories', methods=['GET'])
 def accessories_search_page():
-    if not session.get('logged_in'): return redirect(url_for('index'))
+    if not session.get('logged_in'):
+        return redirect(url_for('index'))
     if 'accessories' not in session.get('permissions', []):
         flash("Access Denied")
         return redirect(url_for('index'))
-    return render_template_string(ACCESSORIES_SEARCH_TEMPLATE)
+    
+    # Get all saved bookings for history
+    history_bookings = get_all_accessories_bookings()
+    history_count = len(history_bookings)
+    
+    return render_template_string(
+        ACCESSORIES_SEARCH_TEMPLATE,
+        history_bookings=history_bookings,
+        history_count=history_count
+    )
 
 @app.route('/admin/accessories/input', methods=['POST'])
 def accessories_input_page():
-    if not session.get('logged_in'): return redirect(url_for('index'))
+    if not session.get('logged_in'):
+        return redirect(url_for('index'))
     
     ref_no = request.form.get('ref_no') or request.args.get('ref')
-    if ref_no: ref_no = ref_no.strip().upper()
+    if ref_no:
+        ref_no = ref_no.strip().upper()
     
-    if not ref_no: return redirect(url_for('accessories_search_page'))
+    if not ref_no: 
+        return redirect(url_for('accessories_search_page'))
 
     db_acc = load_accessories_db()
+    colors_refreshed = False
 
-    should_fetch = False
-    
     if ref_no in db_acc:
-        # Check if 24 hours passed since last API fetch/update
-        last_update_str = db_acc[ref_no].get('updated_at', '')
-        if last_update_str:
-            try:
-                last_update = datetime.strptime(last_update_str, '%I:%M %p, %d %b %Y')
-                if (get_bd_time() - last_update).total_seconds() > 86400: # 24 hours
-                    should_fetch = True
-            except:
-                should_fetch = True
-        else:
-             should_fetch = True
+        # Check and refresh colors if 24 hours have passed
+        refresh_result = check_and_refresh_colors(ref_no, db_acc)
+        if refresh_result:
+            db_acc = refresh_result
+            colors_refreshed = True
+        
+        data = db_acc[ref_no]
+        colors = data['colors']
+        style = data['style']
+        buyer = data['buyer']
+        challans = data['challans']
     else:
-        should_fetch = True
-
-    if should_fetch:
         try:
             api_data = fetch_closing_report_data(ref_no)
-            if api_data:
-                colors = sorted(list(set([item['color'] for item in api_data])))
-                style = api_data[0].get('style', 'N/A')
-                buyer = api_data[0].get('buyer', 'N/A')
-                
-                # Merge or Initialize
-                if ref_no not in db_acc:
-                    db_acc[ref_no] = {
-                        "style": style, "buyer": buyer, "colors": colors, 
-                        "item_type": "", "challans": []
-                    }
-                else:
-                    # Just update colors and metadata, keep challans
-                    current_colors = set(db_acc[ref_no]['colors'])
-                    new_colors = set(colors)
-                    merged_colors = sorted(list(current_colors.union(new_colors)))
-                    
-                    db_acc[ref_no]['colors'] = merged_colors
-                    db_acc[ref_no]['style'] = style
-                    db_acc[ref_no]['buyer'] = buyer
-                
-                db_acc[ref_no]['updated_at'] = get_bd_time().strftime('%I:%M %p, %d %b %Y')
-                save_accessories_db(db_acc)
-            else:
-                 if ref_no not in db_acc:
-                    flash(f"Booking not found in ERP: {ref_no}")
-                    return redirect(url_for('accessories_search_page'))
-        except:
-             if ref_no not in db_acc:
-                flash("Connection Error with ERP")
+            if not api_data:
+                flash(f"Booking not found: {ref_no}")
                 return redirect(url_for('accessories_search_page'))
+            
+            colors = sorted(list(set([item['color'] for item in api_data])))
+            style = api_data[0].get('style', 'N/A')
+            buyer = api_data[0].get('buyer', 'N/A')
+            challans = []
+            
+            db_acc[ref_no] = {
+                "style": style,
+                "buyer":  buyer,
+                "colors": colors,
+                "item_type": "",
+                "challans": challans,
+                "last_api_call": get_bd_time().isoformat()
+            }
+            save_accessories_db(db_acc)
+        except Exception as e:
+            flash(f"Connection Error with ERP: {str(e)}")
+            return redirect(url_for('accessories_search_page'))
 
-    data = db_acc[ref_no]
-    return render_template_string(ACCESSORIES_INPUT_TEMPLATE, ref=ref_no, colors=data['colors'], style=data['style'], buyer=data['buyer'], challans=data['challans'])
+    return render_template_string(
+        ACCESSORIES_INPUT_TEMPLATE,
+        ref=ref_no,
+        colors=colors,
+        style=style,
+        buyer=buyer,
+        challans=challans,
+        colors_refreshed=colors_refreshed
+    )
 
 @app.route('/admin/accessories/input_direct')
 def accessories_input_direct():
-    return accessories_input_page() 
+    if not session.get('logged_in'):
+        return redirect(url_for('index'))
+    
+    ref_no = request.args.get('ref')
+    if ref_no:
+        ref_no = ref_no.strip().upper()
+    
+    if not ref_no:
+        return redirect(url_for('accessories_search_page'))
+
+    db_acc = load_accessories_db()
+    colors_refreshed = False
+
+    if ref_no in db_acc:
+        # Check and refresh colors if 24 hours have passed
+        refresh_result = check_and_refresh_colors(ref_no, db_acc)
+        if refresh_result:
+            db_acc = refresh_result
+            colors_refreshed = True
+        
+        data = db_acc[ref_no]
+        colors = data['colors']
+        style = data['style']
+        buyer = data['buyer']
+        challans = data['challans']
+    else:
+        try:
+            api_data = fetch_closing_report_data(ref_no)
+            if not api_data: 
+                flash(f"Booking not found: {ref_no}")
+                return redirect(url_for('accessories_search_page'))
+            
+            colors = sorted(list(set([item['color'] for item in api_data])))
+            style = api_data[0].get('style', 'N/A')
+            buyer = api_data[0].get('buyer', 'N/A')
+            challans = []
+            
+            db_acc[ref_no] = {
+                "style": style,
+                "buyer": buyer,
+                "colors": colors,
+                "item_type": "",
+                "challans": challans,
+                "last_api_call": get_bd_time().isoformat()
+            }
+            save_accessories_db(db_acc)
+        except Exception as e:
+            flash(f"Connection Error with ERP: {str(e)}")
+            return redirect(url_for('accessories_search_page'))
+
+    return render_template_string(
+        ACCESSORIES_INPUT_TEMPLATE,
+        ref=ref_no,
+        colors=colors,
+        style=style,
+        buyer=buyer,
+        challans=challans,
+        colors_refreshed=colors_refreshed
+    )
 
 @app.route('/admin/accessories/save', methods=['POST'])
 def accessories_save():
-    if not session.get('logged_in'): return redirect(url_for('index'))
+    if not session.get('logged_in'):
+        return redirect(url_for('index'))
     
     ref = request.form.get('ref').strip().upper()
     db_acc = load_accessories_db()
     
     if ref in db_acc:
-        if request.form.get('item_type'): db_acc[ref]['item_type'] = request.form.get('item_type')
+        if request.form.get('item_type'):
+            db_acc[ref]['item_type'] = request.form.get('item_type')
         
         for item in db_acc[ref]['challans']:
             item['status'] = "✔"
         
         new_entry = {
             "date": get_bd_date_str(),
-            "line": request.form.get('line_no'),
+            "line":  request.form.get('line_no'),
             "color": request.form.get('color'),
             "size": request.form.get('size'),
             "qty": request.form.get('qty'),
@@ -5197,12 +5869,14 @@ def accessories_save():
 
 @app.route('/admin/accessories/print', methods=['GET'])
 def accessories_print_view():
-    if not session.get('logged_in'): return redirect(url_for('index'))
+    if not session.get('logged_in'):
+        return redirect(url_for('index'))
     
     ref = request.args.get('ref').strip().upper()
     db_acc = load_accessories_db()
     
-    if ref not in db_acc: return redirect(url_for('accessories_search_page'))
+    if ref not in db_acc:
+        return redirect(url_for('accessories_search_page'))
     
     data = db_acc[ref]
     challans = data['challans']
@@ -5210,41 +5884,35 @@ def accessories_print_view():
     line_summary = {}
     for c in challans:
         ln = c['line']
-        try: q = int(c['qty'])
-        except: q = 0
+        try:
+            q = int(c['qty'])
+        except:
+            q = 0
         line_summary[ln] = line_summary.get(ln, 0) + q
     sorted_line_summary = dict(sorted(line_summary.items()))
 
-    return render_template_string(ACCESSORIES_REPORT_TEMPLATE, ref=ref, buyer=data['buyer'], style=data['style'], item_type=data.get('item_type', ''), challans=challans, line_summary=sorted_line_summary, count=len(challans), today=get_bd_date_str())
-    @app.route('/admin/accessories/print', methods=['GET'])
-def accessories_print_view():
-    if not session.get('logged_in'): return redirect(url_for('index'))
-    
-    ref = request.args.get('ref').strip().upper()
-    db_acc = load_accessories_db()
-    
-    if ref not in db_acc: return redirect(url_for('accessories_search_page'))
-    
-    data = db_acc[ref]
-    challans = data['challans']
-    
-    line_summary = {}
-    for c in challans:
-        ln = c['line']
-        try: q = int(c['qty'])
-        except: q = 0
-        line_summary[ln] = line_summary.get(ln, 0) + q
-    sorted_line_summary = dict(sorted(line_summary.items()))
-
-    return render_template_string(ACCESSORIES_REPORT_TEMPLATE, ref=ref, buyer=data['buyer'], style=data['style'], item_type=data.get('item_type', ''), challans=challans, line_summary=sorted_line_summary, count=len(challans), today=get_bd_date_str())
+    return render_template_string(
+        ACCESSORIES_REPORT_TEMPLATE,
+        ref=ref,
+        buyer=data['buyer'],
+        style=data['style'],
+        item_type=data.get('item_type', ''),
+        challans=challans,
+        line_summary=sorted_line_summary,
+        count=len(challans),
+        today=get_bd_date_str()
+    )
 
 @app.route('/admin/accessories/edit', methods=['GET'])
 def accessories_edit():
-    if not session.get('logged_in'): return redirect(url_for('index'))
+    if not session.get('logged_in'):
+        return redirect(url_for('index'))
     
     ref = request.args.get('ref')
-    try: index = int(request.args.get('index'))
-    except: return redirect(url_for('accessories_search_page'))
+    try:
+        index = int(request.args.get('index'))
+    except:
+        return redirect(url_for('accessories_search_page'))
     
     db_acc = load_accessories_db()
     if ref in db_acc and 0 <= index < len(db_acc[ref]['challans']):
@@ -5255,7 +5923,8 @@ def accessories_edit():
 
 @app.route('/admin/accessories/update', methods=['POST'])
 def accessories_update():
-    if not session.get('logged_in'): return redirect(url_for('index'))
+    if not session.get('logged_in'):
+        return redirect(url_for('index'))
     
     ref = request.form.get('ref')
     index = int(request.form.get('index'))
@@ -5272,7 +5941,8 @@ def accessories_update():
 
 @app.route('/admin/accessories/delete', methods=['POST'])
 def accessories_delete():
-    if not session.get('logged_in') or session.get('role') != 'admin': return redirect(url_for('index'))
+    if not session.get('logged_in') or session.get('role') != 'admin':
+        return redirect(url_for('index'))
     
     ref = request.form.get('ref')
     index = int(request.form.get('index'))
@@ -5284,47 +5954,48 @@ def accessories_delete():
     
     return redirect(url_for('accessories_input_direct', ref=ref))
 
-@app.route('/admin/accessories/history', methods=['GET'])
-def accessories_history():
-    if not session.get('logged_in'): return redirect(url_for('index'))
-    db_acc = load_accessories_db()
-    # Sort bookings by updated_at descending if available
-    return render_template_string(ACCESSORIES_FULL_HISTORY_TEMPLATE, bookings=db_acc)
+# ==============================================================================
+# PO REPORT ROUTE - UPDATED WITH BOOKING REF TRACKING
+# ==============================================================================
 
 @app.route('/generate-po-report', methods=['POST'])
 def generate_po_report():
-    if not session.get('logged_in'): return redirect(url_for('index'))
+    if not session.get('logged_in'):
+        return redirect(url_for('index'))
 
-    if os.path.exists(UPLOAD_FOLDER): 
+    if os.path.exists(UPLOAD_FOLDER):
         shutil.rmtree(UPLOAD_FOLDER)
     os.makedirs(UPLOAD_FOLDER)
 
     try:
         uploaded_files = request.files.getlist('pdf_files')
         all_data = []
-        final_meta = {'buyer': 'N/A', 'booking': 'N/A', 'style': 'N/A', 'season': 'N/A', 'dept': 'N/A', 'item': 'N/A'}
+        final_meta = {
+            'buyer': 'N/A',
+            'booking':  'N/A',
+            'style': 'N/A',
+            'season': 'N/A',
+            'dept': 'N/A',
+            'item':  'N/A'
+        }
         
         for file in uploaded_files:
-            if file.filename == '': continue
+            if file.filename == '':
+                continue
             file_path = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
             file.save(file_path)
             data, meta = extract_data_dynamic(file_path)
-            if meta['buyer'] != 'N/A': final_meta = meta
-            if data: all_data.extend(data)
+            if meta['buyer'] != 'N/A':
+                final_meta = meta
+            if data:
+                all_data.extend(data)
         
         if not all_data:
             return render_template_string(PO_REPORT_TEMPLATE, tables=None, message="No PO data found in uploaded files.")
 
-        # PO Stats Update: এখন ফাইলের সংখ্যার বদলে স্টাইল বা বুকিং নম্বর দেখানো হবে
-        ref_display = "Unknown Style"
-        if final_meta['style'] != 'N/A':
-            ref_display = f"Style: {final_meta['style']}"
-        elif final_meta['booking'] != 'N/A':
-            ref_display = f"Bkg: {final_meta['booking']}"
-        else:
-            ref_display = f"{len(uploaded_files)} Files"
-
-        update_po_stats(session.get('user', 'Unknown'), ref_display)
+        # Update PO stats with booking reference
+        booking_ref = final_meta.get('booking', 'N/A')
+        update_po_stats(session.get('user', 'Unknown'), len(uploaded_files), booking_ref)
 
         df = pd.DataFrame(all_data)
         df['Color'] = df['Color'].str.strip()
@@ -5334,15 +6005,22 @@ def generate_po_report():
         final_tables = []
         grand_total_qty = 0
 
-        for color in unique_colors:
+        for color in unique_colors: 
             color_df = df[df['Color'] == color]
-            pivot = color_df.pivot_table(index='P.O NO', columns='Size', values='Quantity', aggfunc='sum', fill_value=0)
+            pivot = color_df.pivot_table(
+                index='P.O NO',
+                columns='Size',
+                values='Quantity',
+                aggfunc='sum',
+                fill_value=0
+            )
             pivot.columns.name = None
             
             try:
                 sorted_cols = sort_sizes(pivot.columns.tolist())
                 pivot = pivot[sorted_cols]
-            except: pass
+            except: 
+                pass
             
             pivot['Total'] = pivot.sum(axis=1)
             grand_total_qty += pivot['Total'].sum()
@@ -5357,18 +6035,31 @@ def generate_po_report():
             pivot_final = pivot_final.rename(columns={'index': 'P.O NO'})
             
             pd.set_option('colheader_justify', 'center')
-            html_table = pivot_final.to_html(classes='table table-bordered table-striped', index=False, border=0)
+            html_table = pivot_final.to_html(
+                classes='table table-bordered table-striped',
+                index=False,
+                border=0
+            )
             
             html_table = re.sub(r'<tr>\s*<td>', '<tr><td class="order-col">', html_table)
             html_table = html_table.replace('<th>Total</th>', '<th class="total-col-header">Total</th>')
             html_table = html_table.replace('<td>Total</td>', '<td class="total-col">Total</td>')
             html_table = html_table.replace('<td>Actual Qty</td>', '<td class="summary-label">Actual Qty</td>')
             html_table = html_table.replace('<td>3% Order Qty</td>', '<td class="summary-label">3% Order Qty</td>')
-            html_table = re.sub(r'<tr>\s*<td class="summary-label">', '<tr class="summary-row"><td class="summary-label">', html_table)
+            html_table = re.sub(
+                r'<tr>\s*<td class="summary-label">',
+                '<tr class="summary-row"><td class="summary-label">',
+                html_table
+            )
 
             final_tables.append({'color': color, 'table': html_table})
             
-        return render_template_string(PO_REPORT_TEMPLATE, tables=final_tables, meta=final_meta, grand_total=f"{grand_total_qty:,}")
+        return render_template_string(
+            PO_REPORT_TEMPLATE,
+            tables=final_tables,
+            meta=final_meta,
+            grand_total=f"{grand_total_qty: ,}"
+        )
     except Exception as e:
         flash(f"Error processing files: {str(e)}")
         return redirect(url_for('index'))
