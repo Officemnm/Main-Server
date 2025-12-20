@@ -244,7 +244,7 @@ COMMON_STYLES = """
             border-radius: 12px; 
             transition: var(--transition-smooth);
             cursor: pointer; 
-            font-weight: 500; _
+            font-weight: 500; 
             font-size: 14px;
             position: relative;
             overflow: hidden;
@@ -3146,7 +3146,9 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
         document.querySelectorAll('.main-content > div').forEach(sec => sec.style.display = 'none');
         document.getElementById('section-' + sectionId).style.display = 'block';
         document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
-        element.classList.add('active');
+        if (element) {{
+            element.classList.add('active');
+        }}
     }}
 
     // --- Chart.js ---
@@ -4362,7 +4364,7 @@ STORE_DASHBOARD_TEMPLATE = f"""
             </div>
             <p style="color: var(--text-secondary); line-height: 1.8; font-size: 14px;">
                 এই Store মডিউলটি একটি এলুমিনিয়াম দোকানের জন্য ডিজাইন করা হয়েছে। এখানে আপনি প্রোডাক্ট ইনভেন্টরি, 
-                সেলস অর্ডার, কাস্টমার ম্যানেজমেন্ট, ইনভয়েস জেনারেশন, খরচ ট্র্যাকিং এবং बिजनेस রিপোর্ট তৈরি করতে পারবেন।
+                সেলস অর্ডার, কাস্টমার ম্যানেজমেন্ট, ইনভয়েস জেনারেশন, খরচ ট্র্যাকিং এবং বিজনেস রিপোর্ট তৈরি করতে পারবেন।
                 <br><br>
                 <strong style="color: var(--accent-orange);">Coming Soon:</strong> সকল ফিচার শীঘ্রই অ্যাক্টিভ করা হবে।
             </p>
@@ -5324,4 +5326,3 @@ def generate_po_report():
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))
     app.run(host='0.0.0.0', port=port, debug=True)
-
