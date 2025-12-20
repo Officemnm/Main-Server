@@ -71,8 +71,7 @@ try:
     print("MongoDB Connected Successfully!")
 except Exception as e:
     print(f"MongoDB Connection Error: {e}")
-
-# ==============================================================================
+    # ==============================================================================
 # ENHANCED CSS STYLES - PREMIUM MODERN UI WITH ANIMATIONS
 # ==============================================================================
 COMMON_STYLES = """
@@ -245,7 +244,7 @@ COMMON_STYLES = """
             border-radius: 12px; 
             transition: var(--transition-smooth);
             cursor: pointer; 
-            font-weight: 500; 
+            font-weight: 500; _
             font-size: 14px;
             position: relative;
             overflow: hidden;
@@ -637,6 +636,7 @@ COMMON_STYLES = """
             background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%23FF7A00' viewBox='0 0 24 24'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
             background-repeat: no-repeat;
             background-position: right 12px center;
+            background-size: 24px;
             background-color: rgba(255, 255, 255, 0.03);
         }
         
@@ -1745,23 +1745,24 @@ def check_and_refresh_colors(ref_no, db_acc):
         needs_refresh = True
     else:
         try:
+            # last_updated is already a timezone-aware isoformat string
             last_updated_dt = datetime.fromisoformat(last_updated)
-            if last_updated_dt.tzinfo is None:
-                last_updated_dt = bd_tz.localize(last_updated_dt)
             
             time_diff = now - last_updated_dt
-            if time_diff.total_seconds() >= 86400:
+            if time_diff.total_seconds() >= 86400: # 24 hours
                 needs_refresh = True
         except Exception as e:
-            print(f"Error parsing last_api_call: {e}")
+            print(f"Error parsing last_api_call: {e}. Forcing refresh.")
             needs_refresh = True
     
     if needs_refresh: 
+        print(f"Refreshing colors for {ref_no}...")
         try:
             api_data = fetch_closing_report_data(ref_no)
             if api_data:
                 new_colors = sorted(list(set([item['color'] for item in api_data])))
                 existing_colors = data.get('colors', [])
+                # Merge and keep unique colors, then sort
                 merged_colors = sorted(list(set(existing_colors + new_colors)))
                 
                 db_acc[ref_no]['colors'] = merged_colors
@@ -1774,7 +1775,7 @@ def check_and_refresh_colors(ref_no, db_acc):
                 
                 save_accessories_db(db_acc)
                 print(f"Colors refreshed for {ref_no}. New colors: {merged_colors}")
-                return db_acc
+                return db_acc # Return the updated database
         except Exception as e:
             print(f"Error refreshing colors for {ref_no}: {e}")
             return None
@@ -1803,6 +1804,7 @@ def get_all_accessories_bookings():
             'last_updated': data.get('last_api_call', 'N/A')
         })
     
+    # Sort by ref no descending to show latest first
     bookings = sorted(bookings, key=lambda x: x['ref'], reverse=True)
     return bookings
 
@@ -1830,7 +1832,7 @@ def get_dashboard_summary_v2():
 
     acc_lifetime_count = 0
     acc_today_list = []
-    daily_data = defaultdict(lambda: {'closing':  0, 'po':  0, 'acc': 0})
+    daily_data = defaultdict(lambda: {'closing': 0, 'po': 0, 'acc': 0})
 
     for ref, data in acc_db.items():
         for challan in data.get('challans', []):
@@ -1841,11 +1843,12 @@ def get_dashboard_summary_v2():
                     "ref": ref,
                     "buyer": data.get('buyer'),
                     "style": data.get('style'),
-                    "time": "Today",
+                    "time": "Today", # This can be improved if challans have timestamps
                     "qty": challan.get('qty')
                 })
             
             try:
+                # Correctly parse date and create a key for sorting
                 dt_obj = datetime.strptime(c_date, '%d-%m-%Y')
                 sort_key = dt_obj.strftime('%Y-%m-%d')
                 daily_data[sort_key]['acc'] += 1
@@ -1865,7 +1868,7 @@ def get_dashboard_summary_v2():
             po_lifetime_count += 1
             if item_date == today_str: 
                 po_list.append(item)
-        else:
+        elif item.get('type') == 'Closing Report': # Check specifically for Closing Report
             closing_lifetime_count += 1
             if item_date == today_str:
                 closing_list.append(item)
@@ -1876,36 +1879,28 @@ def get_dashboard_summary_v2():
             
             if item.get('type') == 'PO Sheet':
                 daily_data[sort_key]['po'] += 1
-            else: 
+            elif item.get('type') == 'Closing Report':
                 daily_data[sort_key]['closing'] += 1
             daily_data[sort_key]['label'] = dt_obj.strftime('%d-%b')
         except:
             pass
     
-    first_of_last_month = (now.replace(day=1) - timedelta(days=1)).replace(day=1)
-    start_date = first_of_last_month.strftime('%Y-%m-%d')
-    end_date = now.strftime('%Y-%m-%d')
-    
-    sorted_keys = sorted([k for k in daily_data.keys() if start_date <= k <= end_date])
-    
+    # Chart date range: last 30 days
+    start_date = now - timedelta(days=29)
+    date_range = [start_date + timedelta(days=i) for i in range(30)]
+
     chart_labels = []
     chart_closing = []
     chart_po = []
     chart_acc = []
 
-    if not sorted_keys:
-        curr_d = now.strftime('%d-%b')
-        chart_labels = [curr_d]
-        chart_closing = [0]
-        chart_po = [0]
-        chart_acc = [0]
-    else:
-        for k in sorted_keys:
-            d = daily_data[k]
-            chart_labels.append(d.get('label', k))
-            chart_closing.append(d['closing'])
-            chart_po.append(d['po'])
-            chart_acc.append(d['acc'])
+    for dt in date_range:
+        sort_key = dt.strftime('%Y-%m-%d')
+        chart_labels.append(dt.strftime('%d-%b'))
+        d = daily_data.get(sort_key, {'closing': 0, 'po': 0, 'acc': 0})
+        chart_closing.append(d['closing'])
+        chart_po.append(d['po'])
+        chart_acc.append(d['acc'])
 
     return {
         "users": {"count": len(users_data), "details": user_details},
@@ -1920,7 +1915,7 @@ def get_dashboard_summary_v2():
         },
         "history": history
     }
-# ==============================================================================
+    # ==============================================================================
 # লজিক পার্ট:   PURCHASE ORDER SHEET PARSER (PDF)
 # ==============================================================================
 
@@ -1961,14 +1956,14 @@ def extract_metadata(first_page_text):
         buyer_match = re.search(r"Buyer.*?Name[\s\S]*?([\w\s&]+)(?:\n|$)", first_page_text)
         if buyer_match:  meta['buyer'] = buyer_match.group(1).strip()
 
-    booking_block_match = re.search(r"(?:Internal )?Booking NO\. ?[:\s]*([\s\S]*?)(?:System NO|Control No|Buyer)", first_page_text, re.IGNORECASE)
+    booking_block_match = re.search(r"(?:Internal)?Booking NO\.?[:\s]*([\s\S]*?)(?:System NO|Control No|Buyer)", first_page_text, re.IGNORECASE)
     if booking_block_match:
         raw_booking = booking_block_match.group(1).strip()
         clean_booking = raw_booking.replace('\n', '').replace('\r', '').replace(' ', '')
         if "System" in clean_booking:  clean_booking = clean_booking.split("System")[0]
         meta['booking'] = clean_booking
 
-    style_match = re.search(r"Style Ref\. ?[:\s]*([\w-]+)", first_page_text, re.IGNORECASE)
+    style_match = re.search(r"Style Ref\.?[:\s]*([\w-]+)", first_page_text, re.IGNORECASE)
     if style_match:  meta['style'] = style_match.group(1).strip()
     else: 
         style_match = re.search(r"Style Des\.?[\s\S]*?([\w-]+)", first_page_text, re.IGNORECASE)
@@ -1976,7 +1971,7 @@ def extract_metadata(first_page_text):
 
     season_match = re.search(r"Season\s*[:\n\"]*([\w\d-]+)", first_page_text, re.IGNORECASE)
     if season_match: meta['season'] = season_match.group(1).strip()
-    dept_match = re.search(r"Dept\. ?[\s\n: ]*([A-Za-z]+)", first_page_text, re.IGNORECASE)
+    dept_match = re.search(r"Dept\.?[\s\n: ]*([A-Za-z]+)", first_page_text, re.IGNORECASE)
     if dept_match: meta['dept'] = dept_match.group(1).strip()
 
     item_match = re.search(r"Garments?\s*Item[\s\n: ]*([^\n\r]+)", first_page_text, re.IGNORECASE)
@@ -2079,7 +2074,7 @@ def extract_data_dynamic(file_path):
                             })
     except Exception as e:  print(f"Error processing file: {e}")
     return extracted_data, metadata
-# ==============================================================================
+    # ==============================================================================
 # লজিক পার্ট:  CLOSING REPORT API & EXCEL GENERATION
 # ==============================================================================
 
@@ -2154,7 +2149,7 @@ def parse_report_data(html_content):
                     main_lower, sub_lower = criteria_main.lower(), criteria_sub.lower()
                     
                     if main_lower == "style":  style = cells[1].get_text(strip=True)
-                    elif main_lower == "color & gmts. item":  color = cells[1].get_text(strip=True)
+                    elif main_lower == "color & gmts.item":  color = cells[1].get_text(strip=True) # Corrected typo
                     elif "buyer" in main_lower:  buyer_name = cells[1].get_text(strip=True)
                     
                     if sub_lower == "gmts. color /country qty":  gmts_qty_data = [cell.get_text(strip=True) for cell in cells[3:len(headers)+3]]
@@ -2344,7 +2339,7 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
     image_row = current_row + 1
    
     try:
-        direct_image_url = 'https://i.ibb.co/v6bp0jQ/rockybilly-regular.webp'
+        direct_image_url = 'https://i.ibb.co/v6bp0jQW/rockybilly-regular.webp'
         image_response = requests.get(direct_image_url)
         image_response.raise_for_status()
         original_img = PILImage.open(BytesIO(image_response.content))
@@ -2406,7 +2401,7 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
     wb.save(file_stream)
     file_stream.seek(0)
     return file_stream
-# ==============================================================================
+    # ==============================================================================
 # HTML TEMPLATES:   LOGIN PAGE
 # ==============================================================================
 
@@ -2790,12 +2785,12 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
         
         <div class="checkmark-container" id="success-anim">
             <div class="checkmark-circle"></div>
-            <div class="anim-text">Successful! </div>
+            <div class="anim-text">Successful!</div>
         </div>
 
         <div class="fail-container" id="fail-anim">
             <div class="fail-circle"></div>
-            <div class="anim-text">Action Failed! </div>
+            <div class="anim-text">Action Failed!</div>
             <div style="font-size: 13px; color:#F87171; margin-top:  8px;">Please check server or inputs</div>
         </div>
         
@@ -2903,7 +2898,7 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
             <div class="dashboard-grid-2">
                 <div class="card">
                     <div class="section-header">
-                        <span>Daily Activity Chart</span>
+                        <span>Daily Activity Chart (Last 30 Days)</span>
                         <div class="realtime-indicator">
                             <div class="realtime-dot"></div>
                             <span>Real-time</span>
@@ -3053,10 +3048,133 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
                 </form>
             </div>
         </div>
+
+        <div id="section-settings" style="display: none;">
+            <div class="header-section">
+                <div>
+                    <div class="page-title">User Management</div>
+                    <div class="page-subtitle">Create, update, and manage user access</div>
+                </div>
+            </div>
+            <div class="card">
+                <div class="section-header">
+                    <span>System Users</span>
+                    <button id="addUserBtn" style="width: auto; padding: 10px 20px; font-size: 13px;">
+                        <i class="fas fa-plus" style="margin-right: 8px;"></i> Add New User
+                    </button>
+                </div>
+                <div style="overflow-x: auto;">
+                    <table class="dark-table" id="usersTable">
+                        <thead>
+                            <tr>
+                                <th>Username</th>
+                                <th>Role</th>
+                                <th>Permissions</th>
+                                <th>Last Login</th>
+                                <th style="text-align: right;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- User rows will be injected by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
     </div>
+    
+    <script>
+    // --- General UI Scripts ---
+    document.addEventListener('DOMContentLoaded', function() {{
+        // Welcome Popup
+        if (!sessionStorage.getItem('welcomeShown')) {{
+            const hour = new Date().getHours();
+            let greeting, icon;
+            if (hour >= 5 && hour < 12) {{ greeting = "Good Morning"; icon = '<i class="fas fa-sun"></i>'; }} 
+            else if (hour >= 12 && hour < 17) {{ greeting = "Good Afternoon"; icon = '<i class="fas fa-sun"></i>'; }} 
+            else if (hour >= 17 && hour < 21) {{ greeting = "Good Evening"; icon = '<i class="fas fa-city"></i>'; }} 
+            else {{ greeting = "Good Night"; icon = '<i class="fas fa-moon"></i>'; }}
+            document.getElementById('greetingText').textContent = greeting;
+            document.getElementById('welcomeIcon').innerHTML = icon;
+            document.getElementById('welcomeModal').style.display = 'flex';
+        }}
+
+        // Particle BG
+        particlesJS("particles-js", {{ "particles": {{"number":{{"value":50,"density":{{"enable":true,"value_area":800}}}},"color":{{"value":"#ff7a00"}},"shape":{{"type":"circle","stroke":{{"width":0,"color":"#000000"}},"polygon":{{"nb_sides":5}}}},"opacity":{{"value":0.5,"random":true,"anim":{{"enable":false,"speed":1,"opacity_min":0.1,"sync":false}}}},"size":{{"value":3,"random":true,"anim":{{"enable":false,"speed":40,"size_min":0.1,"sync":false}}}},"line_linked":{{"enable":false}},"move":{{"enable":true,"speed":2,"direction":"none","random":true,"straight":false,"out_mode":"out","bounce":false,"attract":{{"enable":false,"rotateX":600,"rotateY":1200}}}}}},"interactivity":{{"detect_on":"canvas","events":{{"onhover":{{"enable":true,"mode":"grab"}},"onclick":{{"enable":true,"mode":"push"}},"resize":true}},"modes":{{"grab":{{"distance":140,"line_linked":{{"opacity":0.3}}}},"bubble":{{"distance":400,"size":40,"duration":2,"opacity":8,"speed":3}},"repulse":{{"distance":200,"duration":0.4}},"push":{{"particles_nb":4}},"remove":{{"particles_nb":2}}}}}},"retina_detect":true}});
+
+        // Count-Up Animation
+        const counters = document.querySelectorAll('.count-up');
+        const speed = 200;
+        counters.forEach(counter => {{
+            const animate = () => {{
+                const target = +counter.getAttribute('data-target');
+                const count = +counter.innerText.replace(/,/g, '');
+                const inc = Math.ceil(target / speed);
+                if (count < target) {{
+                    counter.innerText = (count + inc).toLocaleString('en-US');
+                    setTimeout(animate, 15);
+                }} else {{
+                    counter.innerText = target.toLocaleString('en-US');
+                }}
+            }}
+            animate();
+        }});
+        
+        // File Upload UI
+        const uploadInput = document.getElementById('file-upload');
+        if(uploadInput) {{
+            uploadInput.addEventListener('change', () => {{
+                const count = uploadInput.files.length;
+                document.getElementById('file-count').textContent = count > 0 ? `${{count}} file(s) selected` : 'No files selected';
+            }});
+        }}
+    }});
+
+    function closeWelcome() {{
+        const modal = document.getElementById('welcomeModal');
+        modal.style.opacity = '0';
+        setTimeout(() => {{ modal.style.display = 'none'; sessionStorage.setItem('welcomeShown', 'true'); }}, 300);
+    }}
+
+    function showLoading() {{
+        document.getElementById('loading-overlay').style.display = 'flex';
+        return true;
+    }}
+    
+    // --- Section Switching ---
+    function showSection(sectionId, element) {{
+        document.querySelectorAll('.main-content > div').forEach(sec => sec.style.display = 'none');
+        document.getElementById('section-' + sectionId).style.display = 'block';
+        document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
+        element.classList.add('active');
+    }}
+
+    // --- Chart.js ---
+    const ctx = document.getElementById('mainChart');
+    if (ctx) {{
+        const chartData = {{{{ stats.chart | tojson }}}};
+        new Chart(ctx, {{
+            type: 'line',
+            data: {{
+                labels: chartData.labels,
+                datasets: [
+                    {{ label: 'Closing', data: chartData.closing, borderColor: 'var(--accent-orange)', backgroundColor: 'rgba(255, 122, 0, 0.1)', tension: 0.4, fill: true }},
+                    {{ label: 'Accessories', data: chartData.acc, borderColor: 'var(--accent-purple)', backgroundColor: 'rgba(139, 92, 246, 0.1)', tension: 0.4, fill: true }},
+                    {{ label: 'PO Sheets', data: chartData.po, borderColor: 'var(--accent-green)', backgroundColor: 'rgba(16, 185, 129, 0.1)', tension: 0.4, fill: true }}
+                ]
+            }},
+            options: {{
+                responsive: true, maintainAspectRatio: false,
+                scales: {{ y: {{ grid: {{ color: 'rgba(255,255,255,0.05)' }}, ticks: {{ color: 'var(--text-secondary)' }} }}, x: {{ grid: {{ color: 'rgba(255,255,255,0.05)' }}, ticks: {{ color: 'var(--text-secondary)' }} }} }},
+                plugins: {{ legend: {{ labels: {{ color: 'var(--text-secondary)' }} }} }}
+            }}
+        }});
+    }}
+    </script>
 </body>
 </html>
 """
+
 # ==============================================================================
 # USER DASHBOARD TEMPLATE (হুবহু তোমার মূল কোড)
 # ==============================================================================
@@ -3092,7 +3210,7 @@ USER_DASHBOARD_TEMPLATE = f"""
             <div class="spinner"></div>
             <div class="spinner-inner"></div>
         </div>
-        <div class="loading-text">Processing... </div>
+        <div class="loading-text">Processing...</div>
     </div>
     
     <div class="sidebar">
@@ -3382,12 +3500,14 @@ ACCESSORIES_SEARCH_TEMPLATE = f"""
                 </button>
             </form>
             
-            {{% with messages = get_flashed_messages() %}}
+            {{% with messages = get_flashed_messages(with_categories=true) %}}
                 {{% if messages %}}
-                    <div class="flash-message flash-error" style="margin-top: 20px;">
-                        <i class="fas fa-exclamation-circle"></i>
-                        <span>{{{{ messages[0] }}}}</span>
-                    </div>
+                    {{% for category, message in messages %}}
+                        <div class="flash-message flash-{{{{ category }}}}" style="margin-top: 20px;">
+                            <i class="fas fa-exclamation-circle"></i>
+                            <span>{{{{ message }}}}</span>
+                        </div>
+                    {{% endfor %}}
                 {{% endif %}}
             {{% endwith %}}
             
@@ -3472,6 +3592,11 @@ ACCESSORIES_INPUT_TEMPLATE = f"""
     <title>Accessories Entry - MNM Software</title>
     {COMMON_STYLES}
     <style>
+        .header-actions {{
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }}
         .ref-badge {{
             display: inline-flex;
             align-items: center;
@@ -3544,6 +3669,10 @@ ACCESSORIES_INPUT_TEMPLATE = f"""
             background: linear-gradient(135deg, #10B981 0%, #34D399 100%) !important;
         }}
         
+        .delete-all-btn {{
+            background: linear-gradient(135deg, #EF4444 0%, #F87171 100%) !important;
+        }}
+        
         .empty-state {{
             text-align: center;
             padding: 50px 20px;
@@ -3594,7 +3723,7 @@ ACCESSORIES_INPUT_TEMPLATE = f"""
         </div>
         <div class="checkmark-container" id="success-anim">
             <div class="checkmark-circle"></div>
-            <div class="anim-text">Saved! </div>
+            <div class="anim-text">Saved!</div>
         </div>
         <div class="loading-text" id="loading-text">Saving Entry...</div>
     </div>
@@ -3623,11 +3752,21 @@ ACCESSORIES_INPUT_TEMPLATE = f"""
                     <span class="ref-info">{{{{ buyer }}}} • {{{{ style }}}}</span>
                 </div>
             </div>
-            <a href="/admin/accessories/print?ref={{{{ ref }}}}" target="_blank">
-                <button class="print-btn" style="width: auto; padding: 14px 30px;">
-                    <i class="fas fa-print" style="margin-right: 10px;"></i> Print Report
-                </button>
-            </a>
+            <div class="header-actions">
+                {{% if session.role == 'admin' %}}
+                <form action="/admin/accessories/delete_all" method="POST" onsubmit="return confirm('Are you sure you want to delete ALL challans for this booking? This action cannot be undone.');">
+                    <input type="hidden" name="ref" value="{{{{ ref }}}}">
+                    <button type="submit" class="delete-all-btn" style="width: auto; padding: 14px 30px;">
+                        <i class="fas fa-exclamation-triangle" style="margin-right: 10px;"></i> Delete All
+                    </button>
+                </form>
+                {{% endif %}}
+                <a href="/admin/accessories/print?ref={{{{ ref }}}}" target="_blank">
+                    <button class="print-btn" style="width: auto; padding: 14px 30px;">
+                        <i class="fas fa-print" style="margin-right: 10px;"></i> Print Report
+                    </button>
+                </a>
+            </div>
         </div>
 
         <div class="dashboard-grid-2">
@@ -4223,7 +4362,7 @@ STORE_DASHBOARD_TEMPLATE = f"""
             </div>
             <p style="color: var(--text-secondary); line-height: 1.8; font-size: 14px;">
                 এই Store মডিউলটি একটি এলুমিনিয়াম দোকানের জন্য ডিজাইন করা হয়েছে। এখানে আপনি প্রোডাক্ট ইনভেন্টরি, 
-                সেলস অর্ডার, কাস্টমার ম্যানেজমেন্ট, ইনভয়েস জেনারেশন, খরচ ট্র্যাকিং এবং বিজনেস রিপোর্ট তৈরি করতে পারবেন।
+                সেলস অর্ডার, কাস্টমার ম্যানেজমেন্ট, ইনভয়েস জেনারেশন, খরচ ট্র্যাকিং এবং बिजनेस রিপোর্ট তৈরি করতে পারবেন।
                 <br><br>
                 <strong style="color: var(--accent-orange);">Coming Soon:</strong> সকল ফিচার শীঘ্রই অ্যাক্টিভ করা হবে।
             </p>
@@ -4459,7 +4598,7 @@ ACCESSORIES_REPORT_TEMPLATE = """
 <div class="container">
     <div class="header">
         <div class="company-name">COTTON CLOTHING BD LTD</div>
-        <div class="company-address">Kazi Tower, 27 Road, Gazipura, Tongi, Gazipur. </div>
+        <div class="company-address">Kazi Tower, 27 Road, Gazipura, Tongi, Gazipur.</div>
         <div class="report-title">ACCESSORIES DELIVERY CHALLAN</div>
     </div>
     <div class="info-grid">
@@ -4631,7 +4770,7 @@ PO_REPORT_TEMPLATE = """
                 <div class="info-box">
                     <div>
                         <div class="info-item"><span class="info-label">Buyer:</span> <span class="info-value">{{ meta.buyer }}</span></div>
-                        <div class="info-item"><span class="info-label">Booking: </span> <span class="info-value">{{ meta.booking }}</span></div>
+                        <div class="info-item"><span class="info-label">Booking:</span> <span class="info-value">{{ meta.booking }}</span></div>
                         <div class="info-item"><span class="info-label">Style:</span> <span class="info-value">{{ meta.style }}</span></div>
                     </div>
                     <div>
@@ -4671,7 +4810,7 @@ PO_REPORT_TEMPLATE = """
 
 @app.route('/')
 def index():
-    load_users()
+    load_users() # Ensure default admin exists
     if not session.get('logged_in'):
         return render_template_string(LOGIN_TEMPLATE)
     else:
@@ -4798,7 +4937,7 @@ def store_dashboard():
         return redirect(url_for('index'))
     return render_template_string(STORE_DASHBOARD_TEMPLATE)
 
-@app.route('/generate-report', methods=['POST'])
+@approute('/generate-report', methods=['POST'])
 def generate_report():
     if not session.get('logged_in'):
         return redirect(url_for('index'))
@@ -4810,7 +4949,7 @@ def generate_report():
     try:
         report_data = fetch_closing_report_data(internal_ref_no)
         if not report_data: 
-            flash(f"Booking Not Found:  {internal_ref_no}")
+            flash(f"Booking Not Found: {internal_ref_no}")
             return redirect(url_for('index'))
         
         update_stats(internal_ref_no, session.get('user', 'Unknown'))
@@ -4829,7 +4968,8 @@ def download_closing_excel():
         report_data = fetch_closing_report_data(internal_ref_no)
         if report_data:
             excel_file = create_formatted_excel_report(report_data, internal_ref_no)
-            update_stats(internal_ref_no, session.get('user', 'Unknown'))
+            # This is already tracked in generate_report, but we can add it here for safety
+            # update_stats(internal_ref_no, session.get('user', 'Unknown'))
             return make_response(send_file(
                 excel_file,
                 as_attachment=True,
@@ -4852,10 +4992,9 @@ def accessories_search_page():
     if not session.get('logged_in'):
         return redirect(url_for('index'))
     if 'accessories' not in session.get('permissions', []):
-        flash("Access Denied")
+        flash("Access Denied", "error")
         return redirect(url_for('index'))
     
-    # NEW: Get all saved bookings for history
     history_bookings = get_all_accessories_bookings()
     history_count = len(history_bookings)
     
@@ -4880,21 +5019,20 @@ def accessories_input_page():
     db_acc = load_accessories_db()
 
     if ref_no in db_acc:
-        # NEW: Check and refresh colors if 24 hours have passed
         refresh_result = check_and_refresh_colors(ref_no, db_acc)
         if refresh_result:
-            db_acc = refresh_result
+            db_acc = refresh_result # Use the updated db if refreshed
         
         data = db_acc[ref_no]
-        colors = data['colors']
-        style = data['style']
-        buyer = data['buyer']
-        challans = data['challans']
+        colors = data.get('colors', [])
+        style = data.get('style', 'N/A')
+        buyer = data.get('buyer', 'N/A')
+        challans = data.get('challans', [])
     else:
         try:
             api_data = fetch_closing_report_data(ref_no)
             if not api_data:
-                flash(f"Booking not found: {ref_no}")
+                flash(f"Booking not found via API: {ref_no}", "error")
                 return redirect(url_for('accessories_search_page'))
             
             colors = sorted(list(set([item['color'] for item in api_data])))
@@ -4912,7 +5050,7 @@ def accessories_input_page():
             }
             save_accessories_db(db_acc)
         except Exception as e:
-            flash(f"Connection Error with ERP: {str(e)}")
+            flash(f"Connection Error with ERP: {str(e)}", "error")
             return redirect(url_for('accessories_search_page'))
 
     return render_template_string(
@@ -4926,62 +5064,12 @@ def accessories_input_page():
 
 @app.route('/admin/accessories/input_direct')
 def accessories_input_direct():
-    if not session.get('logged_in'):
-        return redirect(url_for('index'))
-    
     ref_no = request.args.get('ref')
-    if ref_no:
-        ref_no = ref_no.strip().upper()
-    
     if not ref_no:
         return redirect(url_for('accessories_search_page'))
-
-    db_acc = load_accessories_db()
-
-    if ref_no in db_acc:
-        # NEW: Check and refresh colors if 24 hours have passed
-        refresh_result = check_and_refresh_colors(ref_no, db_acc)
-        if refresh_result:
-            db_acc = refresh_result
-        
-        data = db_acc[ref_no]
-        colors = data['colors']
-        style = data['style']
-        buyer = data['buyer']
-        challans = data['challans']
-    else:
-        try: 
-            api_data = fetch_closing_report_data(ref_no)
-            if not api_data:
-                flash(f"Booking not found: {ref_no}")
-                return redirect(url_for('accessories_search_page'))
-            
-            colors = sorted(list(set([item['color'] for item in api_data])))
-            style = api_data[0].get('style', 'N/A')
-            buyer = api_data[0].get('buyer', 'N/A')
-            challans = []
-            
-            db_acc[ref_no] = {
-                "style": style,
-                "buyer":  buyer,
-                "colors": colors,
-                "item_type":  "",
-                "challans": challans,
-                "last_api_call": get_bd_time().isoformat()
-            }
-            save_accessories_db(db_acc)
-        except Exception as e:
-            flash(f"Connection Error with ERP: {str(e)}")
-            return redirect(url_for('accessories_search_page'))
-
-    return render_template_string(
-        ACCESSORIES_INPUT_TEMPLATE,
-        ref=ref_no,
-        colors=colors,
-        style=style,
-        buyer=buyer,
-        challans=challans
-    )
+    # This will reuse the same logic as the POST version
+    request.form = {'ref_no': ref_no}
+    return accessories_input_page()
 
 @app.route('/admin/accessories/save', methods=['POST'])
 def accessories_save():
@@ -5023,14 +5111,14 @@ def accessories_print_view():
         return redirect(url_for('accessories_search_page'))
     
     data = db_acc[ref]
-    challans = data['challans']
+    challans = data.get('challans', [])
     
     line_summary = {}
     for c in challans:
-        ln = c['line']
+        ln = c.get('line', 'N/A')
         try:
-            q = int(c['qty'])
-        except:
+            q = int(c.get('qty', 0))
+        except (ValueError, TypeError):
             q = 0
         line_summary[ln] = line_summary.get(ln, 0) + q
     sorted_line_summary = dict(sorted(line_summary.items()))
@@ -5038,8 +5126,8 @@ def accessories_print_view():
     return render_template_string(
         ACCESSORIES_REPORT_TEMPLATE,
         ref=ref,
-        buyer=data['buyer'],
-        style=data['style'],
+        buyer=data.get('buyer', 'N/A'),
+        style=data.get('style', 'N/A'),
         item_type=data.get('item_type', ''),
         challans=challans,
         line_summary=sorted_line_summary,
@@ -5049,7 +5137,8 @@ def accessories_print_view():
 
 @app.route('/admin/accessories/edit', methods=['GET'])
 def accessories_edit():
-    if not session.get('logged_in'):
+    if not session.get('logged_in') or session.get('role') != 'admin':
+        flash("Access Denied", "error")
         return redirect(url_for('index'))
     
     ref = request.args.get('ref')
@@ -5067,7 +5156,7 @@ def accessories_edit():
 
 @app.route('/admin/accessories/update', methods=['POST'])
 def accessories_update():
-    if not session.get('logged_in'):
+    if not session.get('logged_in') or session.get('role') != 'admin':
         return redirect(url_for('index'))
     
     ref = request.form.get('ref')
@@ -5097,6 +5186,25 @@ def accessories_delete():
         save_accessories_db(db_acc)
     
     return redirect(url_for('accessories_input_direct', ref=ref))
+
+# NEW ROUTE: Delete all challans for a booking reference
+@app.route('/admin/accessories/delete_all', methods=['POST'])
+def accessories_delete_all():
+    if not session.get('logged_in') or session.get('role') != 'admin':
+        flash("Access Denied", "error")
+        return redirect(url_for('index'))
+    
+    ref = request.form.get('ref')
+    db_acc = load_accessories_db()
+
+    if ref in db_acc:
+        del db_acc[ref]
+        save_accessories_db(db_acc)
+        flash(f"All challan history for booking '{ref}' has been deleted.", "success")
+    else:
+        flash(f"Booking reference '{ref}' not found.", "error")
+    
+    return redirect(url_for('accessories_search_page'))
 
 # ==============================================================================
 # PO REPORT ROUTE - UPDATED WITH BOOKING REF TRACKING
@@ -5129,15 +5237,14 @@ def generate_po_report():
             file_path = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
             file.save(file_path)
             data, meta = extract_data_dynamic(file_path)
-            if meta['buyer'] != 'N/A':
+            if meta['booking'] != 'N/A': # Prioritize metadata from files that have it
                 final_meta = meta
             if data:
                 all_data.extend(data)
         
         if not all_data:
-            return render_template_string(PO_REPORT_TEMPLATE, tables=None, message="No PO data found in uploaded files.")
+            return render_template_string(PO_REPORT_TEMPLATE, tables=None, message="No PO data found in uploaded files. Fabric booking sheets are ignored.")
 
-        # NEW: Update PO stats with booking reference
         booking_ref = final_meta.get('booking', 'N/A')
         update_po_stats(session.get('user', 'Unknown'), len(uploaded_files), booking_ref)
 
@@ -5174,9 +5281,10 @@ def generate_po_report():
             qty_plus_3 = (actual_qty * 1.03).round().astype(int)
             qty_plus_3.name = '3% Order Qty'
             
-            pivot_final = pd.concat([pivot, actual_qty.to_frame().T, qty_plus_3.to_frame().T])
-            pivot_final = pivot_final.reset_index()
-            pivot_final = pivot_final.rename(columns={'index': 'P.O NO'})
+            pivot.loc['Actual Qty'] = actual_qty
+            pivot.loc['3% Order Qty'] = qty_plus_3
+
+            pivot_final = pivot.reset_index().rename(columns={'index': 'P.O NO'})
             
             pd.set_option('colheader_justify', 'center')
             html_table = pivot_final.to_html(
@@ -5185,9 +5293,9 @@ def generate_po_report():
                 border=0
             )
             
-            html_table = re.sub(r'<tr>\s*<td>', '<tr><td class="order-col">', html_table)
+            html_table = re.sub(r'<tr>\s*<td>', '<tr><td class="order-col">', html_table, count=len(pivot_final)-2)
             html_table = html_table.replace('<th>Total</th>', '<th class="total-col-header">Total</th>')
-            html_table = html_table.replace('<td>Total</td>', '<td class="total-col">Total</td>')
+            html_table = re.sub(r'<td>(\d+)</td>\s*</tr>', r'<td class="total-col">\1</td></tr>', html_table)
             html_table = html_table.replace('<td>Actual Qty</td>', '<td class="summary-label">Actual Qty</td>')
             html_table = html_table.replace('<td>3% Order Qty</td>', '<td class="summary-label">3% Order Qty</td>')
             html_table = re.sub(
