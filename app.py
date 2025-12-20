@@ -5216,7 +5216,29 @@ def accessories_print_view():
     sorted_line_summary = dict(sorted(line_summary.items()))
 
     return render_template_string(ACCESSORIES_REPORT_TEMPLATE, ref=ref, buyer=data['buyer'], style=data['style'], item_type=data.get('item_type', ''), challans=challans, line_summary=sorted_line_summary, count=len(challans), today=get_bd_date_str())
-    @app.route('/admin/accessories/edit', methods=['GET'])
+    @app.route('/admin/accessories/print', methods=['GET'])
+def accessories_print_view():
+    if not session.get('logged_in'): return redirect(url_for('index'))
+    
+    ref = request.args.get('ref').strip().upper()
+    db_acc = load_accessories_db()
+    
+    if ref not in db_acc: return redirect(url_for('accessories_search_page'))
+    
+    data = db_acc[ref]
+    challans = data['challans']
+    
+    line_summary = {}
+    for c in challans:
+        ln = c['line']
+        try: q = int(c['qty'])
+        except: q = 0
+        line_summary[ln] = line_summary.get(ln, 0) + q
+    sorted_line_summary = dict(sorted(line_summary.items()))
+
+    return render_template_string(ACCESSORIES_REPORT_TEMPLATE, ref=ref, buyer=data['buyer'], style=data['style'], item_type=data.get('item_type', ''), challans=challans, line_summary=sorted_line_summary, count=len(challans), today=get_bd_date_str())
+
+@app.route('/admin/accessories/edit', methods=['GET'])
 def accessories_edit():
     if not session.get('logged_in'): return redirect(url_for('index'))
     
