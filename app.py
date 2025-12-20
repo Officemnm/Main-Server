@@ -34,8 +34,8 @@ if not os.path.exists(UPLOAD_FOLDER):
     os.makedirs(UPLOAD_FOLDER)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
-# সেশন টাইমআউট কনফিগারেশন (5 মিনিট)
-app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=5) 
+# সেশন টাইমআউট কনফিগারেশন (2 মিনিট)
+app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=2) 
 
 # টাইমজোন কনফিগারেশন (বাংলাদেশ)
 bd_tz = pytz.timezone('Asia/Dhaka')
@@ -59,7 +59,7 @@ def add_header(response):
 # ==============================================================================
 # MongoDB কানেকশন সেটআপ
 # ==============================================================================
-MONGO_URI = "mongodb+srv://Mehedi:Mehedi123@office.jxdnuaj.mongodb.net/?appName=Office"
+MONGO_URI = "mongodb+srv://Mehedi:Mehedi123@office. jxdnuaj.mongodb.net/? appName=Office"
 
 try:
     client = MongoClient(MONGO_URI)
@@ -79,7 +79,7 @@ COMMON_STYLES = """
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles. min.js"></script>
     <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
     <style>
         : root {
@@ -163,7 +163,7 @@ COMMON_STYLES = """
         }
 
         /* Glassmorphism Effect */
-        .glass {
+        . glass {
             background: rgba(22, 22, 31, 0.7);
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
@@ -186,7 +186,7 @@ COMMON_STYLES = """
             transition: var(--transition-smooth);
             box-shadow: 4px 0 30px rgba(0, 0, 0, 0.3);
         }
-        .sidebar:: before {
+        . sidebar:: before {
             content: '';
             position: absolute;
             top: 0;
@@ -261,14 +261,14 @@ COMMON_STYLES = """
             transition: var(--transition-smooth);
             z-index: -1;
         }
-        .nav-link:hover::before, .nav-link.active::before { width: 100%; }
+        . nav-link:hover::before, .nav-link.active::before { width: 100%; }
 
-        .nav-link:hover, .nav-link.active { 
+        . nav-link:hover, .nav-link.active { 
             color: var(--accent-orange); 
             transform: translateX(5px);
         }
 
-        .nav-link.active {
+        . nav-link. active {
             background: rgba(255, 122, 0, 0.1);
             border-left: 3px solid var(--accent-orange);
             box-shadow: 0 0 20px var(--accent-orange-glow);
@@ -287,7 +287,7 @@ COMMON_STYLES = """
             filter: drop-shadow(0 0 8px var(--accent-orange));
         }
 
-        .nav-link .nav-badge {
+        .nav-link . nav-badge {
             margin-left: auto;
             background: var(--accent-orange);
             color:  white;
@@ -302,7 +302,7 @@ COMMON_STYLES = """
             50% { transform: scale(1.1); }
         }
 
-        .sidebar-footer {
+        . sidebar-footer {
             margin-top: auto;
             padding-top: 20px; 
             border-top: 1px solid var(--border-color);
@@ -324,7 +324,7 @@ COMMON_STYLES = """
             min-height: 100vh;
         }
 
-        .header-section { 
+        . header-section { 
             display: flex;
             justify-content: space-between; 
             align-items: flex-start; 
@@ -448,7 +448,7 @@ COMMON_STYLES = """
             letter-spacing: -0.3px;
         }
 
-        .section-header i {
+        . section-header i {
             font-size: 20px;
             opacity: 0.7;
             transition: var(--transition-smooth);
@@ -502,7 +502,7 @@ COMMON_STYLES = """
             box-shadow: 0 0 30px var(--accent-orange-glow);
         }
 
-        .stat-card:hover .stat-icon i {
+        .stat-card:hover . stat-icon i {
             animation: iconBounce 0.5s ease-out;
         }
 
@@ -511,7 +511,7 @@ COMMON_STYLES = """
             50% { transform: scale(1.3); }
         }
 
-        .stat-info h3 { 
+        . stat-info h3 { 
             font-size: 36px;
             font-weight: 800; 
             margin:  0; 
@@ -592,7 +592,7 @@ COMMON_STYLES = """
             100% { transform: translateX(100%); }
         }
 
-        .progress-orange { background: var(--gradient-orange); }
+        . progress-orange { background: var(--gradient-orange); }
         .progress-purple { background: linear-gradient(135deg, #8B5CF6 0%, #A78BFA 100%); }
         .progress-green { background: linear-gradient(135deg, #10B981 0%, #34D399 100%); }
         
@@ -822,7 +822,7 @@ COMMON_STYLES = """
             border-bottom: 3px solid var(--accent-purple);
             border-left: 3px solid var(--accent-purple);
             border-radius: 50%;
-            animation: spin 1.2s linear infinite reverse;
+            animation: spin 1. 2s linear infinite reverse;
         }
 
         @keyframes spin { 
@@ -881,7 +881,7 @@ COMMON_STYLES = """
             box-shadow: 0 0 40px rgba(239, 68, 68, 0.3);
         }
 
-        .fail-circle::before, .fail-circle::after {
+        . fail-circle::before, .fail-circle::after {
             content: '';
             position: absolute; 
             width: 4px; 
@@ -919,7 +919,7 @@ COMMON_STYLES = """
             100% { opacity: 1; transform: rotate(45deg) scale(1); }
         }
 
-        .anim-text { 
+        . anim-text { 
             font-size:  24px; 
             font-weight: 800; 
             color: white;
@@ -1132,7 +1132,7 @@ COMMON_STYLES = """
             opacity: 0.03;
         }
 
-        .upload-zone.dragover {
+        .upload-zone. dragover {
             border-color:  var(--accent-orange);
             background: rgba(255, 122, 0, 0.1);
             transform: scale(1.02);
@@ -1158,7 +1158,7 @@ COMMON_STYLES = """
             margin-bottom: 8px;
         }
 
-        .upload-hint {
+        . upload-hint {
             color: var(--text-secondary);
             font-size: 13px;
         }
@@ -1227,909 +1227,647 @@ COMMON_STYLES = """
                 opacity: 0;
             }
         }
-                /* Enhanced Loading Overlay */
-        #loading-overlay { 
-            display: none;
+                /* Mobile */
+        . mobile-toggle { 
+            display: none; 
             position: fixed; 
-            top: 0; 
-            left: 0; 
-            width: 100%; 
-            height: 100%; 
-            background: rgba(10, 10, 15, 0.95);
-            z-index: 9999; 
-            flex-direction: column;
-            justify-content: center; 
-            align-items: center; 
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
+            top: 20px;
+            right: 20px; 
+            z-index: 2000; 
+            color: white; 
+            background: var(--bg-card);
+            padding: 12px 14px; 
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            cursor: pointer;
+            transition: var(--transition-smooth);
+        }
+
+        .mobile-toggle:hover {
+            background: var(--accent-orange);
+        }
+
+        @media (max-width: 1024px) {
+            .sidebar { 
+                transform: translateX(-100%);
+                width: 280px;
+            } 
+            .sidebar.active { 
+                transform: translateX(0);
+            }
+            . main-content { 
+                margin-left: 0;
+                width: 100%; 
+                padding: 20px; 
+            }
+            .dashboard-grid-2 { 
+                grid-template-columns: 1fr;
+            }
+            .mobile-toggle { 
+                display:  flex;
+                align-items: center;
+                justify-content: center;
+            }
+            .header-section {
+                flex-direction: column;
+                gap: 15px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .stats-grid {
+                grid-template-columns:  1fr;
+            }
+            .page-title {
+                font-size: 24px;
+            }
+            . welcome-content {
+                padding: 40px 30px;
+            }
+            . welcome-title {
+                font-size: 28px;
+            }
+        }
+
+        /* Skeleton Loading */
+        .skeleton {
+            background: linear-gradient(90deg, var(--bg-card) 25%, rgba(255,255,255,0.05) 50%, var(--bg-card) 75%);
+            background-size: 200% 100%;
+            animation:  skeletonLoad 1.5s infinite;
+            border-radius: 8px;
+        }
+
+        @keyframes skeletonLoad {
+            0% { background-position:  200% 0; }
+            100% { background-position: -200% 0; }
         }
         
-        /* Modern Spinner */
-        .spinner-container {
-            position: relative;
-            width: 80px;
-            height: 80px;
-        }
-
-        .spinner { 
-            width: 80px;
-            height: 80px; 
-            border: 4px solid rgba(255, 122, 0, 0.1);
-            border-top: 4px solid var(--accent-orange);
-            border-right: 4px solid var(--accent-orange-light);
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-            box-shadow: 0 0 30px var(--accent-orange-glow);
-        }
-
-        .spinner-inner {
+        /* Notification Dot */
+        .notification-dot {
             position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
+            top: -2px;
+            right: -2px;
+            width: 10px;
+            height: 10px;
+            background: var(--accent-red);
+            border-radius: 50%;
+            border: 2px solid var(--bg-sidebar);
+            animation: notifyPulse 2s infinite;
+        }
+
+        @keyframes notifyPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+        }
+
+        /* Chart Container */
+        .chart-container {
+            position: relative;
+            height: 280px;
+            padding: 10px;
+        }
+
+        /* Real-time Indicator */
+        .realtime-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            color: var(--text-secondary);
+            padding: 6px 12px;
+            background: rgba(16, 185, 129, 0.1);
+            border-radius: 20px;
+            border: 1px solid rgba(16, 185, 129, 0.2);
+        }
+
+        .realtime-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--accent-green);
+            border-radius: 50%;
+            animation: realtimePulse 1s infinite;
+        }
+
+        @keyframes realtimePulse {
+            0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+            70% { opacity: 1; box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
+        }
+
+        /* Floating Action Button */
+        .fab {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            background: var(--gradient-orange);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: white;
+            cursor: pointer;
+            box-shadow: 0 8px 30px var(--accent-orange-glow);
+            transition: var(--transition-smooth);
+            z-index: 100;
+        }
+
+        .fab:hover {
+            transform: scale(1.1) rotate(90deg);
+            box-shadow:  0 12px 40px var(--accent-orange-glow);
+        }
+        
+        /* Glow Text */
+        .glow-text {
+            text-shadow: 0 0 20px var(--accent-orange-glow);
+        }
+
+        /* Animated Border */
+        .animated-border {
+            position: relative;
+        }
+
+        .animated-border:: after {
+            content: '';
+            position: absolute;
+            top:  -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(45deg, var(--accent-orange), var(--accent-purple), var(--accent-green), var(--accent-orange));
+            background-size: 400% 400%;
+            border-radius: inherit;
+            z-index: -1;
+            animation: gradientBorder 3s ease infinite;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .animated-border:hover::after {
+            opacity: 1;
+        }
+
+        @keyframes gradientBorder {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        
+        /* Permission Checkbox Styles */
+        .perm-checkbox {
+            background: rgba(255, 255, 255, 0.03);
+            padding: 14px 18px;
+            border-radius:  12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            border: 1px solid var(--border-color);
+            transition:  var(--transition-smooth);
+            flex:  1;
+            min-width: 100px;
+        }
+
+        . perm-checkbox:hover {
+            border-color: var(--accent-orange);
+            background: rgba(255, 122, 0, 0.05);
+        }
+
+        .perm-checkbox input {
+            width: auto;
+            margin-right: 10px;
+            accent-color: var(--accent-orange);
+        }
+
+        . perm-checkbox span {
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+
+        . perm-checkbox: has(input:checked) {
+            border-color: var(--accent-orange);
+            background: rgba(255, 122, 0, 0.1);
+        }
+
+        . perm-checkbox:has(input:checked) span {
+            color: var(--accent-orange);
+        }
+
+        /* Time Badge */
+        .time-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(255, 255, 255, 0.03);
+            padding: 8px 14px;
+            border-radius:  8px;
+            font-size:  13px;
+            color: var(--text-secondary);
+        }
+
+        .time-badge i {
+            color: var(--accent-orange);
+        }
+        
+        /* History Card Styles - NEW */
+        .history-card {
+            background: var(--gradient-card);
+            border: 1px solid var(--border-color);
+            border-radius:  16px;
+            padding: 20px;
+            margin-top: 20px;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+        }
+        
+        .history-card:hover {
+            border-color:  var(--accent-purple);
+            box-shadow: 0 0 30px rgba(139, 92, 246, 0.2);
+            transform: translateY(-3px);
+        }
+        
+        . history-card-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .history-card-icon {
             width: 50px;
             height: 50px;
-            border: 3px solid rgba(139, 92, 246, 0.1);
-            border-bottom: 3px solid var(--accent-purple);
-            border-left: 3px solid var(--accent-purple);
-            border-radius: 50%;
-            animation: spin 1.2s linear infinite reverse;
-        }
-
-        @keyframes spin { 
-            0% { transform:  rotate(0deg); } 
-            100% { transform:  rotate(360deg); } 
-        }
-
-        /* Success Checkmark Animation */
-        .checkmark-container { 
-            display: none;
-            text-align: center; 
-        }
-
-        .checkmark-circle {
-            width: 100px;
-            height: 100px; 
-            position: relative; 
-            display: inline-block;
-            border-radius: 50%; 
-            border: 3px solid var(--accent-green);
-            margin-bottom: 24px;
-            animation: success-anim 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-            box-shadow: 0 0 40px rgba(16, 185, 129, 0.3);
-        }
-
-        .checkmark-circle::before {
-            content: '';
-            display: block; 
-            width: 30px; 
-            height: 50px;
-            border:  solid var(--accent-green); 
-            border-width: 0 4px 4px 0;
-            position: absolute; 
-            top: 15px; 
-            left: 35px;
-            transform: rotate(45deg); 
-            opacity: 0;
-            animation: checkmark-anim 0.4s 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-        }
-        
-        /* Fail Cross Animation */
-        .fail-container { 
-            display: none; 
-            text-align: center;
-        }
-
-        .fail-circle {
-            width: 100px;
-            height: 100px; 
-            position: relative; 
-            display: inline-block;
-            border-radius: 50%; 
-            border: 3px solid var(--accent-red);
-            margin-bottom: 24px;
-            animation: fail-anim 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-            box-shadow: 0 0 40px rgba(239, 68, 68, 0.3);
-        }
-
-        .fail-circle::before, .fail-circle::after {
-            content: '';
-            position: absolute; 
-            width: 4px; 
-            height: 50px; 
-            background: var(--accent-red);
-            top: 23px; 
-            left: 46px; 
-            border-radius: 4px;
-            animation: crossAnim 0.3s 0.4s ease-out forwards;
-            opacity: 0;
-        }
-
-        .fail-circle::before { transform: rotate(45deg); }
-        .fail-circle::after { transform: rotate(-45deg); }
-
-        @keyframes success-anim { 
-            0% { transform: scale(0); opacity: 0; } 
-            50% { transform:  scale(1.2); } 
-            100% { transform:  scale(1); opacity: 1; } 
-        }
-
-        @keyframes checkmark-anim { 
-            0% { opacity: 0; height: 0; width: 0; } 
-            100% { opacity: 1; height: 50px; width: 30px; } 
-        }
-
-        @keyframes fail-anim { 
-            0% { transform: scale(0); opacity: 0; } 
-            50% { transform: scale(1.2); } 
-            100% { transform: scale(1); opacity: 1; } 
-        }
-
-        @keyframes crossAnim {
-            0% { opacity: 0; transform: rotate(45deg) scale(0); }
-            100% { opacity: 1; transform: rotate(45deg) scale(1); }
-        }
-
-        .anim-text { 
-            font-size:  24px; 
-            font-weight: 800; 
-            color: white;
-            margin-top: 10px; 
-            letter-spacing: 1px;
-        }
-
-        .loading-text {
-            color: var(--text-secondary);
-            font-size: 15px;
-            margin-top:  20px;
-            font-weight: 500;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-            animation: textPulse 1.5s ease-in-out infinite;
-        }
-
-        @keyframes textPulse {
-            0%, 100% { opacity: 0.5; }
-            50% { opacity: 1; }
-        }
-
-        /* Welcome Popup Modal */
-        .welcome-modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left:  0;
-            width: 100%;
-            height: 100%;
-            background: rgba(10, 10, 15, 0.9);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            z-index: 10000;
-            justify-content: center;
-            align-items: center;
-            animation: modalFadeIn 0.3s ease-out;
-        }
-
-        @keyframes modalFadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-        
-        .welcome-content {
-            background: var(--gradient-card);
-            border:  1px solid var(--border-color);
-            border-radius: 24px;
-            padding: 50px 60px;
-            text-align: center;
-            max-width: 500px;
-            width: 90%;
-            animation: welcomeSlideIn 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.5), 0 0 60px var(--accent-orange-glow);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .welcome-content::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(circle, var(--accent-orange-glow) 0%, transparent 60%);
-            animation: welcomeGlow 3s ease-in-out infinite;
-            opacity: 0.3;
-        }
-        
-        @keyframes welcomeSlideIn {
-            from { 
-                opacity: 0;
-                transform:  translateY(-50px) scale(0.9);
-            }
-            to { 
-                opacity: 1;
-                transform: translateY(0) scale(1);
-            }
-        }
-
-        @keyframes welcomeGlow {
-            0%, 100% { transform: rotate(0deg); }
-            50% { transform: rotate(180deg); }
-        }
-
-        .welcome-icon {
-            font-size: 80px;
-            margin-bottom:  20px;
-            display: inline-block;
-            animation: welcomeIconBounce 1s ease-out;
-        }
-
-        @keyframes welcomeIconBounce {
-            0% { transform: scale(0) rotate(-180deg); }
-            60% { transform: scale(1.2) rotate(10deg); }
-            100% { transform: scale(1) rotate(0deg); }
-        }
-
-        .welcome-greeting {
-            font-size: 16px;
-            color: var(--accent-orange);
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 3px;
-            margin-bottom:  10px;
-        }
-
-        .welcome-title {
-            font-size: 36px;
-            font-weight: 900;
-            color: white;
-            margin-bottom: 15px;
-            line-height: 1.2;
-        }
-
-        .welcome-title span {
-            background: var(--gradient-orange);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .welcome-message {
-            color: var(--text-secondary);
-            font-size: 15px;
-            line-height: 1.6;
-            margin-bottom: 30px;
-        }
-
-        .welcome-close {
-            background: var(--gradient-orange);
-            color: white;
-            border: none;
-            padding: 14px 40px;
-            border-radius:  12px;
-            font-size:  15px;
-            font-weight:  700;
-            cursor: pointer;
-            transition: var(--transition-smooth);
-            position: relative;
-            z-index: 1;
-        }
-
-        .welcome-close:hover {
-            transform: translateY(-3px);
-            box-shadow:  0 15px 40px var(--accent-orange-glow);
-        }
-
-        /* Tooltip */
-        .tooltip {
-            position: relative;
-        }
-
-        .tooltip:: after {
-            content: attr(data-tooltip);
-            position: absolute;
-            bottom: 120%;
-            left: 50%;
-            transform: translateX(-50%);
-            background: var(--bg-card);
-            color: white;
-            padding: 8px 14px;
-            border-radius:  8px;
-            font-size: 12px;
-            white-space: nowrap;
-            opacity: 0;
-            visibility: hidden;
-            transition: var(--transition-smooth);
-            border: 1px solid var(--border-color);
-            z-index: 1000;
-        }
-
-        .tooltip:hover:: after {
-            opacity: 1;
-            visibility:  visible;
-            bottom: 130%;
-        }
-        
-        /* File Upload Zone */
-        .upload-zone {
-            border: 2px dashed var(--border-color);
-            padding: 50px;
-            text-align: center;
-            border-radius: 16px;
-            transition: var(--transition-smooth);
-            cursor: pointer;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .upload-zone::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: var(--gradient-orange);
-            opacity: 0;
-            transition: var(--transition-smooth);
-        }
-
-        .upload-zone:hover {
-            border-color: var(--accent-orange);
-            background: rgba(255, 122, 0, 0.05);
-        }
-
-        .upload-zone:hover::before {
-            opacity: 0.03;
-        }
-
-        .upload-zone.dragover {
-            border-color:  var(--accent-orange);
-            background: rgba(255, 122, 0, 0.1);
-            transform: scale(1.02);
-        }
-
-        .upload-icon {
-            font-size: 60px;
-            color: var(--accent-orange);
-            margin-bottom: 20px;
-            display: inline-block;
-            animation: uploadFloat 3s ease-in-out infinite;
-        }
-
-        @keyframes uploadFloat {
-            0%, 100% { transform: translateY(0); }
-            50% { transform:  translateY(-10px); }
-        }
-
-        .upload-text {
-            color: var(--accent-orange);
-            font-weight: 600;
-            font-size: 16px;
-            margin-bottom: 8px;
-        }
-
-        .upload-hint {
-            color: var(--text-secondary);
-            font-size: 13px;
-        }
-
-        #file-count {
-            margin-top: 20px;
-            font-size: 14px;
-            color: var(--accent-green);
-            font-weight: 600;
-        }
-
-        /* Flash Messages */
-        .flash-message {
-            margin-bottom: 20px;
-            padding: 16px 20px;
-            border-radius:  12px;
-            font-size: 14px;
-            font-weight: 500;
+            background: linear-gradient(145deg, rgba(139, 92, 246, 0.2), rgba(139, 92, 246, 0.05));
+            border-radius: 12px;
             display: flex;
             align-items: center;
-            gap: 12px;
-            animation: flashSlideIn 0.4s ease-out;
-        }
-
-        @keyframes flashSlideIn {
-            from { 
-                opacity: 0;
-                transform: translateY(-10px);
-            }
-            to { 
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .flash-error {
-            background: rgba(239, 68, 68, 0.1);
-            border: 1px solid rgba(239, 68, 68, 0.2);
-            color: #F87171;
-        }
-
-        .flash-success {
-            background: rgba(16, 185, 129, 0.1);
-            border: 1px solid rgba(16, 185, 129, 0.2);
-            color: #34D399;
-        }
-        
-        /* Ripple Effect */
-        .ripple {
-            position: relative;
-            overflow: hidden;
-        }
-
-        .ripple-effect {
-            position: absolute;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.3);
-            transform: scale(0);
-            animation: rippleAnim 0.6s ease-out;
-            pointer-events: none;
-        }
-
-        @keyframes rippleAnim {
-            to {
-                transform: scale(4);
-                opacity: 0;
-            }
-        }
-                /* Enhanced Loading Overlay */
-        #loading-overlay { 
-            display: none;
-            position: fixed; 
-            top: 0; 
-            left: 0; 
-            width: 100%; 
-            height: 100%; 
-            background: rgba(10, 10, 15, 0.95);
-            z-index: 9999; 
-            flex-direction: column;
-            justify-content: center; 
-            align-items: center; 
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-        }
-        
-        /* Modern Spinner */
-        .spinner-container {
-            position: relative;
-            width: 80px;
-            height: 80px;
-        }
-
-        .spinner { 
-            width: 80px;
-            height: 80px; 
-            border: 4px solid rgba(255, 122, 0, 0.1);
-            border-top: 4px solid var(--accent-orange);
-            border-right: 4px solid var(--accent-orange-light);
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-            box-shadow: 0 0 30px var(--accent-orange-glow);
-        }
-
-        .spinner-inner {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 50px;
-            height: 50px;
-            border: 3px solid rgba(139, 92, 246, 0.1);
-            border-bottom: 3px solid var(--accent-purple);
-            border-left: 3px solid var(--accent-purple);
-            border-radius: 50%;
-            animation: spin 1.2s linear infinite reverse;
-        }
-
-        @keyframes spin { 
-            0% { transform:  rotate(0deg); } 
-            100% { transform:  rotate(360deg); } 
-        }
-
-        /* Success Checkmark Animation */
-        .checkmark-container { 
-            display: none;
-            text-align: center; 
-        }
-
-        .checkmark-circle {
-            width: 100px;
-            height: 100px; 
-            position: relative; 
-            display: inline-block;
-            border-radius: 50%; 
-            border: 3px solid var(--accent-green);
-            margin-bottom: 24px;
-            animation: success-anim 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-            box-shadow: 0 0 40px rgba(16, 185, 129, 0.3);
-        }
-
-        .checkmark-circle::before {
-            content: '';
-            display: block; 
-            width: 30px; 
-            height: 50px;
-            border:  solid var(--accent-green); 
-            border-width: 0 4px 4px 0;
-            position: absolute; 
-            top: 15px; 
-            left: 35px;
-            transform: rotate(45deg); 
-            opacity: 0;
-            animation: checkmark-anim 0.4s 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-        }
-        
-        /* Fail Cross Animation */
-        .fail-container { 
-            display: none; 
-            text-align: center;
-        }
-
-        .fail-circle {
-            width: 100px;
-            height: 100px; 
-            position: relative; 
-            display: inline-block;
-            border-radius: 50%; 
-            border: 3px solid var(--accent-red);
-            margin-bottom: 24px;
-            animation: fail-anim 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-            box-shadow: 0 0 40px rgba(239, 68, 68, 0.3);
-        }
-
-        .fail-circle::before, .fail-circle::after {
-            content: '';
-            position: absolute; 
-            width: 4px; 
-            height: 50px; 
-            background: var(--accent-red);
-            top: 23px; 
-            left: 46px; 
-            border-radius: 4px;
-            animation: crossAnim 0.3s 0.4s ease-out forwards;
-            opacity: 0;
-        }
-
-        .fail-circle::before { transform: rotate(45deg); }
-        .fail-circle::after { transform: rotate(-45deg); }
-
-        @keyframes success-anim { 
-            0% { transform: scale(0); opacity: 0; } 
-            50% { transform:  scale(1.2); } 
-            100% { transform:  scale(1); opacity: 1; } 
-        }
-
-        @keyframes checkmark-anim { 
-            0% { opacity: 0; height: 0; width: 0; } 
-            100% { opacity: 1; height: 50px; width: 30px; } 
-        }
-
-        @keyframes fail-anim { 
-            0% { transform: scale(0); opacity: 0; } 
-            50% { transform: scale(1.2); } 
-            100% { transform: scale(1); opacity: 1; } 
-        }
-
-        @keyframes crossAnim {
-            0% { opacity: 0; transform: rotate(45deg) scale(0); }
-            100% { opacity: 1; transform: rotate(45deg) scale(1); }
-        }
-
-        .anim-text { 
-            font-size:  24px; 
-            font-weight: 800; 
-            color: white;
-            margin-top: 10px; 
-            letter-spacing: 1px;
-        }
-
-        .loading-text {
-            color: var(--text-secondary);
-            font-size: 15px;
-            margin-top:  20px;
-            font-weight: 500;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-            animation: textPulse 1.5s ease-in-out infinite;
-        }
-
-        @keyframes textPulse {
-            0%, 100% { opacity: 0.5; }
-            50% { opacity: 1; }
-        }
-
-        /* Welcome Popup Modal */
-        .welcome-modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left:  0;
-            width: 100%;
-            height: 100%;
-            background: rgba(10, 10, 15, 0.9);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            z-index: 10000;
             justify-content: center;
-            align-items: center;
-            animation: modalFadeIn 0.3s ease-out;
-        }
-
-        @keyframes modalFadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
+            font-size: 22px;
+            color: var(--accent-purple);
         }
         
-        .welcome-content {
-            background: var(--gradient-card);
-            border:  1px solid var(--border-color);
-            border-radius: 24px;
-            padding: 50px 60px;
-            text-align: center;
-            max-width: 500px;
-            width: 90%;
-            animation: welcomeSlideIn 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.5), 0 0 60px var(--accent-orange-glow);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .welcome-content::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(circle, var(--accent-orange-glow) 0%, transparent 60%);
-            animation: welcomeGlow 3s ease-in-out infinite;
-            opacity: 0.3;
-        }
-        
-        @keyframes welcomeSlideIn {
-            from { 
-                opacity: 0;
-                transform:  translateY(-50px) scale(0.9);
-            }
-            to { 
-                opacity: 1;
-                transform: translateY(0) scale(1);
-            }
-        }
-
-        @keyframes welcomeGlow {
-            0%, 100% { transform: rotate(0deg); }
-            50% { transform: rotate(180deg); }
-        }
-
-        .welcome-icon {
-            font-size: 80px;
-            margin-bottom:  20px;
-            display: inline-block;
-            animation: welcomeIconBounce 1s ease-out;
-        }
-
-        @keyframes welcomeIconBounce {
-            0% { transform: scale(0) rotate(-180deg); }
-            60% { transform: scale(1.2) rotate(10deg); }
-            100% { transform: scale(1) rotate(0deg); }
-        }
-
-        .welcome-greeting {
-            font-size: 16px;
-            color: var(--accent-orange);
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 3px;
-            margin-bottom:  10px;
-        }
-
-        .welcome-title {
-            font-size: 36px;
-            font-weight: 900;
-            color: white;
-            margin-bottom: 15px;
-            line-height: 1.2;
-        }
-
-        .welcome-title span {
-            background: var(--gradient-orange);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .welcome-message {
-            color: var(--text-secondary);
-            font-size: 15px;
-            line-height: 1.6;
-            margin-bottom: 30px;
-        }
-
-        .welcome-close {
-            background: var(--gradient-orange);
-            color: white;
-            border: none;
-            padding: 14px 40px;
-            border-radius:  12px;
-            font-size:  15px;
+        .history-card-title {
+            font-size: 18px;
             font-weight:  700;
-            cursor: pointer;
-            transition: var(--transition-smooth);
-            position: relative;
-            z-index: 1;
-        }
-
-        .welcome-close:hover {
-            transform: translateY(-3px);
-            box-shadow:  0 15px 40px var(--accent-orange-glow);
-        }
-
-        /* Tooltip */
-        .tooltip {
-            position: relative;
-        }
-
-        .tooltip:: after {
-            content: attr(data-tooltip);
-            position: absolute;
-            bottom: 120%;
-            left: 50%;
-            transform: translateX(-50%);
-            background: var(--bg-card);
             color: white;
-            padding: 8px 14px;
-            border-radius:  8px;
-            font-size: 12px;
-            white-space: nowrap;
-            opacity: 0;
-            visibility: hidden;
-            transition: var(--transition-smooth);
-            border: 1px solid var(--border-color);
-            z-index: 1000;
-        }
-
-        .tooltip:hover:: after {
-            opacity: 1;
-            visibility:  visible;
-            bottom: 130%;
         }
         
-        /* File Upload Zone */
-        .upload-zone {
-            border: 2px dashed var(--border-color);
-            padding: 50px;
-            text-align: center;
-            border-radius: 16px;
-            transition: var(--transition-smooth);
-            cursor: pointer;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .upload-zone::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: var(--gradient-orange);
-            opacity: 0;
-            transition: var(--transition-smooth);
-        }
-
-        .upload-zone:hover {
-            border-color: var(--accent-orange);
-            background: rgba(255, 122, 0, 0.05);
-        }
-
-        .upload-zone:hover::before {
-            opacity: 0.03;
-        }
-
-        .upload-zone.dragover {
-            border-color:  var(--accent-orange);
-            background: rgba(255, 122, 0, 0.1);
-            transform: scale(1.02);
-        }
-
-        .upload-icon {
-            font-size: 60px;
-            color: var(--accent-orange);
-            margin-bottom: 20px;
-            display: inline-block;
-            animation: uploadFloat 3s ease-in-out infinite;
-        }
-
-        @keyframes uploadFloat {
-            0%, 100% { transform: translateY(0); }
-            50% { transform:  translateY(-10px); }
-        }
-
-        .upload-text {
-            color: var(--accent-orange);
-            font-weight: 600;
-            font-size: 16px;
-            margin-bottom: 8px;
-        }
-
-        .upload-hint {
-            color: var(--text-secondary);
+        .history-card-subtitle {
             font-size: 13px;
+            color: var(--text-secondary);
         }
-
-        #file-count {
-            margin-top: 20px;
-            font-size: 14px;
-            color: var(--accent-green);
-            font-weight: 600;
+        
+        .history-list {
+            max-height: 300px;
+            overflow-y:  auto;
         }
-
-        /* Flash Messages */
-        .flash-message {
-            margin-bottom: 20px;
-            padding: 16px 20px;
-            border-radius:  12px;
-            font-size: 14px;
-            font-weight: 500;
+        
+        .history-item {
             display: flex;
             align-items: center;
-            gap: 12px;
-            animation: flashSlideIn 0.4s ease-out;
-        }
-
-        @keyframes flashSlideIn {
-            from { 
-                opacity: 0;
-                transform: translateY(-10px);
-            }
-            to { 
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .flash-error {
-            background: rgba(239, 68, 68, 0.1);
-            border: 1px solid rgba(239, 68, 68, 0.2);
-            color: #F87171;
-        }
-
-        .flash-success {
-            background: rgba(16, 185, 129, 0.1);
-            border: 1px solid rgba(16, 185, 129, 0.2);
-            color: #34D399;
+            justify-content: space-between;
+            padding: 12px 15px;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 10px;
+            margin-bottom:  8px;
+            transition: var(--transition-smooth);
+            cursor: pointer;
+            border: 1px solid transparent;
         }
         
-        /* Ripple Effect */
-        .ripple {
-            position: relative;
-            overflow: hidden;
+        .history-item:hover {
+            background: rgba(139, 92, 246, 0.1);
+            border-color: rgba(139, 92, 246, 0.3);
         }
+        
+        .history-item-ref {
+            font-weight: 700;
+            color: var(--accent-purple);
+            font-size: 14px;
+        }
+        
+        . history-item-info {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+        
+        .history-item-arrow {
+            color: var(--text-secondary);
+            transition: var(--transition-smooth);
+        }
+        
+        . history-item: hover .history-item-arrow {
+            color: var(--accent-purple);
+            transform: translateX(5px);
+        }
+        
+        .history-count-badge {
+            background: var(--accent-purple);
+            color: white;
+            padding: 4px 12px;
+            border-radius:  20px;
+            font-size: 12px;
+            font-weight: 700;
+        }
+    </style>
+"""
+# ==============================================================================
+# হেল্পার ফাংশন:  পরিসংখ্যান ও হিস্ট্রি (MongoDB ব্যবহার করে)
+# ==============================================================================
 
-        .ripple-effect {
-            position: absolute;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.3);
-            transform: scale(0);
-            animation: rippleAnim 0.6s ease-out;
-            pointer-events: none;
+def load_users():
+    record = users_col.find_one({"_id": "global_users"})
+    default_users = {
+        "Admin": {
+            "password": "@Nijhum@12", 
+            "role": "admin", 
+            "permissions": ["closing", "po_sheet", "user_manage", "view_history", "accessories"],
+            "created_at": "N/A",
+            "last_login": "Never",
+            "last_duration": "N/A"
         }
+    }
+    if record:
+        return record['data']
+    else:
+        users_col.insert_one({"_id": "global_users", "data": default_users})
+        return default_users
 
-        @keyframes rippleAnim {
-            to {
-                transform: scale(4);
-                opacity: 0;
-            }
-        }
-        # ==============================================================================
+def save_users(users_data):
+    users_col.replace_one(
+        {"_id": "global_users"}, 
+        {"_id": "global_users", "data": users_data}, 
+        upsert=True
+    )
+
+def load_stats():
+    record = stats_col.find_one({"_id": "dashboard_stats"})
+    if record:
+        return record['data']
+    else:
+        default_stats = {"downloads": [], "last_booking": "None"}
+        stats_col.insert_one({"_id": "dashboard_stats", "data": default_stats})
+        return default_stats
+
+def save_stats(data):
+    stats_col.replace_one(
+        {"_id": "dashboard_stats"},
+        {"_id": "dashboard_stats", "data": data},
+        upsert=True
+    )
+
+def update_stats(ref_no, username):
+    data = load_stats()
+    now = get_bd_time()
+    new_record = {
+        "ref":  ref_no,
+        "user": username,
+        "date": now. strftime('%d-%m-%Y'),
+        "time": now.strftime('%I:%M %p'),
+        "type": "Closing Report",
+        "iso_time": now.isoformat()
+    }
+    data['downloads'].insert(0, new_record)
+    if len(data['downloads']) > 3000:
+        data['downloads'] = data['downloads'][: 3000]
+        
+    data['last_booking'] = ref_no
+    save_stats(data)
+
+def update_po_stats(username, file_count, booking_ref="N/A"):
+    data = load_stats()
+    now = get_bd_time()
+    new_record = {
+        "ref": booking_ref,
+        "user": username,
+        "file_count": file_count,
+        "date": now.strftime('%d-%m-%Y'),
+        "time": now.strftime('%I:%M %p'),
+        "type": "PO Sheet",
+        "iso_time": now.isoformat()
+    }
+    if 'downloads' not in data:  data['downloads'] = []
+    data['downloads'].insert(0, new_record)
+    if len(data['downloads']) > 3000:
+        data['downloads'] = data['downloads'][:3000]
+    save_stats(data)
+
+def load_accessories_db():
+    record = accessories_col.find_one({"_id": "accessories_data"})
+    if record:
+        return record['data']
+    else:
+        return {}
+
+def save_accessories_db(data):
+    accessories_col. replace_one(
+        {"_id": "accessories_data"},
+        {"_id": "accessories_data", "data": data},
+        upsert=True
+    )
+
+def check_and_refresh_colors(ref_no, db_acc):
+    """
+    ২৪ ঘন্টা পর পর API কল করে নতুন কালার আপডেট করে।
+    Returns: updated data dict or None if no update needed or failed
+    """
+    if ref_no not in db_acc:
+        return None
+    
+    data = db_acc[ref_no]
+    last_updated = data.get('last_api_call', None)
+    now = get_bd_time()
+    
+    # Check if 24 hours have passed
+    needs_refresh = False
+    if last_updated is None: 
+        needs_refresh = True
+    else:
+        try:
+            last_updated_dt = datetime.fromisoformat(last_updated)
+            # Make sure both datetimes are timezone aware
+            if last_updated_dt.tzinfo is None:
+                last_updated_dt = bd_tz.localize(last_updated_dt)
+            
+            time_diff = now - last_updated_dt
+            if time_diff.total_seconds() >= 86400:  # 24 hours = 86400 seconds
+                needs_refresh = True
+        except Exception as e:
+            print(f"Error parsing last_api_call: {e}")
+            needs_refresh = True
+    
+    if needs_refresh:
+        try:
+            api_data = fetch_closing_report_data(ref_no)
+            if api_data:
+                # Get new colors from API
+                new_colors = sorted(list(set([item['color'] for item in api_data])))
+                existing_colors = data.get('colors', [])
+                
+                # Merge colors - keep existing and add new ones
+                merged_colors = list(set(existing_colors + new_colors))
+                merged_colors = sorted(merged_colors)
+                
+                # Update data
+                db_acc[ref_no]['colors'] = merged_colors
+                db_acc[ref_no]['last_api_call'] = now. isoformat()
+                
+                # Also update buyer and style if available
+                if api_data[0].get('buyer', 'N/A') != 'N/A':
+                    db_acc[ref_no]['buyer'] = api_data[0]. get('buyer', data.get('buyer', 'N/A'))
+                if api_data[0].get('style', 'N/A') != 'N/A': 
+                    db_acc[ref_no]['style'] = api_data[0].get('style', data.get('style', 'N/A'))
+                
+                save_accessories_db(db_acc)
+                print(f"Colors refreshed for {ref_no}. New colors: {merged_colors}")
+                return db_acc
+        except Exception as e:
+            print(f"Error refreshing colors for {ref_no}: {e}")
+            return None
+    
+    return None
+
+def get_all_accessories_bookings():
+    """
+    সকল সেভ করা বুকিং রেফারেন্স লিস্ট রিটার্ন করে
+    """
+    db_acc = load_accessories_db()
+    bookings = []
+    for ref, data in db_acc.items():
+        challan_count = len(data.get('challans', []))
+        total_qty = sum([int(c.get('qty', 0)) for c in data.get('challans', [])])
+        bookings.append({
+            'ref':  ref,
+            'buyer': data.get('buyer', 'N/A'),
+            'style': data.get('style', 'N/A'),
+            'challan_count': challan_count,
+            'total_qty': total_qty,
+            'last_updated': data.get('last_api_call', 'N/A')
+        })
+    
+    # Sort by ref number
+    bookings = sorted(bookings, key=lambda x: x['ref'], reverse=True)
+    return bookings
+
+# --- আপডেটেড:  রিয়েল-টাইম ড্যাশবোর্ড সামারি এবং এনালিটিক্স ---
+def get_dashboard_summary_v2():
+    stats_data = load_stats()
+    acc_db = load_accessories_db()
+    users_data = load_users()
+    
+    now = get_bd_time()
+    today_str = now.strftime('%d-%m-%Y')
+    
+    # 1. User Stats
+    user_details = []
+    for u, d in users_data.items():
+        user_details.append({
+            "username": u,
+            "role": d.get('role', 'user'),
+            "created_at": d.get('created_at', 'N/A'),
+            "last_login":  d.get('last_login', 'Never'),
+            "last_duration":  d.get('last_duration', 'N/A')
+        })
+
+    # 2. Accessories Today & Analytics - LIFETIME COUNT
+    acc_lifetime_count = 0
+    acc_today_list = []
+    
+    # Analytics Container:  {'YYYY-MM-DD': {'label': '01-Dec', 'closing':  0, 'po':  0, 'acc': 0}}
+    daily_data = defaultdict(lambda: {'closing': 0, 'po':  0, 'acc': 0})
+
+    for ref, data in acc_db.items():
+        for challan in data.get('challans', []):
+            acc_lifetime_count += 1
+            c_date = challan.get('date')
+            if c_date == today_str:
+                acc_today_list.append({
+                    "ref": ref,
+                    "buyer": data.get('buyer'),
+                    "style": data. get('style'),
+                    "time": "Today", 
+                    "qty": challan.get('qty')
+                })
+            
+            # Analytics Calculation - Daily basis
+            try:
+                dt_obj = datetime.strptime(c_date, '%d-%m-%Y')
+                sort_key = dt_obj.strftime('%Y-%m-%d')
+                daily_data[sort_key]['acc'] += 1
+                daily_data[sort_key]['label'] = dt_obj.strftime('%d-%b')
+            except:  pass
+
+    # 3. Closing & PO - LIFETIME COUNT & Analytics
+    closing_lifetime_count = 0
+    po_lifetime_count = 0
+    closing_list = []
+    po_list = []
+    
+    history = stats_data.get('downloads', [])
+    for item in history:
+        item_date = item.get('date', '')
+        if item. get('type') == 'PO Sheet':
+            po_lifetime_count += 1
+            if item_date == today_str: 
+                po_list.append(item)
+        else:  
+            closing_lifetime_count += 1
+            if item_date == today_str:
+                closing_list.append(item)
+        
+        # Analytics Calculation - Daily basis
+        try:
+            dt_obj = datetime.strptime(item_date, '%d-%m-%Y')
+            sort_key = dt_obj.strftime('%Y-%m-%d')
+            
+            if item.get('type') == 'PO Sheet':
+                daily_data[sort_key]['po'] += 1
+            else: 
+                daily_data[sort_key]['closing'] += 1
+            daily_data[sort_key]['label'] = dt_obj.strftime('%d-%b')
+        except: pass
+    
+    # Get last month's 1st date to today
+    first_of_last_month = (now. replace(day=1) - timedelta(days=1)).replace(day=1)
+    start_date = first_of_last_month.strftime('%Y-%m-%d')
+    end_date = now.strftime('%Y-%m-%d')
+    
+    # Filter and sort data from start_date to end_date
+    sorted_keys = sorted([k for k in daily_data. keys() if start_date <= k <= end_date])
+    
+    chart_labels = []
+    chart_closing = []
+    chart_po = []
+    chart_acc = []
+
+    if not sorted_keys:
+        curr_d = now.strftime('%d-%b')
+        chart_labels = [curr_d]
+        chart_closing = [0]
+        chart_po = [0]
+        chart_acc = [0]
+    else:
+        for k in sorted_keys:
+            d = daily_data[k]
+            chart_labels.append(d.get('label', k))
+            chart_closing.append(d['closing'])
+            chart_po. append(d['po'])
+            chart_acc.append(d['acc'])
+
+    return {
+        "users": { "count": len(users_data), "details": user_details },
+        "accessories": { "count": acc_lifetime_count, "details":  acc_today_list },
+        "closing": { "count": closing_lifetime_count, "details":  closing_list },
+        "po": { "count": po_lifetime_count, "details": po_list },
+        "chart":  {
+            "labels": chart_labels,
+            "closing": chart_closing,
+            "po":  chart_po,
+            "acc": chart_acc
+        },
+        "history": history
+    }
+    # ==============================================================================
 # লজিক পার্ট:  PURCHASE ORDER SHEET PARSER (PDF)
 # ==============================================================================
 
@@ -2164,28 +1902,28 @@ def extract_metadata(first_page_text):
         'buyer': 'N/A', 'booking':  'N/A', 'style': 'N/A', 
         'season': 'N/A', 'dept': 'N/A', 'item': 'N/A'
     }
-    if "KIABI" in first_page_text.upper():
+    if "KIABI" in first_page_text. upper():
         meta['buyer'] = "KIABI"
     else:
         buyer_match = re.search(r"Buyer.*?Name[\s\S]*?([\w\s&]+)(? :\n|$)", first_page_text)
         if buyer_match:  meta['buyer'] = buyer_match.group(1).strip()
 
-    booking_block_match = re.search(r"(? :Internal )?Booking NO\. ? [:\s]*([\s\S]*?)(?:System NO|Control No|Buyer)", first_page_text, re.IGNORECASE)
+    booking_block_match = re.search(r"(? :Internal )?Booking NO\.  ? [:\s]*([\s\S]*?)(?:System NO|Control No|Buyer)", first_page_text, re.IGNORECASE)
     if booking_block_match:  
         raw_booking = booking_block_match.group(1).strip()
         clean_booking = raw_booking.replace('\n', '').replace('\r', '').replace(' ', '')
         if "System" in clean_booking:  clean_booking = clean_booking.split("System")[0]
         meta['booking'] = clean_booking
 
-    style_match = re.search(r"Style Ref\. ?[:\s]*([\w-]+)", first_page_text, re.IGNORECASE)
+    style_match = re.search(r"Style Ref\.  ?[:\s]*([\w-]+)", first_page_text, re.IGNORECASE)
     if style_match: meta['style'] = style_match.group(1).strip()
     else: 
-        style_match = re.search(r"Style Des\.?[\s\S]*?([\w-]+)", first_page_text, re.IGNORECASE)
+        style_match = re. search(r"Style Des\. ?[\s\S]*?([\w-]+)", first_page_text, re.IGNORECASE)
         if style_match: meta['style'] = style_match.group(1).strip()
 
     season_match = re.search(r"Season\s*[:\n\"]*([\w\d-]+)", first_page_text, re.IGNORECASE)
     if season_match: meta['season'] = season_match.group(1).strip()
-    dept_match = re.search(r"Dept\. ?[\s\n: ]*([A-Za-z]+)", first_page_text, re.IGNORECASE)
+    dept_match = re.search(r"Dept\.  ?[\s\n: ]*([A-Za-z]+)", first_page_text, re.IGNORECASE)
     if dept_match: meta['dept'] = dept_match.group(1).strip()
 
     item_match = re.search(r"Garments?    Item[\s\n: ]*([^\n\r]+)", first_page_text, re.IGNORECASE)
@@ -2206,20 +1944,20 @@ def extract_data_dynamic(file_path):
     
     try:
         reader = pypdf.PdfReader(file_path)
-        first_page_text = reader.pages[0].extract_text()
+        first_page_text = reader.pages[0]. extract_text()
         
         if "Main Fabric Booking" in first_page_text or "Fabric Booking Sheet" in first_page_text: 
             metadata = extract_metadata(first_page_text)
             return [], metadata 
 
         order_match = re.search(r"Order no\D*(\d+)", first_page_text, re.IGNORECASE)
-        if order_match:  order_no = order_match.group(1)
+        if order_match:  order_no = order_match. group(1)
         else: 
             alt_match = re.search(r"Order\s*[:\.]?\s*(\d+)", first_page_text, re.IGNORECASE)
             if alt_match: order_no = alt_match.group(1)
         
         order_no = str(order_no).strip()
-        if order_no.endswith("00"): order_no = order_no[:-2]
+        if order_no. endswith("00"): order_no = order_no[:-2]
 
         for page in reader.pages:
             text = page.extract_text()
@@ -2256,7 +1994,7 @@ def extract_data_dynamic(file_path):
                     if "quantity" in lower_line or "currency" in lower_line or "price" in lower_line or "amount" in lower_line: 
                         continue
                         
-                    clean_line = line.replace("Spec. price", "").replace("Spec", "").strip()
+                    clean_line = line.replace("Spec.  price", "").replace("Spec", "").strip()
                     if not re.search(r'[a-zA-Z]', clean_line): continue
                     if re.match(r'^[A-Z]\d+$', clean_line) or "Assortment" in clean_line:  continue
 
@@ -2273,7 +2011,7 @@ def extract_data_dynamic(file_path):
                         vertical_qtys = []
                         for next_line in lines[i+1:]: 
                             next_line = next_line.strip()
-                            if "Total" in next_line or re.search(r'[a-zA-Z]', next_line.replace("Spec", "").replace("price", "")): break
+                            if "Total" in next_line or re.search(r'[a-zA-Z]', next_line. replace("Spec", "").replace("price", "")): break
                             if re.match(r'^\d+$', next_line): vertical_qtys.append(int(next_line))
                         
                         if len(vertical_qtys) >= len(sizes): final_qtys = vertical_qtys[: len(sizes)]
@@ -2293,7 +2031,7 @@ def extract_data_dynamic(file_path):
 # ==============================================================================
 
 def get_authenticated_session(username, password):
-    login_url = 'http://180.92.235.190: 8022/erp/login.php'
+    login_url = 'http://180.92.235.190: 8022/erp/login. php'
     login_payload = {'txt_userid': username, 'txt_password': password, 'submit': 'Login'}
     session_req = requests.Session()
     session_req.headers.update({
@@ -2325,7 +2063,7 @@ def fetch_closing_report_data(internal_ref_no):
             try:
                 response = active_session.post(report_url, data=payload, timeout=300)
                 if response.status_code == 200 and "Data not Found" not in response.text:
-                    found_data = response.text
+                    found_data = response. text
                     break
             except:  continue
         if found_data:  break
@@ -2360,13 +2098,13 @@ def parse_report_data(html_content):
                 if len(cells) > 2:
                     criteria_main = cells[0].get_text(strip=True)
                     criteria_sub = cells[2].get_text(strip=True)
-                    main_lower, sub_lower = criteria_main.lower(), criteria_sub.lower()
+                    main_lower, sub_lower = criteria_main. lower(), criteria_sub.lower()
                     
                     if main_lower == "style":  style = cells[1].get_text(strip=True)
-                    elif main_lower == "color & gmts. item": color = cells[1].get_text(strip=True)
+                    elif main_lower == "color & gmts.  item": color = cells[1].get_text(strip=True)
                     elif "buyer" in main_lower: buyer_name = cells[1].get_text(strip=True)
                     
-                    if sub_lower == "gmts.color /country qty": gmts_qty_data = [cell.get_text(strip=True) for cell in cells[3:len(headers)+3]]
+                    if sub_lower == "gmts. color /country qty": gmts_qty_data = [cell.get_text(strip=True) for cell in cells[3:len(headers)+3]]
                     
                     if "sewing input" in main_lower:  sewing_input_data = [cell.get_text(strip=True) for cell in cells[1:len(headers)+1]]
                     elif "sewing input" in sub_lower:  sewing_input_data = [cell.get_text(strip=True) for cell in cells[3:len(headers)+3]]
@@ -2379,7 +2117,7 @@ def parse_report_data(html_content):
                 plus_3_percent_data = []
                 for value in gmts_qty_data: 
                     try:
-                        new_qty = round(int(value.replace(',', '')) * 1.03)
+                        new_qty = round(int(value. replace(',', '')) * 1.03)
                         plus_3_percent_data.append(str(new_qty))
                     except (ValueError, TypeError):
                         plus_3_percent_data.append(value)
@@ -2403,7 +2141,7 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
     # Styles
     bold_font = Font(bold=True)
     title_font = Font(size=32, bold=True, color="7B261A") 
-    white_bold_font = Font(size=16.5, bold=True, color="FFFFFF")
+    white_bold_font = Font(size=16. 5, bold=True, color="FFFFFF")
     center_align = Alignment(horizontal='center', vertical='center')
     left_align = Alignment(horizontal='left', vertical='center')
     color_align = Alignment(horizontal='center', vertical='center', wrap_text=True)
@@ -2421,28 +2159,28 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
     ws.merge_cells(start_row=1, start_column=1, end_row=1, end_column=NUM_COLUMNS)
     
     # UPDATED BRANDING
-    ws['A1'].value = "COTTON CLOTHING BD LTD"
+    ws['A1']. value = "COTTON CLOTHING BD LTD"
     ws['A1'].font = title_font 
     ws['A1'].alignment = center_align
 
-    ws.merge_cells(start_row=2, start_column=1, end_row=2, end_column=NUM_COLUMNS)
+    ws. merge_cells(start_row=2, start_column=1, end_row=2, end_column=NUM_COLUMNS)
     ws['A2'].value = "CLOSING REPORT [ INPUT SECTION ]"
     ws['A2'].font = Font(size=15, bold=True) 
-    ws['A2'].alignment = center_align
-    ws.row_dimensions[3].height = 6
+    ws['A2']. alignment = center_align
+    ws. row_dimensions[3].height = 6
 
-    formatted_ref_no = internal_ref_no.upper()
+    formatted_ref_no = internal_ref_no. upper()
     current_date = get_bd_time().strftime("%d/%m/%Y")
     
     left_sub_headers = {
-        'A4': 'BUYER', 'B4': report_data[0].get('buyer', ''), 
+        'A4': 'BUYER', 'B4': report_data[0]. get('buyer', ''), 
         'A5': 'IR/IB NO', 'B5': formatted_ref_no, 
         'A6': 'STYLE NO', 'B6': report_data[0].get('style', '')
     }
     
     for cell_ref, value in left_sub_headers.items():
         cell = ws[cell_ref]
-        cell.value = value
+        cell. value = value
         cell.font = bold_font
         cell.alignment = left_align
         cell.border = thin_border
@@ -2472,7 +2210,7 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
     for block in report_data:
         table_headers = ["COLOUR NAME", "SIZE", "ORDER QTY 3%", "ACTUAL QTY", "CUTTING QC", "INPUT QTY", "BALANCE", "SHORT/PLUS QTY", "Percentage %"]
         for col_idx, header in enumerate(table_headers, 1):
-            cell = ws.cell(row=current_row, column=col_idx, value=header)
+            cell = ws. cell(row=current_row, column=col_idx, value=header)
             cell.font = bold_font
             cell.alignment = center_align
             cell.border = medium_border
@@ -2484,9 +2222,9 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
 
         for i, size in enumerate(block['headers']):
             color_to_write = full_color_name if i == 0 else ""
-            actual_qty = int(block['gmts_qty'][i].replace(',', '') or 0)
+            actual_qty = int(block['gmts_qty'][i]. replace(',', '') or 0)
             input_qty = int(block['sewing_input'][i].replace(',', '') or 0) if i < len(block['sewing_input']) else 0
-            cutting_qc_val = int(block.get('cutting_qc', [])[i].replace(',', '') or 0) if i < len(block.get('cutting_qc', [])) else 0
+            cutting_qc_val = int(block. get('cutting_qc', [])[i].replace(',', '') or 0) if i < len(block.get('cutting_qc', [])) else 0
             
             ws.cell(row=current_row, column=1, value=color_to_write)
             ws.cell(row=current_row, column=2, value=size)
@@ -2519,7 +2257,7 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
             ws.merge_cells(start_row=start_merge_row, start_column=1, end_row=end_merge_row, end_column=1)
             merged_cell = ws.cell(row=start_merge_row, column=1)
             merged_cell.alignment = color_align
-            if not merged_cell.font.bold:  merged_cell.font = bold_font
+            if not merged_cell.font. bold:  merged_cell.font = bold_font
         
         total_row_str = str(current_row)
         ws.merge_cells(start_row=current_row, start_column=1, end_row=current_row, end_column=2)
@@ -2537,11 +2275,11 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
         
         for col_letter, value_or_formula in totals_formulas.items():
             cell = ws[f"{col_letter}{current_row}"]
-            cell.value = value_or_formula
+            cell. value = value_or_formula
             cell.font = bold_font
             cell.border = medium_border
-            cell.alignment = center_align
-            cell.fill = light_brown_fill 
+            cell. alignment = center_align
+            cell. fill = light_brown_fill 
             if col_letter == 'I': 
                 cell.number_format = '0.00%'
         
@@ -2555,7 +2293,7 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
     image_row = current_row + 1
    
     try:
-        direct_image_url = 'https://i.ibb.co/v6bp0jQW/rockybilly-regular.webp'
+        direct_image_url = 'https://i.ibb.co/v6bp0jQW/rockybilly-regular. webp'
         image_response = requests.get(direct_image_url)
         image_response.raise_for_status()
         original_img = PILImage.open(BytesIO(image_response.content))
@@ -2576,7 +2314,7 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
     ws.merge_cells(start_row=signature_row, start_column=1, end_row=signature_row, end_column=NUM_COLUMNS)
     titles = ["Prepared By", "Input Incharge", "Cutting Incharge", "IE & Planning", "Sewing Manager", "Cutting Manager"]
     signature_cell = ws.cell(row=signature_row, column=1)
-    signature_cell.value = "                 ".join(titles)
+    signature_cell.value = "                 ". join(titles)
     signature_cell.font = Font(bold=True, size=15)
     signature_cell.alignment = Alignment(horizontal='center', vertical='center')
 
@@ -2587,29 +2325,29 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
             if cell.font: 
                 existing_font = cell.font
                 if cell.row != 1:  
-                    new_font = Font(name=existing_font.name, size=16.5, bold=existing_font.bold, italic=existing_font.italic, vertAlign=existing_font.vertAlign, underline=existing_font.underline, strike=existing_font.strike, color=existing_font.color)
+                    new_font = Font(name=existing_font.name, size=16. 5, bold=existing_font.bold, italic=existing_font.italic, vertAlign=existing_font.vertAlign, underline=existing_font.underline, strike=existing_font.strike, color=existing_font.color)
                     cell.font = new_font
     
     ws.column_dimensions['A'].width = 23
-    ws.column_dimensions['B'].width = 8.5
+    ws.column_dimensions['B'].width = 8. 5
     ws.column_dimensions['C'].width = 20
     ws.column_dimensions['D'].width = 17
     ws.column_dimensions['E'].width = 17
-    ws.column_dimensions['F'].width = 15
-    ws.column_dimensions['G'].width = 13.5
+    ws.column_dimensions['F']. width = 15
+    ws.column_dimensions['G'].width = 13. 5
     ws.column_dimensions['H'].width = 23
     ws.column_dimensions['I'].width = 18
    
-    ws.page_setup.orientation = ws.ORIENTATION_PORTRAIT
-    ws.page_setup.fitToPage = True
+    ws.page_setup.orientation = ws. ORIENTATION_PORTRAIT
+    ws.page_setup. fitToPage = True
     ws.page_setup.fitToWidth = 1
     ws.page_setup.fitToHeight = 1 
-    ws.page_setup.horizontalCentered = True
-    ws.page_setup.verticalCentered = False 
-    ws.page_setup.left = 0.25
-    ws.page_setup.right = 0.25
-    ws.page_setup.top = 0.45
-    ws.page_setup.bottom = 0.45
+    ws.page_setup. horizontalCentered = True
+    ws. page_setup.verticalCentered = False 
+    ws.page_setup. left = 0.25
+    ws.page_setup. right = 0.25
+    ws.page_setup. top = 0.45
+    ws.page_setup. bottom = 0.45
     ws.page_setup.header = 0
     ws.page_setup.footer = 0
    
@@ -2626,7 +2364,7 @@ LOGIN_TEMPLATE = f"""
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1. 0, maximum-scale=1.0, user-scalable=no">
     <title>Login - MNM Software</title>
     {COMMON_STYLES}
     <style>
@@ -2657,7 +2395,7 @@ LOGIN_TEMPLATE = f"""
             pointer-events: none;
         }}
         
-        .orb-1 {{
+        . orb-1 {{
             width: 300px;
             height: 300px;
             background: var(--accent-orange);
@@ -2692,7 +2430,7 @@ LOGIN_TEMPLATE = f"""
             75% {{ transform: translate(15px, 30px) scale(1.02); }}
         }}
         
-        .login-container {{
+        . login-container {{
             position: relative;
             z-index: 10;
             width: 100%;
@@ -2774,11 +2512,11 @@ LOGIN_TEMPLATE = f"""
             text-transform: uppercase;
         }}
         
-        .login-form .input-group {{
+        .login-form . input-group {{
             margin-bottom: 20px;
         }}
         
-        .login-form .input-group label {{
+        .login-form . input-group label {{
             display: flex;
             align-items: center;
             gap: 8px;
@@ -2811,7 +2549,7 @@ LOGIN_TEMPLATE = f"""
             transition: transform 0.3s;
         }}
         
-        .login-btn:hover i {{
+        . login-btn:hover i {{
             transform: translateX(5px);
         }}
         
@@ -2866,7 +2604,7 @@ LOGIN_TEMPLATE = f"""
                 font-size: 28px;
             }}
             
-            .brand-name {{
+            . brand-name {{
                 font-size: 24px;
             }}
             
@@ -2892,7 +2630,7 @@ LOGIN_TEMPLATE = f"""
                 padding-bottom: 30px;
             }}
             
-            .brand-section {{
+            . brand-section {{
                 margin-bottom: 25px;
             }}
             
@@ -2955,7 +2693,7 @@ LOGIN_TEMPLATE = f"""
             const ripple = document.createElement('span');
             ripple.classList.add('ripple-effect');
             const rect = this.getBoundingClientRect();
-            ripple.style.left = (e.clientX - rect.left) + 'px';
+            ripple.style. left = (e.clientX - rect.left) + 'px';
             ripple.style.top = (e.clientY - rect.top) + 'px';
             this.appendChild(ripple);
             setTimeout(() => ripple.remove(), 600);
@@ -2987,7 +2725,7 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
             <div class="welcome-greeting" id="greetingText">Good Morning</div>
             <div class="welcome-title">Welcome Back, <span>{{{{ session.user }}}}</span>!</div>
             <div class="welcome-message">
-                You're now logged into the MNM Software Dashboard.
+                You're now logged into the MNM Software Dashboard. 
                 All systems are operational and ready for your commands.
             </div>
             <button class="welcome-close" onclick="closeWelcome()">
@@ -3081,7 +2819,7 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
                 <div class="card stat-card" style="animation-delay: 0.1s;">
                     <div class="stat-icon"><i class="fas fa-file-export"></i></div>
                     <div class="stat-info">
-                        <h3 class="count-up" data-target="{{{{ stats.closing.count }}}}">0</h3>
+                        <h3 class="count-up" data-target="{{{{ stats.closing. count }}}}">0</h3>
                         <p>Lifetime Closing</p>
                     </div>
                 </div>
@@ -3199,7 +2937,7 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
                                         {{% else %}}
                                         background:  rgba(139, 92, 246, 0.1); color: var(--accent-purple);
                                         {{% endif %}}
-                                    ">{{{{ log.type }}}}</span>
+                                    ">{{{{ log. type }}}}</span>
                                 </td>
                                 <td style="color: var(--text-secondary);">{{{{ log.ref if log.ref else '-' }}}}</td>
                             </tr>
@@ -3207,7 +2945,7 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
                             <tr>
                                 <td colspan="4" style="text-align: center; padding: 40px; color: var(--text-secondary);">
                                     <i class="fas fa-inbox" style="font-size: 40px; opacity: 0.3; margin-bottom: 15px; display: block;"></i>
-                                    No activity recorded yet. 
+                                    No activity recorded yet.  
                                 </td>
                             </tr>
                             {{% endfor %}}
@@ -3231,7 +2969,7 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
                 <form action="/generate-report" method="post" onsubmit="return showLoading()">
                     <div class="input-group">
                         <label><i class="fas fa-bookmark" style="margin-right: 5px;"></i> INTERNAL REF NO</label>
-                        <input type="text" name="ref_no" placeholder="e.g. IB-12345 or Booking-123" required>
+                        <input type="text" name="ref_no" placeholder="e.g.  IB-12345 or Booking-123" required>
                     </div>
                     <button type="submit">
                         <i class="fas fa-bolt" style="margin-right: 10px;"></i> Generate Report
@@ -3350,8 +3088,8 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
                 icon = '<i class="fas fa-moon"></i>';
             }}
             
-            document.getElementById('greetingText').textContent = greeting;
-            document.getElementById('welcomeIcon').innerHTML = icon;
+            document. getElementById('greetingText').textContent = greeting;
+            document. getElementById('welcomeIcon').innerHTML = icon;
             document.getElementById('welcomeModal').style.display = 'flex';
         }}
         
@@ -3396,8 +3134,8 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
                     : 'No files selected';
             }});
             uploadZone.addEventListener('dragover', (e) => {{
-                e.preventDefault();
-                uploadZone.classList.add('dragover');
+                e. preventDefault();
+                uploadZone. classList.add('dragover');
             }});
             uploadZone.addEventListener('dragleave', () => {{
                 uploadZone.classList.remove('dragover');
@@ -3413,19 +3151,19 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
         // ===== DEW STYLE DAILY CHART =====
         const ctx = document.getElementById('mainChart').getContext('2d');
         const gradientOrange = ctx.createLinearGradient(0, 0, 0, 300);
-        gradientOrange.addColorStop(0, 'rgba(255, 122, 0, 0.5)');
+        gradientOrange. addColorStop(0, 'rgba(255, 122, 0, 0.5)');
         gradientOrange.addColorStop(1, 'rgba(255, 122, 0, 0.0)');
-        const gradientPurple = ctx.createLinearGradient(0, 0, 0, 300);
+        const gradientPurple = ctx. createLinearGradient(0, 0, 0, 300);
         gradientPurple.addColorStop(0, 'rgba(139, 92, 246, 0.5)');
         gradientPurple.addColorStop(1, 'rgba(139, 92, 246, 0.0)');
         const gradientGreen = ctx.createLinearGradient(0, 0, 0, 300);
-        gradientGreen.addColorStop(0, 'rgba(16, 185, 129, 0.5)');
+        gradientGreen. addColorStop(0, 'rgba(16, 185, 129, 0.5)');
         gradientGreen.addColorStop(1, 'rgba(16, 185, 129, 0.0)');
         
         new Chart(ctx, {{
             type: 'line',
             data: {{
-                labels: {{{{ stats.chart.labels | tojson }}}},
+                labels: {{{{ stats.chart. labels | tojson }}}},
                 datasets: [
                     {{
                         label: 'Closing',
@@ -3546,7 +3284,7 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
                 const updateCounter = () => {{
                     current += step;
                     if (current < target) {{
-                        counter.textContent = Math.floor(current);
+                        counter. textContent = Math.floor(current);
                         requestAnimationFrame(updateCounter);
                     }} else {{
                         counter.textContent = target;
@@ -3580,7 +3318,7 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
         function showSuccess() {{
             const overlay = document.getElementById('loading-overlay');
             const spinner = document.getElementById('spinner-anim').parentElement;
-            const success = document.getElementById('success-anim');
+            const success = document. getElementById('success-anim');
             const text = document.getElementById('loading-text');
             
             spinner.style.display = 'none';
@@ -3606,7 +3344,7 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
                             <td style="text-align:right;">
                                 ${{d.role !== 'admin' ? `
                                     <div class="action-cell">
-                                        <button class="action-btn btn-edit" onclick="editUser('${{u}}', '${{d.password}}', '${{d.permissions.join(',')}}')">
+                                        <button class="action-btn btn-edit" onclick="editUser('${{u}}', '${{d.password}}', '${{d.permissions. join(',')}}')">
                                             <i class="fas fa-edit"></i>
                                         </button> 
                                         <button class="action-btn btn-del" onclick="deleteUser('${{u}}')">
@@ -3630,7 +3368,7 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
             let perms = [];
             if (document.getElementById('perm_closing').checked) perms.push('closing');
             if (document.getElementById('perm_po').checked) perms.push('po_sheet');
-            if (document.getElementById('perm_acc').checked) perms.push('accessories');
+            if (document. getElementById('perm_acc').checked) perms.push('accessories');
             
             showLoading();
             
@@ -3641,7 +3379,7 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
             }})
             .then(r => r.json())
             .then(d => {{
-                if (d.status === 'success') {{
+                if (d. status === 'success') {{
                     showSuccess();
                     loadUsers();
                     resetForm();
@@ -3655,21 +3393,21 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
         function editUser(u, p, permsStr) {{
             document.getElementById('new_username').value = u;
             document.getElementById('new_username').readOnly = true;
-            document.getElementById('new_password').value = p;
+            document. getElementById('new_password').value = p;
             document.getElementById('action_type').value = 'update';
             document.getElementById('saveUserBtn').innerHTML = '<i class="fas fa-sync" style="margin-right: 10px;"></i> Update User';
             const pArr = permsStr.split(',');
             document.getElementById('perm_closing').checked = pArr.includes('closing');
-            document.getElementById('perm_po').checked = pArr.includes('po_sheet');
+            document. getElementById('perm_po').checked = pArr.includes('po_sheet');
             document.getElementById('perm_acc').checked = pArr.includes('accessories');
         }}
         
         function resetForm() {{
             document.getElementById('userForm').reset();
-            document.getElementById('action_type').value = 'create';
+            document. getElementById('action_type').value = 'create';
             document.getElementById('saveUserBtn').innerHTML = '<i class="fas fa-save" style="margin-right: 10px;"></i> Save User';
             document.getElementById('new_username').readOnly = false;
-            document.getElementById('perm_closing').checked = true;
+            document. getElementById('perm_closing').checked = true;
         }}
         
         function deleteUser(u) {{
@@ -3739,7 +3477,7 @@ USER_DASHBOARD_TEMPLATE = f"""
             <div class="welcome-greeting" id="greetingText">Good Morning</div>
             <div class="welcome-title">Welcome, <span>{{{{ session.user }}}}</span>!</div>
             <div class="welcome-message">
-                Your workspace is ready.
+                Your workspace is ready. 
                 Access your assigned modules below.
             </div>
             <button class="welcome-close" onclick="closeWelcome()">
@@ -3753,7 +3491,7 @@ USER_DASHBOARD_TEMPLATE = f"""
             <div class="spinner"></div>
             <div class="spinner-inner"></div>
         </div>
-        <div class="loading-text">Processing...</div>
+        <div class="loading-text">Processing... </div>
     </div>
     
     <div class="sidebar">
@@ -3802,7 +3540,7 @@ USER_DASHBOARD_TEMPLATE = f"""
                     <span><i class="fas fa-file-export" style="margin-right: 10px; color: var(--accent-orange);"></i>Closing Report</span>
                 </div>
                 <p style="color: var(--text-secondary); margin-bottom: 20px; font-size: 14px; line-height: 1.6;">
-                    Generate production closing reports with real-time data. 
+                    Generate production closing reports with real-time data.  
                 </p>
                 <form action="/generate-report" method="post" onsubmit="showLoading()">
                     <div class="input-group">
@@ -3874,16 +3612,16 @@ USER_DASHBOARD_TEMPLATE = f"""
                 icon = '<i class="fas fa-moon"></i>';
             }}
             
-            document.getElementById('greetingText').textContent = greeting;
-            document.getElementById('welcomeIcon').innerHTML = icon;
+            document. getElementById('greetingText').textContent = greeting;
+            document. getElementById('welcomeIcon').innerHTML = icon;
             document.getElementById('welcomeModal').style.display = 'flex';
         }}
         
         function closeWelcome() {{
             const modal = document.getElementById('welcomeModal');
-            modal.style.opacity = '0';
+            modal.style. opacity = '0';
             setTimeout(() => {{
-                modal.style.display = 'none';
+                modal.style. display = 'none';
                 sessionStorage.setItem('welcomeShown', 'true');
             }}, 300);
         }}
@@ -3893,7 +3631,7 @@ USER_DASHBOARD_TEMPLATE = f"""
         }}
         
         function showLoading() {{
-            document.getElementById('loading-overlay').style.display = 'flex';
+            document. getElementById('loading-overlay').style.display = 'flex';
             return true;
         }}
         
@@ -4076,7 +3814,7 @@ ACCESSORIES_SEARCH_TEMPLATE = f"""
             margin-top: 2px;
         }}
         
-        .history-badge {{
+        . history-badge {{
             background: var(--accent-purple);
             color: white;
             padding: 5px 14px;
@@ -4093,7 +3831,7 @@ ACCESSORIES_SEARCH_TEMPLATE = f"""
             padding: 5px;
         }}
         
-        .history-dropdown.active {{
+        .history-dropdown. active {{
             display: block;
             animation: slideDown 0.3s ease-out;
         }}
@@ -4168,12 +3906,12 @@ ACCESSORIES_SEARCH_TEMPLATE = f"""
             transition: var(--transition-smooth);
         }}
         
-        .history-booking-item: hover .booking-arrow {{
+        . history-booking-item: hover .booking-arrow {{
             color: var(--accent-purple);
             transform: translateX(5px);
         }}
         
-        .empty-history {{
+        . empty-history {{
             text-align: center;
             padding: 30px;
             color: var(--text-secondary);
@@ -4202,7 +3940,7 @@ ACCESSORIES_SEARCH_TEMPLATE = f"""
             <form action="/admin/accessories/input" method="post">
                 <div class="input-group">
                     <label><i class="fas fa-search" style="margin-right: 5px;"></i> BOOKING REFERENCE</label>
-                    <input type="text" name="ref_no" required placeholder="e.g. IB-12345" autocomplete="off">
+                    <input type="text" name="ref_no" required placeholder="e.g.  IB-12345" autocomplete="off">
                 </div>
                 <button type="submit" style="background: linear-gradient(135deg, #8B5CF6 0%, #A78BFA 100%);">
                     Proceed to Entry <i class="fas fa-arrow-right" style="margin-left: 10px;"></i>
@@ -4279,7 +4017,7 @@ ACCESSORIES_SEARCH_TEMPLATE = f"""
     <script>
         function toggleHistory() {{
             const dropdown = document.getElementById('historyDropdown');
-            dropdown.classList.toggle('active');
+            dropdown.classList. toggle('active');
         }}
     </script>
 </body>
@@ -4299,7 +4037,7 @@ ACCESSORIES_INPUT_TEMPLATE = f"""
     <title>Accessories Entry - MNM Software</title>
     {COMMON_STYLES}
     <style>
-        .ref-badge {{
+        . ref-badge {{
             display: inline-flex;
             align-items: center;
             gap: 10px;
@@ -4310,7 +4048,7 @@ ACCESSORIES_INPUT_TEMPLATE = f"""
             margin-top: 10px;
         }}
         
-        .ref-badge .ref-no {{
+        .ref-badge . ref-no {{
             font-size: 18px;
             font-weight:  800;
             color: var(--accent-orange);
@@ -4509,7 +4247,7 @@ ACCESSORIES_INPUT_TEMPLATE = f"""
                     <div class="grid-2-cols">
                         <div class="input-group">
                             <label><i class="fas fa-industry" style="margin-right: 5px;"></i> LINE NO</label>
-                            <input type="text" name="line_no" required placeholder="e.g.L-01">
+                            <input type="text" name="line_no" required placeholder="e.g. L-01">
                         </div>
                         <div class="input-group">
                             <label><i class="fas fa-ruler" style="margin-right: 5px;"></i> SIZE</label>
@@ -4537,7 +4275,7 @@ ACCESSORIES_INPUT_TEMPLATE = f"""
                     {{% if challans %}}
                         {{% for item in challans|reverse %}}
                         <div class="challan-row" style="animation:  fadeInUp 0.3s ease-out {{{{ loop.index * 0.05 }}}}s backwards;">
-                            <div class="line-badge">{{{{ item.line }}}}</div>
+                            <div class="line-badge">{{{{ item. line }}}}</div>
                             <div style="color: white; font-weight: 500; font-size: 13px;">{{{{ item.color }}}}</div>
                             <div class="qty-value">{{{{ item.qty }}}}</div>
                             <div class="status-check">{{{{ item.status if item.status else '●' }}}}</div>
@@ -4740,7 +4478,7 @@ STORE_DASHBOARD_TEMPLATE = f"""
     <title>Store Dashboard - MNM Software</title>
     {COMMON_STYLES}
     <style>
-        .store-card {{
+        . store-card {{
             background: var(--gradient-card);
             border:  1px solid var(--border-color);
             border-radius: 20px;
@@ -4785,7 +4523,7 @@ STORE_DASHBOARD_TEMPLATE = f"""
             transition: var(--transition-smooth);
         }}
         
-        .store-card: hover .store-card-icon {{
+        . store-card: hover .store-card-icon {{
             transform: scale(1.1) rotate(-5deg);
         }}
         
@@ -4814,7 +4552,7 @@ STORE_DASHBOARD_TEMPLATE = f"""
             color: var(--accent-cyan);
         }}
         
-        .icon-red {{
+        . icon-red {{
             background: linear-gradient(145deg, rgba(239, 68, 68, 0.2), rgba(239, 68, 68, 0.05));
             color: var(--accent-red);
         }}
@@ -4887,7 +4625,7 @@ STORE_DASHBOARD_TEMPLATE = f"""
             transition: var(--transition-smooth);
         }}
         
-        .quick-action:hover {{
+        . quick-action:hover {{
             background: var(--accent-orange);
             color: white;
         }}
@@ -4953,7 +4691,7 @@ STORE_DASHBOARD_TEMPLATE = f"""
                 </div>
                 <div class="store-card-title">Product Inventory</div>
                 <div class="store-card-desc">
-                    Manage aluminum products, profiles, sheets, and accessories. Track stock levels and reorder points.
+                    Manage aluminum products, profiles, sheets, and accessories.  Track stock levels and reorder points.
                 </div>
                 <div class="store-card-stat">
                     <div>
@@ -5102,7 +4840,7 @@ CLOSING_REPORT_PREVIEW_TEMPLATE = """
         .company-header { text-align: center; margin-bottom: 20px; border-bottom: 2px solid #000; padding-bottom: 10px; }
         .company-name { font-size: 2.2rem; font-weight: 800; color: #2c3e50; text-transform: uppercase; letter-spacing: 1px; line-height: 1; }
         .report-title { font-size: 1.1rem; color: #555; font-weight: 600; text-transform: uppercase; margin-top: 5px; }
-        .date-section { font-size: 1.2rem; font-weight: 800; color: #000; margin-top: 5px; }
+        .date-section { font-size: 1. 2rem; font-weight: 800; color: #000; margin-top: 5px; }
         .info-container { margin-bottom: 15px; background:  white; padding: 15px; display: flex; justify-content: space-between; align-items: flex-end;}
         .info-row { display: flex; flex-direction: column; gap: 5px; }
         .info-item { font-size: 1.2rem; font-weight: 600; color:  #444; }
@@ -5119,7 +4857,7 @@ CLOSING_REPORT_PREVIEW_TEMPLATE = """
         .col-3pct { background-color: #B9C2DF !important; font-weight: 700; }
         .col-input { background-color: #C4D09D !important; font-weight: 700; }
         .col-balance { font-weight: 700; color: #c0392b; }
-        .total-row td { background-color: #fff !important; color: #000 !important; font-weight: 900; font-size: 1.2rem; border-top: 2px solid #000; }
+        . total-row td { background-color: #fff !important; color: #000 !important; font-weight: 900; font-size: 1.2rem; border-top: 2px solid #000; }
         .action-bar { margin-bottom: 20px; display: flex; justify-content: flex-end; gap: 15px; position: sticky; top: 0; z-index: 1000; background:  #f8f9fa; padding: 10px 0; }
         .btn-print { background-color: #2c3e50; color: white; border-radius: 50px; padding: 10px 30px; font-weight: 600; border: none; }
         .btn-excel { background-color: #27ae60; color: white; border-radius: 50px; padding: 10px 30px; font-weight: 600; text-decoration: none; display: inline-block; }
@@ -5199,10 +4937,10 @@ CLOSING_REPORT_PREVIEW_TEMPLATE = """
                             {% set percentage = (short_plus / qty_3) * 100 %}
                         {% endif %}
                         {% set ns.tot_3 = ns.tot_3 + qty_3 %}
-                        {% set ns.tot_act = ns.tot_act + actual %}
+                        {% set ns.tot_act = ns. tot_act + actual %}
                         {% set ns.tot_cut = ns.tot_cut + cut_qc %}
                         {% set ns.tot_inp = ns.tot_inp + inp_qty %}
-                        {% set ns.tot_bal = ns.tot_bal + balance %}
+                        {% set ns. tot_bal = ns.tot_bal + balance %}
                         {% set ns.tot_sp = ns.tot_sp + short_plus %}
                         <tr>
                             <td>{{ block.headers[i] }}</td>
@@ -5212,7 +4950,7 @@ CLOSING_REPORT_PREVIEW_TEMPLATE = """
                             <td class="col-input">{{ inp_qty }}</td>
                             <td class="col-balance">{{ balance }}</td>
                             <td style="color: {{ 'green' if short_plus >= 0 else 'red' }}">{{ short_plus }}</td>
-                            <td>{{ "%.2f"|format(percentage) }}%</td>
+                            <td>{{ "%. 2f"|format(percentage) }}%</td>
                         </tr>
                     {% endfor %}
                     <tr class="total-row">
@@ -5225,7 +4963,7 @@ CLOSING_REPORT_PREVIEW_TEMPLATE = """
                         <td>{{ ns.tot_sp }}</td>
                         <td>
                             {% if ns.tot_3 > 0 %}
-                                {{ "%.2f"|format((ns.tot_sp / ns.tot_3) * 100) }}%
+                                {{ "%.2f"|format((ns.tot_sp / ns. tot_3) * 100) }}%
                             {% else %}
                                 0.00%
                             {% endif %}
@@ -5294,7 +5032,7 @@ ACCESSORIES_REPORT_TEMPLATE = """
         .btn-add { background:  #27ae60; }
         .generator-sig { text-align: right; font-size: 10px; margin-top: 5px; color: #555; }
         @media print {
-            .no-print { display: none; }
+            . no-print { display: none; }
             .action-col { display: none; }
             .container { border: none; padding: 0; margin: 0; max-width: 100%; }
             body { padding: 0; }
@@ -5309,7 +5047,7 @@ ACCESSORIES_REPORT_TEMPLATE = """
 <div class="container">
     <div class="header">
         <div class="company-name">COTTON CLOTHING BD LTD</div>
-        <div class="company-address">Kazi Tower, 27 Road, Gazipura, Tongi, Gazipur.</div>
+        <div class="company-address">Kazi Tower, 27 Road, Gazipura, Tongi, Gazipur. </div>
         <div class="report-title">ACCESSORIES DELIVERY CHALLAN</div>
     </div>
     <div class="info-grid">
@@ -5354,9 +5092,9 @@ ACCESSORIES_REPORT_TEMPLATE = """
         <tbody>
             {% set ns = namespace(grand_total=0) %}
             {% for item in challans %}
-                {% set ns.grand_total = ns.grand_total + item.qty|int %}
+                {% set ns.grand_total = ns.grand_total + item. qty|int %}
                 <tr>
-                    <td>{{ item.date }}</td>
+                    <td>{{ item. date }}</td>
                     <td>
                         {% if loop.index == count %}
                             <div class="line-card">{{ item.line }}</div>
@@ -5409,13 +5147,13 @@ PO_REPORT_TEMPLATE = """
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PO Report - Cotton Clothing BD</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min. css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         body { background-color: #f8f9fa; padding: 30px 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         .container { max-width: 1200px; }
         .company-header { text-align: center; margin-bottom: 20px; border-bottom: 2px solid #000; padding-bottom: 10px; }
-        .company-name { font-size: 2.2rem; font-weight: 800; color: #2c3e50; text-transform: uppercase; letter-spacing: 1px; line-height: 1; }
+        .company-name { font-size: 2. 2rem; font-weight: 800; color: #2c3e50; text-transform: uppercase; letter-spacing: 1px; line-height: 1; }
         .report-title { font-size: 1.1rem; color: #555; font-weight: 600; text-transform: uppercase; margin-top: 5px; }
         .date-section { font-size: 1.2rem; font-weight: 800; color: #000; margin-top: 5px; }
         .info-container { display: flex; justify-content: space-between; margin-bottom: 15px; gap: 15px; }
@@ -5425,9 +5163,9 @@ PO_REPORT_TEMPLATE = """
         .info-label { font-weight: 800; color: #444; width: 90px; display: inline-block; }
         .info-value { font-weight: 800; color: #000; }
         .total-label { font-size: 1.1rem; opacity: 0.9; text-transform: uppercase; letter-spacing: 1px; font-weight: 700; }
-        .total-value { font-size: 2.5rem; font-weight: 800; line-height: 1.1; }
+        .total-value { font-size: 2. 5rem; font-weight: 800; line-height: 1.1; }
         .table-card { background: white; border-radius: 0; margin-bottom: 20px; overflow: hidden; border: 1px solid #dee2e6; }
-        .color-header { background-color: #e9ecef; color: #2c3e50; padding: 10px 12px; font-size: 1.5rem; font-weight: 900; border-bottom: 1px solid #dee2e6; text-transform: uppercase; }
+        . color-header { background-color: #e9ecef; color: #2c3e50; padding: 10px 12px; font-size: 1.5rem; font-weight: 900; border-bottom: 1px solid #dee2e6; text-transform: uppercase; }
         .table { margin-bottom: 0; width: 100%; border-collapse: collapse; }
         .table th { background-color: #2c3e50; color: white; font-weight: 900; font-size: 1.2rem; text-align: center; border: 1px solid #34495e; padding: 8px 4px; vertical-align: middle; }
         .table th: empty { background-color: white ! important; border: none; }
@@ -5436,7 +5174,7 @@ PO_REPORT_TEMPLATE = """
         .order-col { font-weight: 900 !important; text-align: center ! important; background-color: #fdfdfd; white-space: nowrap; width: 1%; }
         .total-col { font-weight: 900; background-color: #e8f6f3 !important; color: #16a085; border-left: 2px solid #1abc9c !important; }
         .total-col-header { background-color: #e8f6f3 !important; color: #000 !important; font-weight: 900 !important; border:  1px solid #34495e !important; }
-        .table-striped tbody tr.summary-row, .table-striped tbody tr.summary-row td { background-color: #d1ecff !important; --bs-table-accent-bg: #d1ecff !important; color: #000 !important; font-weight: 900 !important; border-top: 2px solid #aaa !important; font-size: 1.2rem ! important; }
+        .table-striped tbody tr. summary-row, .table-striped tbody tr. summary-row td { background-color: #d1ecff !important; --bs-table-accent-bg: #d1ecff !important; color: #000 !important; font-weight: 900 !important; border-top: 2px solid #aaa !important; font-size: 1.2rem ! important; }
         .summary-label { text-align: right ! important; padding-right: 15px ! important; color: #000 !important; }
         .action-bar { margin-bottom: 20px; display: flex; justify-content: flex-end; gap: 10px; }
         .btn-print { background-color: #e74c3c; color: white; border-radius: 50px; padding: 8px 30px; font-weight: 600; border: none; }
@@ -5452,9 +5190,9 @@ PO_REPORT_TEMPLATE = """
             .info-box { border: 1px solid #000 !important; border-left: 5px solid #000 !important; padding: 5px 10px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
             .total-box { border: 2px solid #000 !important; background: white !important; color: black !important; padding: 5px 10px; }
             .info-item { font-size: 13pt ! important; font-weight: 800 !important; }
-            .table th, .table td { border: 1px solid #000 !important; padding: 2px ! important; font-size: 13pt !important; font-weight: 800 !important; }
+            . table th, .table td { border: 1px solid #000 !important; padding: 2px ! important; font-size: 13pt !important; font-weight: 800 !important; }
             .table th: empty { background-color: white ! important; border: none !important; }
-            .table-striped tbody tr.summary-row td { background-color: #d1ecff !important; box-shadow: inset 0 0 0 9999px #d1ecff ! important; color: #000 !important; font-weight: 900 !important; }
+            .table-striped tbody tr. summary-row td { background-color: #d1ecff !important; box-shadow: inset 0 0 0 9999px #d1ecff ! important; color: #000 !important; font-weight: 900 !important; }
             .color-header { background-color: #f1f1f1 !important; border:  1px solid #000 ! important; font-size: 1.4rem !important; font-weight:  900; padding: 5px; margin-top: 10px; box-shadow: inset 0 0 0 9999px #f1f1f1 !important; }
             .total-col-header { background-color: #e8f6f3 !important; box-shadow: inset 0 0 0 9999px #e8f6f3 ! important; color: #000 ! important; }
             .table-card { border:  none; margin-bottom: 10px; break-inside: avoid; }
@@ -5509,7 +5247,7 @@ PO_REPORT_TEMPLATE = """
         const dateObj = new Date();
         const day = String(dateObj.getDate()).padStart(2, '0');
         const month = String(dateObj.getMonth() + 1).padStart(2, '0');
-        const year = dateObj.getFullYear();
+        const year = dateObj. getFullYear();
         document.getElementById('date').innerText = `${day}-${month}-${year}`;
     </script>
 </body>
@@ -5525,7 +5263,7 @@ def index():
     if not session.get('logged_in'):
         return render_template_string(LOGIN_TEMPLATE)
     else:
-        if session.get('role') == 'admin':
+        if session. get('role') == 'admin':
             stats = get_dashboard_summary_v2()
             return render_template_string(ADMIN_DASHBOARD_TEMPLATE, stats=stats)
         else:
@@ -5543,14 +5281,14 @@ def login():
     users_db = load_users()
 
     if username in users_db and users_db[username]['password'] == password: 
-        session.permanent = True
+        session. permanent = True
         session['logged_in'] = True
         session['user'] = username
         session['role'] = users_db[username]['role']
-        session['permissions'] = users_db[username].get('permissions', [])
+        session['permissions'] = users_db[username]. get('permissions', [])
         
         now = get_bd_time()
-        session['login_start'] = now.isoformat()
+        session['login_start'] = now. isoformat()
         
         users_db[username]['last_login'] = now.strftime('%I:%M %p, %d %b')
         save_users(users_db)
@@ -5626,7 +5364,7 @@ def save_user():
 
 @app.route('/admin/delete-user', methods=['POST'])
 def delete_user():
-    if not session.get('logged_in') or session.get('role') != 'admin':
+    if not session. get('logged_in') or session.get('role') != 'admin':
         return jsonify({'status': 'error', 'message': 'Unauthorized'})
     
     username = request.json.get('username')
@@ -5663,7 +5401,7 @@ def generate_report():
             flash(f"Booking Not Found:  {internal_ref_no}")
             return redirect(url_for('index'))
         
-        update_stats(internal_ref_no, session.get('user', 'Unknown'))
+        update_stats(internal_ref_no, session. get('user', 'Unknown'))
         return render_template_string(CLOSING_REPORT_PREVIEW_TEMPLATE, report_data=report_data, ref_no=internal_ref_no)
     except Exception as e: 
         flash(f"System Error: {str(e)}")
@@ -5683,7 +5421,7 @@ def download_closing_excel():
             return make_response(send_file(
                 excel_file,
                 as_attachment=True,
-                download_name=f"Report-{internal_ref_no.replace('/', '_')}.xlsx",
+                download_name=f"Report-{internal_ref_no. replace('/', '_')}.xlsx",
                 mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
             ))
         else:
@@ -5701,7 +5439,7 @@ def download_closing_excel():
 def accessories_search_page():
     if not session.get('logged_in'):
         return redirect(url_for('index'))
-    if 'accessories' not in session.get('permissions', []):
+    if 'accessories' not in session. get('permissions', []):
         flash("Access Denied")
         return redirect(url_for('index'))
     
@@ -5720,7 +5458,7 @@ def accessories_input_page():
     if not session.get('logged_in'):
         return redirect(url_for('index'))
     
-    ref_no = request.form.get('ref_no') or request.args.get('ref')
+    ref_no = request.form. get('ref_no') or request.args.get('ref')
     if ref_no:
         ref_no = ref_no.strip().upper()
     
@@ -5750,7 +5488,7 @@ def accessories_input_page():
                 return redirect(url_for('accessories_search_page'))
             
             colors = sorted(list(set([item['color'] for item in api_data])))
-            style = api_data[0].get('style', 'N/A')
+            style = api_data[0]. get('style', 'N/A')
             buyer = api_data[0].get('buyer', 'N/A')
             challans = []
             
@@ -5812,7 +5550,7 @@ def accessories_input_direct():
                 return redirect(url_for('accessories_search_page'))
             
             colors = sorted(list(set([item['color'] for item in api_data])))
-            style = api_data[0].get('style', 'N/A')
+            style = api_data[0]. get('style', 'N/A')
             buyer = api_data[0].get('buyer', 'N/A')
             challans = []
             
@@ -5862,7 +5600,7 @@ def accessories_save():
             "qty": request.form.get('qty'),
             "status": ""
         }
-        db_acc[ref]['challans'].append(new_entry)
+        db_acc[ref]['challans']. append(new_entry)
         save_accessories_db(db_acc)
     
     return redirect(url_for('accessories_print_view', ref=ref))
@@ -5896,7 +5634,7 @@ def accessories_print_view():
         ref=ref,
         buyer=data['buyer'],
         style=data['style'],
-        item_type=data.get('item_type', ''),
+        item_type=data. get('item_type', ''),
         challans=challans,
         line_summary=sorted_line_summary,
         count=len(challans),
@@ -5927,7 +5665,7 @@ def accessories_update():
         return redirect(url_for('index'))
     
     ref = request.form.get('ref')
-    index = int(request.form.get('index'))
+    index = int(request. form.get('index'))
     db_acc = load_accessories_db()
 
     if ref in db_acc and 0 <= index < len(db_acc[ref]['challans']):
@@ -6014,7 +5752,7 @@ def generate_po_report():
                 aggfunc='sum',
                 fill_value=0
             )
-            pivot.columns.name = None
+            pivot.columns. name = None
             
             try:
                 sorted_cols = sort_sizes(pivot.columns.tolist())
@@ -6025,12 +5763,12 @@ def generate_po_report():
             pivot['Total'] = pivot.sum(axis=1)
             grand_total_qty += pivot['Total'].sum()
 
-            actual_qty = pivot.sum()
-            actual_qty.name = 'Actual Qty'
+            actual_qty = pivot. sum()
+            actual_qty. name = 'Actual Qty'
             qty_plus_3 = (actual_qty * 1.03).round().astype(int)
             qty_plus_3.name = '3% Order Qty'
             
-            pivot_final = pd.concat([pivot, actual_qty.to_frame().T, qty_plus_3.to_frame().T])
+            pivot_final = pd.concat([pivot, actual_qty. to_frame().T, qty_plus_3.to_frame().T])
             pivot_final = pivot_final.reset_index()
             pivot_final = pivot_final.rename(columns={'index': 'P.O NO'})
             
