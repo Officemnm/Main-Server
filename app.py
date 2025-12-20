@@ -4937,7 +4937,7 @@ def store_dashboard():
         return redirect(url_for('index'))
     return render_template_string(STORE_DASHBOARD_TEMPLATE)
 
-@approute('/generate-report', methods=['POST'])
+@app.route('/generate-report', methods=['POST'])
 def generate_report():
     if not session.get('logged_in'):
         return redirect(url_for('index'))
@@ -5324,3 +5324,4 @@ def generate_po_report():
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))
     app.run(host='0.0.0.0', port=port, debug=True)
+
