@@ -3,7 +3,7 @@ import openpyxl
 from openpyxl.styles import Font, Alignment, Border, Side, PatternFill
 from bs4 import BeautifulSoup
 from datetime import datetime, timedelta
-import pytz 
+import pytz
 from io import BytesIO
 from openpyxl.drawing.image import Image
 from PIL import Image as PILImage
@@ -15,14 +15,14 @@ import pandas as pd
 import re
 import shutil
 import numpy as np
-from pymongo import MongoClient 
+from pymongo import MongoClient
 from collections import defaultdict
 
 # --- Flask লাইব্রেরি ইম্পোর্ট ---
 from flask import Flask, request, render_template_string, send_file, flash, session, redirect, url_for, make_response, jsonify
 
 app = Flask(__name__)
-app.secret_key = 'super-secret-secure-key-bd' 
+app.secret_key = 'super-secret-secure-key-bd'
 
 # ==============================================================================
 # কনফিগারেশন এবং সেটআপ
@@ -30,12 +30,12 @@ app.secret_key = 'super-secret-secure-key-bd'
 
 # PO ফাইলের জন্য আপলোড ফোল্ডার
 UPLOAD_FOLDER = 'uploads'
-if not os.path. exists(UPLOAD_FOLDER):
+if not os.path.exists(UPLOAD_FOLDER):
     os.makedirs(UPLOAD_FOLDER)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 # সেশন টাইমআউট কনফিগারেশন (5 মিনিট)
-app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=5) 
+app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=5)
 
 # টাইমজোন কনফিগারেশন (বাংলাদেশ)
 bd_tz = pytz.timezone('Asia/Dhaka')
@@ -59,7 +59,7 @@ def add_header(response):
 # ==============================================================================
 # MongoDB কানেকশন সেটআপ
 # ==============================================================================
-MONGO_URI = "mongodb+srv://Mehedi:Mehedi123@office.jxdnuaj.mongodb.net/? appName=Office"
+MONGO_URI = "mongodb+srv://Mehedi:Mehedi123@office.jxdnuaj.mongodb.net/?appName=Office"
 
 try:
     client = MongoClient(MONGO_URI)
@@ -71,18 +71,19 @@ try:
     print("MongoDB Connected Successfully!")
 except Exception as e:
     print(f"MongoDB Connection Error: {e}")
-    # ==============================================================================
+
+# ==============================================================================
 # ENHANCED CSS STYLES - PREMIUM MODERN UI WITH ANIMATIONS
 # ==============================================================================
 COMMON_STYLES = """
-    <link href="https://fonts.googleapis.com/css2?family=Inter: wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles. min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
     <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
     <style>
-        : root {
+        :root {
             --bg-body: #0a0a0f;
             --bg-sidebar: #12121a;
             --bg-card: #16161f;
@@ -163,7 +164,7 @@ COMMON_STYLES = """
         }
 
         /* Glassmorphism Effect */
-        . glass {
+        .glass {
             background: rgba(22, 22, 31, 0.7);
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
@@ -186,7 +187,7 @@ COMMON_STYLES = """
             transition: var(--transition-smooth);
             box-shadow: 4px 0 30px rgba(0, 0, 0, 0.3);
         }
-        . sidebar:: before {
+        .sidebar::before {
             content: '';
             position: absolute;
             top: 0;
@@ -261,14 +262,14 @@ COMMON_STYLES = """
             transition: var(--transition-smooth);
             z-index: -1;
         }
-        . nav-link:hover::before, .nav-link.active::before { width: 100%; }
+        .nav-link:hover::before, .nav-link.active::before { width: 100%; }
 
-        . nav-link:hover, .nav-link.active { 
+        .nav-link:hover, .nav-link.active { 
             color: var(--accent-orange); 
             transform: translateX(5px);
         }
 
-        . nav-link. active {
+        .nav-link.active {
             background: rgba(255, 122, 0, 0.1);
             border-left: 3px solid var(--accent-orange);
             box-shadow: 0 0 20px var(--accent-orange-glow);
@@ -282,12 +283,12 @@ COMMON_STYLES = """
             transition: var(--transition-smooth);
         }
 
-        .nav-link: hover i {
+        .nav-link:hover i {
             transform: scale(1.2);
             filter: drop-shadow(0 0 8px var(--accent-orange));
         }
 
-        .nav-link . nav-badge {
+        .nav-link .nav-badge {
             margin-left: auto;
             background: var(--accent-orange);
             color: white;
@@ -302,7 +303,7 @@ COMMON_STYLES = """
             50% { transform: scale(1.1); }
         }
 
-        . sidebar-footer {
+        .sidebar-footer {
             margin-top: auto;
             padding-top: 20px; 
             border-top: 1px solid var(--border-color);
@@ -375,7 +376,7 @@ COMMON_STYLES = """
             height: 10px;
             background: var(--accent-green);
             border-radius: 50%;
-            animation: statusPulse 1. 5s ease-in-out infinite;
+            animation: statusPulse 1.5s ease-in-out infinite;
             box-shadow: 0 0 10px var(--accent-green);
         }
         
@@ -417,7 +418,7 @@ COMMON_STYLES = """
             overflow: hidden;
         }
 
-        .card:: before {
+        .card::before {
             content: '';
             position: absolute;
             top: 0;
@@ -435,7 +436,7 @@ COMMON_STYLES = """
             transform: translateY(-4px);
         }
 
-        .card:hover:: before { opacity: 1; }
+        .card:hover::before { opacity: 1; }
         
         .section-header { 
             display: flex;
@@ -448,7 +449,7 @@ COMMON_STYLES = """
             letter-spacing: -0.3px;
         }
 
-        . section-header i {
+        .section-header i {
             font-size: 20px;
             opacity: 0.7;
             transition: var(--transition-smooth);
@@ -510,7 +511,7 @@ COMMON_STYLES = """
             50% { transform: scale(1.3); }
         }
 
-        . stat-info h3 { 
+        .stat-info h3 { 
             font-size: 36px;
             font-weight: 800; 
             margin:  0; 
@@ -548,7 +549,7 @@ COMMON_STYLES = """
             font-weight: 500;
         }
 
-        . progress-value {
+        .progress-value {
             color: var(--text-secondary);
             font-weight: 600;
         }
@@ -565,7 +566,7 @@ COMMON_STYLES = """
             height: 100%;
             border-radius: 10px;
             position: relative;
-            animation: progressFill 1. 5s ease-out forwards;
+            animation: progressFill 1.5s ease-out forwards;
             transform-origin: left;
         }
 
@@ -590,7 +591,7 @@ COMMON_STYLES = """
             100% { transform: translateX(100%); }
         }
 
-        . progress-orange { background: var(--gradient-orange); }
+        .progress-orange { background: var(--gradient-orange); }
         .progress-purple { background: linear-gradient(135deg, #8B5CF6 0%, #A78BFA 100%); }
         .progress-green { background: linear-gradient(135deg, #10B981 0%, #34D399 100%); }
         /* Enhanced Forms */
@@ -619,12 +620,12 @@ COMMON_STYLES = """
             transition: var(--transition-smooth);
         }
 
-        input:: placeholder {
+        input::placeholder {
             color: var(--text-secondary);
             opacity: 0.5;
         }
 
-        input: focus, select:focus { 
+        input:focus, select:focus { 
             border-color: var(--accent-orange);
             background: rgba(255, 122, 0, 0.05);
             box-shadow: 0 0 0 4px var(--accent-orange-glow), 0 0 20px var(--accent-orange-glow);
@@ -636,7 +637,6 @@ COMMON_STYLES = """
             background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%23FF7A00' viewBox='0 0 24 24'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
             background-repeat: no-repeat;
             background-position: right 12px center;
-            background-size: 24px;
             background-color: rgba(255, 255, 255, 0.03);
         }
         
@@ -661,7 +661,7 @@ COMMON_STYLES = """
             overflow: hidden;
             letter-spacing: 0.5px;
         }
-        button:: before {
+        button::before {
             content: '';
             position: absolute;
             top: 0;
@@ -818,7 +818,7 @@ COMMON_STYLES = """
             border-bottom: 3px solid var(--accent-purple);
             border-left: 3px solid var(--accent-purple);
             border-radius: 50%;
-            animation: spin 1. 2s linear infinite reverse;
+            animation: spin 1.2s linear infinite reverse;
         }
 
         @keyframes spin { 
@@ -851,7 +851,7 @@ COMMON_STYLES = """
             height: 50px;
             border: solid var(--accent-green); 
             border-width: 0 4px 4px 0;
-            position: absolute; _
+            position: absolute; 
             top: 15px; 
             left: 35px;
             transform: rotate(45deg); 
@@ -876,7 +876,7 @@ COMMON_STYLES = """
             box-shadow: 0 0 40px rgba(239, 68, 68, 0.3);
         }
 
-        . fail-circle::before, .fail-circle::after {
+        .fail-circle::before, .fail-circle::after {
             content: '';
             position: absolute; 
             width: 4px; 
@@ -914,7 +914,7 @@ COMMON_STYLES = """
             100% { opacity: 1; transform: rotate(45deg) scale(1); }
         }
 
-        . anim-text { 
+        .anim-text { 
             font-size:  24px; 
             font-weight: 800; 
             color: white;
@@ -929,11 +929,11 @@ COMMON_STYLES = """
             font-weight:  500;
             letter-spacing: 2px;
             text-transform: uppercase;
-            animation: textPulse 1. 5s ease-in-out infinite;
+            animation: textPulse 1.5s ease-in-out infinite;
         }
 
         @keyframes textPulse {
-            0%, 100% { opacity: 0. 5; }
+            0%, 100% { opacity: 0.5; }
             50% { opacity: 1; }
         }
 
@@ -958,7 +958,7 @@ COMMON_STYLES = """
             from { opacity: 0; }
             to { opacity: 1; }
         }
-        . welcome-content {
+        .welcome-content {
             background: var(--gradient-card);
             border: 1px solid var(--border-color);
             border-radius: 24px;
@@ -1043,7 +1043,7 @@ COMMON_STYLES = """
             margin-bottom: 30px;
         }
 
-        . welcome-close {
+        .welcome-close {
             background: var(--gradient-orange);
             color: white;
             border: none;
@@ -1103,7 +1103,7 @@ COMMON_STYLES = """
             overflow: hidden;
         }
 
-        .upload-zone:: before {
+        .upload-zone::before {
             content: '';
             position: absolute;
             top: 0;
@@ -1220,7 +1220,7 @@ COMMON_STYLES = """
             }
         }
                 /* Mobile */
-        . mobile-toggle { 
+        .mobile-toggle { 
             display: none; 
             position: fixed; 
             top: 20px;
@@ -1273,7 +1273,7 @@ COMMON_STYLES = """
             .page-title {
                 font-size: 24px;
             }
-            . welcome-content {
+            .welcome-content {
                 padding: 40px 30px;
             }
             .welcome-title {
@@ -1332,7 +1332,7 @@ COMMON_STYLES = """
             border: 1px solid rgba(16, 185, 129, 0.2);
         }
 
-        . realtime-dot {
+        .realtime-dot {
             width: 8px;
             height: 8px;
             background: var(--accent-green);
@@ -1380,7 +1380,7 @@ COMMON_STYLES = """
             position: relative;
         }
 
-        .animated-border:: after {
+        .animated-border::after {
             content: '';
             position: absolute;
             top:  -2px;
@@ -1420,7 +1420,7 @@ COMMON_STYLES = """
             min-width: 100px;
         }
 
-        . perm-checkbox:hover {
+        .perm-checkbox:hover {
             border-color: var(--accent-orange);
             background: rgba(255, 122, 0, 0.05);
         }
@@ -1431,13 +1431,13 @@ COMMON_STYLES = """
             accent-color: var(--accent-orange);
         }
 
-        . perm-checkbox span {
+        .perm-checkbox span {
             font-size: 13px;
             font-weight: 500;
             color: var(--text-secondary);
         }
 
-        . perm-checkbox:has(input:checked) {
+        .perm-checkbox:has(input:checked) {
             border-color: var(--accent-orange);
             background: rgba(255, 122, 0, 0.1);
         }
@@ -1458,7 +1458,7 @@ COMMON_STYLES = """
             color: var(--text-secondary);
         }
 
-        . time-badge i {
+        .time-badge i {
             color: var(--accent-orange);
         }
         
@@ -1487,7 +1487,7 @@ COMMON_STYLES = """
             transform: translateY(-2px);
         }
         
-        . history-toggle-left {
+        .history-toggle-left {
             display: flex;
             align-items: center;
             gap: 12px;
@@ -1534,7 +1534,7 @@ COMMON_STYLES = """
             padding: 5px;
         }
         
-        .history-dropdown. active {
+        .history-dropdown.active {
             display: block;
             animation: slideDown 0.3s ease-out;
         }
@@ -1614,7 +1614,7 @@ COMMON_STYLES = """
             transform: translateX(5px);
         }
         
-        . empty-history {
+        .empty-history {
             text-align: center;
             padding: 30px;
             color: var(--text-secondary);
@@ -1679,7 +1679,7 @@ def update_stats(ref_no, username):
     new_record = {
         "ref":  ref_no,
         "user": username,
-        "date": now. strftime('%d-%m-%Y'),
+        "date": now.strftime('%d-%m-%Y'),
         "time": now.strftime('%I:%M %p'),
         "type": "Closing Report",
         "iso_time": now.isoformat()
@@ -1718,7 +1718,7 @@ def load_accessories_db():
         return {}
 
 def save_accessories_db(data):
-    accessories_col. replace_one(
+    accessories_col.replace_one(
         {"_id": "accessories_data"},
         {"_id": "accessories_data", "data": data},
         upsert=True
@@ -1746,7 +1746,7 @@ def check_and_refresh_colors(ref_no, db_acc):
     else:
         try:
             last_updated_dt = datetime.fromisoformat(last_updated)
-            if last_updated_dt. tzinfo is None:
+            if last_updated_dt.tzinfo is None:
                 last_updated_dt = bd_tz.localize(last_updated_dt)
             
             time_diff = now - last_updated_dt
@@ -1765,12 +1765,12 @@ def check_and_refresh_colors(ref_no, db_acc):
                 merged_colors = sorted(list(set(existing_colors + new_colors)))
                 
                 db_acc[ref_no]['colors'] = merged_colors
-                db_acc[ref_no]['last_api_call'] = now. isoformat()
+                db_acc[ref_no]['last_api_call'] = now.isoformat()
                 
-                if api_data[0]. get('buyer', 'N/A') != 'N/A':
-                    db_acc[ref_no]['buyer'] = api_data[0]. get('buyer', data.get('buyer', 'N/A'))
+                if api_data[0].get('buyer', 'N/A') != 'N/A':
+                    db_acc[ref_no]['buyer'] = api_data[0].get('buyer', data.get('buyer', 'N/A'))
                 if api_data[0].get('style', 'N/A') != 'N/A':
-                    db_acc[ref_no]['style'] = api_data[0].get('style', data. get('style', 'N/A'))
+                    db_acc[ref_no]['style'] = api_data[0].get('style', data.get('style', 'N/A'))
                 
                 save_accessories_db(db_acc)
                 print(f"Colors refreshed for {ref_no}. New colors: {merged_colors}")
@@ -1840,7 +1840,7 @@ def get_dashboard_summary_v2():
                 acc_today_list.append({
                     "ref": ref,
                     "buyer": data.get('buyer'),
-                    "style": data. get('style'),
+                    "style": data.get('style'),
                     "time": "Today",
                     "qty": challan.get('qty')
                 })
@@ -1861,7 +1861,7 @@ def get_dashboard_summary_v2():
     history = stats_data.get('downloads', [])
     for item in history:
         item_date = item.get('date', '')
-        if item. get('type') == 'PO Sheet':
+        if item.get('type') == 'PO Sheet':
             po_lifetime_count += 1
             if item_date == today_str: 
                 po_list.append(item)
@@ -1904,7 +1904,7 @@ def get_dashboard_summary_v2():
             d = daily_data[k]
             chart_labels.append(d.get('label', k))
             chart_closing.append(d['closing'])
-            chart_po. append(d['po'])
+            chart_po.append(d['po'])
             chart_acc.append(d['acc'])
 
     return {
@@ -1920,7 +1920,7 @@ def get_dashboard_summary_v2():
         },
         "history": history
     }
-    # ==============================================================================
+# ==============================================================================
 # লজিক পার্ট:   PURCHASE ORDER SHEET PARSER (PDF)
 # ==============================================================================
 
@@ -1955,13 +1955,13 @@ def extract_metadata(first_page_text):
         'buyer': 'N/A', 'booking':  'N/A', 'style': 'N/A', 
         'season': 'N/A', 'dept': 'N/A', 'item': 'N/A'
     }
-    if "KIABI" in first_page_text. upper():
+    if "KIABI" in first_page_text.upper():
         meta['buyer'] = "KIABI"
     else:
-        buyer_match = re.search(r"Buyer.*?Name[\s\S]*?([\w\s&]+)(? :\n|$)", first_page_text)
+        buyer_match = re.search(r"Buyer.*?Name[\s\S]*?([\w\s&]+)(?:\n|$)", first_page_text)
         if buyer_match:  meta['buyer'] = buyer_match.group(1).strip()
 
-    booking_block_match = re.search(r"(? :Internal )?Booking NO\. ? [:\s]*([\s\S]*?)(?:System NO|Control No|Buyer)", first_page_text, re.IGNORECASE)
+    booking_block_match = re.search(r"(?:Internal )?Booking NO\. ?[:\s]*([\s\S]*?)(?:System NO|Control No|Buyer)", first_page_text, re.IGNORECASE)
     if booking_block_match:
         raw_booking = booking_block_match.group(1).strip()
         clean_booking = raw_booking.replace('\n', '').replace('\r', '').replace(' ', '')
@@ -1971,7 +1971,7 @@ def extract_metadata(first_page_text):
     style_match = re.search(r"Style Ref\. ?[:\s]*([\w-]+)", first_page_text, re.IGNORECASE)
     if style_match:  meta['style'] = style_match.group(1).strip()
     else: 
-        style_match = re. search(r"Style Des\.?[\s\S]*?([\w-]+)", first_page_text, re.IGNORECASE)
+        style_match = re.search(r"Style Des\.?[\s\S]*?([\w-]+)", first_page_text, re.IGNORECASE)
         if style_match: meta['style'] = style_match.group(1).strip()
 
     season_match = re.search(r"Season\s*[:\n\"]*([\w\d-]+)", first_page_text, re.IGNORECASE)
@@ -1997,14 +1997,14 @@ def extract_data_dynamic(file_path):
     
     try:
         reader = pypdf.PdfReader(file_path)
-        first_page_text = reader.pages[0]. extract_text()
+        first_page_text = reader.pages[0].extract_text()
         
         if "Main Fabric Booking" in first_page_text or "Fabric Booking Sheet" in first_page_text: 
             metadata = extract_metadata(first_page_text)
             return [], metadata
 
         order_match = re.search(r"Order no\D*(\d+)", first_page_text, re.IGNORECASE)
-        if order_match:  order_no = order_match. group(1)
+        if order_match:  order_no = order_match.group(1)
         else: 
             alt_match = re.search(r"Order\s*[:\.]?\s*(\d+)", first_page_text, re.IGNORECASE)
             if alt_match: order_no = alt_match.group(1)
@@ -2026,7 +2026,7 @@ def extract_data_dynamic(file_path):
                     parts = line.split()
                     try:
                         total_idx = [idx for idx, x in enumerate(parts) if 'Total' in x][0]
-                        raw_sizes = parts[: total_idx]
+                        raw_sizes = parts[:total_idx]
                         temp_sizes = [s for s in raw_sizes if s not in ["Colo", "/", "Size", "Colo/Size", "Colo/", "Size's"]]
                         
                         valid_size_count = sum(1 for s in temp_sizes if is_potential_size(s))
@@ -2047,7 +2047,7 @@ def extract_data_dynamic(file_path):
                     if "quantity" in lower_line or "currency" in lower_line or "price" in lower_line or "amount" in lower_line: 
                         continue
                         
-                    clean_line = line.replace("Spec.  price", "").replace("Spec", "").strip()
+                    clean_line = line.replace("Spec. price", "").replace("Spec", "").strip()
                     if not re.search(r'[a-zA-Z]', clean_line): continue
                     if re.match(r'^[A-Z]\d+$', clean_line) or "Assortment" in clean_line:  continue
 
@@ -2058,16 +2058,16 @@ def extract_data_dynamic(file_path):
 
                     if len(quantities) >= len(sizes):
                         if len(quantities) == len(sizes) + 1: final_qtys = quantities[:-1]
-                        else: final_qtys = quantities[: len(sizes)]
+                        else: final_qtys = quantities[:len(sizes)]
                         color_name = re.sub(r'\s\d+$', '', color_name).strip()
                     elif len(quantities) < len(sizes):
                         vertical_qtys = []
                         for next_line in lines[i+1:]: 
                             next_line = next_line.strip()
-                            if "Total" in next_line or re.search(r'[a-zA-Z]', next_line. replace("Spec", "").replace("price", "")): break
+                            if "Total" in next_line or re.search(r'[a-zA-Z]', next_line.replace("Spec", "").replace("price", "")): break
                             if re.match(r'^\d+$', next_line): vertical_qtys.append(int(next_line))
                         
-                        if len(vertical_qtys) >= len(sizes): final_qtys = vertical_qtys[: len(sizes)]
+                        if len(vertical_qtys) >= len(sizes): final_qtys = vertical_qtys[:len(sizes)]
                     
                     if final_qtys and color_name:
                         for idx, size in enumerate(sizes):
@@ -2079,12 +2079,12 @@ def extract_data_dynamic(file_path):
                             })
     except Exception as e:  print(f"Error processing file: {e}")
     return extracted_data, metadata
-    # ==============================================================================
+# ==============================================================================
 # লজিক পার্ট:  CLOSING REPORT API & EXCEL GENERATION
 # ==============================================================================
 
 def get_authenticated_session(username, password):
-    login_url = 'http://180.92.235.190: 8022/erp/login. php'
+    login_url = 'http://180.92.235.190:8022/erp/login.php'
     login_payload = {'txt_userid': username, 'txt_password': password, 'submit': 'Login'}
     session_req = requests.Session()
     session_req.headers.update({
@@ -2092,7 +2092,7 @@ def get_authenticated_session(username, password):
     })
     try:
         response = session_req.post(login_url, data=login_payload, timeout=300)
-        if "dashboard. php" in response.url or "Invalid" not in response.text:
+        if "dashboard.php" in response.url or "Invalid" not in response.text:
             return session_req
         else: 
             return None
@@ -2101,7 +2101,7 @@ def get_authenticated_session(username, password):
         return None
 
 def fetch_closing_report_data(internal_ref_no):
-    active_session = get_authenticated_session("input2. clothing-cutting", "123456")
+    active_session = get_authenticated_session("input2.clothing-cutting", "123456")
     if not active_session:  return None
 
     report_url = 'http://180.92.235.190:8022/erp/prod_planning/reports/requires/cutting_lay_production_report_controller.php'
@@ -2116,7 +2116,7 @@ def fetch_closing_report_data(internal_ref_no):
             try:
                 response = active_session.post(report_url, data=payload, timeout=300)
                 if response.status_code == 200 and "Data not Found" not in response.text:
-                    found_data = response. text
+                    found_data = response.text
                     break
             except:   continue
         if found_data:  break
@@ -2129,7 +2129,7 @@ def parse_report_data(html_content):
     all_report_data = []
     try:
         soup = BeautifulSoup(html_content, 'lxml')
-        header_row = soup.select_one('thead tr: nth-of-type(2)')
+        header_row = soup.select_one('thead tr:nth-of-type(2)')
         if not header_row:  return None
         all_th = header_row.find_all('th')
         headers = [th.get_text(strip=True) for th in all_th if 'total' not in th.get_text(strip=True).lower()]
@@ -2151,11 +2151,11 @@ def parse_report_data(html_content):
                 if len(cells) > 2:
                     criteria_main = cells[0].get_text(strip=True)
                     criteria_sub = cells[2].get_text(strip=True)
-                    main_lower, sub_lower = criteria_main. lower(), criteria_sub.lower()
+                    main_lower, sub_lower = criteria_main.lower(), criteria_sub.lower()
                     
                     if main_lower == "style":  style = cells[1].get_text(strip=True)
-                    elif main_lower == "color & gmts.  item":  color = cells[1].get_text(strip=True)
-                    elif "buyer" in main_lower:  buyer_name = cells[1]. get_text(strip=True)
+                    elif main_lower == "color & gmts. item":  color = cells[1].get_text(strip=True)
+                    elif "buyer" in main_lower:  buyer_name = cells[1].get_text(strip=True)
                     
                     if sub_lower == "gmts. color /country qty":  gmts_qty_data = [cell.get_text(strip=True) for cell in cells[3:len(headers)+3]]
                     
@@ -2170,13 +2170,13 @@ def parse_report_data(html_content):
                 plus_3_percent_data = []
                 for value in gmts_qty_data:  
                     try:
-                        new_qty = round(int(value. replace(',', '')) * 1.03)
+                        new_qty = round(int(value.replace(',', '')) * 1.03)
                         plus_3_percent_data.append(str(new_qty))
                     except (ValueError, TypeError):
                         plus_3_percent_data.append(value)
                 all_report_data.append({
                     'style': style, 'buyer': buyer_name, 'color': color, 
-                    'headers': headers, 'gmts_qty':   gmts_qty_data, _
+                    'headers': headers, 'gmts_qty':   gmts_qty_data, 
                     'plus_3_percent': plus_3_percent_data, 
                     'sewing_input':   sewing_input_data if sewing_input_data else [], 
                     'cutting_qc':  cutting_qc_data if cutting_qc_data else []
@@ -2210,28 +2210,28 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
     NUM_COLUMNS, TABLE_START_ROW = 9, 8
     ws.merge_cells(start_row=1, start_column=1, end_row=1, end_column=NUM_COLUMNS)
     
-    ws['A1']. value = "COTTON CLOTHING BD LTD"
+    ws['A1'].value = "COTTON CLOTHING BD LTD"
     ws['A1'].font = title_font 
     ws['A1'].alignment = center_align
 
-    ws. merge_cells(start_row=2, start_column=1, end_row=2, end_column=NUM_COLUMNS)
+    ws.merge_cells(start_row=2, start_column=1, end_row=2, end_column=NUM_COLUMNS)
     ws['A2'].value = "CLOSING REPORT [ INPUT SECTION ]"
     ws['A2'].font = Font(size=15, bold=True) 
-    ws['A2']. alignment = center_align
-    ws. row_dimensions[3].height = 6
+    ws['A2'].alignment = center_align
+    ws.row_dimensions[3].height = 6
 
-    formatted_ref_no = internal_ref_no. upper()
+    formatted_ref_no = internal_ref_no.upper()
     current_date = get_bd_time().strftime("%d/%m/%Y")
     
     left_sub_headers = {
-        'A4': 'BUYER', 'B4': report_data[0]. get('buyer', ''), 
+        'A4': 'BUYER', 'B4': report_data[0].get('buyer', ''), 
         'A5': 'IR/IB NO', 'B5': formatted_ref_no, 
         'A6': 'STYLE NO', 'B6': report_data[0].get('style', '')
     }
     
     for cell_ref, value in left_sub_headers.items():
         cell = ws[cell_ref]
-        cell. value = value
+        cell.value = value
         cell.font = bold_font
         cell.alignment = left_align
         cell.border = thin_border
@@ -2269,13 +2269,13 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
 
         current_row += 1
         start_merge_row = current_row
-        full_color_name = block. get('color', 'N/A')
+        full_color_name = block.get('color', 'N/A')
 
         for i, size in enumerate(block['headers']):
             color_to_write = full_color_name if i == 0 else ""
-            actual_qty = int(block['gmts_qty'][i]. replace(',', '') or 0)
+            actual_qty = int(block['gmts_qty'][i].replace(',', '') or 0)
             input_qty = int(block['sewing_input'][i].replace(',', '') or 0) if i < len(block['sewing_input']) else 0
-            cutting_qc_val = int(block. get('cutting_qc', [])[i].replace(',', '') or 0) if i < len(block. get('cutting_qc', [])) else 0
+            cutting_qc_val = int(block.get('cutting_qc', [])[i].replace(',', '') or 0) if i < len(block.get('cutting_qc', [])) else 0
             
             ws.cell(row=current_row, column=1, value=color_to_write)
             ws.cell(row=current_row, column=2, value=size)
@@ -2308,28 +2308,28 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
             ws.merge_cells(start_row=start_merge_row, start_column=1, end_row=end_merge_row, end_column=1)
             merged_cell = ws.cell(row=start_merge_row, column=1)
             merged_cell.alignment = color_align
-            if not merged_cell.font. bold:  merged_cell.font = bold_font
+            if not merged_cell.font.bold:  merged_cell.font = bold_font
         
         total_row_str = str(current_row)
         ws.merge_cells(start_row=current_row, start_column=1, end_row=current_row, end_column=2)
         
         totals_formulas = {
             "A": "TOTAL",
-            "C": f"=SUM(C{start_merge_row}: C{end_merge_row})",
+            "C": f"=SUM(C{start_merge_row}:C{end_merge_row})",
             "D": f"=SUM(D{start_merge_row}:D{end_merge_row})",
             "E": f"=SUM(E{start_merge_row}:E{end_merge_row})",
             "F": f"=SUM(F{start_merge_row}:F{end_merge_row})",
-            "G": f"=SUM(G{start_merge_row}: G{end_merge_row})",
+            "G": f"=SUM(G{start_merge_row}:G{end_merge_row})",
             "H": f"=SUM(H{start_merge_row}:H{end_merge_row})",
             "I": f"=IF(C{total_row_str}<>0, H{total_row_str}/C{total_row_str}, 0)"
         }
         
         for col_letter, value_or_formula in totals_formulas.items():
             cell = ws[f"{col_letter}{current_row}"]
-            cell. value = value_or_formula
+            cell.value = value_or_formula
             cell.font = bold_font
             cell.border = medium_border
-            cell. alignment = center_align
+            cell.alignment = center_align
             cell.fill = light_brown_fill 
             if col_letter == 'I':  
                 cell.number_format = '0.00%'
@@ -2344,7 +2344,7 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
     image_row = current_row + 1
    
     try:
-        direct_image_url = 'https://i.ibb.co/v6bp0jQW/rockybilly-regular. webp'
+        direct_image_url = 'https://i.ibb.co/v6bp0jQ/rockybilly-regular.webp'
         image_response = requests.get(direct_image_url)
         image_response.raise_for_status()
         original_img = PILImage.open(BytesIO(image_response.content))
@@ -2365,7 +2365,7 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
     ws.merge_cells(start_row=signature_row, start_column=1, end_row=signature_row, end_column=NUM_COLUMNS)
     titles = ["Prepared By", "Input Incharge", "Cutting Incharge", "IE & Planning", "Sewing Manager", "Cutting Manager"]
     signature_cell = ws.cell(row=signature_row, column=1)
-    signature_cell.value = "                 ". join(titles)
+    signature_cell.value = "                 ".join(titles)
     signature_cell.font = Font(bold=True, size=15)
     signature_cell.alignment = Alignment(horizontal='center', vertical='center')
 
@@ -2380,25 +2380,25 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
                     cell.font = new_font
     
     ws.column_dimensions['A'].width = 23
-    ws.column_dimensions['B'].width = 8. 5
+    ws.column_dimensions['B'].width = 8.5
     ws.column_dimensions['C'].width = 20
     ws.column_dimensions['D'].width = 17
     ws.column_dimensions['E'].width = 17
-    ws.column_dimensions['F']. width = 15
-    ws.column_dimensions['G'].width = 13. 5
+    ws.column_dimensions['F'].width = 15
+    ws.column_dimensions['G'].width = 13.5
     ws.column_dimensions['H'].width = 23
     ws.column_dimensions['I'].width = 18
    
-    ws.page_setup.orientation = ws. ORIENTATION_PORTRAIT
-    ws.page_setup. fitToPage = True
+    ws.page_setup.orientation = ws.ORIENTATION_PORTRAIT
+    ws.page_setup.fitToPage = True
     ws.page_setup.fitToWidth = 1
     ws.page_setup.fitToHeight = 1 
-    ws.page_setup. horizontalCentered = True
-    ws. page_setup.verticalCentered = False 
-    ws.page_setup. left = 0.25
-    ws.page_setup. right = 0.25
-    ws.page_setup. top = 0.45
-    ws.page_setup. bottom = 0.45
+    ws.page_setup.horizontalCentered = True
+    ws.page_setup.verticalCentered = False 
+    ws.page_setup.left = 0.25
+    ws.page_setup.right = 0.25
+    ws.page_setup.top = 0.45
+    ws.page_setup.bottom = 0.45
     ws.page_setup.header = 0
     ws.page_setup.footer = 0
    
@@ -2406,16 +2406,16 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
     wb.save(file_stream)
     file_stream.seek(0)
     return file_stream
-    # ==============================================================================
+# ==============================================================================
 # HTML TEMPLATES:   LOGIN PAGE
 # ==============================================================================
 
 LOGIN_TEMPLATE = f"""
-<! doctype html>
+<!doctype html>
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1. 0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Login - MNM Software</title>
     {COMMON_STYLES}
     <style>
@@ -2445,7 +2445,7 @@ LOGIN_TEMPLATE = f"""
             pointer-events: none;
         }}
         
-        . orb-1 {{
+        .orb-1 {{
             width: 300px;
             height: 300px;
             background: var(--accent-orange);
@@ -2562,11 +2562,11 @@ LOGIN_TEMPLATE = f"""
             text-transform: uppercase;
         }}
         
-        .login-form . input-group {{
+        .login-form .input-group {{
             margin-bottom: 20px;
         }}
         
-        .login-form . input-group label {{
+        .login-form .input-group label {{
             display: flex;
             align-items: center;
             gap: 8px;
@@ -2599,7 +2599,7 @@ LOGIN_TEMPLATE = f"""
             transition: transform 0.3s;
         }}
         
-        . login-btn:hover i {{
+        .login-btn:hover i {{
             transform: translateX(5px);
         }}
         
@@ -2657,7 +2657,7 @@ LOGIN_TEMPLATE = f"""
                 font-size: 24px;
             }}
             
-            . brand-tagline {{
+            .brand-tagline {{
                 font-size: 10px;
             }}
             
@@ -2679,7 +2679,7 @@ LOGIN_TEMPLATE = f"""
                 padding-bottom: 30px;
             }}
             
-            . brand-section {{
+            .brand-section {{
                 margin-bottom: 25px;
             }}
             
@@ -2755,7 +2755,7 @@ LOGIN_TEMPLATE = f"""
 # ==============================================================================
 
 ADMIN_DASHBOARD_TEMPLATE = f"""
-<! doctype html>
+<!doctype html>
 <html lang="en">
 <head>
     <meta charset="utf-8">
@@ -2867,7 +2867,7 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
                 <div class="card stat-card" style="animation-delay: 0.1s;">
                     <div class="stat-icon"><i class="fas fa-file-export"></i></div>
                     <div class="stat-info">
-                        <h3 class="count-up" data-target="{{{{ stats.closing. count }}}}">0</h3>
+                        <h3 class="count-up" data-target="{{{{ stats.closing.count }}}}">0</h3>
                         <p>Lifetime Closing</p>
                     </div>
                 </div>
@@ -2967,7 +2967,7 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
                             </tr>
                         </thead>
                         <tbody>
-                            {{% for log in stats.history[: 10] %}}
+                            {{% for log in stats.history[:10] %}}
                             <tr style="animation:  fadeInUp 0.5s ease-out {{{{ loop.index * 0.05 }}}}s backwards;">
                                 <td>
                                     <div class="time-badge">
@@ -3053,12 +3053,16 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
                 </form>
             </div>
         </div>
-        # ==============================================================================
+    </div>
+</body>
+</html>
+"""
+# ==============================================================================
 # USER DASHBOARD TEMPLATE (হুবহু তোমার মূল কোড)
 # ==============================================================================
 
 USER_DASHBOARD_TEMPLATE = f"""
-<! doctype html>
+<!doctype html>
 <html lang="en">
 <head>
     <meta charset="utf-8">
@@ -3215,14 +3219,14 @@ USER_DASHBOARD_TEMPLATE = f"""
         
         function closeWelcome() {{
             const modal = document.getElementById('welcomeModal');
-            modal.style. opacity = '0';
+            modal.style.opacity = '0';
             setTimeout(() => {{
                 modal.style.display = 'none';
                 sessionStorage.setItem('welcomeShown', 'true');
             }}, 300);
         }}
         
-        if (! sessionStorage.getItem('welcomeShown')) {{
+        if (!sessionStorage.getItem('welcomeShown')) {{
             setTimeout(showWelcomePopup, 500);
         }}
         
@@ -3405,7 +3409,7 @@ ACCESSORIES_SEARCH_TEMPLATE = f"""
                 <div class="history-dropdown" id="historyDropdown">
                     {{% if history_bookings %}}
                         {{% for booking in history_bookings %}}
-                        <a href="/admin/accessories/input_direct? ref={{{{ booking.ref }}}}" class="history-booking-item">
+                        <a href="/admin/accessories/input_direct?ref={{{{ booking.ref }}}}" class="history-booking-item">
                             <div class="booking-item-left">
                                 <div class="booking-ref">{{{{ booking.ref }}}}</div>
                                 <div class="booking-info">{{{{ booking.buyer }}}} • {{{{ booking.style }}}}</div>
@@ -3468,7 +3472,7 @@ ACCESSORIES_INPUT_TEMPLATE = f"""
     <title>Accessories Entry - MNM Software</title>
     {COMMON_STYLES}
     <style>
-        . ref-badge {{
+        .ref-badge {{
             display: inline-flex;
             align-items: center;
             gap: 10px;
@@ -3479,7 +3483,7 @@ ACCESSORIES_INPUT_TEMPLATE = f"""
             margin-top: 10px;
         }}
         
-        .ref-badge . ref-no {{
+        .ref-badge .ref-no {{
             font-size: 18px;
             font-weight:  800;
             color: var(--accent-orange);
@@ -3619,7 +3623,7 @@ ACCESSORIES_INPUT_TEMPLATE = f"""
                     <span class="ref-info">{{{{ buyer }}}} • {{{{ style }}}}</span>
                 </div>
             </div>
-            <a href="/admin/accessories/print? ref={{{{ ref }}}}" target="_blank">
+            <a href="/admin/accessories/print?ref={{{{ ref }}}}" target="_blank">
                 <button class="print-btn" style="width: auto; padding: 14px 30px;">
                     <i class="fas fa-print" style="margin-right: 10px;"></i> Print Report
                 </button>
@@ -3864,7 +3868,7 @@ ACCESSORIES_EDIT_TEMPLATE = f"""
                 </button>
             </form>
             
-            <a href="/admin/accessories/input_direct? ref={{{{ ref }}}}" class="cancel-link">
+            <a href="/admin/accessories/input_direct?ref={{{{ ref }}}}" class="cancel-link">
                 <i class="fas fa-times" style="margin-right: 5px;"></i> Cancel
             </a>
         </div>
@@ -3886,7 +3890,7 @@ STORE_DASHBOARD_TEMPLATE = f"""
     <title>Store Dashboard - MNM Software</title>
     {COMMON_STYLES}
     <style>
-        . store-card {{
+        .store-card {{
             background: var(--gradient-card);
             border:  1px solid var(--border-color);
             border-radius: 20px;
@@ -3897,7 +3901,7 @@ STORE_DASHBOARD_TEMPLATE = f"""
             overflow: hidden;
         }}
         
-        .store-card:: before {{
+        .store-card::before {{
             content: '';
             position: absolute;
             top: 0;
@@ -3931,7 +3935,7 @@ STORE_DASHBOARD_TEMPLATE = f"""
             transition: var(--transition-smooth);
         }}
         
-        . store-card: hover .store-card-icon {{
+        .store-card:hover .store-card-icon {{
             transform: scale(1.1) rotate(-5deg);
         }}
         
@@ -3940,7 +3944,7 @@ STORE_DASHBOARD_TEMPLATE = f"""
             color: var(--accent-orange);
         }}
         
-        . icon-purple {{
+        .icon-purple {{
             background: linear-gradient(145deg, rgba(139, 92, 246, 0.2), rgba(139, 92, 246, 0.05));
             color: var(--accent-purple);
         }}
@@ -3960,7 +3964,7 @@ STORE_DASHBOARD_TEMPLATE = f"""
             color: var(--accent-cyan);
         }}
         
-        . icon-red {{
+        .icon-red {{
             background: linear-gradient(145deg, rgba(239, 68, 68, 0.2), rgba(239, 68, 68, 0.05));
             color: var(--accent-red);
         }}
@@ -4248,10 +4252,10 @@ CLOSING_REPORT_PREVIEW_TEMPLATE = """
         .company-header { text-align: center; margin-bottom: 20px; border-bottom: 2px solid #000; padding-bottom: 10px; }
         .company-name { font-size: 2.2rem; font-weight: 800; color: #2c3e50; text-transform: uppercase; letter-spacing: 1px; line-height: 1; }
         .report-title { font-size: 1.1rem; color: #555; font-weight: 600; text-transform: uppercase; margin-top: 5px; }
-        .date-section { font-size: 1. 2rem; font-weight: 800; color: #000; margin-top: 5px; }
+        .date-section { font-size: 1.2rem; font-weight: 800; color: #000; margin-top: 5px; }
         .info-container { margin-bottom: 15px; background:  white; padding: 15px; display: flex; justify-content: space-between; align-items: flex-end;}
         .info-row { display: flex; flex-direction: column; gap: 5px; }
-        .info-item { font-size: 1. 2rem; font-weight: 600; color:  #444; }
+        .info-item { font-size: 1.2rem; font-weight: 600; color:  #444; }
         .info-label { font-weight: 800; color: #444; width: 90px; display: inline-block; }
         .info-value { font-weight: 800; color: #000; }
         .booking-box { background: #2c3e50; color: white; padding: 10px 20px; border-radius: 5px; text-align: right; box-shadow: 0 4px 10px rgba(44, 62, 80, 0.3); display: flex; flex-direction: column; justify-content: center; min-width: 200px; }
@@ -4260,12 +4264,12 @@ CLOSING_REPORT_PREVIEW_TEMPLATE = """
         .table-card { background: white; border-radius: 0; margin-bottom: 30px; border: none; }
         .color-header { background-color: #2c3e50 !important; color: white; padding: 10px 15px; font-size: 1.4rem; font-weight: 800; text-transform: uppercase; border:  1px solid #000;}
         .table { margin-bottom: 0; width: 100%; border-collapse: collapse; font-size: 1rem; }
-        .table th { background-color: #fff ! important; color: #000 !important; text-align: center; border: 1px solid #000; padding: 8px; vertical-align: middle; font-weight: 900; font-size: 1.2rem; }
+        .table th { background-color: #fff !important; color: #000 !important; text-align: center; border: 1px solid #000; padding: 8px; vertical-align: middle; font-weight: 900; font-size: 1.2rem; }
         .table td { text-align: center; vertical-align: middle; border: 1px solid #000; padding: 6px; color: #000; font-weight: 600; font-size: 1.1rem; }
         .col-3pct { background-color: #B9C2DF !important; font-weight: 700; }
         .col-input { background-color: #C4D09D !important; font-weight: 700; }
         .col-balance { font-weight: 700; color: #c0392b; }
-        . total-row td { background-color: #fff !important; color: #000 !important; font-weight: 900; font-size: 1.2rem; border-top: 2px solid #000; }
+        .total-row td { background-color: #fff !important; color: #000 !important; font-weight: 900; font-size: 1.2rem; border-top: 2px solid #000; }
         .action-bar { margin-bottom: 20px; display: flex; justify-content: flex-end; gap: 15px; position: sticky; top: 0; z-index: 1000; background: #f8f9fa; padding: 10px 0; }
         .btn-print { background-color: #2c3e50; color: white; border-radius: 50px; padding: 10px 30px; font-weight: 600; border: none; }
         .btn-excel { background-color: #27ae60; color: white; border-radius: 50px; padding:  10px 30px; font-weight: 600; text-decoration: none; display: inline-block; }
@@ -4291,7 +4295,7 @@ CLOSING_REPORT_PREVIEW_TEMPLATE = """
         <div class="action-bar no-print">
             <a href="/" class="btn btn-outline-secondary rounded-pill px-4">Back to Dashboard</a>
             <button onclick="window.print()" class="btn btn-print"><i class="fas fa-print"></i> Print Report</button>
-            <a href="/download-closing-excel? ref_no={{ ref_no }}" class="btn btn-excel"><i class="fas fa-file-excel"></i> Download Excel</a>
+            <a href="/download-closing-excel?ref_no={{ ref_no }}" class="btn btn-excel"><i class="fas fa-file-excel"></i> Download Excel</a>
         </div>
         <div class="company-header">
             <div class="company-name">COTTON CLOTHING BD LTD</div>
@@ -4344,12 +4348,12 @@ CLOSING_REPORT_PREVIEW_TEMPLATE = """
                         {% if qty_3 > 0 %}
                             {% set percentage = (short_plus / qty_3) * 100 %}
                         {% endif %}
-                        {% set ns.tot_3 = ns. tot_3 + qty_3 %}
+                        {% set ns.tot_3 = ns.tot_3 + qty_3 %}
                         {% set ns.tot_act = ns.tot_act + actual %}
                         {% set ns.tot_cut = ns.tot_cut + cut_qc %}
-                        {% set ns.tot_inp = ns. tot_inp + inp_qty %}
+                        {% set ns.tot_inp = ns.tot_inp + inp_qty %}
                         {% set ns.tot_bal = ns.tot_bal + balance %}
-                        {% set ns.tot_sp = ns. tot_sp + short_plus %}
+                        {% set ns.tot_sp = ns.tot_sp + short_plus %}
                         <tr>
                             <td>{{ block.headers[i] }}</td>
                             <td class="col-3pct">{{ qty_3 }}</td>
@@ -4371,7 +4375,7 @@ CLOSING_REPORT_PREVIEW_TEMPLATE = """
                         <td>{{ ns.tot_sp }}</td>
                         <td>
                             {% if ns.tot_3 > 0 %}
-                                {{ "%.2f"|format((ns.tot_sp / ns. tot_3) * 100) }}%
+                                {{ "%.2f"|format((ns.tot_sp / ns.tot_3) * 100) }}%
                             {% else %}
                                 0.00%
                             {% endif %}
@@ -4401,7 +4405,7 @@ ACCESSORIES_REPORT_TEMPLATE = """
 <head>
     <meta charset="UTF-8">
     <title>Accessories Delivery Report</title>
-    <link href="https://fonts.googleapis.com/css2? family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         body { font-family: 'Poppins', sans-serif; background:  #fff; padding: 20px; color: #000; }
@@ -4440,7 +4444,7 @@ ACCESSORIES_REPORT_TEMPLATE = """
         .btn-add { background:  #27ae60; }
         .generator-sig { text-align: right; font-size: 10px; margin-top: 5px; color: #555; }
         @media print {
-            . no-print { display: none; }
+            .no-print { display: none; }
             .action-col { display: none; }
             .container { border: none; padding: 0; margin: 0; max-width: 100%; }
             body { padding: 0; }
@@ -4449,7 +4453,7 @@ ACCESSORIES_REPORT_TEMPLATE = """
 </head>
 <body>
 <div class="no-print">
-    <a href="/admin/accessories/input_direct? ref={{ ref }}" class="btn">Back</a>
+    <a href="/admin/accessories/input_direct?ref={{ ref }}" class="btn">Back</a>
     <button onclick="window.print()" class="btn">🖨️ Print</button>
 </div>
 <div class="container">
@@ -4500,7 +4504,7 @@ ACCESSORIES_REPORT_TEMPLATE = """
         <tbody>
             {% set ns = namespace(grand_total=0) %}
             {% for item in challans %}
-                {% set ns.grand_total = ns.grand_total + item. qty|int %}
+                {% set ns.grand_total = ns.grand_total + item.qty|int %}
                 <tr>
                     <td>{{ item.date }}</td>
                     <td>
@@ -4512,11 +4516,11 @@ ACCESSORIES_REPORT_TEMPLATE = """
                     </td>
                     <td>{{ item.color }}</td>
                     <td>{{ item.size }}</td>
-                    <td class="status-cell">{{ item. status }}</td>
+                    <td class="status-cell">{{ item.status }}</td>
                     <td class="qty-cell">{{ item.qty }}</td>
                     {% if session.role == 'admin' %}
                     <td class="action-col">
-                        <a href="/admin/accessories/edit? ref={{ ref }}&index={{ loop.index0 }}" class="action-btn btn-edit-row"><i class="fas fa-pencil-alt"></i></a>
+                        <a href="/admin/accessories/edit?ref={{ ref }}&index={{ loop.index0 }}" class="action-btn btn-edit-row"><i class="fas fa-pencil-alt"></i></a>
                         <form action="/admin/accessories/delete" method="POST" style="display: inline;" onsubmit="return confirm('Delete this challan?');">
                             <input type="hidden" name="ref" value="{{ ref }}">
                             <input type="hidden" name="index" value="{{ loop.index0 }}">
@@ -4555,7 +4559,7 @@ PO_REPORT_TEMPLATE = """
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PO Report - Cotton Clothing BD</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min. css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         body { background-color:  #f8f9fa; padding: 30px 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
@@ -4563,7 +4567,7 @@ PO_REPORT_TEMPLATE = """
         .company-header { text-align: center; margin-bottom: 20px; border-bottom: 2px solid #000; padding-bottom: 10px; }
         .company-name { font-size: 2.2rem; font-weight: 800; color: #2c3e50; text-transform: uppercase; letter-spacing: 1px; line-height: 1; }
         .report-title { font-size: 1.1rem; color: #555; font-weight: 600; text-transform: uppercase; margin-top: 5px; }
-        .date-section { font-size: 1. 2rem; font-weight: 800; color: #000; margin-top: 5px; }
+        .date-section { font-size: 1.2rem; font-weight: 800; color: #000; margin-top: 5px; }
         .info-container { display: flex; justify-content: space-between; margin-bottom: 15px; gap: 15px; }
         .info-box { background: white; border:  1px solid #ddd; border-left: 5px solid #2c3e50; padding: 10px 15px; border-radius: 5px; flex: 2; box-shadow: 0 2px 5px rgba(0,0,0,0.05); display: grid; grid-template-columns: 1fr 1fr; gap:  20px; }
         .total-box { background: #2c3e50; color: white; padding: 10px 15px; border-radius: 5px; width: 240px; text-align: right; display: flex; flex-direction: column; justify-content: center; box-shadow: 0 4px 10px rgba(44, 62, 80, 0.3); }
@@ -4571,25 +4575,25 @@ PO_REPORT_TEMPLATE = """
         .info-label { font-weight: 800; color: #444; width: 90px; display: inline-block; }
         .info-value { font-weight: 800; color: #000; }
         .total-label { font-size: 1.1rem; opacity: 0.9; text-transform: uppercase; letter-spacing: 1px; font-weight: 700; }
-        .total-value { font-size: 2. 5rem; font-weight: 800; line-height: 1.1; }
+        .total-value { font-size: 2.5rem; font-weight: 800; line-height: 1.1; }
         .table-card { background: white; border-radius: 0; margin-bottom: 20px; overflow: hidden; border: 1px solid #dee2e6; }
-        . color-header { background-color: #e9ecef; color: #2c3e50; padding: 10px 12px; font-size: 1.5rem; font-weight: 900; border-bottom: 1px solid #dee2e6; text-transform: uppercase; }
+        .color-header { background-color: #e9ecef; color: #2c3e50; padding: 10px 12px; font-size: 1.5rem; font-weight: 900; border-bottom: 1px solid #dee2e6; text-transform: uppercase; }
         .table { margin-bottom: 0; width: 100%; border-collapse:  collapse; }
         .table th { background-color: #2c3e50; color: white; font-weight: 900; font-size: 1.2rem; text-align: center; border: 1px solid #34495e; padding: 8px 4px; vertical-align: middle; }
-        .table th:empty { background-color: white ! important; border: none; }
+        .table th:empty { background-color: white !important; border: none; }
         .table td { text-align: center; vertical-align: middle; border: 1px solid #dee2e6; padding: 6px 3px; color: #000; font-weight:  800; font-size: 1.15rem; }
         .table-striped tbody tr:nth-of-type(odd) { background-color: #f8f9fa; }
-        .order-col { font-weight: 900 !important; text-align: center ! important; background-color: #fdfdfd; white-space: nowrap; width: 1%; }
+        .order-col { font-weight: 900 !important; text-align: center !important; background-color: #fdfdfd; white-space: nowrap; width: 1%; }
         .total-col { font-weight: 900; background-color: #e8f6f3 !important; color: #16a085; border-left: 2px solid #1abc9c !important; }
         .total-col-header { background-color: #e8f6f3 !important; color: #000 !important; font-weight: 900 !important; border:  1px solid #34495e !important; }
-        .table-striped tbody tr. summary-row, .table-striped tbody tr. summary-row td { background-color: #d1ecff !important; --bs-table-accent-bg: #d1ecff !important; color: #000 !important; font-weight: 900 !important; border-top: 2px solid #aaa !important; font-size: 1.2rem !important; }
-        .summary-label { text-align: right ! important; padding-right: 15px !important; color: #000 !important; }
+        .table-striped tbody tr.summary-row, .table-striped tbody tr.summary-row td { background-color: #d1ecff !important; --bs-table-accent-bg: #d1ecff !important; color: #000 !important; font-weight: 900 !important; border-top: 2px solid #aaa !important; font-size: 1.2rem !important; }
+        .summary-label { text-align: right !important; padding-right: 15px !important; color: #000 !important; }
         .action-bar { margin-bottom: 20px; display: flex; justify-content: flex-end; gap: 10px; }
         .btn-print { background-color: #e74c3c; color: white; border-radius: 50px; padding: 8px 30px; font-weight: 600; border: none; }
         .footer-credit { text-align: center; margin-top: 30px; margin-bottom: 20px; font-size: 0.8rem; color: #2c3e50; padding-top: 10px; border-top: 1px solid #ddd; }
         @media print {
             @page { margin: 5mm; size: portrait; }
-            body { background-color: white; padding: 0; -webkit-print-color-adjust:  exact ! important; print-color-adjust: exact !important; color-adjust: exact !important; }
+            body { background-color: white; padding: 0; -webkit-print-color-adjust:  exact !important; print-color-adjust: exact !important; color-adjust: exact !important; }
             .container { max-width: 100% !important; width: 100% !important; padding: 0; margin: 0; }
             .no-print { display: none !important; }
             .company-header { border-bottom: 2px solid #000; margin-bottom: 5px; padding-bottom: 5px; }
@@ -4597,14 +4601,14 @@ PO_REPORT_TEMPLATE = """
             .info-container { margin-bottom: 10px; }
             .info-box { border: 1px solid #000 !important; border-left: 5px solid #000 !important; padding: 5px 10px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
             .total-box { border: 2px solid #000 !important; background: white !important; color: black !important; padding: 5px 10px; }
-            .info-item { font-size: 13pt ! important; font-weight: 800 !important; }
-            . table th, .table td { border: 1px solid #000 !important; padding: 2px ! important; font-size: 13pt !important; font-weight: 800 !important; }
+            .info-item { font-size: 13pt !important; font-weight: 800 !important; }
+            .table th, .table td { border: 1px solid #000 !important; padding: 2px !important; font-size: 13pt !important; font-weight: 800 !important; }
             .table th:empty { background-color: white !important; border: none !important; }
-            .table-striped tbody tr. summary-row td { background-color: #d1ecff !important; box-shadow: inset 0 0 0 9999px #d1ecff ! important; color: #000 !important; font-weight: 900 !important; }
-            . color-header { background-color: #f1f1f1 !important; border:  1px solid #000 ! important; font-size: 1.4rem !important; font-weight:  900; padding: 5px; margin-top: 10px; box-shadow: inset 0 0 0 9999px #f1f1f1 !important; }
-            .total-col-header { background-color: #e8f6f3 !important; box-shadow: inset 0 0 0 9999px #e8f6f3 ! important; color: #000 ! important; }
+            .table-striped tbody tr.summary-row td { background-color: #d1ecff !important; box-shadow: inset 0 0 0 9999px #d1ecff !important; color: #000 !important; font-weight: 900 !important; }
+            .color-header { background-color: #f1f1f1 !important; border:  1px solid #000 !important; font-size: 1.4rem !important; font-weight:  900; padding: 5px; margin-top: 10px; box-shadow: inset 0 0 0 9999px #f1f1f1 !important; }
+            .total-col-header { background-color: #e8f6f3 !important; box-shadow: inset 0 0 0 9999px #e8f6f3 !important; color: #000 !important; }
             .table-card { border: none; margin-bottom: 10px; break-inside: avoid; }
-            .footer-credit { display: block !important; color: black; border-top: 1px solid #000; margin-top: 10px; font-size: 8pt ! important; }
+            .footer-credit { display: block !important; color: black; border-top: 1px solid #000; margin-top: 10px; font-size: 8pt !important; }
         }
     </style>
 </head>
@@ -4655,7 +4659,7 @@ PO_REPORT_TEMPLATE = """
         const dateObj = new Date();
         const day = String(dateObj.getDate()).padStart(2, '0');
         const month = String(dateObj.getMonth() + 1).padStart(2, '0');
-        const year = dateObj. getFullYear();
+        const year = dateObj.getFullYear();
         document.getElementById('date').innerText = `${day}-${month}-${year}`;
     </script>
 </body>
@@ -4679,7 +4683,7 @@ def index():
             if len(perms) == 1 and 'accessories' in perms: 
                 return redirect(url_for('accessories_search_page'))
             else:
-                return render_template_string(USER_DاشBOARD_TEMPLATE)
+                return render_template_string(USER_DASHBOARD_TEMPLATE)
 
 @app.route('/login', methods=['POST'])
 def login():
@@ -4689,14 +4693,14 @@ def login():
     users_db = load_users()
 
     if username in users_db and users_db[username]['password'] == password:
-        session. permanent = True
+        session.permanent = True
         session['logged_in'] = True
         session['user'] = username
         session['role'] = users_db[username]['role']
-        session['permissions'] = users_db[username]. get('permissions', [])
+        session['permissions'] = users_db[username].get('permissions', [])
         
         now = get_bd_time()
-        session['login_start'] = now. isoformat()
+        session['login_start'] = now.isoformat()
         
         users_db[username]['last_login'] = now.strftime('%I:%M %p, %d %b')
         save_users(users_db)
@@ -4796,7 +4800,7 @@ def store_dashboard():
 
 @app.route('/generate-report', methods=['POST'])
 def generate_report():
-    if not session. get('logged_in'):
+    if not session.get('logged_in'):
         return redirect(url_for('index'))
     
     internal_ref_no = request.form['ref_no']
@@ -4809,7 +4813,7 @@ def generate_report():
             flash(f"Booking Not Found:  {internal_ref_no}")
             return redirect(url_for('index'))
         
-        update_stats(internal_ref_no, session. get('user', 'Unknown'))
+        update_stats(internal_ref_no, session.get('user', 'Unknown'))
         return render_template_string(CLOSING_REPORT_PREVIEW_TEMPLATE, report_data=report_data, ref_no=internal_ref_no)
     except Exception as e: 
         flash(f"System Error: {str(e)}")
@@ -4829,7 +4833,7 @@ def download_closing_excel():
             return make_response(send_file(
                 excel_file,
                 as_attachment=True,
-                download_name=f"Report-{internal_ref_no. replace('/', '_')}.xlsx",
+                download_name=f"Report-{internal_ref_no.replace('/', '_')}.xlsx",
                 mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
             ))
         else:
@@ -4847,7 +4851,7 @@ def download_closing_excel():
 def accessories_search_page():
     if not session.get('logged_in'):
         return redirect(url_for('index'))
-    if 'accessories' not in session. get('permissions', []):
+    if 'accessories' not in session.get('permissions', []):
         flash("Access Denied")
         return redirect(url_for('index'))
     
@@ -4863,10 +4867,10 @@ def accessories_search_page():
 
 @app.route('/admin/accessories/input', methods=['POST'])
 def accessories_input_page():
-    if not session. get('logged_in'):
+    if not session.get('logged_in'):
         return redirect(url_for('index'))
     
-    ref_no = request.form. get('ref_no') or request.args.get('ref')
+    ref_no = request.form.get('ref_no') or request.args.get('ref')
     if ref_no:
         ref_no = ref_no.strip().upper()
     
@@ -4894,7 +4898,7 @@ def accessories_input_page():
                 return redirect(url_for('accessories_search_page'))
             
             colors = sorted(list(set([item['color'] for item in api_data])))
-            style = api_data[0]. get('style', 'N/A')
+            style = api_data[0].get('style', 'N/A')
             buyer = api_data[0].get('buyer', 'N/A')
             challans = []
             
@@ -5036,7 +5040,7 @@ def accessories_print_view():
         ref=ref,
         buyer=data['buyer'],
         style=data['style'],
-        item_type=data. get('item_type', ''),
+        item_type=data.get('item_type', ''),
         challans=challans,
         line_summary=sorted_line_summary,
         count=len(challans),
@@ -5067,14 +5071,14 @@ def accessories_update():
         return redirect(url_for('index'))
     
     ref = request.form.get('ref')
-    index = int(request. form.get('index'))
+    index = int(request.form.get('index'))
     db_acc = load_accessories_db()
 
     if ref in db_acc and 0 <= index < len(db_acc[ref]['challans']):
         db_acc[ref]['challans'][index]['line'] = request.form.get('line_no')
-        db_acc[ref]['challans'][index]['color'] = request.form. get('color')
-        db_acc[ref]['challans'][index]['size'] = request.form. get('size')
-        db_acc[ref]['challans'][index]['qty'] = request.form. get('qty')
+        db_acc[ref]['challans'][index]['color'] = request.form.get('color')
+        db_acc[ref]['challans'][index]['size'] = request.form.get('size')
+        db_acc[ref]['challans'][index]['qty'] = request.form.get('qty')
         save_accessories_db(db_acc)
     
     return redirect(url_for('accessories_input_direct', ref=ref))
@@ -5134,11 +5138,11 @@ def generate_po_report():
             return render_template_string(PO_REPORT_TEMPLATE, tables=None, message="No PO data found in uploaded files.")
 
         # NEW: Update PO stats with booking reference
-        booking_ref = final_meta. get('booking', 'N/A')
+        booking_ref = final_meta.get('booking', 'N/A')
         update_po_stats(session.get('user', 'Unknown'), len(uploaded_files), booking_ref)
 
         df = pd.DataFrame(all_data)
-        df['Color'] = df['Color'].str. strip()
+        df['Color'] = df['Color'].str.strip()
         df = df[df['Color'] != ""]
         unique_colors = df['Color'].unique()
         
@@ -5154,10 +5158,10 @@ def generate_po_report():
                 aggfunc='sum',
                 fill_value=0
             )
-            pivot.columns. name = None
+            pivot.columns.name = None
             
             try:
-                sorted_cols = sort_sizes(pivot.columns. tolist())
+                sorted_cols = sort_sizes(pivot.columns.tolist())
                 pivot = pivot[sorted_cols]
             except:
                 pass
@@ -5165,12 +5169,12 @@ def generate_po_report():
             pivot['Total'] = pivot.sum(axis=1)
             grand_total_qty += pivot['Total'].sum()
 
-            actual_qty = pivot. sum()
-            actual_qty. name = 'Actual Qty'
+            actual_qty = pivot.sum()
+            actual_qty.name = 'Actual Qty'
             qty_plus_3 = (actual_qty * 1.03).round().astype(int)
             qty_plus_3.name = '3% Order Qty'
             
-            pivot_final = pd.concat([pivot, actual_qty. to_frame().T, qty_plus_3.to_frame().T])
+            pivot_final = pd.concat([pivot, actual_qty.to_frame().T, qty_plus_3.to_frame().T])
             pivot_final = pivot_final.reset_index()
             pivot_final = pivot_final.rename(columns={'index': 'P.O NO'})
             
