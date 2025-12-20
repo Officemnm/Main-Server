@@ -370,7 +370,23 @@ COMMON_STYLES = """
             box-shadow: var(--shadow-card);
             transition: var(--transition-smooth);
         }
-        /* Enhanced Cards & Grid */
+
+        /* FIX: Green Light Indicator */
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            background: var(--accent-green);
+            border-radius: 50%;
+            box-shadow: 0 0 10px var(--accent-green);
+            animation: statusPulse 2s infinite;
+        }
+
+        @keyframes statusPulse {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+        }
+                /* Enhanced Cards & Grid */
         .stats-grid { 
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); 
@@ -727,8 +743,7 @@ COMMON_STYLES = """
             position: relative;
             overflow: hidden;
         }
-
-        .btn-edit { 
+                .btn-edit { 
             background: rgba(139, 92, 246, 0.15);
             color: #A78BFA; 
         }
@@ -1164,8 +1179,7 @@ COMMON_STYLES = """
                 transform: translateY(0);
             }
         }
-
-        .flash-error {
+                .flash-error {
             background: rgba(239, 68, 68, 0.1);
             border: 1px solid rgba(239, 68, 68, 0.2);
             color: #F87171;
@@ -1503,11 +1517,18 @@ def update_stats(ref_no, username):
     save_stats(data)
 
 def update_po_stats(username, file_count):
+    # PO Sheet এর জন্য এখন ref হিসেবে ফাইলের সংখ্যা না দেখিয়ে একটা সাধারণ টেক্সট বা প্রথম ফাইলের নাম দেখাতে পারি। 
+    # তবে ইউজারের রিকোয়ারমেন্ট অনুযায়ী এখানে ref শো করতে হবে।
+    # আপাতত file_count কেই স্ট্রিং হিসেবে রাখছি, পরবর্তীতে রাউটে এটি পরিবর্তন করা হবে।
     data = load_stats()
     now = get_bd_time()
+    
+    # file_count এখন স্ট্রিং হতে পারে (যেমন: "Style: 12345")
+    ref_text = str(file_count)
+    
     new_record = {
         "user": username,
-        "file_count": file_count,
+        "ref": ref_text,
         "date": now.strftime('%d-%m-%Y'),
         "time": now.strftime('%I:%M %p'),
         "type": "PO Sheet",
@@ -1552,8 +1573,7 @@ def get_dashboard_summary_v2():
             "last_login": d.get('last_login', 'Never'),
             "last_duration": d.get('last_duration', 'N/A')
         })
-
-    # 2. Accessories Today & Analytics - LIFETIME COUNT
+            # 2. Accessories Today & Analytics - LIFETIME COUNT
     acc_lifetime_count = 0
     acc_today_list = []
     
@@ -1810,7 +1830,7 @@ def extract_data_dynamic(file_path):
                             })
     except Exception as e: print(f"Error processing file: {e}")
     return extracted_data, metadata
-# ==============================================================================
+    # ==============================================================================
 # লজিক পার্ট: CLOSING REPORT API & EXCEL GENERATION
 # ==============================================================================
 def get_authenticated_session(username, password):
@@ -2134,8 +2154,7 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
     wb.save(file_stream)
     file_stream.seek(0)
     return file_stream
-
-# ==============================================================================
+    # ==============================================================================
 # HTML TEMPLATES: LOGIN PAGE - FIXED RESPONSIVE & CENTERED
 # ==============================================================================
 
@@ -2571,8 +2590,7 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
             <i class="fas fa-code" style="margin-right: 5px;"></i> Powered by Mehedi Hasan
         </div>
     </div>
-
-    <div class="main-content">
+        <div class="main-content">
         
         <div id="section-dashboard">
             <div class="header-section">
@@ -2848,7 +2866,7 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
             </div>
         </div>
     </div>
-    <script>
+        <script>
         // ===== WELCOME POPUP WITH TIME-BASED GREETING =====
         function showWelcomePopup() {{
             const hour = new Date().getHours();
@@ -3272,8 +3290,7 @@ USER_DASHBOARD_TEMPLATE = f"""
         </div>
         <div class="loading-text">Processing...</div>
     </div>
-    
-    <div class="sidebar">
+        <div class="sidebar">
         <div class="brand-logo">
             <i class="fas fa-layer-group"></i> 
             MNM<span>Software</span>
@@ -3618,8 +3635,7 @@ ACCESSORIES_INPUT_TEMPLATE = f"""
             overflow-y: auto;
             padding-right: 5px;
         }}
-        
-        .challan-row {{
+                .challan-row {{
             display: grid;
             grid-template-columns: 60px 1fr 80px 60px 80px;
             gap: 10px;
@@ -3701,6 +3717,26 @@ ACCESSORIES_INPUT_TEMPLATE = f"""
             color: white !important;
             padding: 10px;
         }}
+
+        .history-btn {
+            background: linear-gradient(135deg, #3B82F6 0%, #60A5FA 100%) !important;
+            width: auto;
+            padding: 14px 20px;
+            border-radius: 12px;
+            color: white;
+            font-weight: 700;
+            border: none;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .history-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(59, 130, 246, 0.4);
+        }
     </style>
 </head>
 <body>
@@ -3742,11 +3778,16 @@ ACCESSORIES_INPUT_TEMPLATE = f"""
                     <span class="ref-info">{{{{ buyer }}}} • {{{{ style }}}}</span>
                 </div>
             </div>
-            <a href="/admin/accessories/print?ref={{{{ ref }}}}" target="_blank">
-                <button class="print-btn" style="width: auto; padding: 14px 30px;">
-                    <i class="fas fa-print" style="margin-right: 10px;"></i> Print Report
-                </button>
-            </a>
+            <div style="display: flex; gap: 10px;">
+                <a href="/admin/accessories/history" class="history-btn">
+                    <i class="fas fa-history"></i> History
+                </a>
+                <a href="/admin/accessories/print?ref={{{{ ref }}}}" target="_blank">
+                    <button class="print-btn" style="width: auto; padding: 14px 30px;">
+                        <i class="fas fa-print" style="margin-right: 10px;"></i> Print Report
+                    </button>
+                </a>
+            </div>
         </div>
 
         <div class="dashboard-grid-2">
@@ -3863,6 +3904,110 @@ ACCESSORIES_INPUT_TEMPLATE = f"""
             }}
         `;
         document.head.appendChild(style);
+    </script>
+</body>
+</html>
+"""
+
+ACCESSORIES_FULL_HISTORY_TEMPLATE = f"""
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Accessories History - MNM Software</title>
+    {COMMON_STYLES}
+    <style>
+        .history-grid {{
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }}
+        .history-card {{
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 20px;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+            position: relative;
+            overflow: hidden;
+        }}
+        .history-card::before {{
+            content: '';
+            position: absolute;
+            top: 0; left: 0; width: 4px; height: 100%;
+            background: var(--gradient-orange);
+            opacity: 0;
+            transition: var(--transition-smooth);
+        }}
+        .history-card:hover {{
+            transform: translateY(-5px);
+            border-color: var(--accent-orange);
+            box-shadow: var(--shadow-card);
+        }}
+        .history-card:hover::before {{ opacity: 1; }}
+        
+        .booking-ref {{ font-size: 18px; font-weight: 800; color: white; margin-bottom: 5px; }}
+        .booking-info {{ font-size: 13px; color: var(--text-secondary); margin-bottom: 15px; }}
+        .meta-row {{ display: flex; justify-content: space-between; font-size: 12px; color: var(--text-secondary); border-top: 1px solid rgba(255,255,255,0.05); padding-top: 10px; }}
+        .meta-item i {{ color: var(--accent-orange); margin-right: 5px; }}
+    </style>
+</head>
+<body>
+    <div class="animated-bg"></div>
+    <div class="sidebar">
+        <div class="brand-logo"><i class="fas fa-boxes"></i> History</div>
+        <div class="nav-menu">
+            <a href="/admin/accessories" class="nav-link"><i class="fas fa-arrow-left"></i> Back to Search</a>
+            <a href="/" class="nav-link"><i class="fas fa-home"></i> Dashboard</a>
+        </div>
+    </div>
+    <div class="main-content">
+        <div class="header-section">
+            <div>
+                <div class="page-title">Booking History</div>
+                <div class="page-subtitle">All saved accessories bookings</div>
+            </div>
+        </div>
+        
+        <div class="input-group" style="max-width: 400px; margin-bottom: 20px;">
+            <input type="text" id="searchInput" placeholder="Search bookings..." onkeyup="filterBookings()">
+        </div>
+
+        <div class="history-grid" id="bookingGrid">
+            {{% for ref, data in bookings.items() %}}
+            <div class="history-card" onclick="window.location.href='/admin/accessories/input_direct?ref={{{{ ref }}}}'">
+                <div class="booking-ref">{{{{ ref }}}}</div>
+                <div class="booking-info">{{{{ data.buyer }}}} • {{{{ data.style }}}}</div>
+                <div class="meta-row">
+                    <div class="meta-item"><i class="fas fa-list"></i> {{{{ data.challans|length }}}} Challans</div>
+                    <div class="meta-item"><i class="fas fa-clock"></i> {{{{ data.updated_at if data.updated_at else 'N/A' }}}}</div>
+                </div>
+            </div>
+            {{% else %}}
+            <div style="grid-column: 1/-1; text-align: center; padding: 50px; color: var(--text-secondary);">
+                <i class="fas fa-inbox" style="font-size: 40px; opacity: 0.3; margin-bottom: 15px;"></i>
+                <br>No history found.
+            </div>
+            {{% endfor %}}
+        </div>
+    </div>
+    <script>
+        function filterBookings() {{
+            let input = document.getElementById('searchInput').value.toUpperCase();
+            let cards = document.getElementsByClassName('history-card');
+            for (let i = 0; i < cards.length; i++) {{
+                let ref = cards[i].getElementsByClassName('booking-ref')[0].innerText;
+                let info = cards[i].getElementsByClassName('booking-info')[0].innerText.toUpperCase();
+                if (ref.indexOf(input) > -1 || info.indexOf(input) > -1) {{
+                    cards[i].style.display = "";
+                }} else {{
+                    cards[i].style.display = "none";
+                }}
+            }}
+        }}
     </script>
 </body>
 </html>
@@ -3993,7 +4138,6 @@ ACCESSORIES_EDIT_TEMPLATE = f"""
 </body>
 </html>
 """
-
 # ==============================================================================
 # STORE DASHBOARD TEMPLATE - NEW (ALUMINUM SHOP)
 # ==============================================================================
@@ -4511,7 +4655,6 @@ CLOSING_REPORT_PREVIEW_TEMPLATE = """
 </body>
 </html>
 """
-
 ACCESSORIES_REPORT_TEMPLATE = """
 <!DOCTYPE html>
 <html lang="en">
@@ -4967,34 +5110,60 @@ def accessories_input_page():
 
     db_acc = load_accessories_db()
 
+    should_fetch = False
+    
     if ref_no in db_acc:
-        data = db_acc[ref_no]
-        colors = data['colors']
-        style = data['style']
-        buyer = data['buyer']
-        challans = data['challans'] 
+        # Check if 24 hours passed since last API fetch/update
+        last_update_str = db_acc[ref_no].get('updated_at', '')
+        if last_update_str:
+            try:
+                last_update = datetime.strptime(last_update_str, '%I:%M %p, %d %b %Y')
+                if (get_bd_time() - last_update).total_seconds() > 86400: # 24 hours
+                    should_fetch = True
+            except:
+                should_fetch = True
+        else:
+             should_fetch = True
     else:
+        should_fetch = True
+
+    if should_fetch:
         try:
             api_data = fetch_closing_report_data(ref_no)
-            if not api_data:
-                flash(f"Booking not found: {ref_no}")
-                return redirect(url_for('accessories_search_page'))
-            
-            colors = sorted(list(set([item['color'] for item in api_data])))
-            style = api_data[0].get('style', 'N/A')
-            buyer = api_data[0].get('buyer', 'N/A')
-            challans = []
-            
-            db_acc[ref_no] = {
-                "style": style, "buyer": buyer, "colors": colors, 
-                "item_type": "", "challans": challans
-            }
-            save_accessories_db(db_acc)
+            if api_data:
+                colors = sorted(list(set([item['color'] for item in api_data])))
+                style = api_data[0].get('style', 'N/A')
+                buyer = api_data[0].get('buyer', 'N/A')
+                
+                # Merge or Initialize
+                if ref_no not in db_acc:
+                    db_acc[ref_no] = {
+                        "style": style, "buyer": buyer, "colors": colors, 
+                        "item_type": "", "challans": []
+                    }
+                else:
+                    # Just update colors and metadata, keep challans
+                    current_colors = set(db_acc[ref_no]['colors'])
+                    new_colors = set(colors)
+                    merged_colors = sorted(list(current_colors.union(new_colors)))
+                    
+                    db_acc[ref_no]['colors'] = merged_colors
+                    db_acc[ref_no]['style'] = style
+                    db_acc[ref_no]['buyer'] = buyer
+                
+                db_acc[ref_no]['updated_at'] = get_bd_time().strftime('%I:%M %p, %d %b %Y')
+                save_accessories_db(db_acc)
+            else:
+                 if ref_no not in db_acc:
+                    flash(f"Booking not found in ERP: {ref_no}")
+                    return redirect(url_for('accessories_search_page'))
         except:
-            flash("Connection Error with ERP")
-            return redirect(url_for('accessories_search_page'))
+             if ref_no not in db_acc:
+                flash("Connection Error with ERP")
+                return redirect(url_for('accessories_search_page'))
 
-    return render_template_string(ACCESSORIES_INPUT_TEMPLATE, ref=ref_no, colors=colors, style=style, buyer=buyer, challans=challans)
+    data = db_acc[ref_no]
+    return render_template_string(ACCESSORIES_INPUT_TEMPLATE, ref=ref_no, colors=data['colors'], style=data['style'], buyer=data['buyer'], challans=data['challans'])
 
 @app.route('/admin/accessories/input_direct')
 def accessories_input_direct():
@@ -5047,8 +5216,7 @@ def accessories_print_view():
     sorted_line_summary = dict(sorted(line_summary.items()))
 
     return render_template_string(ACCESSORIES_REPORT_TEMPLATE, ref=ref, buyer=data['buyer'], style=data['style'], item_type=data.get('item_type', ''), challans=challans, line_summary=sorted_line_summary, count=len(challans), today=get_bd_date_str())
-
-@app.route('/admin/accessories/edit', methods=['GET'])
+    @app.route('/admin/accessories/edit', methods=['GET'])
 def accessories_edit():
     if not session.get('logged_in'): return redirect(url_for('index'))
     
@@ -5094,6 +5262,13 @@ def accessories_delete():
     
     return redirect(url_for('accessories_input_direct', ref=ref))
 
+@app.route('/admin/accessories/history', methods=['GET'])
+def accessories_history():
+    if not session.get('logged_in'): return redirect(url_for('index'))
+    db_acc = load_accessories_db()
+    # Sort bookings by updated_at descending if available
+    return render_template_string(ACCESSORIES_FULL_HISTORY_TEMPLATE, bookings=db_acc)
+
 @app.route('/generate-po-report', methods=['POST'])
 def generate_po_report():
     if not session.get('logged_in'): return redirect(url_for('index'))
@@ -5118,7 +5293,16 @@ def generate_po_report():
         if not all_data:
             return render_template_string(PO_REPORT_TEMPLATE, tables=None, message="No PO data found in uploaded files.")
 
-        update_po_stats(session.get('user', 'Unknown'), len(uploaded_files))
+        # PO Stats Update: এখন ফাইলের সংখ্যার বদলে স্টাইল বা বুকিং নম্বর দেখানো হবে
+        ref_display = "Unknown Style"
+        if final_meta['style'] != 'N/A':
+            ref_display = f"Style: {final_meta['style']}"
+        elif final_meta['booking'] != 'N/A':
+            ref_display = f"Bkg: {final_meta['booking']}"
+        else:
+            ref_display = f"{len(uploaded_files)} Files"
+
+        update_po_stats(session.get('user', 'Unknown'), ref_display)
 
         df = pd.DataFrame(all_data)
         df['Color'] = df['Color'].str.strip()
