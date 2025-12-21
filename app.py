@@ -34,8 +34,8 @@ if not os.path.exists(UPLOAD_FOLDER):
     os.makedirs(UPLOAD_FOLDER)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
-# সেশন টাইমআউট কনফিগারেশন (30 মিনিট)
-app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=30) 
+# সেশন টাইমআউট কনফিগারেশন (5 মিনিট)
+app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=5) 
 
 # টাইমজোন কনফিগারেশন (বাংলাদেশ)
 bd_tz = pytz.timezone('Asia/Dhaka')
@@ -5234,3 +5234,4 @@ def generate_po_report():
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))
     app.run(host='0.0.0.0', port=port, debug=True)
+
