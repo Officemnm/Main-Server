@@ -1886,7 +1886,7 @@ def get_dashboard_summary_v2():
     }
 
 # ==============================================================================
-# লজিক পার্ট: PURCHASE ORDER SHEET PARSER (PDF) - UPDATED LOGIC
+# লজিক পার্ট: PURCHASE ORDER SHEET PARSER (PDF) - UPDATED & FIXED LOGIC
 # ==============================================================================
 
 def is_potential_size(header):
@@ -2024,26 +2024,28 @@ def extract_data_dynamic(file_path):
                     qty_parts = []
                     is_qty_part = False
                     for part in parts:
-                        if re.search(r'\d', part):
+                        if re.search(r'\d', part) and not re.search(r'[a-zA-Z]', part):
                             is_qty_part = True
+                        
                         if is_qty_part:
                             qty_parts.append(part)
                         else:
                             color_parts.append(part)
                     
                     color_name = " ".join(color_parts)
-                    raw_qtys = [re.sub(r',.*', '', q) for q in qty_parts] # Handle numbers like "53,00" -> "53"
+                    raw_qtys = [re.sub(r',.*', '', q) for q in qty_parts] 
                     
                     final_qtys = []
                     for q_str in raw_qtys:
                         if q_str.isdigit():
                             final_qtys.append(int(q_str))
 
-                    # If quantities are not on the same line, look at the next line
+                    # BUG FIX: If quantities are on the next line, only use them if the current line has NO quantities.
                     if not final_qtys:
                         next_line_idx = i + 1
                         if next_line_idx < len(lines):
                             next_line = lines[next_line_idx].strip()
+                            # Check if next line contains only numbers and spaces (no letters)
                             if not re.search(r'[a-zA-Z]', next_line):
                                 next_line_qtys_raw = [re.sub(r',.*', '', q) for q in next_line.split()]
                                 final_qtys = [int(q) for q in next_line_qtys_raw if q.isdigit()]
@@ -2052,15 +2054,18 @@ def extract_data_dynamic(file_path):
                     padded_qtys = final_qtys + [0] * (len(sizes) - len(final_qtys))
                     
                     if padded_qtys and color_name:
+                        # Ensure we only take as many quantities as there are sizes
+                        final_padded_qtys = padded_qtys[:len(sizes)]
                         for idx, size in enumerate(sizes):
                             extracted_data.append({
                                 'P.O NO': order_no,
                                 'Color': color_name,
                                 'Size': size,
-                                'Quantity': padded_qtys[idx] if idx < len(padded_qtys) else 0
+                                'Quantity': final_padded_qtys[idx]
                             })
     except Exception as e: print(f"Error processing file: {e}")
     return extracted_data, metadata
+
 
 # ==============================================================================
 # লজিক পার্ট: CLOSING REPORT API & EXCEL GENERATION
