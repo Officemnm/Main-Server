@@ -71,6 +71,7 @@ try:
     print("MongoDB Connected Successfully!")
 except Exception as e:
     print(f"MongoDB Connection Error: {e}")
+
 # ==============================================================================
 # ENHANCED CSS STYLES - PREMIUM MODERN UI WITH ANIMATIONS
 # ==============================================================================
@@ -1163,16 +1164,8 @@ COMMON_STYLES = """
         }
 
         /* Flash Messages */
-        #flash-container {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            z-index: 10001;
-            width: 350px;
-        }
-
         .flash-message {
-            margin-bottom: 10px;
+            margin-bottom: 20px;
             padding: 16px 20px;
             border-radius: 12px;
             font-size: 14px;
@@ -1181,37 +1174,29 @@ COMMON_STYLES = """
             align-items: center;
             gap: 12px;
             animation: flashSlideIn 0.4s ease-out;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
-            border: 1px solid transparent;
         }
 
         @keyframes flashSlideIn {
             from { 
                 opacity: 0;
-                transform: translateX(100%);
+                transform: translateY(-10px);
             }
             to { 
                 opacity: 1;
-                transform: translateX(0);
+                transform: translateY(0);
             }
         }
 
         .flash-error {
-            background: rgba(239, 68, 68, 0.2);
-            border-color: rgba(239, 68, 68, 0.4);
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.2);
             color: #F87171;
         }
 
         .flash-success {
-            background: rgba(16, 185, 129, 0.2);
-            border-color: rgba(16, 185, 129, 0.4);
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.2);
             color: #34D399;
-        }
-
-        .flash-info {
-            background: rgba(59, 130, 246, 0.2);
-            border-color: rgba(59, 130, 246, 0.4);
-            color: #60a5fa;
         }
         
         /* Ripple Effect */
@@ -1279,10 +1264,6 @@ COMMON_STYLES = """
             .header-section {
                 flex-direction: column;
                 gap: 15px;
-            }
-            #flash-container {
-                width: calc(100% - 40px);
-                right: 20px;
             }
         }
 
@@ -1886,516 +1867,6 @@ def get_dashboard_summary_v2():
     }
 
 # ==============================================================================
-# লজিক পার্ট: PURCHASE ORDER SHEET PARSER (PDF) - UPDATED & FIXED LOGIC
-# ==============================================================================
-
-def is_potential_size(header):
-    h = header.strip().upper()
-    if h in ["COLO", "SIZE", "TOTAL", "QUANTITY", "PRICE", "AMOUNT", "CURRENCY", "ORDER NO", "P.O NO"]:
-        return False
-    if re.match(r'^\d+$', h): return True
-    if re.match(r'^\d+[AMYT]$', h): return True
-    if re.match(r'^(XXS|XS|S|M|L|XL|XXL|XXXL|TU|ONE\s*SIZE)$', h): return True
-    if re.match(r'^[A-Z]\d{2,}$', h): return False
-    return False
-
-def sort_sizes(size_list):
-    STANDARD_ORDER = [
-        '0M', '1M', '3M', '6M', '9M', '12M', '18M', '24M', '36M',
-        '2A', '3A', '4A', '5A', '6A', '8A', '10A', '12A', '14A', '16A', '18A',
-        'XXS', 'XS', 'S', 'M', 'L', 'XL', 'XXL', '3XL', '4XL', '5XL',
-        'TU', 'One Size'
-    ]
-    def sort_key(s):
-        s = s.strip()
-        if s in STANDARD_ORDER: return (0, STANDARD_ORDER.index(s))
-        if s.isdigit(): return (1, int(s))
-        match = re.match(r'^(\d+)([A-Z]+)$', s)
-        if match: return (2, int(match.group(1)), match.group(2))
-        return (3, s)
-    return sorted(size_list, key=sort_key)
-
-def extract_metadata(first_page_text):
-    meta = {
-        'buyer': 'N/A', 'booking': 'N/A', 'style': 'N/A', 
-        'season': 'N/A', 'dept': 'N/A', 'item': 'N/A'
-    }
-    if "KIABI" in first_page_text.upper():
-        meta['buyer'] = "KIABI"
-    else:
-        buyer_match = re.search(r"Buyer.*?Name[\s\S]*?([\w\s&]+)(?:\n|$)", first_page_text)
-        if buyer_match: meta['buyer'] = buyer_match.group(1).strip()
-
-    booking_block_match = re.search(r"(?:Internal )?Booking NO\. ?[:\s]*([\s\S]*?)(?:System NO|Control No|Buyer)", first_page_text, re.IGNORECASE)
-    if booking_block_match:
-        raw_booking = booking_block_match.group(1).strip()
-        clean_booking = raw_booking.replace('\n', '').replace('\r', '').replace(' ', '')
-        if "System" in clean_booking: clean_booking = clean_booking.split("System")[0]
-        meta['booking'] = clean_booking
-
-    style_match = re.search(r"Style Ref\. ?[:\s]*([\w-]+)", first_page_text, re.IGNORECASE)
-    if style_match: meta['style'] = style_match.group(1).strip()
-    else: 
-        style_match = re.search(r"Style Des\.?[\s\S]*?([\w-]+)", first_page_text, re.IGNORECASE)
-        if style_match: meta['style'] = style_match.group(1).strip()
-
-    season_match = re.search(r"Season\s*[:\n\"]*([\w\d-]+)", first_page_text, re.IGNORECASE)
-    if season_match: meta['season'] = season_match.group(1).strip()
-    dept_match = re.search(r"Dept\. ?[\s\n: ]*([A-Za-z]+)", first_page_text, re.IGNORECASE)
-    if dept_match: meta['dept'] = dept_match.group(1).strip()
-
-    item_match = re.search(r"Garments?\s*Item[\s\n: ]*([^\n\r]+)", first_page_text, re.IGNORECASE)
-    if item_match: 
-        item_text = item_match.group(1).strip()
-        if "Style" in item_text: item_text = item_text.split("Style")[0].strip()
-        meta['item'] = item_text
-
-    return meta
-
-def extract_data_dynamic(file_path):
-    extracted_data = []
-    metadata = {
-        'buyer': 'N/A', 'booking': 'N/A', 'style': 'N/A', 
-        'season': 'N/A', 'dept': 'N/A', 'item': 'N/A'
-    }
-    order_no = "Unknown"
-    
-    try:
-        reader = pypdf.PdfReader(file_path)
-        first_page_text = reader.pages[0].extract_text()
-        
-        if "Main Fabric Booking" in first_page_text or "Fabric Booking Sheet" in first_page_text: 
-            metadata = extract_metadata(first_page_text)
-            return [], metadata
-
-        order_match = re.search(r"Order no\D*(\d+)", first_page_text, re.IGNORECASE)
-        if order_match: order_no = order_match.group(1)
-        else: 
-            alt_match = re.search(r"Order\s*[:\.]?\s*(\d+)", first_page_text, re.IGNORECASE)
-            if alt_match: order_no = alt_match.group(1)
-        
-        order_no = str(order_no).strip()
-        if order_no.endswith("00"): order_no = order_no[:-2]
-        
-        metadata = extract_metadata(first_page_text)
-
-        for page in reader.pages:
-            text = page.extract_text()
-            lines = text.split('\n')
-            sizes = []
-            capturing_data = False
-            
-            for i, line in enumerate(lines):
-                line = line.strip()
-                if not line: continue
-
-                if ("Colo" in line or "Size" in line) and "Total" in line:
-                    parts = line.split()
-                    try:
-                        total_idx = [idx for idx, x in enumerate(parts) if 'Total' in x][0]
-                        raw_sizes = parts[:total_idx]
-                        temp_sizes = [s for s in raw_sizes if s not in ["Colo", "/", "Size", "Colo/Size", "Colo/", "Size's"]]
-                        
-                        valid_size_count = sum(1 for s in temp_sizes if is_potential_size(s))
-                        if temp_sizes and valid_size_count >= len(temp_sizes) / 2:
-                            sizes = temp_sizes
-                            capturing_data = True
-                        else:
-                            sizes = []
-                            capturing_data = False
-                    except: pass
-                    continue
-                
-                if capturing_data and sizes:
-                    if line.startswith("Total Quantity") or line.startswith("Total Amount"):
-                        capturing_data = False
-                        continue
-                    lower_line = line.lower()
-                    if "quantity" in lower_line or "currency" in lower_line or "price" in lower_line or "amount" in lower_line: 
-                        continue
-                        
-                    clean_line = line.replace("Spec. price", "").replace("Spec", "").strip()
-                    if not re.search(r'[a-zA-Z]', clean_line): continue
-                    if re.match(r'^[A-Z]\d+$', clean_line) or "Assortment" in clean_line: continue
-                    
-                    parts = clean_line.split()
-                    
-                    color_parts = []
-                    qty_parts = []
-                    is_qty_part = False
-                    for part in parts:
-                        if re.search(r'\d', part) and not re.search(r'[a-zA-Z]', part):
-                            is_qty_part = True
-                        
-                        if is_qty_part:
-                            qty_parts.append(part)
-                        else:
-                            color_parts.append(part)
-                    
-                    color_name = " ".join(color_parts)
-                    raw_qtys = [re.sub(r',.*', '', q) for q in qty_parts] 
-                    
-                    final_qtys = []
-                    for q_str in raw_qtys:
-                        if q_str.isdigit():
-                            final_qtys.append(int(q_str))
-
-                    # BUG FIX: If quantities are on the next line, only use them if the current line has NO quantities.
-                    if not final_qtys:
-                        next_line_idx = i + 1
-                        if next_line_idx < len(lines):
-                            next_line = lines[next_line_idx].strip()
-                            # Check if next line contains only numbers and spaces (no letters)
-                            if not re.search(r'[a-zA-Z]', next_line):
-                                next_line_qtys_raw = [re.sub(r',.*', '', q) for q in next_line.split()]
-                                final_qtys = [int(q) for q in next_line_qtys_raw if q.isdigit()]
-
-                    # Pad with zeros to match the number of sizes
-                    padded_qtys = final_qtys + [0] * (len(sizes) - len(final_qtys))
-                    
-                    if padded_qtys and color_name:
-                        # Ensure we only take as many quantities as there are sizes
-                        final_padded_qtys = padded_qtys[:len(sizes)]
-                        for idx, size in enumerate(sizes):
-                            extracted_data.append({
-                                'P.O NO': order_no,
-                                'Color': color_name,
-                                'Size': size,
-                                'Quantity': final_padded_qtys[idx]
-                            })
-    except Exception as e: print(f"Error processing file: {e}")
-    return extracted_data, metadata
-
-
-# ==============================================================================
-# লজিক পার্ট: CLOSING REPORT API & EXCEL GENERATION
-# ==============================================================================
-
-def get_authenticated_session(username, password):
-    login_url = 'http://180.92.235.190:8022/erp/login.php'
-    login_payload = {'txt_userid': username, 'txt_password': password, 'submit': 'Login'}
-    session_req = requests.Session()
-    session_req.headers.update({
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
-    })
-    try:
-        response = session_req.post(login_url, data=login_payload, timeout=300)
-        if "dashboard.php" in response.url or "Invalid" not in response.text:
-            return session_req
-        else: 
-            return None
-    except requests.exceptions.RequestException as e:
-        print(f"Connection Error: {e}")
-        return None
-
-def fetch_closing_report_data(internal_ref_no):
-    active_session = get_authenticated_session("input2.clothing-cutting", "123456")
-    if not active_session: return None
-
-    report_url = 'http://180.92.235.190:8022/erp/prod_planning/reports/requires/cutting_lay_production_report_controller.php'
-    payload_template = {'action': 'report_generate', 'cbo_wo_company_name': '2', 'cbo_location_name': '2', 'cbo_floor_id': '0', 'cbo_buyer_name': '0', 'txt_internal_ref_no': internal_ref_no, 'reportType': '3'}
-    found_data = None
-   
-    for year in ['2025', '2024', '2023']: 
-        for company_id in range(1, 6):
-            payload = payload_template.copy()
-            payload['cbo_year_selection'] = year
-            payload['cbo_company_name'] = str(company_id)
-            try:
-                response = active_session.post(report_url, data=payload, timeout=300)
-                if response.status_code == 200 and "Data not Found" not in response.text:
-                    found_data = response.text
-                    break
-            except:   continue
-        if found_data: break
-    
-    if found_data:
-        return parse_report_data(found_data)
-    return None
-
-def parse_report_data(html_content):
-    all_report_data = []
-    try:
-        soup = BeautifulSoup(html_content, 'lxml')
-        header_row = soup.select_one('thead tr:nth-of-type(2)')
-        if not header_row: return None
-        all_th = header_row.find_all('th')
-        headers = [th.get_text(strip=True) for th in all_th if 'total' not in th.get_text(strip=True).lower()]
-        data_rows = soup.select('div#scroll_body table tbody tr')
-        item_blocks = []
-        current_block = []
-        for row in data_rows:
-            if row.get('bgcolor') == '#cddcdc':
-                if current_block: item_blocks.append(current_block)
-                current_block = []
-            else:
-                current_block.append(row)
-        if current_block: item_blocks.append(current_block)
-        
-        for block in item_blocks:  
-            style, color, buyer_name, gmts_qty_data, sewing_input_data, cutting_qc_data = "N/A", "N/A", "N/A", None, None, None
-            for row in block:
-                cells = row.find_all('td')
-                if len(cells) > 2:
-                    criteria_main = cells[0].get_text(strip=True)
-                    criteria_sub = cells[2].get_text(strip=True)
-                    main_lower, sub_lower = criteria_main.lower(), criteria_sub.lower()
-                    
-                    if main_lower == "style": style = cells[1].get_text(strip=True)
-                    elif main_lower == "color & gmts. item": color = cells[1].get_text(strip=True)
-                    elif "buyer" in main_lower: buyer_name = cells[1].get_text(strip=True)
-                    
-                    if sub_lower == "gmts. color /country qty": gmts_qty_data = [cell.get_text(strip=True) for cell in cells[3:len(headers)+3]]
-                    
-                    if "sewing input" in main_lower: sewing_input_data = [cell.get_text(strip=True) for cell in cells[1:len(headers)+1]]
-                    elif "sewing input" in sub_lower: sewing_input_data = [cell.get_text(strip=True) for cell in cells[3:len(headers)+3]]
-    
-                    if "cutting qc" in main_lower and "balance" not in main_lower: 
-                        cutting_qc_data = [cell.get_text(strip=True) for cell in cells[1:len(headers)+1]]
-                    elif "cutting qc" in sub_lower and "balance" not in sub_lower: 
-                        cutting_qc_data = [cell.get_text(strip=True) for cell in cells[3:len(headers)+3]]
-            if gmts_qty_data:  
-                plus_3_percent_data = []
-                for value in gmts_qty_data:  
-                    try:
-                        new_qty = round(int(value.replace(',', '')) * 1.03)
-                        plus_3_percent_data.append(str(new_qty))
-                    except (ValueError, TypeError):
-                        plus_3_percent_data.append(value)
-                all_report_data.append({
-                    'style': style, 'buyer': buyer_name, 'color': color, 
-                    'headers': headers, 'gmts_qty': gmts_qty_data, 
-                    'plus_3_percent': plus_3_percent_data, 
-                    'sewing_input': sewing_input_data if sewing_input_data else [], 
-                    'cutting_qc': cutting_qc_data if cutting_qc_data else []
-                })
-        return all_report_data
-    except Exception as e: 
-        print(f"Error parsing report data: {e}") # Added for debugging
-        return None
-
-def create_formatted_excel_report(report_data, internal_ref_no=""):
-    if not report_data: return None
-    wb = openpyxl.Workbook()
-    ws = wb.active
-    ws.title = "Closing Report"
-    
-    bold_font = Font(bold=True)
-    title_font = Font(size=32, bold=True, color="7B261A") 
-    white_bold_font = Font(size=16.5, bold=True, color="FFFFFF")
-    center_align = Alignment(horizontal='center', vertical='center')
-    left_align = Alignment(horizontal='left', vertical='center')
-    color_align = Alignment(horizontal='center', vertical='center', wrap_text=True)
-    thin_border = Border(left=Side(style='thin'), right=Side(style='thin'), top=Side(style='thin'), bottom=Side(style='thin'))
-    medium_border = Border(left=Side(style='medium'), right=Side(style='medium'), top=Side(style='medium'), bottom=Side(style='medium'))
-    
-    ir_ib_fill = PatternFill(start_color="7B261A", end_color="7B261A", fill_type="solid") 
-    header_row_fill = PatternFill(start_color="DE7465", end_color="DE7465", fill_type="solid") 
-    light_brown_fill = PatternFill(start_color="DE7465", end_color="DE7465", fill_type="solid") 
-    light_blue_fill = PatternFill(start_color="B9C2DF", end_color="B9C2DF", fill_type="solid") 
-    light_green_fill = PatternFill(start_color="C4D09D", end_color="C4D09D", fill_type="solid") 
-    dark_green_fill = PatternFill(start_color="f1f2e8", end_color="f1f2e8", fill_type="solid") 
-
-    NUM_COLUMNS, TABLE_START_ROW = 9, 8
-    ws.merge_cells(start_row=1, start_column=1, end_row=1, end_column=NUM_COLUMNS)
-    
-    ws['A1'].value = "COTTON CLOTHING BD LTD"
-    ws['A1'].font = title_font 
-    ws['A1'].alignment = center_align
-
-    ws.merge_cells(start_row=2, start_column=1, end_row=2, end_column=NUM_COLUMNS)
-    ws['A2'].value = "CLOSING REPORT [ INPUT SECTION ]"
-    ws['A2'].font = Font(size=15, bold=True) 
-    ws['A2'].alignment = center_align
-    ws.row_dimensions[3].height = 6
-
-    formatted_ref_no = internal_ref_no.upper()
-    current_date = get_bd_time().strftime("%d/%m/%Y")
-    
-    left_sub_headers = {
-        'A4': 'BUYER', 'B4': report_data[0].get('buyer', ''), 
-        'A5': 'IR/IB NO', 'B5': formatted_ref_no, 
-        'A6': 'STYLE NO', 'B6': report_data[0].get('style', '')
-    }
-    
-    for cell_ref, value in left_sub_headers.items():
-        cell = ws[cell_ref]
-        cell.value = value
-        cell.font = bold_font
-        cell.alignment = left_align
-        cell.border = thin_border
-        if cell_ref == 'B5':
-            cell.fill = ir_ib_fill 
-            cell.font = white_bold_font 
-        else:
-            cell.fill = dark_green_fill 
-
-    ws.merge_cells('B4:G4'); ws.merge_cells('B5:G5'); ws.merge_cells('B6:G6')
-    
-    right_sub_headers = {'H4': 'CLOSING DATE', 'I4': current_date, 'H5': 'SHIPMENT', 'I5': 'ALL', 'H6': 'PO NO', 'I6': 'ALL'}
-    for cell_ref, value in right_sub_headers.items():
-        cell = ws[cell_ref]
-        cell.value = value
-        cell.font = bold_font
-        cell.alignment = left_align
-        cell.border = thin_border
-        cell.fill = dark_green_fill 
-
-    for row in range(4, 7):
-        for col in range(3, 8): 
-            cell = ws.cell(row=row, column=col)
-            cell.border = thin_border
-       
-    current_row = TABLE_START_ROW
-    for block in report_data:
-        table_headers = ["COLOUR NAME", "SIZE", "ORDER QTY 3%", "ACTUAL QTY", "CUTTING QC", "INPUT QTY", "BALANCE", "SHORT/PLUS QTY", "Percentage %"]
-        for col_idx, header in enumerate(table_headers, 1):
-            cell = ws.cell(row=current_row, column=col_idx, value=header)
-            cell.font = bold_font
-            cell.alignment = center_align
-            cell.border = medium_border
-            cell.fill = header_row_fill 
-
-        current_row += 1
-        start_merge_row = current_row
-        full_color_name = block.get('color', 'N/A')
-
-        for i, size in enumerate(block['headers']):
-            color_to_write = full_color_name if i == 0 else ""
-            actual_qty = int(block['gmts_qty'][i].replace(',', '') or 0)
-            input_qty = int(block['sewing_input'][i].replace(',', '') or 0) if i < len(block['sewing_input']) else 0
-            cutting_qc_val = int(block.get('cutting_qc', [])[i].replace(',', '') or 0) if i < len(block.get('cutting_qc', [])) else 0
-            
-            ws.cell(row=current_row, column=1, value=color_to_write)
-            ws.cell(row=current_row, column=2, value=size)
-            ws.cell(row=current_row, column=4, value=actual_qty)
-            ws.cell(row=current_row, column=5, value=cutting_qc_val)
-            ws.cell(row=current_row, column=6, value=input_qty)
-            
-            ws.cell(row=current_row, column=3, value=f"=ROUND(D{current_row}*1.03, 0)")      
-            ws.cell(row=current_row, column=7, value=f"=E{current_row}-F{current_row}")      
-            ws.cell(row=current_row, column=8, value=f"=F{current_row}-C{current_row}")      
-            ws.cell(row=current_row, column=9, value=f'=IF(C{current_row}<>0, H{current_row}/C{current_row}, 0)') 
-            
-            for col_idx in range(1, NUM_COLUMNS + 1):
-                cell = ws.cell(row=current_row, column=col_idx)
-                cell.border = medium_border if col_idx == 2 else thin_border
-                cell.alignment = center_align
-    
-                if col_idx in [1, 2, 3, 6, 9]: cell.font = bold_font
-                
-                if col_idx == 3: cell.fill = light_blue_fill      
-                elif col_idx == 6: cell.fill = light_green_fill   
-                else: cell.fill = dark_green_fill 
-
-                if col_idx == 9:  
-                    cell.number_format = '0.00%' 
-            current_row += 1
-            
-        end_merge_row = current_row - 1
-        if start_merge_row <= end_merge_row:
-            ws.merge_cells(start_row=start_merge_row, start_column=1, end_row=end_merge_row, end_column=1)
-            merged_cell = ws.cell(row=start_merge_row, column=1)
-            merged_cell.alignment = color_align
-            if not merged_cell.font.bold: merged_cell.font = bold_font
-        
-        total_row_str = str(current_row)
-        ws.merge_cells(start_row=current_row, start_column=1, end_row=current_row, end_column=2)
-        
-        totals_formulas = {
-            "A": "TOTAL",
-            "C": f"=SUM(C{start_merge_row}:C{end_merge_row})",
-            "D": f"=SUM(D{start_merge_row}:D{end_merge_row})",
-            "E": f"=SUM(E{start_merge_row}:E{end_merge_row})",
-            "F": f"=SUM(F{start_merge_row}:F{end_merge_row})",
-            "G": f"=SUM(G{start_merge_row}:G{end_merge_row})",
-            "H": f"=SUM(H{start_merge_row}:H{end_merge_row})",
-            "I": f"=IF(C{total_row_str}<>0, H{total_row_str}/C{total_row_str}, 0)"
-        }
-        
-        for col_letter, value_or_formula in totals_formulas.items():
-            cell = ws[f"{col_letter}{current_row}"]
-            cell.value = value_or_formula
-            cell.font = bold_font
-            cell.border = medium_border
-            cell.alignment = center_align
-            cell.fill = light_brown_fill 
-            if col_letter == 'I':  
-                cell.number_format = '0.00%'
-        
-        for col_idx in range(2, NUM_COLUMNS + 1):
-            cell = ws.cell(row=current_row, column=col_idx)
-            if not cell.value:  
-                cell.fill = dark_green_fill 
-                cell.border = medium_border
-        current_row += 2
-    
-    image_row = current_row + 1
-   
-    try:
-        direct_image_url = 'https://i.ibb.co/v6bp0jQW/rockybilly-regular.webp'
-        image_response = requests.get(direct_image_url)
-        image_response.raise_for_status()
-        original_img = PILImage.open(BytesIO(image_response.content))
-        padded_img = PILImage.new('RGBA', (original_img.width + 400, original_img.height), (0, 0, 0, 0))
-        padded_img.paste(original_img, (400, 0))
-        padded_image_io = BytesIO()
-        padded_img.save(padded_image_io, format='PNG')
-        img = Image(padded_image_io)
-        aspect_ratio = padded_img.height / padded_img.width
-        img.width = 95
-        img.height = int(img.width * aspect_ratio)
-        ws.row_dimensions[image_row].height = img.height * 0.90
-        ws.add_image(img, f'A{image_row}')
-    except Exception:  
-        pass
-
-    signature_row = image_row + 1
-    ws.merge_cells(start_row=signature_row, start_column=1, end_row=signature_row, end_column=NUM_COLUMNS)
-    titles = ["Prepared By", "Input Incharge", "Cutting Incharge", "IE & Planning", "Sewing Manager", "Cutting Manager"]
-    signature_cell = ws.cell(row=signature_row, column=1)
-    signature_cell.value = "                 ".join(titles)
-    signature_cell.font = Font(bold=True, size=15)
-    signature_cell.alignment = Alignment(horizontal='center', vertical='center')
-
-    last_data_row = current_row - 2
-    for row in ws.iter_rows(min_row=4, max_row=last_data_row):
-        for cell in row:  
-            if cell.coordinate == 'B5': continue
-            if cell.font:  
-                existing_font = cell.font
-                if cell.row != 1:  
-                    new_font = Font(name=existing_font.name, size=16.5, bold=existing_font.bold, italic=existing_font.italic, vertAlign=existing_font.vertAlign, underline=existing_font.underline, strike=existing_font.strike, color=existing_font.color)
-                    cell.font = new_font
-    
-    ws.column_dimensions['A'].width = 23
-    ws.column_dimensions['B'].width = 8.5
-    ws.column_dimensions['C'].width = 20
-    ws.column_dimensions['D'].width = 17
-    ws.column_dimensions['E'].width = 17
-    ws.column_dimensions['F'].width = 15
-    ws.column_dimensions['G'].width = 13.5
-    ws.column_dimensions['H'].width = 23
-    ws.column_dimensions['I'].width = 18
-   
-    ws.page_setup.orientation = ws.ORIENTATION_PORTRAIT
-    ws.page_setup.fitToPage = True
-    ws.page_setup.fitToWidth = 1
-    ws.page_setup.fitToHeight = 1 
-    ws.page_setup.horizontalCentered = True
-    ws.page_setup.verticalCentered = False 
-    ws.page_setup.left = 0.25
-    ws.page_setup.right = 0.25
-    ws.page_setup.top = 0.45
-    ws.page_setup.bottom = 0.45
-    ws.page_setup.header = 0
-    ws.page_setup.footer = 0
-   
-    file_stream = BytesIO()
-    wb.save(file_stream)
-    file_stream.seek(0)
-    return file_stream
-# ==============================================================================
 # HTML TEMPLATES: LOGIN PAGE
 # ==============================================================================
 
@@ -2584,6 +2055,10 @@ LOGIN_TEMPLATE = f"""
             gap: 10px;
         }}
         
+        .login-btn i {{
+            transition: transform 0.3s;
+        }}
+        
         .login-btn:hover i {{
             transform: translateX(5px);
         }}
@@ -2706,18 +2181,14 @@ LOGIN_TEMPLATE = f"""
                 </button>
             </form>
             
-            <div id="flash-container-login">
-            {{% with messages = get_flashed_messages(with_categories=true) %}}
+            {{% with messages = get_flashed_messages() %}}
                 {{% if messages %}}
-                     {{% for category, message in messages %}}
-                        <div class="error-box" style="margin-top: 20px;">
-                            <i class="fas fa-exclamation-circle"></i>
-                            <span>{{{{ message }}}}</span>
-                        </div>
-                    {{% endfor %}}
+                    <div class="error-box">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <span>{{{{ messages[0] }}}}</span>
+                    </div>
                 {{% endif %}}
             {{% endwith %}}
-            </div>
             
             <div class="footer-credit">
                 © 2025 <a href="#">Mehedi Hasan</a> • All Rights Reserved
@@ -2735,15 +2206,6 @@ LOGIN_TEMPLATE = f"""
             this.appendChild(ripple);
             setTimeout(() => ripple.remove(), 600);
         }});
-
-        // Auto-hide flash messages
-        setTimeout(function() {{
-            let flashContainer = document.getElementById('flash-container-login');
-            if(flashContainer) {{
-                flashContainer.style.opacity = '0';
-                setTimeout(function() {{ flashContainer.style.display = 'none'; }}, 500);
-            }}
-        }}, 5000);
     </script>
 </body>
 </html>
@@ -2800,25 +2262,6 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
         <div class="loading-text" id="loading-text">Processing Request...</div>
     </div>
 
-    <div id="flash-container">
-        {{% with messages = get_flashed_messages(with_categories=true) %}}
-            {{% if messages %}}
-                {{% for category, message in messages %}}
-                    <div class="flash-message flash-{{{{ category if category != 'message' else 'info' }}}}" role="alert">
-                        {{% if category == 'success' %}}
-                            <i class="fas fa-check-circle"></i>
-                        {{% elif category == 'error' %}}
-                            <i class="fas fa-exclamation-triangle"></i>
-                        {{% else %}}
-                             <i class="fas fa-info-circle"></i>
-                        {{% endif %}}
-                        <span>{{{{ message }}}}</span>
-                    </div>
-                {{% endfor %}}
-            {{% endif %}}
-        {{% endwith %}}
-    </div>
-
     <div class="mobile-toggle" onclick="document.querySelector('.sidebar').classList.toggle('active')">
         <i class="fas fa-bars"></i>
     </div>
@@ -2870,6 +2313,15 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
                     <span>System Online</span>
                 </div>
             </div>
+            
+            {{% with messages = get_flashed_messages() %}}
+                {{% if messages %}}
+                    <div class="flash-message flash-error">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <span>{{{{ messages[0] }}}}</span>
+                    </div>
+                {{% endif %}}
+            {{% endwith %}}
 
             <div class="stats-grid">
                 <div class="card stat-card" style="animation-delay: 0.1s;">
@@ -3522,7 +2974,7 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
 </html>
 """
 # ==============================================================================
-# USER DASHBOARD TEMPLATE 
+# USER DASHBOARD TEMPLATE (হুবহু তোমার মূল কোড)
 # ==============================================================================
 
 USER_DASHBOARD_TEMPLATE = f"""
@@ -3558,25 +3010,6 @@ USER_DASHBOARD_TEMPLATE = f"""
         </div>
         <div class="loading-text">Processing...</div>
     </div>
-
-    <div id="flash-container">
-        {{% with messages = get_flashed_messages(with_categories=true) %}}
-            {{% if messages %}}
-                {{% for category, message in messages %}}
-                    <div class="flash-message flash-{{{{ category if category != 'message' else 'info' }}}}" role="alert">
-                        {{% if category == 'success' %}}
-                            <i class="fas fa-check-circle"></i>
-                        {{% elif category == 'error' %}}
-                            <i class="fas fa-exclamation-triangle"></i>
-                        {{% else %}}
-                             <i class="fas fa-info-circle"></i>
-                        {{% endif %}}
-                        <span>{{{{ message }}}}</span>
-                    </div>
-                {{% endfor %}}
-            {{% endif %}}
-        {{% endwith %}}
-    </div>
     
     <div class="sidebar">
         <div class="brand-logo">
@@ -3607,6 +3040,15 @@ USER_DASHBOARD_TEMPLATE = f"""
                 <span>Online</span>
             </div>
         </div>
+
+        {{% with messages = get_flashed_messages() %}}
+            {{% if messages %}}
+                <div class="flash-message flash-error">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <span>{{{{ messages[0] }}}}</span>
+                </div>
+            {{% endif %}}
+        {{% endwith %}}
 
         <div class="stats-grid">
             {{% if 'closing' in session.permissions %}}
@@ -3709,15 +3151,6 @@ USER_DASHBOARD_TEMPLATE = f"""
             return true;
         }}
         
-        // Auto-hide flash messages
-        setTimeout(function() {{
-            let flashMessages = document.querySelectorAll('.flash-message');
-            flashMessages.forEach(function(msg) {{
-                msg.style.opacity = '0';
-                setTimeout(function() {{ msg.style.display = 'none'; }}, 500);
-            }});
-        }}, 5000);
-
         const style = document.createElement('style');
         style.textContent = `
             @keyframes fadeInUp {{
@@ -3732,7 +3165,7 @@ USER_DASHBOARD_TEMPLATE = f"""
 """
 
 # ==============================================================================
-# ACCESSORIES SEARCH TEMPLATE
+# ACCESSORIES SEARCH TEMPLATE - WITH NEW HISTORY FEATURE (নতুন যোগ করা)
 # ==============================================================================
 
 ACCESSORIES_SEARCH_TEMPLATE = f"""
@@ -3844,24 +3277,6 @@ ACCESSORIES_SEARCH_TEMPLATE = f"""
 </head>
 <body>
     <div class="animated-bg"></div>
-    <div id="flash-container">
-        {{% with messages = get_flashed_messages(with_categories=true) %}}
-            {{% if messages %}}
-                {{% for category, message in messages %}}
-                    <div class="flash-message flash-{{{{ category if category != 'message' else 'info' }}}}" role="alert">
-                         {{% if category == 'success' %}}
-                            <i class="fas fa-check-circle"></i>
-                        {{% elif category == 'error' %}}
-                            <i class="fas fa-exclamation-triangle"></i>
-                        {{% else %}}
-                             <i class="fas fa-info-circle"></i>
-                        {{% endif %}}
-                        <span>{{{{ message }}}}</span>
-                    </div>
-                {{% endfor %}}
-            {{% endif %}}
-        {{% endwith %}}
-    </div>
     
     <div class="search-container">
         <div class="search-card">
@@ -3882,6 +3297,15 @@ ACCESSORIES_SEARCH_TEMPLATE = f"""
                     Proceed to Entry <i class="fas fa-arrow-right" style="margin-left: 10px;"></i>
                 </button>
             </form>
+            
+            {{% with messages = get_flashed_messages() %}}
+                {{% if messages %}}
+                    <div class="flash-message flash-error" style="margin-top: 20px;">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <span>{{{{ messages[0] }}}}</span>
+                    </div>
+                {{% endif %}}
+            {{% endwith %}}
             
             <!-- NEW: History Section -->
             <div class="history-section">
@@ -3946,22 +3370,13 @@ ACCESSORIES_SEARCH_TEMPLATE = f"""
             const dropdown = document.getElementById('historyDropdown');
             dropdown.classList.toggle('active');
         }}
-
-        // Auto-hide flash messages
-        setTimeout(function() {{
-            let flashMessages = document.querySelectorAll('.flash-message');
-            flashMessages.forEach(function(msg) {{
-                msg.style.opacity = '0';
-                setTimeout(function() {{ msg.style.display = 'none'; }}, 500);
-            }});
-        }}, 5000);
     </script>
 </body>
 </html>
 """
 
 # ==============================================================================
-# ACCESSORIES INPUT TEMPLATE
+# ACCESSORIES INPUT TEMPLATE (হুবহু তোমার মূল কোড)
 # ==============================================================================
 
 ACCESSORIES_INPUT_TEMPLATE = f"""
@@ -3973,12 +3388,6 @@ ACCESSORIES_INPUT_TEMPLATE = f"""
     <title>Accessories Entry - MNM Software</title>
     {COMMON_STYLES}
     <style>
-        .header-section .btn-group {{
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }}
-
         .ref-badge {{
             display: inline-flex;
             align-items: center;
@@ -4050,14 +3459,6 @@ ACCESSORIES_INPUT_TEMPLATE = f"""
         .print-btn {{
             background: linear-gradient(135deg, #10B981 0%, #34D399 100%) !important;
         }}
-
-        .refresh-btn {{
-            background: linear-gradient(135deg, #3B82F6 0%, #60A5FA 100%) !important;
-        }}
-
-        .delete-booking-btn {{
-             background: linear-gradient(135deg, #EF4444 0%, #F87171 100%) !important;
-        }}
         
         .empty-state {{
             text-align: center;
@@ -4101,24 +3502,6 @@ ACCESSORIES_INPUT_TEMPLATE = f"""
 </head>
 <body>
     <div class="animated-bg"></div>
-    <div id="flash-container">
-        {{% with messages = get_flashed_messages(with_categories=true) %}}
-            {{% if messages %}}
-                {{% for category, message in messages %}}
-                    <div class="flash-message flash-{{{{ category if category != 'message' else 'info' }}}}" role="alert">
-                         {{% if category == 'success' %}}
-                            <i class="fas fa-check-circle"></i>
-                        {{% elif category == 'error' %}}
-                            <i class="fas fa-exclamation-triangle"></i>
-                        {{% else %}}
-                             <i class="fas fa-info-circle"></i>
-                        {{% endif %}}
-                        <span>{{{{ message }}}}</span>
-                    </div>
-                {{% endfor %}}
-            {{% endif %}}
-        {{% endwith %}}
-    </div>
     
     <div id="loading-overlay">
         <div class="spinner-container">
@@ -4156,25 +3539,11 @@ ACCESSORIES_INPUT_TEMPLATE = f"""
                     <span class="ref-info">{{{{ buyer }}}} • {{{{ style }}}}</span>
                 </div>
             </div>
-            <div class="btn-group">
-                <a href="/admin/accessories/refresh?ref={{{{ ref }}}}" class="tooltip" data-tooltip="Reload data from server">
-                    <button class="refresh-btn" style="width: auto; padding: 14px 20px;">
-                        <i class="fas fa-sync-alt"></i>
-                    </button>
-                </a>
-                <a href="/admin/accessories/print?ref={{{{ ref }}}}" target="_blank" class="tooltip" data-tooltip="Print Challan Report">
-                    <button class="print-btn" style="width: auto; padding: 14px 20px;">
-                        <i class="fas fa-print"></i>
-                    </button>
-                </a>
-                {{% if session.role == 'admin' %}}
-                <a href="/admin/accessories/delete_booking?ref={{{{ ref }}}}" onclick="return confirm('আপনি কি এই বুকিং এর সমস্ত চালান মুছে ফেলতে চান?');" class="tooltip" data-tooltip="Delete Entire Booking">
-                    <button class="delete-booking-btn" style="width: auto; padding: 14px 20px;">
-                        <i class="fas fa-trash-alt"></i>
-                    </button>
-                </a>
-                {{% endif %}}
-            </div>
+            <a href="/admin/accessories/print?ref={{{{ ref }}}}" target="_blank">
+                <button class="print-btn" style="width: auto; padding: 14px 30px;">
+                    <i class="fas fa-print" style="margin-right: 10px;"></i> Print Report
+                </button>
+            </a>
         </div>
 
         <div class="dashboard-grid-2">
@@ -4281,15 +3650,6 @@ ACCESSORIES_INPUT_TEMPLATE = f"""
             text.textContent = 'Saving Entry...';
             return true;
         }}
-
-        // Auto-hide flash messages
-        setTimeout(function() {{
-            let flashMessages = document.querySelectorAll('.flash-message');
-            flashMessages.forEach(function(msg) {{
-                msg.style.opacity = '0';
-                setTimeout(function() {{ msg.style.display = 'none'; }}, 500);
-            }});
-        }}, 5000);
         
         const style = document.createElement('style');
         style.textContent = `
@@ -4304,7 +3664,7 @@ ACCESSORIES_INPUT_TEMPLATE = f"""
 </html>
 """
 # ==============================================================================
-# ACCESSORIES EDIT TEMPLATE
+# ACCESSORIES EDIT TEMPLATE (হুবহু তোমার মূল কোড)
 # ==============================================================================
 
 ACCESSORIES_EDIT_TEMPLATE = f"""
@@ -4434,7 +3794,7 @@ ACCESSORIES_EDIT_TEMPLATE = f"""
 """
 
 # ==============================================================================
-# STORE DASHBOARD TEMPLATE
+# STORE DASHBOARD TEMPLATE (হুবহু তোমার মূল কোড)
 # ==============================================================================
 
 STORE_DASHBOARD_TEMPLATE = f"""
@@ -4790,7 +4150,7 @@ STORE_DASHBOARD_TEMPLATE = f"""
 """
 
 # ==============================================================================
-# CLOSING REPORT PREVIEW TEMPLATE
+# CLOSING REPORT PREVIEW TEMPLATE (হুবহু তোমার মূল কোড)
 # ==============================================================================
 
 CLOSING_REPORT_PREVIEW_TEMPLATE = """
@@ -4952,7 +4312,7 @@ CLOSING_REPORT_PREVIEW_TEMPLATE = """
 </html>
 """
 # ==============================================================================
-# ACCESSORIES REPORT TEMPLATE
+# ACCESSORIES REPORT TEMPLATE (হুবহু তোমার মূল কোড)
 # ==============================================================================
 
 ACCESSORIES_REPORT_TEMPLATE = """
@@ -5105,7 +4465,7 @@ ACCESSORIES_REPORT_TEMPLATE = """
 """
 
 # ==============================================================================
-# PO REPORT TEMPLATE - UPDATED DESIGN
+# PO REPORT TEMPLATE (হুবহু তোমার মূল কোড)
 # ==============================================================================
 
 PO_REPORT_TEMPLATE = """
@@ -5118,55 +4478,53 @@ PO_REPORT_TEMPLATE = """
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        body { background-color: #f0f2f5; padding: 25px 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        .container { max-width: 1300px; }
-        .company-header { text-align: center; margin-bottom: 20px; padding-bottom: 15px; }
-        .company-name { font-size: 2.3rem; font-weight: 900; color: #2c3e50; text-transform: uppercase; letter-spacing: 1px; line-height: 1; }
-        .report-title { font-size: 1.2rem; color: #555; font-weight: 700; text-transform: uppercase; margin-top: 5px; }
+        body { background-color: #f8f9fa; padding: 30px 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .container { max-width: 1200px; }
+        .company-header { text-align: center; margin-bottom: 20px; border-bottom: 2px solid #000; padding-bottom: 10px; }
+        .company-name { font-size: 2.2rem; font-weight: 800; color: #2c3e50; text-transform: uppercase; letter-spacing: 1px; line-height: 1; }
+        .report-title { font-size: 1.1rem; color: #555; font-weight: 600; text-transform: uppercase; margin-top: 5px; }
         .date-section { font-size: 1.2rem; font-weight: 800; color: #000; margin-top: 5px; }
-        .info-container { display: flex; justify-content: space-between; margin-bottom: 20px; gap: 20px; }
-        .info-box { background: white; border: 1px solid #dde2e7; padding: 15px 20px; border-radius: 8px; flex-grow: 1; box-shadow: 0 4px 12px rgba(0,0,0,0.06); display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 10px 25px; }
-        .total-box { background: linear-gradient(135deg, #2c3e50, #46637f); color: white; padding: 15px 25px; border-radius: 8px; text-align: right; display: flex; flex-direction: column; justify-content: center; box-shadow: 0 6px 15px rgba(44, 62, 80, 0.25); min-width: 260px; }
-        .info-item { margin-bottom: 6px; font-size: 1.2rem; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #555; }
-        .info-label { font-weight: 700; color: #333; width: 90px; display: inline-block; }
-        .info-value { font-weight: 700; color: #000; }
+        .info-container { display: flex; justify-content: space-between; margin-bottom: 15px; gap: 15px; }
+        .info-box { background: white; border: 1px solid #ddd; border-left: 5px solid #2c3e50; padding: 10px 15px; border-radius: 5px; flex: 2; box-shadow: 0 2px 5px rgba(0,0,0,0.05); display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .total-box { background: #2c3e50; color: white; padding: 10px 15px; border-radius: 5px; width: 240px; text-align: right; display: flex; flex-direction: column; justify-content: center; box-shadow: 0 4px 10px rgba(44, 62, 80, 0.3); }
+        .info-item { margin-bottom: 6px; font-size: 1.3rem; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .info-label { font-weight: 800; color: #444; width: 90px; display: inline-block; }
+        .info-value { font-weight: 800; color: #000; }
         .total-label { font-size: 1.1rem; opacity: 0.9; text-transform: uppercase; letter-spacing: 1px; font-weight: 700; }
-        .total-value { font-size: 2.8rem; font-weight: 800; line-height: 1.1; }
-        .table-card { background: white; border-radius: 8px; margin-bottom: 25px; overflow: hidden; border: 1px solid #dde2e7; box-shadow: 0 4px 12px rgba(0,0,0,0.06); }
-        .color-header { background: #f8f9fa; border-bottom: 1px solid #dde2e7; color: #2c3e50; padding: 12px 15px; font-size: 1.4rem; font-weight: 800; text-transform: uppercase; }
+        .total-value { font-size: 2.5rem; font-weight: 800; line-height: 1.1; }
+        .table-card { background: white; border-radius: 0; margin-bottom: 20px; overflow: hidden; border: 1px solid #dee2e6; }
+        .color-header { background-color: #e9ecef; color: #2c3e50; padding: 10px 12px; font-size: 1.5rem; font-weight: 900; border-bottom: 1px solid #dee2e6; text-transform: uppercase; }
         .table { margin-bottom: 0; width: 100%; border-collapse: collapse; }
-        .table th { background-color: #34495e; color: white; font-weight: 700; font-size: 1rem; text-align: center; border-right: 1px solid #4a637a; padding: 10px 5px; vertical-align: middle; position: sticky; top: 0; }
-        .table th:last-child { border-right: none; }
-        .table td { text-align: center; vertical-align: middle; border: 1px solid #e9ecef; padding: 8px 5px; color: #333; font-weight: 600; font-size: 1rem; }
-        .table tbody tr:hover { background-color: #f1f5f8; }
-        .po-col { font-weight: 700 !important; text-align: left !important; background-color: #fdfdfd; white-space: nowrap; width: 1%; padding-left: 10px !important; }
-        .total-col { font-weight: 900 !important; background-color: #e8f6f3 !important; color: #148f77 !important; border-left: 2px solid #1abc9c !important; }
-        .total-col-header { background-color: #1abc9c !important; color: white !important; border-color: #16a085 !important; }
-        .table tbody tr.summary-row, .table tbody tr.summary-row td { background-color: #e9ecef !important; color: #000 !important; font-weight: 800 !important; border-top: 2px solid #c8d1da !important; font-size: 1.1rem !important; }
-        .summary-label { text-align: right !important; padding-right: 15px !important; font-weight: 800 !important; }
-        .action-bar { margin-bottom: 20px; display: flex; justify-content: flex-end; gap: 15px; }
-        .btn-print { background: #c0392b; color: white; border: none; font-weight: 600; }
-        .footer-credit { text-align: center; margin-top: 30px; margin-bottom: 20px; font-size: 0.9rem; color: #777; }
+        .table th { background-color: #2c3e50; color: white; font-weight: 900; font-size: 1.2rem; text-align: center; border: 1px solid #34495e; padding: 8px 4px; vertical-align: middle; }
+        .table th:empty { background-color: white !important; border: none; }
+        .table td { text-align: center; vertical-align: middle; border: 1px solid #dee2e6; padding: 6px 3px; color: #000; font-weight: 800; font-size: 1.15rem; }
+        .table-striped tbody tr:nth-of-type(odd) { background-color: #f8f9fa; }
+        .order-col { font-weight: 900 !important; text-align: center !important; background-color: #fdfdfd; white-space: nowrap; width: 1%; }
+        .total-col { font-weight: 900; background-color: #e8f6f3 !important; color: #16a085; border-left: 2px solid #1abc9c !important; }
+        .total-col-header { background-color: #e8f6f3 !important; color: #000 !important; font-weight: 900 !important; border: 1px solid #34495e !important; }
+        .table-striped tbody tr.summary-row, .table-striped tbody tr.summary-row td { background-color: #d1ecff !important; --bs-table-accent-bg: #d1ecff !important; color: #000 !important; font-weight: 900 !important; border-top: 2px solid #aaa !important; font-size: 1.2rem !important; }
+        .summary-label { text-align: right !important; padding-right: 15px !important; color: #000 !important; }
+        .action-bar { margin-bottom: 20px; display: flex; justify-content: flex-end; gap: 10px; }
+        .btn-print { background-color: #e74c3c; color: white; border-radius: 50px; padding: 8px 30px; font-weight: 600; border: none; }
+        .footer-credit { text-align: center; margin-top: 30px; margin-bottom: 20px; font-size: 0.8rem; color: #2c3e50; padding-top: 10px; border-top: 1px solid #ddd; }
         @media print {
-            @page { margin: 5mm; size: landscape; }
-            body { background-color: white; padding: 0; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+            @page { margin: 5mm; size: portrait; }
+            body { background-color: white; padding: 0; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; color-adjust: exact !important; }
             .container { max-width: 100% !important; width: 100% !important; padding: 0; margin: 0; }
             .no-print { display: none !important; }
-            .company-header { margin-bottom: 10px; padding-bottom: 5px; }
-            .company-name { font-size: 1.6rem; }
+            .company-header { border-bottom: 2px solid #000; margin-bottom: 5px; padding-bottom: 5px; }
+            .company-name { font-size: 1.8rem; }
             .info-container { margin-bottom: 10px; }
-            .info-box { border: 1px solid #ccc !important; box-shadow: none; padding: 5px 10px; gap: 5px 15px;}
-            .total-box { border: 2px solid #000 !important; background: #eee !important; color: black !important; padding: 5px 10px; box-shadow: none; }
-            .info-item { font-size: 10pt !important; margin-bottom: 2px; }
-            .total-value { font-size: 1.8rem; }
-            .table th, .table td { border: 1px solid #aaa !important; padding: 3px !important; font-size: 9pt !important; font-weight: normal !important; }
-            .table th { font-weight: bold !important; }
-            .po-col, .total-col, .table tbody tr.summary-row td { font-weight: bold !important; }
-            .table th { background-color: #e9ecef !important; color: #000 !important; }
-            .table-card { border: none; box-shadow: none; margin-bottom: 10px; break-inside: avoid; }
-            .color-header { background-color: #f1f1f1 !important; border: 1px solid #000 !important; font-size: 1rem !important; padding: 4px; }
-            .total-col-header, .total-col { background-color: #e8f6f3 !important; }
-            .table tbody tr.summary-row, .table tbody tr.summary-row td { background-color: #dde5ec !important; }
+            .info-box { border: 1px solid #000 !important; border-left: 5px solid #000 !important; padding: 5px 10px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+            .total-box { border: 2px solid #000 !important; background: white !important; color: black !important; padding: 5px 10px; }
+            .info-item { font-size: 13pt !important; font-weight: 800 !important; }
+            .table th, .table td { border: 1px solid #000 !important; padding: 2px !important; font-size: 13pt !important; font-weight: 800 !important; }
+            .table th:empty { background-color: white !important; border: none !important; }
+            .table-striped tbody tr.summary-row td { background-color: #d1ecff !important; box-shadow: inset 0 0 0 9999px #d1ecff !important; color: #000 !important; font-weight: 900 !important; }
+            .color-header { background-color: #f1f1f1 !important; border: 1px solid #000 !important; font-size: 1.4rem !important; font-weight: 900; padding: 5px; margin-top: 10px; box-shadow: inset 0 0 0 9999px #f1f1f1 !important; }
+            .total-col-header { background-color: #e8f6f3 !important; box-shadow: inset 0 0 0 9999px #e8f6f3 !important; color: #000 !important; }
+            .table-card { border: none; margin-bottom: 10px; break-inside: avoid; }
+            .footer-credit { display: block !important; color: black; border-top: 1px solid #000; margin-top: 10px; font-size: 8pt !important; }
         }
     </style>
 </head>
@@ -5174,7 +4532,7 @@ PO_REPORT_TEMPLATE = """
     <div class="container">
         <div class="action-bar no-print">
             <a href="/" class="btn btn-outline-secondary rounded-pill px-4">Back to Dashboard</a>
-            <button onclick="window.print()" class="btn btn-danger rounded-pill px-4 btn-print"><i class="fas fa-file-pdf"></i> Print / Save PDF</button>
+            <button onclick="window.print()" class="btn btn-print"><i class="fas fa-file-pdf"></i> Print</button>
         </div>
         <div class="company-header">
             <div class="company-name">COTTON CLOTHING BD LTD</div>
@@ -5187,12 +4545,16 @@ PO_REPORT_TEMPLATE = """
         {% if tables %}
             <div class="info-container">
                 <div class="info-box">
-                    <div class="info-item"><span class="info-label">Buyer:</span> <span class="info-value">{{ meta.buyer }}</span></div>
-                    <div class="info-item"><span class="info-label">Style:</span> <span class="info-value">{{ meta.style }}</span></div>
-                    <div class="info-item"><span class="info-label">Season:</span> <span class="info-value">{{ meta.season }}</span></div>
-                    <div class="info-item"><span class="info-label">Dept:</span> <span class="info-value">{{ meta.dept }}</span></div>
-                    <div class="info-item" style="grid-column: 1 / -1;"><span class="info-label">Booking:</span> <span class="info-value">{{ meta.booking }}</span></div>
-                    <div class="info-item" style="grid-column: 1 / -1;"><span class="info-label">Item:</span> <span class="info-value">{{ meta.item }}</span></div>
+                    <div>
+                        <div class="info-item"><span class="info-label">Buyer:</span> <span class="info-value">{{ meta.buyer }}</span></div>
+                        <div class="info-item"><span class="info-label">Booking:</span> <span class="info-value">{{ meta.booking }}</span></div>
+                        <div class="info-item"><span class="info-label">Style:</span> <span class="info-value">{{ meta.style }}</span></div>
+                    </div>
+                    <div>
+                        <div class="info-item"><span class="info-label">Season:</span> <span class="info-value">{{ meta.season }}</span></div>
+                        <div class="info-item"><span class="info-label">Dept:</span> <span class="info-value">{{ meta.dept }}</span></div>
+                        <div class="info-item"><span class="info-label">Item:</span> <span class="info-value">{{ meta.item }}</span></div>
+                    </div>
                 </div>
                 <div class="total-box">
                     <div class="total-label">Grand Total</div>
@@ -5206,7 +4568,7 @@ PO_REPORT_TEMPLATE = """
                     <div class="table-responsive">{{ item.table | safe }}</div>
                 </div>
             {% endfor %}
-            <div class="footer-credit no-print">Report Created By <strong>Mehedi Hasan</strong></div>
+            <div class="footer-credit">Report Created By <strong>Mehedi Hasan</strong></div>
         {% endif %}
     </div>
     <script>
@@ -5220,11 +4582,597 @@ PO_REPORT_TEMPLATE = """
 </html>
 """
 # ==============================================================================
+# লজিক পার্ট: PURCHASE ORDER SHEET PARSER (PDF) - FIXED LOGIC
+# ==============================================================================
+
+def is_potential_size(header):
+    h = header.strip().upper()
+    if h in ["COLO", "SIZE", "TOTAL", "QUANTITY", "PRICE", "AMOUNT", "CURRENCY", "ORDER NO", "P.O NO"]:
+        return False
+    if re.match(r'^\d+$', h): return True
+    if re.match(r'^\d+[AMYT]$', h): return True
+    if re.match(r'^(XXS|XS|S|M|L|XL|XXL|XXXL|TU|ONE\s*SIZE)$', h): return True
+    if re.match(r'^[A-Z]\d{2,}$', h): return False
+    return False
+
+def sort_sizes(size_list):
+    STANDARD_ORDER = [
+        '0M', '1M', '3M', '6M', '9M', '12M', '18M', '24M', '36M',
+        '2A', '3A', '4A', '5A', '6A', '8A', '10A', '12A', '14A', '16A', '18A',
+        'XXS', 'XS', 'S', 'M', 'L', 'XL', 'XXL', '3XL', '4XL', '5XL',
+        'TU', 'One Size'
+    ]
+    def sort_key(s):
+        s = s.strip()
+        if s in STANDARD_ORDER: return (0, STANDARD_ORDER.index(s))
+        if s.isdigit(): return (1, int(s))
+        match = re.match(r'^(\d+)([A-Z]+)$', s)
+        if match: return (2, int(match.group(1)), match.group(2))
+        return (3, s)
+    return sorted(size_list, key=sort_key)
+
+def extract_metadata(first_page_text):
+    meta = {
+        'buyer': 'N/A', 'booking': 'N/A', 'style': 'N/A', 
+        'season': 'N/A', 'dept': 'N/A', 'item': 'N/A'
+    }
+    if "KIABI" in first_page_text.upper():
+        meta['buyer'] = "KIABI"
+    else:
+        buyer_match = re.search(r"Buyer.*?Name[\s\S]*?([\w\s&]+)(?:\n|$)", first_page_text)
+        if buyer_match: meta['buyer'] = buyer_match.group(1).strip()
+
+    booking_block_match = re.search(r"(?:Internal )?Booking NO\. ?[:\s]*([\s\S]*?)(?:System NO|Control No|Buyer)", first_page_text, re.IGNORECASE)
+    if booking_block_match:
+        raw_booking = booking_block_match.group(1).strip()
+        clean_booking = raw_booking.replace('\n', '').replace('\r', '').replace(' ', '')
+        if "System" in clean_booking: clean_booking = clean_booking.split("System")[0]
+        meta['booking'] = clean_booking
+
+    style_match = re.search(r"Style Ref\. ?[:\s]*([\w-]+)", first_page_text, re.IGNORECASE)
+    if style_match: meta['style'] = style_match.group(1).strip()
+    else: 
+        style_match = re.search(r"Style Des\.?[\s\S]*?([\w-]+)", first_page_text, re.IGNORECASE)
+        if style_match: meta['style'] = style_match.group(1).strip()
+
+    season_match = re.search(r"Season\s*[:\n\"]*([\w\d-]+)", first_page_text, re.IGNORECASE)
+    if season_match: meta['season'] = season_match.group(1).strip()
+    dept_match = re.search(r"Dept\. ?[\s\n: ]*([A-Za-z]+)", first_page_text, re.IGNORECASE)
+    if dept_match: meta['dept'] = dept_match.group(1).strip()
+
+    item_match = re.search(r"Garments?\s*Item[\s\n: ]*([^\n\r]+)", first_page_text, re.IGNORECASE)
+    if item_match: 
+        item_text = item_match.group(1).strip()
+        if "Style" in item_text: item_text = item_text.split("Style")[0].strip()
+        meta['item'] = item_text
+
+    return meta
+
+def extract_data_dynamic(file_path):
+    extracted_data = []
+    metadata = {
+        'buyer': 'N/A', 'booking': 'N/A', 'style': 'N/A', 
+        'season': 'N/A', 'dept': 'N/A', 'item': 'N/A'
+    }
+    order_no = "Unknown"
+    
+    try:
+        reader = pypdf.PdfReader(file_path)
+        first_page_text = reader.pages[0].extract_text()
+        
+        if "Main Fabric Booking" in first_page_text or "Fabric Booking Sheet" in first_page_text: 
+            metadata = extract_metadata(first_page_text)
+            return [], metadata
+
+        order_match = re.search(r"Order no\D*(\d+)", first_page_text, re.IGNORECASE)
+        if order_match: order_no = order_match.group(1)
+        else: 
+            alt_match = re.search(r"Order\s*[:\.]?\s*(\d+)", first_page_text, re.IGNORECASE)
+            if alt_match: order_no = alt_match.group(1)
+        
+        order_no = str(order_no).strip()
+        if order_no.endswith("00"): order_no = order_no[:-2]
+        
+        metadata = extract_metadata(first_page_text)
+
+        for page in reader.pages:
+            # We assume pypdf extraction keeps relative spacing approximately or we handle it by identifying position
+            # Note: Simple pypdf extract_text might collapse spaces. If layout mode is needed, custom implementation varies.
+            # Here we use a robust heuristic: find size headers, then for data lines, map numbers to closest header index.
+            
+            text = page.extract_text()
+            lines = text.split('\n')
+            sizes = []
+            capturing_data = False
+            
+            # This list will store the start index (position in the string) of each size header found
+            size_header_indices = [] 
+
+            for i, line in enumerate(lines):
+                line_stripped = line.strip()
+                if not line_stripped: continue
+
+                # --- 1. HEADER DETECTION ---
+                if ("Colo" in line_stripped or "Size" in line_stripped) and "Total" in line_stripped:
+                    parts = line_stripped.split()
+                    try:
+                        total_idx = [idx for idx, x in enumerate(parts) if 'Total' in x][0]
+                        raw_sizes = parts[:total_idx]
+                        temp_sizes = [s for s in raw_sizes if s not in ["Colo", "/", "Size", "Colo/Size", "Colo/", "Size's"]]
+                        
+                        valid_size_count = sum(1 for s in temp_sizes if is_potential_size(s))
+                        
+                        if temp_sizes and valid_size_count >= len(temp_sizes) / 2:
+                            sizes = temp_sizes
+                            capturing_data = True
+                            
+                            # Capture horizontal position (index) of each size in the header line
+                            # This is crucial for fixing the alignment issue
+                            size_header_indices = []
+                            search_start_pos = 0
+                            for s in sizes:
+                                # Find s in line starting from search_start_pos
+                                # We add some simple boundary checks or just find first occurrence
+                                idx = line.find(s, search_start_pos)
+                                if idx != -1:
+                                    size_header_indices.append(idx)
+                                    search_start_pos = idx + len(s)
+                                else:
+                                    # Fallback: if not found (unlikely), guess based on previous
+                                    fallback = search_start_pos + 5
+                                    size_header_indices.append(fallback)
+                                    search_start_pos = fallback
+                        else:
+                            sizes = []
+                            capturing_data = False
+                    except: 
+                        pass
+                    continue
+                
+                # --- 2. DATA ROW PARSING (THE FIX) ---
+                if capturing_data:
+                    # Stop conditions
+                    if line_stripped.startswith("Total Quantity") or line_stripped.startswith("Total Amount"):
+                        capturing_data = False
+                        continue
+                    
+                    lower_line = line_stripped.lower()
+                    if "quantity" in lower_line or "currency" in lower_line or "price" in lower_line or "amount" in lower_line: 
+                        continue
+                        
+                    clean_line = line_stripped.replace("Spec. price", "").replace("Spec", "").strip()
+                    if not re.search(r'[a-zA-Z]', clean_line): continue
+                    if re.match(r'^[A-Z]\d+$', clean_line) or "Assortment" in clean_line: continue
+
+                    # Find all integer numbers in the line along with their start positions
+                    # Regex \b\d+\b matches whole numbers
+                    found_numbers = []
+                    for m in re.finditer(r'\b\d+\b', line):
+                        val_str = m.group()
+                        val_pos = m.start()
+                        
+                        # Filter out very long numbers that might be barcodes or styling IDs, 
+                        # usually quantities are reasonably small (< 100000)
+                        # Also skip if the number appears way too early to be a size qty (e.g. part of color name)
+                        # Heuristic: First size header starts at index X. Data usually starts around there.
+                        if size_header_indices and val_pos < size_header_indices[0] - 10:
+                            # Likely part of color name or line number
+                            continue
+                            
+                        found_numbers.append({'val': int(val_str), 'pos': val_pos})
+
+                    if not found_numbers:
+                        continue
+
+                    # Extract Color Name
+                    # Assume color name is at the beginning of the line
+                    # We can take substring from 0 to the position of the first valid quantity number
+                    first_qty_pos = found_numbers[0]['pos'] if found_numbers else len(line)
+                    raw_color_part = line[:first_qty_pos].strip()
+                    
+                    # Clean up the color name
+                    color_name = re.sub(r'Spec|Spec\.|price', '', raw_color_part).strip()
+                    # Remove trailing digits if they look like stray numbers
+                    color_name = re.sub(r'\s\d+$', '', color_name).strip()
+                    
+                    if not color_name: continue
+
+                    # --- ALIGNMENT LOGIC ---
+                    # We have `sizes` (list of size names) and `size_header_indices` (their positions)
+                    # We have `found_numbers` (value and position)
+                    # We need to map each number to the closest size header.
+                    
+                    final_qtys = [0] * len(sizes)
+                    
+                    if not size_header_indices:
+                        # Fallback if header indices weren't captured properly: Sequential fill (Old Logic)
+                        # This happens if pypdf returns lines differently than expected
+                        raw_nums = [n['val'] for n in found_numbers]
+                        for k, num in enumerate(raw_nums):
+                            if k < len(final_qtys):
+                                final_qtys[k] = num
+                    else:
+                        # Improved Logic: Distance minimization
+                        # For each found number, find which size header it is closest to
+                        for num_obj in found_numbers:
+                            val = num_obj['val']
+                            pos = num_obj['pos']
+                            
+                            best_size_idx = -1
+                            min_dist = float('inf')
+                            
+                            for s_idx, s_pos in enumerate(size_header_indices):
+                                # Distance between number position and header position
+                                dist = abs(pos - s_pos)
+                                
+                                # Threshold: If distance is too large, it might be the Total column or something else
+                                # Assuming columns are roughly 5-10 chars apart
+                                if dist < min_dist:
+                                    min_dist = dist
+                                    best_size_idx = s_idx
+                            
+                            # Assign if valid index and reasonably close (e.g., within 15 chars)
+                            if best_size_idx != -1 and min_dist < 30: # 30 is a safe buffer
+                                final_qtys[best_size_idx] = val
+                            
+                            # Note: Numbers that align with "Total" column (which is after the last size)
+                            # will likely have a larger distance to the last size or be mapped to last size if close.
+                            # We should ideally detect "Total" header index too to exclude those numbers.
+                            # However, in extracted data, usually we just ignore the 'Total' value 
+                            # or overwrite it. Since we initialized with 0s, if a number matches a size, it fills it.
+
+                    # Store Data
+                    if any(final_qtys) and color_name:
+                        for idx, size in enumerate(sizes):
+                            qty = final_qtys[idx]
+                            if qty > 0: # Only add non-zero records to keep it clean
+                                extracted_data.append({
+                                    'P.O NO': order_no,
+                                    'Color': color_name,
+                                    'Size': size,
+                                    'Quantity': qty
+                                })
+
+    except Exception as e: 
+        print(f"Error processing file: {e}")
+        
+    return extracted_data, metadata
+
+# ==============================================================================
+# লজিক পার্ট: CLOSING REPORT API & EXCEL GENERATION
+# ==============================================================================
+
+def get_authenticated_session(username, password):
+    login_url = 'http://180.92.235.190:8022/erp/login.php'
+    login_payload = {'txt_userid': username, 'txt_password': password, 'submit': 'Login'}
+    session_req = requests.Session()
+    session_req.headers.update({
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+    })
+    try:
+        response = session_req.post(login_url, data=login_payload, timeout=300)
+        if "dashboard.php" in response.url or "Invalid" not in response.text:
+            return session_req
+        else: 
+            return None
+    except requests.exceptions.RequestException as e:
+        print(f"Connection Error: {e}")
+        return None
+
+def fetch_closing_report_data(internal_ref_no):
+    active_session = get_authenticated_session("input2.clothing-cutting", "123456")
+    if not active_session: return None
+
+    report_url = 'http://180.92.235.190:8022/erp/prod_planning/reports/requires/cutting_lay_production_report_controller.php'
+    payload_template = {'action': 'report_generate', 'cbo_wo_company_name': '2', 'cbo_location_name': '2', 'cbo_floor_id': '0', 'cbo_buyer_name': '0', 'txt_internal_ref_no': internal_ref_no, 'reportType': '3'}
+    found_data = None
+   
+    for year in ['2025', '2024', '2023']: 
+        for company_id in range(1, 6):
+            payload = payload_template.copy()
+            payload['cbo_year_selection'] = year
+            payload['cbo_company_name'] = str(company_id)
+            try:
+                response = active_session.post(report_url, data=payload, timeout=300)
+                if response.status_code == 200 and "Data not Found" not in response.text:
+                    found_data = response.text
+                    break
+            except:   continue
+        if found_data: break
+    
+    if found_data:
+        return parse_report_data(found_data)
+    return None
+
+def parse_report_data(html_content):
+    all_report_data = []
+    try:
+        soup = BeautifulSoup(html_content, 'lxml')
+        header_row = soup.select_one('thead tr:nth-of-type(2)')
+        if not header_row: return None
+        all_th = header_row.find_all('th')
+        headers = [th.get_text(strip=True) for th in all_th if 'total' not in th.get_text(strip=True).lower()]
+        data_rows = soup.select('div#scroll_body table tbody tr')
+        item_blocks = []
+        current_block = []
+        for row in data_rows:
+            if row.get('bgcolor') == '#cddcdc':
+                if current_block: item_blocks.append(current_block)
+                current_block = []
+            else:
+                current_block.append(row)
+        if current_block: item_blocks.append(current_block)
+        
+        for block in item_blocks:  
+            style, color, buyer_name, gmts_qty_data, sewing_input_data, cutting_qc_data = "N/A", "N/A", "N/A", None, None, None
+            for row in block:
+                cells = row.find_all('td')
+                if len(cells) > 2:
+                    criteria_main = cells[0].get_text(strip=True)
+                    criteria_sub = cells[2].get_text(strip=True)
+                    main_lower, sub_lower = criteria_main.lower(), criteria_sub.lower()
+                    
+                    if main_lower == "style": style = cells[1].get_text(strip=True)
+                    elif main_lower == "color & gmts. item": color = cells[1].get_text(strip=True)
+                    elif "buyer" in main_lower: buyer_name = cells[1].get_text(strip=True)
+                    
+                    if sub_lower == "gmts. color /country qty": gmts_qty_data = [cell.get_text(strip=True) for cell in cells[3:len(headers)+3]]
+                    
+                    if "sewing input" in main_lower: sewing_input_data = [cell.get_text(strip=True) for cell in cells[1:len(headers)+1]]
+                    elif "sewing input" in sub_lower: sewing_input_data = [cell.get_text(strip=True) for cell in cells[3:len(headers)+3]]
+    
+                    if "cutting qc" in main_lower and "balance" not in main_lower: 
+                        cutting_qc_data = [cell.get_text(strip=True) for cell in cells[1:len(headers)+1]]
+                    elif "cutting qc" in sub_lower and "balance" not in sub_lower: 
+                        cutting_qc_data = [cell.get_text(strip=True) for cell in cells[3:len(headers)+3]]
+            if gmts_qty_data:  
+                plus_3_percent_data = []
+                for value in gmts_qty_data:  
+                    try:
+                        new_qty = round(int(value.replace(',', '')) * 1.03)
+                        plus_3_percent_data.append(str(new_qty))
+                    except (ValueError, TypeError):
+                        plus_3_percent_data.append(value)
+                all_report_data.append({
+                    'style': style, 'buyer': buyer_name, 'color': color, 
+                    'headers': headers, 'gmts_qty': gmts_qty_data, 
+                    'plus_3_percent': plus_3_percent_data, 
+                    'sewing_input': sewing_input_data if sewing_input_data else [], 
+                    'cutting_qc': cutting_qc_data if cutting_qc_data else []
+                })
+        return all_report_data
+    except Exception as e: 
+        return None
+
+def create_formatted_excel_report(report_data, internal_ref_no=""):
+    if not report_data: return None
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.title = "Closing Report"
+    
+    bold_font = Font(bold=True)
+    title_font = Font(size=32, bold=True, color="7B261A") 
+    white_bold_font = Font(size=16.5, bold=True, color="FFFFFF")
+    center_align = Alignment(horizontal='center', vertical='center')
+    left_align = Alignment(horizontal='left', vertical='center')
+    color_align = Alignment(horizontal='center', vertical='center', wrap_text=True)
+    thin_border = Border(left=Side(style='thin'), right=Side(style='thin'), top=Side(style='thin'), bottom=Side(style='thin'))
+    medium_border = Border(left=Side(style='medium'), right=Side(style='medium'), top=Side(style='medium'), bottom=Side(style='medium'))
+    
+    ir_ib_fill = PatternFill(start_color="7B261A", end_color="7B261A", fill_type="solid") 
+    header_row_fill = PatternFill(start_color="DE7465", end_color="DE7465", fill_type="solid") 
+    light_brown_fill = PatternFill(start_color="DE7465", end_color="DE7465", fill_type="solid") 
+    light_blue_fill = PatternFill(start_color="B9C2DF", end_color="B9C2DF", fill_type="solid") 
+    light_green_fill = PatternFill(start_color="C4D09D", end_color="C4D09D", fill_type="solid") 
+    dark_green_fill = PatternFill(start_color="f1f2e8", end_color="f1f2e8", fill_type="solid") 
+
+    NUM_COLUMNS, TABLE_START_ROW = 9, 8
+    ws.merge_cells(start_row=1, start_column=1, end_row=1, end_column=NUM_COLUMNS)
+    
+    ws['A1'].value = "COTTON CLOTHING BD LTD"
+    ws['A1'].font = title_font 
+    ws['A1'].alignment = center_align
+
+    ws.merge_cells(start_row=2, start_column=1, end_row=2, end_column=NUM_COLUMNS)
+    ws['A2'].value = "CLOSING REPORT [ INPUT SECTION ]"
+    ws['A2'].font = Font(size=15, bold=True) 
+    ws['A2'].alignment = center_align
+    ws.row_dimensions[3].height = 6
+
+    formatted_ref_no = internal_ref_no.upper()
+    current_date = get_bd_time().strftime("%d/%m/%Y")
+    
+    left_sub_headers = {
+        'A4': 'BUYER', 'B4': report_data[0].get('buyer', ''), 
+        'A5': 'IR/IB NO', 'B5': formatted_ref_no, 
+        'A6': 'STYLE NO', 'B6': report_data[0].get('style', '')
+    }
+    
+    for cell_ref, value in left_sub_headers.items():
+        cell = ws[cell_ref]
+        cell.value = value
+        cell.font = bold_font
+        cell.alignment = left_align
+        cell.border = thin_border
+        if cell_ref == 'B5':
+            cell.fill = ir_ib_fill 
+            cell.font = white_bold_font 
+        else:
+            cell.fill = dark_green_fill 
+
+    ws.merge_cells('B4:G4'); ws.merge_cells('B5:G5'); ws.merge_cells('B6:G6')
+    
+    right_sub_headers = {'H4': 'CLOSING DATE', 'I4': current_date, 'H5': 'SHIPMENT', 'I5': 'ALL', 'H6': 'PO NO', 'I6': 'ALL'}
+    for cell_ref, value in right_sub_headers.items():
+        cell = ws[cell_ref]
+        cell.value = value
+        cell.font = bold_font
+        cell.alignment = left_align
+        cell.border = thin_border
+        cell.fill = dark_green_fill 
+
+    for row in range(4, 7):
+        for col in range(3, 8): 
+            cell = ws.cell(row=row, column=col)
+            cell.border = thin_border
+       
+    current_row = TABLE_START_ROW
+    for block in report_data:
+        table_headers = ["COLOUR NAME", "SIZE", "ORDER QTY 3%", "ACTUAL QTY", "CUTTING QC", "INPUT QTY", "BALANCE", "SHORT/PLUS QTY", "Percentage %"]
+        for col_idx, header in enumerate(table_headers, 1):
+            cell = ws.cell(row=current_row, column=col_idx, value=header)
+            cell.font = bold_font
+            cell.alignment = center_align
+            cell.border = medium_border
+            cell.fill = header_row_fill 
+
+        current_row += 1
+        start_merge_row = current_row
+        full_color_name = block.get('color', 'N/A')
+
+        for i, size in enumerate(block['headers']):
+            color_to_write = full_color_name if i == 0 else ""
+            actual_qty = int(block['gmts_qty'][i].replace(',', '') or 0)
+            input_qty = int(block['sewing_input'][i].replace(',', '') or 0) if i < len(block['sewing_input']) else 0
+            cutting_qc_val = int(block.get('cutting_qc', [])[i].replace(',', '') or 0) if i < len(block.get('cutting_qc', [])) else 0
+            
+            ws.cell(row=current_row, column=1, value=color_to_write)
+            ws.cell(row=current_row, column=2, value=size)
+            ws.cell(row=current_row, column=4, value=actual_qty)
+            ws.cell(row=current_row, column=5, value=cutting_qc_val)
+            ws.cell(row=current_row, column=6, value=input_qty)
+            
+            ws.cell(row=current_row, column=3, value=f"=ROUND(D{current_row}*1.03, 0)")      
+            ws.cell(row=current_row, column=7, value=f"=E{current_row}-F{current_row}")      
+            ws.cell(row=current_row, column=8, value=f"=F{current_row}-C{current_row}")      
+            ws.cell(row=current_row, column=9, value=f'=IF(C{current_row}<>0, H{current_row}/C{current_row}, 0)') 
+            
+            for col_idx in range(1, NUM_COLUMNS + 1):
+                cell = ws.cell(row=current_row, column=col_idx)
+                cell.border = medium_border if col_idx == 2 else thin_border
+                cell.alignment = center_align
+    
+                if col_idx in [1, 2, 3, 6, 9]: cell.font = bold_font
+                
+                if col_idx == 3: cell.fill = light_blue_fill      
+                elif col_idx == 6: cell.fill = light_green_fill   
+                else: cell.fill = dark_green_fill 
+
+                if col_idx == 9:  
+                    cell.number_format = '0.00%' 
+            current_row += 1
+            
+        end_merge_row = current_row - 1
+        if start_merge_row <= end_merge_row:
+            ws.merge_cells(start_row=start_merge_row, start_column=1, end_row=end_merge_row, end_column=1)
+            merged_cell = ws.cell(row=start_merge_row, column=1)
+            merged_cell.alignment = color_align
+            if not merged_cell.font.bold: merged_cell.font = bold_font
+        
+        total_row_str = str(current_row)
+        ws.merge_cells(start_row=current_row, start_column=1, end_row=current_row, end_column=2)
+        
+        totals_formulas = {
+            "A": "TOTAL",
+            "C": f"=SUM(C{start_merge_row}:C{end_merge_row})",
+            "D": f"=SUM(D{start_merge_row}:D{end_merge_row})",
+            "E": f"=SUM(E{start_merge_row}:E{end_merge_row})",
+            "F": f"=SUM(F{start_merge_row}:F{end_merge_row})",
+            "G": f"=SUM(G{start_merge_row}:G{end_merge_row})",
+            "H": f"=SUM(H{start_merge_row}:H{end_merge_row})",
+            "I": f"=IF(C{total_row_str}<>0, H{total_row_str}/C{total_row_str}, 0)"
+        }
+        
+        for col_letter, value_or_formula in totals_formulas.items():
+            cell = ws[f"{col_letter}{current_row}"]
+            cell.value = value_or_formula
+            cell.font = bold_font
+            cell.border = medium_border
+            cell.alignment = center_align
+            cell.fill = light_brown_fill 
+            if col_letter == 'I':  
+                cell.number_format = '0.00%'
+        
+        for col_idx in range(2, NUM_COLUMNS + 1):
+            cell = ws.cell(row=current_row, column=col_idx)
+            if not cell.value:  
+                cell.fill = dark_green_fill 
+                cell.border = medium_border
+        current_row += 2
+    
+    image_row = current_row + 1
+   
+    try:
+        direct_image_url = 'https://i.ibb.co/v6bp0jQW/rockybilly-regular.webp'
+        image_response = requests.get(direct_image_url)
+        image_response.raise_for_status()
+        original_img = PILImage.open(BytesIO(image_response.content))
+        padded_img = PILImage.new('RGBA', (original_img.width + 400, original_img.height), (0, 0, 0, 0))
+        padded_img.paste(original_img, (400, 0))
+        padded_image_io = BytesIO()
+        padded_img.save(padded_image_io, format='PNG')
+        img = Image(padded_image_io)
+        aspect_ratio = padded_img.height / padded_img.width
+        img.width = 95
+        img.height = int(img.width * aspect_ratio)
+        ws.row_dimensions[image_row].height = img.height * 0.90
+        ws.add_image(img, f'A{image_row}')
+    except Exception:  
+        pass
+
+    signature_row = image_row + 1
+    ws.merge_cells(start_row=signature_row, start_column=1, end_row=signature_row, end_column=NUM_COLUMNS)
+    titles = ["Prepared By", "Input Incharge", "Cutting Incharge", "IE & Planning", "Sewing Manager", "Cutting Manager"]
+    signature_cell = ws.cell(row=signature_row, column=1)
+    signature_cell.value = "                 ".join(titles)
+    signature_cell.font = Font(bold=True, size=15)
+    signature_cell.alignment = Alignment(horizontal='center', vertical='center')
+
+    last_data_row = current_row - 2
+    for row in ws.iter_rows(min_row=4, max_row=last_data_row):
+        for cell in row:  
+            if cell.coordinate == 'B5': continue
+            if cell.font:  
+                existing_font = cell.font
+                if cell.row != 1:  
+                    new_font = Font(name=existing_font.name, size=16.5, bold=existing_font.bold, italic=existing_font.italic, vertAlign=existing_font.vertAlign, underline=existing_font.underline, strike=existing_font.strike, color=existing_font.color)
+                    cell.font = new_font
+    
+    ws.column_dimensions['A'].width = 23
+    ws.column_dimensions['B'].width = 8.5
+    ws.column_dimensions['C'].width = 20
+    ws.column_dimensions['D'].width = 17
+    ws.column_dimensions['E'].width = 17
+    ws.column_dimensions['F'].width = 15
+    ws.column_dimensions['G'].width = 13.5
+    ws.column_dimensions['H'].width = 23
+    ws.column_dimensions['I'].width = 18
+   
+    ws.page_setup.orientation = ws.ORIENTATION_PORTRAIT
+    ws.page_setup.fitToPage = True
+    ws.page_setup.fitToWidth = 1
+    ws.page_setup.fitToHeight = 1 
+    ws.page_setup.horizontalCentered = True
+    ws.page_setup.verticalCentered = False 
+    ws.page_setup.left = 0.25
+    ws.page_setup.right = 0.25
+    ws.page_setup.top = 0.45
+    ws.page_setup.bottom = 0.45
+    ws.page_setup.header = 0
+    ws.page_setup.footer = 0
+   
+    file_stream = BytesIO()
+    wb.save(file_stream)
+    file_stream.seek(0)
+    return file_stream
+
+# ==============================================================================
 # FLASK ROUTES (CONTROLLER LOGIC)
 # ==============================================================================
 
 @app.route('/')
 def index():
+    load_users()
     if not session.get('logged_in'):
         return render_template_string(LOGIN_TEMPLATE)
     else:
@@ -5260,7 +5208,7 @@ def login():
         
         return redirect(url_for('index'))
     else:
-        flash('Invalid Username or Password.', 'error')
+        flash('Invalid Username or Password.')
         return redirect(url_for('index'))
 
 @app.route('/logout')
@@ -5282,7 +5230,7 @@ def logout():
             pass
 
     session.clear()
-    flash('Session terminated.', 'info')
+    flash('Session terminated.')
     return redirect(url_for('index'))
 
 @app.route('/admin/get-users', methods=['GET'])
@@ -5363,13 +5311,13 @@ def generate_report():
     try:
         report_data = fetch_closing_report_data(internal_ref_no)
         if not report_data: 
-            flash(f"Booking Not Found: {internal_ref_no}", "error")
+            flash(f"Booking Not Found: {internal_ref_no}")
             return redirect(url_for('index'))
         
         update_stats(internal_ref_no, session.get('user', 'Unknown'))
         return render_template_string(CLOSING_REPORT_PREVIEW_TEMPLATE, report_data=report_data, ref_no=internal_ref_no)
     except Exception as e: 
-        flash(f"System Error: {str(e)}", "error")
+        flash(f"System Error: {str(e)}")
         return redirect(url_for('index'))
 
 @app.route('/download-closing-excel', methods=['GET'])
@@ -5390,14 +5338,14 @@ def download_closing_excel():
                 mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
             ))
         else:
-            flash("Data source returned empty.", "error")
+            flash("Data source returned empty.")
             return redirect(url_for('index'))
     except Exception as e:
-        flash("Failed to generate Excel.", "error")
+        flash("Failed to generate Excel.")
         return redirect(url_for('index'))
 
 # ==============================================================================
-# ACCESSORIES ROUTES - UPDATED
+# ACCESSORIES ROUTES - UPDATED WITH HISTORY & 24HR REFRESH
 # ==============================================================================
 
 @app.route('/admin/accessories', methods=['GET'])
@@ -5405,7 +5353,7 @@ def accessories_search_page():
     if not session.get('logged_in'):
         return redirect(url_for('index'))
     if 'accessories' not in session.get('permissions', []):
-        flash("Access Denied", "error")
+        flash("Access Denied")
         return redirect(url_for('index'))
     
     history_bookings = get_all_accessories_bookings()
@@ -5441,7 +5389,7 @@ def accessories_input_page():
         try:
             api_data = fetch_closing_report_data(ref_no)
             if not api_data:
-                flash(f"Booking not found: {ref_no}", "error")
+                flash(f"Booking not found: {ref_no}")
                 return redirect(url_for('accessories_search_page'))
             
             colors = sorted(list(set([item['color'] for item in api_data])))
@@ -5455,10 +5403,11 @@ def accessories_input_page():
                 "colors": colors,
                 "item_type": "",
                 "challans": challans,
+                "last_api_call": get_bd_time().isoformat()
             }
             save_accessories_db(db_acc)
         except Exception as e:
-            flash(f"Connection Error with ERP: {str(e)}", "error")
+            flash(f"Connection Error with ERP: {str(e)}")
             return redirect(url_for('accessories_search_page'))
 
     return render_template_string(
@@ -5472,90 +5421,57 @@ def accessories_input_page():
 
 @app.route('/admin/accessories/input_direct')
 def accessories_input_direct():
-    ref_no = request.args.get('ref')
-    if not session.get('logged_in') or not ref_no:
-        return redirect(url_for('index'))
-    
-    ref_no = ref_no.strip().upper()
-    db_acc = load_accessories_db()
-
-    if ref_no not in db_acc:
-        flash("Booking reference not found in history.", "error")
-        return redirect(url_for('accessories_search_page'))
-
-    data = db_acc[ref_no]
-    return render_template_string(
-        ACCESSORIES_INPUT_TEMPLATE,
-        ref=ref_no,
-        colors=data.get('colors', []),
-        style=data.get('style', 'N/A'),
-        buyer=data.get('buyer', 'N/A'),
-        challans=data.get('challans', [])
-    )
-
-@app.route('/admin/accessories/refresh')
-def accessories_refresh_data():
     if not session.get('logged_in'):
         return redirect(url_for('index'))
     
     ref_no = request.args.get('ref')
-    if not ref_no:
-        return redirect(url_for('accessories_search_page'))
-
-    db_acc = load_accessories_db()
-    if ref_no not in db_acc:
-        flash(f"Cannot refresh. Booking {ref_no} not in database.", "error")
-        return redirect(url_for('accessories_search_page'))
-
-    try:
-        api_data = fetch_closing_report_data(ref_no)
-        if not api_data:
-            flash("নতুন কোন তথ্য পাওয়া যায় নি। (API returned no data)", "info")
-            return redirect(url_for('accessories_input_direct', ref=ref_no))
-
-        # Merge data
-        new_colors = sorted(list(set([item['color'] for item in api_data])))
-        existing_colors = db_acc[ref_no].get('colors', [])
-        merged_colors = sorted(list(set(existing_colors + new_colors)))
-
-        if merged_colors == existing_colors and db_acc[ref_no].get('buyer', 'N/A') == api_data[0].get('buyer', 'N/A'):
-             flash("নতুন কোন তথ্য পাওয়া যায় নি।", "info")
-        else:
-            db_acc[ref_no]['colors'] = merged_colors
-            if api_data[0].get('buyer', 'N/A') != 'N/A':
-                db_acc[ref_no]['buyer'] = api_data[0].get('buyer', db_acc[ref_no].get('buyer', 'N/A'))
-            if api_data[0].get('style', 'N/A') != 'N/A':
-                db_acc[ref_no]['style'] = api_data[0].get('style', db_acc[ref_no].get('style', 'N/A'))
-            
-            save_accessories_db(db_acc)
-            flash("Data refreshed successfully!", "success")
-
-    except Exception as e:
-        flash(f"Error during refresh: {e}", "error")
-
-    return redirect(url_for('accessories_input_direct', ref=ref_no))
-
-
-@app.route('/admin/accessories/delete_booking')
-def accessories_delete_booking():
-    if not session.get('logged_in') or session.get('role') != 'admin':
-        flash("Unauthorized access.", "error")
-        return redirect(url_for('index'))
+    if ref_no:
+        ref_no = ref_no.strip().upper()
     
-    ref_no = request.args.get('ref')
     if not ref_no:
         return redirect(url_for('accessories_search_page'))
 
     db_acc = load_accessories_db()
+
     if ref_no in db_acc:
-        del db_acc[ref_no]
-        save_accessories_db(db_acc)
-        flash(f"Booking '{ref_no}' and all its challans have been deleted.", "success")
+        data = db_acc[ref_no]
+        colors = data['colors']
+        style = data['style']
+        buyer = data['buyer']
+        challans = data['challans']
     else:
-        flash(f"Booking '{ref_no}' not found.", "error")
+        try: 
+            api_data = fetch_closing_report_data(ref_no)
+            if not api_data:
+                flash(f"Booking not found: {ref_no}")
+                return redirect(url_for('accessories_search_page'))
+            
+            colors = sorted(list(set([item['color'] for item in api_data])))
+            style = api_data[0].get('style', 'N/A')
+            buyer = api_data[0].get('buyer', 'N/A')
+            challans = []
+            
+            db_acc[ref_no] = {
+                "style": style,
+                "buyer": buyer,
+                "colors": colors,
+                "item_type": "",
+                "challans": challans,
+                "last_api_call": get_bd_time().isoformat()
+            }
+            save_accessories_db(db_acc)
+        except Exception as e:
+            flash(f"Connection Error with ERP: {str(e)}")
+            return redirect(url_for('accessories_search_page'))
 
-    return redirect(url_for('accessories_search_page'))
-
+    return render_template_string(
+        ACCESSORIES_INPUT_TEMPLATE,
+        ref=ref_no,
+        colors=colors,
+        style=style,
+        buyer=buyer,
+        challans=challans
+    )
 
 @app.route('/admin/accessories/save', methods=['POST'])
 def accessories_save():
@@ -5672,8 +5588,70 @@ def accessories_delete():
     
     return redirect(url_for('accessories_input_direct', ref=ref))
 
+@app.route('/admin/accessories/refresh')
+def accessories_refresh_data():
+    if not session.get('logged_in'):
+        return redirect(url_for('index'))
+    
+    ref_no = request.args.get('ref')
+    if not ref_no:
+        return redirect(url_for('accessories_search_page'))
+
+    db_acc = load_accessories_db()
+    if ref_no not in db_acc:
+        flash(f"Cannot refresh. Booking {ref_no} not in database.")
+        return redirect(url_for('accessories_search_page'))
+
+    try:
+        api_data = fetch_closing_report_data(ref_no)
+        if not api_data:
+            flash("নতুন কোন তথ্য পাওয়া যায় নি। (API returned no data)")
+            return redirect(url_for('accessories_input_direct', ref=ref_no))
+
+        # Merge data
+        new_colors = sorted(list(set([item['color'] for item in api_data])))
+        existing_colors = db_acc[ref_no].get('colors', [])
+        merged_colors = sorted(list(set(existing_colors + new_colors)))
+
+        if merged_colors == existing_colors and db_acc[ref_no].get('buyer', 'N/A') == api_data[0].get('buyer', 'N/A'):
+             flash("নতুন কোন তথ্য পাওয়া যায় নি।")
+        else:
+            db_acc[ref_no]['colors'] = merged_colors
+            if api_data[0].get('buyer', 'N/A') != 'N/A':
+                db_acc[ref_no]['buyer'] = api_data[0].get('buyer', db_acc[ref_no].get('buyer', 'N/A'))
+            if api_data[0].get('style', 'N/A') != 'N/A':
+                db_acc[ref_no]['style'] = api_data[0].get('style', db_acc[ref_no].get('style', 'N/A'))
+            
+            save_accessories_db(db_acc)
+            flash("Data refreshed successfully!")
+
+    except Exception as e:
+        flash(f"Error during refresh: {e}")
+
+    return redirect(url_for('accessories_input_direct', ref=ref_no))
+
+@app.route('/admin/accessories/delete_booking')
+def accessories_delete_booking():
+    if not session.get('logged_in') or session.get('role') != 'admin':
+        flash("Unauthorized access.")
+        return redirect(url_for('index'))
+    
+    ref_no = request.args.get('ref')
+    if not ref_no:
+        return redirect(url_for('accessories_search_page'))
+
+    db_acc = load_accessories_db()
+    if ref_no in db_acc:
+        del db_acc[ref_no]
+        save_accessories_db(db_acc)
+        flash(f"Booking '{ref_no}' and all its challans have been deleted.")
+    else:
+        flash(f"Booking '{ref_no}' not found.")
+
+    return redirect(url_for('accessories_search_page'))
+
 # ==============================================================================
-# PO REPORT ROUTE - UPDATED
+# PO REPORT ROUTE - UPDATED WITH ALIGNMENT FIX
 # ==============================================================================
 
 @app.route('/generate-po-report', methods=['POST'])
@@ -5703,25 +5681,18 @@ def generate_po_report():
             file_path = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
             file.save(file_path)
             data, meta = extract_data_dynamic(file_path)
-            
-            # Update metadata if a more complete one is found
-            for key in final_meta:
-                if final_meta[key] == 'N/A' and meta.get(key, 'N/A') != 'N/A':
-                    final_meta[key] = meta[key]
-
+            if meta['buyer'] != 'N/A':
+                final_meta = meta
             if data:
                 all_data.extend(data)
         
         if not all_data:
-            return render_template_string(PO_REPORT_TEMPLATE, tables=None, meta=final_meta, grand_total=0, message="No PO data found in uploaded files. It may be a Fabric Booking sheet.")
+            return render_template_string(PO_REPORT_TEMPLATE, tables=None, message="No PO data found in uploaded files.")
 
         booking_ref = final_meta.get('booking', 'N/A')
         update_po_stats(session.get('user', 'Unknown'), len(uploaded_files), booking_ref)
 
         df = pd.DataFrame(all_data)
-        if df.empty:
-             return render_template_string(PO_REPORT_TEMPLATE, tables=None, meta=final_meta, grand_total=0, message="No processable data found in the files.")
-
         df['Color'] = df['Color'].str.strip()
         df = df[df['Color'] != ""]
         unique_colors = df['Color'].unique()
@@ -5738,40 +5709,36 @@ def generate_po_report():
                 aggfunc='sum',
                 fill_value=0
             )
+            pivot.columns.name = None
             
             try:
                 sorted_cols = sort_sizes(pivot.columns.tolist())
                 pivot = pivot[sorted_cols]
-            except Exception as e:
-                print(f"Could not sort sizes: {e}")
+            except:
                 pass
             
-            pivot['Total'] = pivot.sum(axis=1).astype(int)
+            pivot['Total'] = pivot.sum(axis=1)
             grand_total_qty += pivot['Total'].sum()
 
-            actual_qty = pivot.sum().astype(int)
+            actual_qty = pivot.sum()
             actual_qty.name = 'Actual Qty'
             qty_plus_3 = (actual_qty * 1.03).round().astype(int)
             qty_plus_3.name = '3% Order Qty'
             
             pivot_final = pd.concat([pivot, actual_qty.to_frame().T, qty_plus_3.to_frame().T])
-            pivot_final = pivot_final.reset_index().rename(columns={'index': 'P.O NO'})
+            pivot_final = pivot_final.reset_index()
+            pivot_final = pivot_final.rename(columns={'index': 'P.O NO'})
             
-            # Format numbers with commas
-            for col in pivot_final.columns:
-                if col != 'P.O NO':
-                    pivot_final[col] = pivot_final[col].apply(lambda x: f"{x:,}" if pd.notna(x) else '0')
-            
+            pd.set_option('colheader_justify', 'center')
             html_table = pivot_final.to_html(
-                classes='table table-sm',
+                classes='table table-bordered table-striped',
                 index=False,
                 border=0
             )
             
-            html_table = html_table.replace('<th>P.O NO</th>', '<th class="po-col">P.O NO</th>')
-            html_table = re.sub(r'<tr>\s*<td>', '<tr><td class="po-col">', html_table)
+            html_table = re.sub(r'<tr>\s*<td>', '<tr><td class="order-col">', html_table)
             html_table = html_table.replace('<th>Total</th>', '<th class="total-col-header">Total</th>')
-            html_table = re.sub(r'<td(?!\sclass="po-col")([^>]*)>Total</td>', r'<td\1 class="total-col">Total</td>', html_table)
+            html_table = html_table.replace('<td>Total</td>', '<td class="total-col">Total</td>')
             html_table = html_table.replace('<td>Actual Qty</td>', '<td class="summary-label">Actual Qty</td>')
             html_table = html_table.replace('<td>3% Order Qty</td>', '<td class="summary-label">3% Order Qty</td>')
             html_table = re.sub(
@@ -5789,7 +5756,7 @@ def generate_po_report():
             grand_total=f"{grand_total_qty:,}"
         )
     except Exception as e:
-        flash(f"Error processing files: {str(e)}", "error")
+        flash(f"Error processing files: {str(e)}")
         return redirect(url_for('index'))
 
 
