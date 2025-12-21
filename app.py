@@ -1886,7 +1886,7 @@ def get_dashboard_summary_v2():
     }
 
 # ==============================================================================
-# লজিক পার্ট: PURCHASE ORDER SHEET PARSER (PDF) - UPDATED LOGIC
+# লজিক পার্ট: PURCHASE ORDER SHEET PARSER (PDF) - UPDATED AND FIXED LOGIC
 # ==============================================================================
 
 def is_potential_size(header):
@@ -1992,24 +1992,34 @@ def extract_data_dynamic(file_path):
                 if ("Colo" in line or "Size" in line) and "Total" in line:
                     parts = line.split()
                     try:
-                        total_idx = [idx for idx, x in enumerate(parts) if 'Total' in x][0]
-                        raw_sizes = parts[:total_idx]
-                        temp_sizes = [s for s in raw_sizes if s not in ["Colo", "/", "Size", "Colo/Size", "Colo/", "Size's"]]
+                        # সাইজগুলো বের করার জন্য উন্নত লজিক
+                        total_idx = -1
+                        for idx, part in enumerate(parts):
+                            if 'Total' in part:
+                                total_idx = idx
+                                break
                         
-                        valid_size_count = sum(1 for s in temp_sizes if is_potential_size(s))
-                        if temp_sizes and valid_size_count >= len(temp_sizes) / 2:
-                            sizes = temp_sizes
-                            capturing_data = True
-                        else:
-                            sizes = []
-                            capturing_data = False
-                    except: pass
+                        if total_idx != -1:
+                            raw_sizes = parts[:total_idx]
+                            temp_sizes = [s for s in raw_sizes if s not in ["Colo", "/", "Size", "Colo/Size", "Colo/", "Size's"]]
+                            
+                            valid_size_count = sum(1 for s in temp_sizes if is_potential_size(s))
+                            if temp_sizes and valid_size_count >= len(temp_sizes) / 2:
+                                sizes = temp_sizes
+                                capturing_data = True
+                            else: # যদি সাইজ খুঁজে না পায়, রিসেট করুন
+                                sizes = []
+                                capturing_data = False
+                    except:
+                        sizes = []
+                        capturing_data = False
                     continue
                 
                 if capturing_data and sizes:
                     if line.startswith("Total Quantity") or line.startswith("Total Amount"):
                         capturing_data = False
                         continue
+                    
                     lower_line = line.lower()
                     if "quantity" in lower_line or "currency" in lower_line or "price" in lower_line or "amount" in lower_line: 
                         continue
@@ -2024,43 +2034,54 @@ def extract_data_dynamic(file_path):
                     qty_parts = []
                     is_qty_part = False
                     for part in parts:
-                        if re.search(r'\d', part):
+                        # একটি অংশ সংখ্যাসূচক কিনা তা আরও ভালোভাবে পরীক্ষা করা
+                        if re.match(r'^\d{1,3}(,\d{3})*(\.\d+)?$', part) or part.isdigit():
                             is_qty_part = True
+                        
                         if is_qty_part:
                             qty_parts.append(part)
                         else:
                             color_parts.append(part)
                     
                     color_name = " ".join(color_parts)
-                    raw_qtys = [re.sub(r',.*', '', q) for q in qty_parts] # Handle numbers like "53,00" -> "53"
+                    # কমা এবং অন্যান্য চিহ্ন পরিষ্কার করা
+                    raw_qtys = [re.sub(r'[^\d]', '', q) for q in qty_parts] 
                     
                     final_qtys = []
                     for q_str in raw_qtys:
                         if q_str.isdigit():
                             final_qtys.append(int(q_str))
 
-                    # If quantities are not on the same line, look at the next line
-                    if not final_qtys:
-                        next_line_idx = i + 1
-                        if next_line_idx < len(lines):
-                            next_line = lines[next_line_idx].strip()
-                            if not re.search(r'[a-zA-Z]', next_line):
-                                next_line_qtys_raw = [re.sub(r',.*', '', q) for q in next_line.split()]
-                                final_qtys = [int(q) for q in next_line_qtys_raw if q.isdigit()]
+                    # যদি একই লাইনে পরিমাণ না পাওয়া যায়, পরের লাইনটি পরীক্ষা করুন
+                    if not final_qtys and (i + 1) < len(lines):
+                        next_line = lines[i + 1].strip()
+                        # পরের লাইনটি শুধুমাত্র সংখ্যা এবং স্পেস দিয়ে গঠিত কিনা তা পরীক্ষা করুন
+                        if re.fullmatch(r'[\d\s,.]+', next_line) and not re.search(r'[a-zA-Z]', next_line):
+                            next_line_qtys_raw = [re.sub(r'[^\d]', '', q) for q in next_line.split()]
+                            final_qtys = [int(q) for q in next_line_qtys_raw if q.isdigit()]
 
-                    # Pad with zeros to match the number of sizes
-                    padded_qtys = final_qtys + [0] * (len(sizes) - len(final_qtys))
-                    
+                    # **मुख्य समाधान**: যদি পরিমাণের সংখ্যা সাইজের সংখ্যার চেয়ে কম হয়, তাহলে শেষে ০ দিয়ে পূরণ করুন।
+                    # এটি একটি সাইজের পরিমাণ অনুপস্থিত থাকলেও পরবর্তী সাইজের ডেটা টেনে আনা থেকে বিরত রাখে।
+                    if final_qtys and len(final_qtys) < len(sizes):
+                        padded_qtys = final_qtys + [0] * (len(sizes) - len(final_qtys))
+                    else:
+                        padded_qtys = final_qtys
+
                     if padded_qtys and color_name:
-                        for idx, size in enumerate(sizes):
-                            extracted_data.append({
-                                'P.O NO': order_no,
-                                'Color': color_name,
-                                'Size': size,
-                                'Quantity': padded_qtys[idx] if idx < len(padded_qtys) else 0
-                            })
-    except Exception as e: print(f"Error processing file: {e}")
+                        # ডেটা যোগ করার আগে নিশ্চিত করুন যে পরিমাণের তালিকা সাইজের তালিকার সমান
+                        if len(padded_qtys) >= len(sizes):
+                            for idx, size in enumerate(sizes):
+                                extracted_data.append({
+                                    'P.O NO': order_no,
+                                    'Color': color_name,
+                                    'Size': size,
+                                    'Quantity': padded_qtys[idx] if idx < len(padded_qtys) else 0
+                                })
+
+    except Exception as e: 
+        print(f"Error processing file '{file_path}': {e}")
     return extracted_data, metadata
+
 
 # ==============================================================================
 # লজিক পার্ট: CLOSING REPORT API & EXCEL GENERATION
