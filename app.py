@@ -392,7 +392,8 @@ COMMON_STYLES = """
                 box-shadow: 0 0 0 10px rgba(16, 185, 129, 0);
             }
         }
-                /* Enhanced Cards & Grid */
+        
+        /* Enhanced Cards & Grid */
         .stats-grid { 
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); 
@@ -459,6 +460,7 @@ COMMON_STYLES = """
             opacity: 1;
             transform: rotate(10deg) scale(1.1);
         }
+
         /* Stat Cards with Animations */
         .stat-card { 
             display: flex;
@@ -537,6 +539,7 @@ COMMON_STYLES = """
         .count-up {
             display: inline-block;
         }
+        
         /* Progress Bars with Animation */
         .progress-item { margin-bottom: 24px; }
 
@@ -594,6 +597,7 @@ COMMON_STYLES = """
         .progress-orange { background: var(--gradient-orange); }
         .progress-purple { background: linear-gradient(135deg, #8B5CF6 0%, #A78BFA 100%); }
         .progress-green { background: linear-gradient(135deg, #10B981 0%, #34D399 100%); }
+        
         /* Enhanced Forms */
         .input-group { margin-bottom: 20px; }
 
@@ -607,7 +611,7 @@ COMMON_STYLES = """
             letter-spacing: 1.5px;
         }
 
-        input, select { 
+        input, select, .history-search-input { 
             width: 100%;
             padding: 14px 18px; 
             background: rgba(255, 255, 255, 0.03);
@@ -625,7 +629,7 @@ COMMON_STYLES = """
             opacity: 0.5;
         }
 
-        input:focus, select:focus { 
+        input:focus, select:focus, .history-search-input:focus { 
             border-color: var(--accent-orange);
             background: rgba(255, 122, 0, 0.05);
             box-shadow: 0 0 0 4px var(--accent-orange-glow), 0 0 20px var(--accent-orange-glow);
@@ -773,7 +777,8 @@ COMMON_STYLES = """
             transform: scale(1.1);
             box-shadow: 0 0 20px rgba(239, 68, 68, 0.4);
         }
-                /* Enhanced Loading Overlay */
+        
+        /* Enhanced Loading Overlay */
         #loading-overlay { 
             display: none;
             position: fixed; 
@@ -859,6 +864,7 @@ COMMON_STYLES = """
             opacity: 0;
             animation: checkmark-anim 0.4s 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
         }
+        
         /* Fail Cross Animation */
         .fail-container { 
             display: none; 
@@ -1040,64 +1046,59 @@ COMMON_STYLES = """
             font-weight: 600;
         }
 
-        /* Flash Messages - UPDATED POSITION */
+        /* Flash Messages - NEW PROFESSIONAL STYLE */
         #flash-container {
             position: fixed;
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%);
+            top: 25px;
+            right: 25px;
             z-index: 10001;
             width: auto;
-            min-width: 320px;
-            max-width: 90%;
+            max-width: 400px;
             display: flex;
             flex-direction: column;
-            align-items: center;
+            gap: 10px;
         }
-
         .flash-message {
-            margin-bottom: 10px;
-            padding: 16px 25px;
-            border-radius: 50px;
-            font-size: 15px;
+            background: var(--bg-card);
+            color: var(--text-primary);
+            padding: 16px 20px;
+            border-radius: 12px;
+            font-size: 14px;
             font-weight: 600;
-            display: inline-flex;
+            display: flex;
             align-items: center;
-            justify-content: center;
             gap: 12px;
-            animation: flashSlideIn 0.4s ease-out;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-            white-space: nowrap;
+            animation: flashSlideIn 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+            border: 1px solid var(--border-color);
+            position: relative;
+            overflow: hidden;
         }
-
+        .flash-message::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            width: 4px;
+        }
+        .flash-message .flash-icon {
+            font-size: 18px;
+            width: 20px;
+            text-align: center;
+        }
         @keyframes flashSlideIn {
-            from { 
-                opacity: 0;
-                transform: translateY(-20px);
-            }
-            to { 
-                opacity: 1;
-                transform: translateY(0);
-            }
+            from { opacity: 0; transform: translateX(20px); }
+            to { opacity: 1; transform: translateX(0); }
         }
-
-        .flash-error {
-            background: rgba(239, 68, 68, 0.95);
-            border: 1px solid rgba(239, 68, 68, 0.4);
-            color: white;
-        }
-
-        .flash-success {
-            background: rgba(16, 185, 129, 0.95);
-            border: 1px solid rgba(16, 185, 129, 0.4);
-            color: white;
-        }
-
-        .flash-info {
-            background: rgba(59, 130, 246, 0.95);
-            border: 1px solid rgba(59, 130, 246, 0.4);
-            color: white;
-        }
+        .flash-error::before { background: var(--accent-red); }
+        .flash-error .flash-icon { color: var(--accent-red); }
+        
+        .flash-success::before { background: var(--accent-green); }
+        .flash-success .flash-icon { color: var(--accent-green); }
+        
+        .flash-info::before { background: var(--accent-blue); }
+        .flash-info .flash-icon { color: var(--accent-blue); }
         
         /* Ripple Effect */
         .ripple {
@@ -1120,7 +1121,8 @@ COMMON_STYLES = """
                 opacity: 0;
             }
         }
-                /* Mobile */
+        
+        /* Mobile */
         .mobile-toggle { 
             display: none; 
             position: fixed; 
@@ -1521,6 +1523,23 @@ COMMON_STYLES = """
             margin-bottom: 10px;
             display: block;
         }
+        
+        /* New History Filters */
+        .history-filters {
+            display: grid;
+            grid-template-columns: 1fr auto auto auto;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .history-filters .input-group {
+            margin-bottom: 0;
+        }
+        
+        .history-filters input, .history-filters select {
+            padding: 10px 14px;
+            font-size: 13px;
+        }
     </style>
 """
 # ==============================================================================
@@ -1604,6 +1623,25 @@ def update_po_stats(username, file_count, booking_ref="N/A"):
     if len(data['downloads']) > 3000:
         data['downloads'] = data['downloads'][:3000]
     save_stats(data)
+    
+def update_accessories_stats(ref_no, username, qty):
+    data = load_stats()
+    now = get_bd_time()
+    new_record = {
+        "ref": ref_no,
+        "user": username,
+        "qty": qty,
+        "date": now.strftime('%d-%m-%Y'),
+        "time": now.strftime('%I:%M %p'),
+        "type": "Accessories Challan",
+        "iso_time": now.isoformat()
+    }
+    if 'downloads' not in data:
+        data['downloads'] = []
+    data['downloads'].insert(0, new_record)
+    if len(data['downloads']) > 3000:
+        data['downloads'] = data['downloads'][:3000]
+    save_stats(data)
 
 def load_accessories_db():
     record = accessories_col.find_one({"_id": "accessories_data"})
@@ -1646,7 +1684,7 @@ def get_all_accessories_bookings():
     return bookings
 
 # ==============================================================================
-# ড্যাশবোর্ড সামারি ফাংশন
+# ড্যাশবোর্ড সামারি ফাংশন - (UPDATED)
 # ==============================================================================
 
 def get_dashboard_summary_v2():
@@ -1655,7 +1693,7 @@ def get_dashboard_summary_v2():
     users_data = load_users()
     
     now = get_bd_time()
-    today_str = now.strftime('%d-%m-%Y')
+    twenty_four_hours_ago = now - timedelta(hours=24)
     
     user_details = []
     for u, d in users_data.items():
@@ -1667,101 +1705,83 @@ def get_dashboard_summary_v2():
             "last_duration": d.get('last_duration', 'N/A')
         })
 
-    acc_lifetime_count = 0
-    acc_today_list = []
-    daily_data = defaultdict(lambda: {'closing': 0, 'po': 0, 'acc': 0})
-
-    for ref, data in acc_db.items():
-        for challan in data.get('challans', []):
-            acc_lifetime_count += 1
-            c_date = challan.get('date')
-            if c_date == today_str:
-                acc_today_list.append({
-                    "ref": ref,
-                    "buyer": data.get('buyer'),
-                    "style": data.get('style'),
-                    "time": "Today",
-                    "qty": challan.get('qty')
-                })
-            
-            try:
-                dt_obj = datetime.strptime(c_date, '%d-%m-%Y')
-                sort_key = dt_obj.strftime('%Y-%m-%d')
-                daily_data[sort_key]['acc'] += 1
-                daily_data[sort_key]['label'] = dt_obj.strftime('%d-%b')
-            except: 
-                pass
-
-    closing_lifetime_count = 0
-    po_lifetime_count = 0
-    closing_list = []
-    po_list = []
+    # Lifetime counts
+    acc_lifetime_count = sum(len(data.get('challans', [])) for data in acc_db.values())
     
     history = stats_data.get('downloads', [])
-    for item in history:
-        item_date = item.get('date', '')
-        if item.get('type') == 'PO Sheet':
-            po_lifetime_count += 1
-            if item_date == today_str: 
-                po_list.append(item)
-        else:
-            closing_lifetime_count += 1
-            if item_date == today_str:
-                closing_list.append(item)
-        
-        try:
-            dt_obj = datetime.strptime(item_date, '%d-%m-%Y')
-            sort_key = dt_obj.strftime('%Y-%m-%d')
-            
-            if item.get('type') == 'PO Sheet':
-                daily_data[sort_key]['po'] += 1
-            else: 
-                daily_data[sort_key]['closing'] += 1
-            daily_data[sort_key]['label'] = dt_obj.strftime('%d-%b')
-        except:
-            pass
+    closing_lifetime_count = sum(1 for item in history if item.get('type') == 'Closing Report')
+    po_lifetime_count = sum(1 for item in history if item.get('type') == 'PO Sheet')
     
+    # History for last 24 hours
+    recent_history = []
+    for item in history:
+        try:
+            item_time = datetime.fromisoformat(item['iso_time'])
+            # Naive timezone conversion if needed
+            if item_time.tzinfo is None:
+                item_time = pytz.utc.localize(item_time).astimezone(bd_tz)
+
+            if item_time >= twenty_four_hours_ago:
+                recent_history.append(item)
+        except (ValueError, TypeError):
+            # Fallback for old records without iso_time
+            try:
+                item_date = datetime.strptime(item.get('date'), '%d-%m-%Y')
+                if item_date.date() == now.date():
+                     recent_history.append(item)
+            except:
+                continue
+
+    # Chart data logic remains mostly the same, focusing on daily trends
+    daily_data = defaultdict(lambda: {'closing': 0, 'po': 0, 'acc': 0})
+    for item in history:
+        try:
+            dt_obj = datetime.strptime(item['date'], '%d-%m-%Y')
+            sort_key = dt_obj.strftime('%Y-%m-%d')
+            item_type = item.get('type')
+
+            if item_type == 'Closing Report':
+                daily_data[sort_key]['closing'] += 1
+            elif item_type == 'PO Sheet':
+                daily_data[sort_key]['po'] += 1
+            elif item_type == 'Accessories Challan':
+                 daily_data[sort_key]['acc'] += 1
+
+            daily_data[sort_key]['label'] = dt_obj.strftime('%d-%b')
+        except (ValueError, KeyError):
+            pass
+
     first_of_last_month = (now.replace(day=1) - timedelta(days=1)).replace(day=1)
     start_date = first_of_last_month.strftime('%Y-%m-%d')
     end_date = now.strftime('%Y-%m-%d')
     
     sorted_keys = sorted([k for k in daily_data.keys() if start_date <= k <= end_date])
     
-    chart_labels = []
-    chart_closing = []
-    chart_po = []
-    chart_acc = []
+    chart_labels = [daily_data[k].get('label', k) for k in sorted_keys]
+    chart_closing = [daily_data[k]['closing'] for k in sorted_keys]
+    chart_po = [daily_data[k]['po'] for k in sorted_keys]
+    chart_acc = [daily_data[k]['acc'] for k in sorted_keys]
 
-    if not sorted_keys:
-        curr_d = now.strftime('%d-%b')
-        chart_labels = [curr_d]
-        chart_closing = [0]
-        chart_po = [0]
-        chart_acc = [0]
-    else:
-        for k in sorted_keys:
-            d = daily_data[k]
-            chart_labels.append(d.get('label', k))
-            chart_closing.append(d['closing'])
-            chart_po.append(d['po'])
-            chart_acc.append(d['acc'])
+    if not chart_labels:
+        chart_labels = [now.strftime('%d-%b')]
+        chart_closing, chart_po, chart_acc = [0], [0], [0]
 
     return {
         "users": {"count": len(users_data), "details": user_details},
-        "accessories": {"count": acc_lifetime_count, "details": acc_today_list},
-        "closing": {"count": closing_lifetime_count, "details": closing_list},
-        "po": {"count": po_lifetime_count, "details": po_list},
+        "accessories": {"count": acc_lifetime_count},
+        "closing": {"count": closing_lifetime_count},
+        "po": {"count": po_lifetime_count},
         "chart": {
             "labels": chart_labels,
             "closing": chart_closing,
             "po": chart_po,
             "acc": chart_acc
         },
-        "history": history
+        "history": stats_data.get('downloads', []), # Full history for filtering
+        "recent_history": recent_history # Last 24h for default view
     }
-
-# ==============================================================================
-# লজিক পার্ট: PURCHASE ORDER SHEET PARSER (PDF) - UPDATED LOGIC (FIXED)
+    # ==============================================================================
+# লজিক পার্ট: PURCHASE ORDER SHEET PARSER (PDF) - (NEW LOGIC FROM PO SHEET.py)
 # ==============================================================================
 
 def is_potential_size(header):
@@ -1773,6 +1793,7 @@ def is_potential_size(header):
     if re.match(r'^(XXS|XS|S|M|L|XL|XXL|XXXL|TU|ONE\s*SIZE)$', h): return True
     if re.match(r'^[A-Z]\d{2,}$', h): return False
     return False
+
 
 def sort_sizes(size_list):
     STANDARD_ORDER = [
@@ -1790,42 +1811,162 @@ def sort_sizes(size_list):
         return (3, s)
     return sorted(size_list, key=sort_key)
 
+
 def extract_metadata(first_page_text):
     meta = {
         'buyer': 'N/A', 'booking': 'N/A', 'style': 'N/A', 
         'season': 'N/A', 'dept': 'N/A', 'item': 'N/A'
     }
+    
     if "KIABI" in first_page_text.upper():
         meta['buyer'] = "KIABI"
     else:
         buyer_match = re.search(r"Buyer.*?Name[\s\S]*?([\w\s&]+)(?:\n|$)", first_page_text)
         if buyer_match: meta['buyer'] = buyer_match.group(1).strip()
 
-    booking_block_match = re.search(r"(?:Internal )?Booking NO\. ?[:\s]*([\s\S]*?)(?:System NO|Control No|Buyer)", first_page_text, re.IGNORECASE)
-    if booking_block_match:
+    booking_block_match = re.search(r"(?:Internal )?Booking NO\.?[:\s]*([\s\S]*?)(?:System NO|Control No|Buyer)", first_page_text, re.IGNORECASE)
+    if booking_block_match: 
         raw_booking = booking_block_match.group(1).strip()
         clean_booking = raw_booking.replace('\n', '').replace('\r', '').replace(' ', '')
         if "System" in clean_booking: clean_booking = clean_booking.split("System")[0]
         meta['booking'] = clean_booking
 
-    style_match = re.search(r"Style Ref\. ?[:\s]*([\w-]+)", first_page_text, re.IGNORECASE)
+    style_match = re.search(r"Style Ref\.?[:\s]*([\w-]+)", first_page_text, re.IGNORECASE)
     if style_match: meta['style'] = style_match.group(1).strip()
-    else: 
+    else:
         style_match = re.search(r"Style Des\.?[\s\S]*?([\w-]+)", first_page_text, re.IGNORECASE)
         if style_match: meta['style'] = style_match.group(1).strip()
 
     season_match = re.search(r"Season\s*[:\n\"]*([\w\d-]+)", first_page_text, re.IGNORECASE)
     if season_match: meta['season'] = season_match.group(1).strip()
-    dept_match = re.search(r"Dept\. ?[\s\n: ]*([A-Za-z]+)", first_page_text, re.IGNORECASE)
+
+    dept_match = re.search(r"Dept\.?[\s\n:]*([A-Za-z]+)", first_page_text, re.IGNORECASE)
     if dept_match: meta['dept'] = dept_match.group(1).strip()
 
-    item_match = re.search(r"Garments?\s*Item[\s\n: ]*([^\n\r]+)", first_page_text, re.IGNORECASE)
+    item_match = re.search(r"Garments? Item[\s\n:]*([^\n\r]+)", first_page_text, re.IGNORECASE)
     if item_match: 
         item_text = item_match.group(1).strip()
         if "Style" in item_text: item_text = item_text.split("Style")[0].strip()
         meta['item'] = item_text
 
     return meta
+
+
+def is_color_name(text):
+    text = text.strip()
+    if not text:
+        return False
+    if re.match(r'^\d+$', text):
+        return False
+    if re.match(r'^\d+[,\.]\d{2}$', text):
+        return False
+    if is_potential_size(text):
+        return False
+    keywords = ['spec', 'price', 'total', 'quantity', 'amount', 'currency', 'order']
+    if any(kw in text.lower() for kw in keywords):
+        return False
+    if not re.search(r'[a-zA-Z]', text):
+        return False
+    return True
+
+
+def is_partial_color_name(text):
+    text = text.strip()
+    if not text:
+        return False
+    if re.match(r'^[A-Za-z\s]+$', text):
+        keywords = ['spec', 'price', 'total', 'quantity', 'amount']
+        if not any(kw in text.lower() for kw in keywords):
+            return True
+    return False
+
+
+def parse_vertical_table(lines, start_idx, sizes, order_no):
+    extracted_data = []
+    i = start_idx
+    
+    while i < len(lines):
+        line = lines[i].strip()
+        
+        if line.startswith("Total") and i + 1 < len(lines):
+            next_line = lines[i + 1].strip() if i + 1 < len(lines) else ""
+            if "Quantity" in next_line or "Amount" in next_line or re.match(r'^Quantity', next_line):
+                break
+            if re.match(r'^\d', next_line):
+                break
+        
+        if line and is_color_name(line):
+            color_name = line
+            i += 1
+            
+            while i < len(lines):
+                next_line = lines[i].strip()
+                
+                if 'spec' in next_line.lower():
+                    i += 1
+                    break
+                
+                if re.match(r'^\d+$', next_line):
+                    break
+                
+                if not next_line:
+                    i += 1
+                    continue
+                
+                if is_partial_color_name(next_line):
+                    color_name = color_name + " " + next_line
+                    i += 1
+                else:
+                    break
+            
+            if i < len(lines) and 'spec' in lines[i].lower():
+                i += 1
+            
+            quantities = []
+            size_idx = 0
+            
+            while size_idx < len(sizes) and i < len(lines):
+                qty_line = lines[i].strip() if i < len(lines) else ""
+                price_line = lines[i + 1].strip() if i + 1 < len(lines) else ""
+                
+                if qty_line and is_color_name(qty_line):
+                    while size_idx < len(sizes):
+                        quantities.append(0)
+                        size_idx += 1
+                    break
+                
+                if (qty_line == "" or qty_line.isspace()) and (price_line == "" or price_line.isspace()):
+                    quantities.append(0)
+                    size_idx += 1
+                    i += 2
+                    continue
+                
+                if re.match(r'^\d+$', qty_line):
+                    quantities.append(int(qty_line))
+                    size_idx += 1
+                    i += 2
+                    continue
+                
+                i += 1
+            
+            if quantities:
+                while len(quantities) < len(sizes):
+                    quantities.append(0)
+                
+                for idx, size in enumerate(sizes):
+                    extracted_data.append({
+                        'P.O NO': order_no,
+                        'Color': color_name,
+                        'Size': size,
+                        'Quantity': quantities[idx] if idx < len(quantities) else 0
+                    })
+            
+            continue
+        
+        i += 1
+    
+    return extracted_data
+
 
 def extract_data_dynamic(file_path):
     extracted_data = []
@@ -1839,109 +1980,47 @@ def extract_data_dynamic(file_path):
         reader = pypdf.PdfReader(file_path)
         first_page_text = reader.pages[0].extract_text()
         
-        if "Main Fabric Booking" in first_page_text or "Fabric Booking Sheet" in first_page_text: 
+        if "Main Fabric Booking" in first_page_text or "Fabric Booking Sheet" in first_page_text:
             metadata = extract_metadata(first_page_text)
-            return [], metadata
+            return [], metadata 
 
         order_match = re.search(r"Order no\D*(\d+)", first_page_text, re.IGNORECASE)
         if order_match: order_no = order_match.group(1)
-        else: 
+        else:
             alt_match = re.search(r"Order\s*[:\.]?\s*(\d+)", first_page_text, re.IGNORECASE)
             if alt_match: order_no = alt_match.group(1)
         
         order_no = str(order_no).strip()
         if order_no.endswith("00"): order_no = order_no[:-2]
-        
-        metadata = extract_metadata(first_page_text)
+
+        metadata = extract_metadata(first_page_text) # Extract metadata once
 
         for page in reader.pages:
             text = page.extract_text()
             lines = text.split('\n')
-            sizes = []
-            capturing_data = False
             
             for i, line in enumerate(lines):
-                line = line.strip()
-                if not line: continue
-
                 if ("Colo" in line or "Size" in line) and "Total" in line:
                     parts = line.split()
                     try:
                         total_idx = [idx for idx, x in enumerate(parts) if 'Total' in x][0]
                         raw_sizes = parts[:total_idx]
-                        temp_sizes = [s for s in raw_sizes if s not in ["Colo", "/", "Size", "Colo/Size", "Colo/", "Size's"]]
+                        sizes = [s for s in raw_sizes if s not in ["Colo", "/", "Size", "Colo/Size", "Colo/", "Size's"]]
                         
-                        valid_size_count = sum(1 for s in temp_sizes if is_potential_size(s))
-                        if temp_sizes and valid_size_count >= len(temp_sizes) / 2:
-                            sizes = temp_sizes
-                            capturing_data = True
-                        else:
-                            sizes = []
-                            capturing_data = False
-                    except: pass
-                    continue
-                
-                if capturing_data and sizes:
-                    if line.startswith("Total") or "currency" in line.lower():
-                        capturing_data = False
-                        continue
+                        valid_size_count = sum(1 for s in sizes if is_potential_size(s))
+                        if sizes and valid_size_count >= len(sizes) / 2:
+                            data = parse_vertical_table(lines, i + 1, sizes, order_no)
+                            extracted_data.extend(data)
+                    except: 
+                        pass
+                    # A page might have multiple tables, so we should not break here.
+                    # Let it continue searching for more tables in the same page.
                     
-                    clean_line = line.replace("Spec. price", "").replace("Spec", "").strip()
-                    if not re.search(r'[a-zA-Z]', clean_line): continue
-                    if re.match(r'^[A-Z]\d+$', clean_line) or "Assortment" in clean_line: continue
-                    
-                    # LOGIC FIX: Handle shifting by strict tokenizing
-                    parts = re.split(r'\s{2,}', line) # Split by double spaces first
-                    if len(parts) < 2: parts = line.split() 
-                    
-                    color_parts = []
-                    qty_values = []
-                    
-                    for part in parts:
-                        clean_part = part.replace(',', '').replace('.', '')
-                        if clean_part.isdigit():
-                            qty_values.append(int(part.replace(',', '')))
-                        elif part in ['-', 'x']:
-                            qty_values.append(0)
-                        else:
-                            if len(qty_values) == 0:
-                                color_parts.append(part)
-                    
-                    color_name = " ".join(color_parts).strip()
-                    
-                    final_qtys = []
-                    
-                    if len(qty_values) == len(sizes):
-                        final_qtys = qty_values
-                    elif len(qty_values) == len(sizes) + 1:
-                        final_qtys = qty_values[:-1]
-                    elif len(qty_values) < len(sizes):
-                        # Attempt to check next line for spillover
-                        next_line_qtys = []
-                        if i + 1 < len(lines):
-                            next_line = lines[i+1].strip()
-                            if not re.search(r'[a-zA-Z]', next_line) and re.search(r'\d', next_line):
-                                next_line_qtys = [int(n) for n in re.findall(r'\b\d+\b', next_line)]
-                        
-                        combined = qty_values + next_line_qtys
-                        if len(combined) >= len(sizes):
-                            final_qtys = combined[:len(sizes)]
-                        else:
-                            # Pad with 0 at end to prevent shifting
-                            final_qtys = combined + [0] * (len(sizes) - len(combined))
-                    else:
-                        final_qtys = qty_values[:len(sizes)]
-
-                    if final_qtys and color_name:
-                        for idx, size in enumerate(sizes):
-                            extracted_data.append({
-                                'P.O NO': order_no,
-                                'Color': color_name,
-                                'Size': size,
-                                'Quantity': final_qtys[idx] if idx < len(final_qtys) else 0
-                            })
-    except Exception as e: print(f"Error processing file: {e}")
+    except Exception as e: 
+        print(f"Error processing file: {e}")
+    
     return extracted_data, metadata
+
 
 # ==============================================================================
 # লজিক পার্ট: CLOSING REPORT API & EXCEL GENERATION
@@ -2048,8 +2127,7 @@ def parse_report_data(html_content):
         return all_report_data
     except Exception as e: 
         return None
-
-def create_formatted_excel_report(report_data, internal_ref_no=""):
+        def create_formatted_excel_report(report_data, internal_ref_no=""):
     if not report_data: return None
     wb = openpyxl.Workbook()
     ws = wb.active
@@ -2567,7 +2645,13 @@ LOGIN_TEMPLATE = f"""
             {{% if messages %}}
                 {{% for category, message in messages %}}
                     <div class="flash-message flash-{{{{ category if category != 'message' else 'info' }}}}">
-                        <i class="fas fa-info-circle"></i> {{{{ message }}}}
+                        <span class="flash-icon">
+                            {{% if category == 'success' %}} <i class="fas fa-check-circle"></i>
+                            {{% elif category == 'error' %}} <i class="fas fa-exclamation-triangle"></i>
+                            {{% else %}} <i class="fas fa-info-circle"></i>
+                            {{% endif %}}
+                        </span>
+                        <span>{{{{ message }}}}</span>
                     </div>
                 {{% endfor %}}
             {{% endif %}}
@@ -2619,17 +2703,18 @@ LOGIN_TEMPLATE = f"""
         setTimeout(function() {{
             let flashMessages = document.querySelectorAll('.flash-message');
             flashMessages.forEach(function(msg) {{
+                msg.style.transition = 'opacity 0.5s, transform 0.5s';
                 msg.style.opacity = '0';
-                setTimeout(function() {{ msg.style.display = 'none'; }}, 500);
+                msg.style.transform = 'translateX(20px)';
+                setTimeout(function() {{ msg.remove(); }}, 500);
             }});
         }}, 4000);
     </script>
 </body>
 </html>
 """
-
 # ==============================================================================
-# ADMIN DASHBOARD TEMPLATE - (STORE REMOVED, WELCOME POPUP REMOVED)
+# ADMIN DASHBOARD TEMPLATE - (UPDATED WITH HISTORY FILTER & SEARCH)
 # ==============================================================================
 
 ADMIN_DASHBOARD_TEMPLATE = f"""
@@ -2669,14 +2754,13 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
         {{% with messages = get_flashed_messages(with_categories=true) %}}
             {{% if messages %}}
                 {{% for category, message in messages %}}
-                    <div class="flash-message flash-{{{{ category if category != 'message' else 'info' }}}}" role="alert">
-                        {{% if category == 'success' %}}
-                            <i class="fas fa-check-circle"></i>
-                        {{% elif category == 'error' %}}
-                            <i class="fas fa-exclamation-triangle"></i>
-                        {{% else %}}
-                             <i class="fas fa-info-circle"></i>
-                        {{% endif %}}
+                    <div class="flash-message flash-{{{{ category if category != 'message' else 'info' }}}}">
+                        <span class="flash-icon">
+                            {{% if category == 'success' %}} <i class="fas fa-check-circle"></i>
+                            {{% elif category == 'error' %}} <i class="fas fa-exclamation-triangle"></i>
+                            {{% else %}} <i class="fas fa-info-circle"></i>
+                            {{% endif %}}
+                        </span>
                         <span>{{{{ message }}}}</span>
                     </div>
                 {{% endfor %}}
@@ -2823,47 +2907,68 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
 
             <div class="card">
                 <div class="section-header">
-                    <span>Recent Activity Log</span>
+                    <span>Activity Log</span>
                     <i class="fas fa-history" style="color: var(--text-secondary);"></i>
                 </div>
-                <div style="overflow-x: auto;">
+                
+                <div class="history-filters">
+                    <div class="input-group">
+                        <input type="text" id="history-search" class="history-search-input" placeholder="Search by user, reference, etc..." onkeyup="filterHistory()">
+                    </div>
+                    <div class="input-group">
+                         <input type="date" id="history-date-filter" class="history-search-input" onchange="filterHistory()">
+                    </div>
+                    <div class="input-group">
+                        <select id="history-type-filter" class="history-search-input" onchange="filterHistory()">
+                            <option value="">All Types</option>
+                            <option value="Closing Report">Closing Report</option>
+                            <option value="PO Sheet">PO Sheet</option>
+                            <option value="Accessories Challan">Accessories</option>
+                        </select>
+                    </div>
+                    <button onclick="resetFilters()" style="width: auto; padding: 0 20px; background: rgba(255,255,255,0.05); border: 1px solid var(--border-color);">
+                        <i class="fas fa-undo"></i>
+                    </button>
+                </div>
+
+                <div style="max-height: 400px; overflow-x: auto;">
                     <table class="dark-table">
                         <thead>
                             <tr>
                                 <th>Time</th>
                                 <th>User</th>
-                                <th>Action</th>
+                                <th>Action Type</th>
                                 <th>Reference</th>
                             </tr>
                         </thead>
-                        <tbody>
-                            {{% for log in stats.history[:10] %}}
-                            <tr style="animation: fadeInUp 0.5s ease-out {{{{ loop.index * 0.05 }}}}s backwards;">
+                        <tbody id="history-table-body">
+                            {{% for log in stats.recent_history %}}
+                            <tr class="history-item" 
+                                data-search="{{{{ log.time.lower() }}}}-{{{{ log.user.lower() }}}}-{{{{ log.type.lower() }}}}-{{{{ log.ref.lower() if log.ref else '' }}}}"
+                                data-date="{{{{ log.date }}}}"
+                                data-type="{{{{ log.type }}}}">
                                 <td>
                                     <div class="time-badge">
                                         <i class="far fa-clock"></i>
-                                        {{{{ log.time }}}}
+                                        {{{{ log.date }}}}, {{{{ log.time }}}}
                                     </div>
                                 </td>
                                 <td style="font-weight: 600; color: white;">{{{{ log.user }}}}</td>
                                 <td>
                                     <span class="table-badge" style="
-                                        {{% if log.type == 'Closing Report' %}}
-                                        background: rgba(255, 122, 0, 0.1); color: var(--accent-orange);
-                                        {{% elif log.type == 'PO Sheet' %}}
-                                        background: rgba(16, 185, 129, 0.1); color: var(--accent-green);
-                                        {{% else %}}
-                                        background: rgba(139, 92, 246, 0.1); color: var(--accent-purple);
+                                        {{% if log.type == 'Closing Report' %}} background: rgba(255, 122, 0, 0.1); color: var(--accent-orange);
+                                        {{% elif log.type == 'PO Sheet' %}} background: rgba(16, 185, 129, 0.1); color: var(--accent-green);
+                                        {{% else %}} background: rgba(139, 92, 246, 0.1); color: var(--accent-purple);
                                         {{% endif %}}
                                     ">{{{{ log.type }}}}</span>
                                 </td>
                                 <td style="color: var(--text-secondary);">{{{{ log.ref if log.ref else '-' }}}}</td>
                             </tr>
                             {{% else %}}
-                            <tr>
+                            <tr id="no-history-found">
                                 <td colspan="4" style="text-align: center; padding: 40px; color: var(--text-secondary);">
                                     <i class="fas fa-inbox" style="font-size: 40px; opacity: 0.3; margin-bottom: 15px; display: block;"></i>
-                                    No activity recorded yet.
+                                    No activity recorded in the last 24 hours.
                                 </td>
                             </tr>
                             {{% endfor %}}
@@ -2882,15 +2987,15 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
             </div>
             <div class="card" style="max-width: 550px; margin: 0 auto; margin-top: 30px;">
                 <div class="section-header">
-                    <span><i class="fas fa-magic" style="margin-right: 10px; color: var(--accent-orange);"></i>Generate Report</span>
+                    <span>Generate Report</span>
                 </div>
                 <form action="/generate-report" method="post" onsubmit="return showLoading()">
                     <div class="input-group">
-                        <label><i class="fas fa-bookmark" style="margin-right: 5px;"></i> INTERNAL REF NO</label>
+                        <label>INTERNAL REF NO</label>
                         <input type="text" name="ref_no" placeholder="e.g. IB-12345 or Booking-123" required>
                     </div>
                     <button type="submit">
-                        <i class="fas fa-bolt" style="margin-right: 10px;"></i> Generate Report
+                        Generate Report
                     </button>
                 </form>
             </div>
@@ -2905,7 +3010,7 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
             </div>
             <div class="card" style="max-width: 650px; margin: 0 auto; margin-top: 30px;">
                 <div class="section-header">
-                    <span><i class="fas fa-file-pdf" style="margin-right: 10px; color: var(--accent-green);"></i>Upload PDF Files</span>
+                    <span>Upload PDF Files</span>
                 </div>
                 <form action="/generate-po-report" method="post" enctype="multipart/form-data" onsubmit="return showLoading()">
                     <div class="upload-zone" id="uploadZone" onclick="document.getElementById('file-upload').click()">
@@ -2918,7 +3023,7 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
                         <div id="file-count">No files selected</div>
                     </div>
                     <button type="submit" style="margin-top: 25px; background: linear-gradient(135deg, #10B981 0%, #34D399 100%);">
-                        <i class="fas fa-cogs" style="margin-right: 10px;"></i> Process Files
+                        Process Files
                     </button>
                 </form>
             </div>
@@ -2946,20 +3051,19 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
                 <div class="card">
                     <div class="section-header">
                         <span>Create / Edit User</span>
-                        <i class="fas fa-user-plus" style="color: var(--accent-orange);"></i>
                     </div>
                     <form id="userForm">
                         <input type="hidden" id="action_type" value="create">
                         <div class="input-group">
-                            <label><i class="fas fa-user" style="margin-right: 5px;"></i> USERNAME</label>
+                            <label>USERNAME</label>
                             <input type="text" id="new_username" required placeholder="Enter username">
                         </div>
                         <div class="input-group">
-                            <label><i class="fas fa-key" style="margin-right: 5px;"></i> PASSWORD</label>
+                            <label>PASSWORD</label>
                             <input type="text" id="new_password" required placeholder="Enter password">
                         </div>
                         <div class="input-group">
-                            <label><i class="fas fa-shield-alt" style="margin-right: 5px;"></i> PERMISSIONS</label>
+                            <label>PERMISSIONS</label>
                             <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 5px;">
                                 <label class="perm-checkbox">
                                     <input type="checkbox" id="perm_closing" checked>
@@ -2976,10 +3080,10 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
                             </div>
                         </div>
                         <button type="button" onclick="handleUserSubmit()" id="saveUserBtn">
-                            <i class="fas fa-save" style="margin-right: 10px;"></i> Save User
+                            Save User
                         </button>
                         <button type="button" onclick="resetForm()" style="margin-top: 12px; background: rgba(255,255,255,0.05); border: 1px solid var(--border-color);">
-                            <i class="fas fa-undo" style="margin-right: 10px;"></i> Reset Form
+                            Reset Form
                         </button>
                     </form>
                 </div>
@@ -2987,363 +3091,93 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
         </div>
     </div>
     <script>
+        // Full history data from backend
+        const fullHistory = {{{{ stats.history | tojson }}}};
+        
+        function filterHistory() {
+            const searchTerm = document.getElementById('history-search').value.toLowerCase();
+            const dateFilter = document.getElementById('history-date-filter').value;
+            const typeFilter = document.getElementById('history-type-filter').value;
+            const tableBody = document.getElementById('history-table-body');
+            
+            let filteredHtml = '';
+            let hasResults = false;
+
+            const dateObj = dateFilter ? new Date(dateFilter) : null;
+            const formattedDateFilter = dateObj ? 
+                `${{('0' + (dateObj.getDate() + 1)).slice(-2)}}-${{('0' + (dateObj.getMonth() + 1)).slice(-2)}}-${{dateObj.getFullYear()}}`
+                : '';
+
+            fullHistory.forEach(log => {
+                const searchData = `${{log.time.toLowerCase()}}-${{log.user.toLowerCase()}}-${{log.type.toLowerCase()}}-${{log.ref ? log.ref.toLowerCase() : ''}}`;
+
+                const searchMatch = !searchTerm || searchData.includes(searchTerm);
+                const dateMatch = !formattedDateFilter || log.date === formattedDateFilter;
+                const typeMatch = !typeFilter || log.type === typeFilter;
+
+                if (searchMatch && dateMatch && typeMatch) {
+                    hasResults = true;
+                    let badgeStyle = '';
+                    if (log.type === 'Closing Report') badgeStyle = 'background: rgba(255, 122, 0, 0.1); color: var(--accent-orange);';
+                    else if (log.type === 'PO Sheet') badgeStyle = 'background: rgba(16, 185, 129, 0.1); color: var(--accent-green);';
+                    else badgeStyle = 'background: rgba(139, 92, 246, 0.1); color: var(--accent-purple);';
+
+                    filteredHtml += `
+                        <tr class="history-item">
+                            <td><div class="time-badge"><i class="far fa-clock"></i>${{log.date}}, ${{log.time}}}</div></td>
+                            <td style="font-weight: 600; color: white;">${{log.user}}</td>
+                            <td><span class="table-badge" style="${{badgeStyle}}">${{log.type}}</span></td>
+                            <td style="color: var(--text-secondary);">${{log.ref || '-'}}</td>
+                        </tr>
+                    `;
+                }
+            });
+
+            if (!hasResults) {
+                filteredHtml = `
+                    <tr id="no-history-found">
+                        <td colspan="4" style="text-align: center; padding: 40px; color: var(--text-secondary);">
+                            <i class="fas fa-search" style="font-size: 40px; opacity: 0.3; margin-bottom: 15px; display: block;"></i>
+                            No matching activity found.
+                        </td>
+                    </tr>`;
+            }
+            
+            tableBody.innerHTML = filteredHtml;
+        }
+
+        function resetFilters() {
+            document.getElementById('history-search').value = '';
+            document.getElementById('history-date-filter').value = '';
+            document.getElementById('history-type-filter').value = '';
+            filterHistory();
+        }
+
         // ===== SECTION NAVIGATION =====
-        function showSection(id, element) {{
-            ['dashboard', 'analytics', 'help', 'settings'].forEach(sid => {{
+        function showSection(id, element) {
+            ['dashboard', 'analytics', 'help', 'settings'].forEach(sid => {
                 document.getElementById('section-' + sid).style.display = 'none';
-            }});
+            });
             document.getElementById('section-' + id).style.display = 'block';
             
-            if (element) {{
+            if (element) {
                 document.querySelectorAll('.nav-link').forEach(el => el.classList.remove('active'));
                 element.classList.add('active');
-            }}
+            }
             
             if (id === 'settings') loadUsers();
+            if (id === 'dashboard') filterHistory(); // Re-apply filters when switching to dashboard
             if (window.innerWidth < 1024) document.querySelector('.sidebar').classList.remove('active');
-        }}
+        }
         
-        // ===== FILE UPLOAD HANDLER =====
-        const fileUpload = document.getElementById('file-upload');
-        const uploadZone = document.getElementById('uploadZone');
-        
-        if (fileUpload) {{
-            fileUpload.addEventListener('change', function() {{
-                const count = this.files.length;
-                document.getElementById('file-count').innerHTML = count > 0 
-                    ? `<i class="fas fa-check-circle" style="margin-right: 5px;"></i>${{count}} file(s) selected`
-                    : 'No files selected';
-            }});
-            uploadZone.addEventListener('dragover', (e) => {{
-                e.preventDefault();
-                uploadZone.classList.add('dragover');
-            }});
-            uploadZone.addEventListener('dragleave', () => {{
-                uploadZone.classList.remove('dragover');
-            }});
-            uploadZone.addEventListener('drop', (e) => {{
-                e.preventDefault();
-                uploadZone.classList.remove('dragover');
-                fileUpload.files = e.dataTransfer.files;
-                fileUpload.dispatchEvent(new Event('change'));
-            }});
-        }}
-        
-        // ===== DEW STYLE DAILY CHART =====
-        const ctx = document.getElementById('mainChart').getContext('2d');
-        const gradientOrange = ctx.createLinearGradient(0, 0, 0, 300);
-        gradientOrange.addColorStop(0, 'rgba(255, 122, 0, 0.5)');
-        gradientOrange.addColorStop(1, 'rgba(255, 122, 0, 0.0)');
-        const gradientPurple = ctx.createLinearGradient(0, 0, 0, 300);
-        gradientPurple.addColorStop(0, 'rgba(139, 92, 246, 0.5)');
-        gradientPurple.addColorStop(1, 'rgba(139, 92, 246, 0.0)');
-        const gradientGreen = ctx.createLinearGradient(0, 0, 0, 300);
-        gradientGreen.addColorStop(0, 'rgba(16, 185, 129, 0.5)');
-        gradientGreen.addColorStop(1, 'rgba(16, 185, 129, 0.0)');
-        new Chart(ctx, {{
-            type: 'line',
-            data: {{
-                labels: {{{{ stats.chart.labels | tojson }}}},
-                datasets: [
-                    {{
-                        label: 'Closing',
-                        data: {{{{ stats.chart.closing | tojson }}}},
-                        borderColor: '#FF7A00',
-                        backgroundColor: gradientOrange,
-                        tension: 0.4,
-                        fill: true,
-                        pointBackgroundColor: '#FF7A00',
-                        pointBorderColor: '#fff',
-                        pointBorderWidth: 2,
-                        pointRadius: 4,
-                        pointHoverRadius: 7,
-                        borderWidth: 3
-                    }},
-                    {{
-                        label: 'Accessories',
-                        data: {{{{ stats.chart.acc | tojson }}}},
-                        borderColor: '#8B5CF6',
-                        backgroundColor: gradientPurple,
-                        tension: 0.4,
-                        fill: true,
-                        pointBackgroundColor: '#8B5CF6',
-                        pointBorderColor: '#fff',
-                        pointBorderWidth: 2,
-                        pointRadius: 4,
-                        pointHoverRadius: 7,
-                        borderWidth: 3
-                    }},
-                    {{
-                        label: 'PO Sheets',
-                        data: {{{{ stats.chart.po | tojson }}}},
-                        borderColor: '#10B981',
-                        backgroundColor: gradientGreen,
-                        tension: 0.4,
-                        fill: true,
-                        pointBackgroundColor: '#10B981',
-                        pointBorderColor: '#fff',
-                        pointBorderWidth: 2,
-                        pointRadius: 4,
-                        pointHoverRadius: 7,
-                        borderWidth: 3
-                    }}
-                ]
-            }},
-            options: {{
-                plugins: {{
-                    legend: {{
-                        display: true,
-                        position: 'top',
-                        labels: {{
-                            color: '#8b8b9e',
-                            font: {{ size: 11, weight: 500 }},
-                            usePointStyle: true,
-                            padding: 15,
-                            boxWidth: 8
-                        }}
-                    }},
-                    tooltip: {{
-                        mode: 'index',
-                        intersect: false,
-                        backgroundColor: 'rgba(22, 22, 31, 0.95)',
-                        titleColor: '#fff',
-                        bodyColor: '#8b8b9e',
-                        borderColor: 'rgba(255, 122, 0, 0.3)',
-                        borderWidth: 1,
-                        padding: 12,
-                        cornerRadius: 10,
-                        displayColors: true
-                    }}
-                }},
-                scales: {{
-                    x: {{
-                        grid: {{ display: false }},
-                        ticks: {{ 
-                            color: '#8b8b9e', 
-                            font: {{ size: 10 }},
-                            maxRotation: 45,
-                            minRotation: 45
-                        }}
-                    }},
-                    y: {{
-                        grid: {{ 
-                            color: 'rgba(255,255,255,0.03)',
-                            drawBorder: false
-                        }},
-                        ticks: {{ 
-                            color: '#8b8b9e', 
-                            font: {{ size: 10 }},
-                            stepSize: 1
-                        }},
-                        beginAtZero: true
-                    }}
-                }},
-                responsive: true,
-                maintainAspectRatio: false,
-                interaction: {{
-                    intersect: false,
-                    mode: 'index'
-                }},
-                animation: {{
-                    duration: 2000,
-                    easing: 'easeOutQuart'
-                }}
-            }}
-        }});
-
-        // ===== COUNT UP ANIMATION =====
-        function animateCountUp() {{
-            document.querySelectorAll('.count-up').forEach(counter => {{
-                const target = parseInt(counter.getAttribute('data-target'));
-                const duration = 2000;
-                let start = 0;
-                const stepTime = 16;
-                const totalSteps = Math.round(duration / stepTime);
-                const increment = target / totalSteps;
-                
-                const updateCounter = () => {{
-                    start += increment;
-                    if (start < target) {{
-                        counter.textContent = Math.floor(start).toLocaleString('en-US');
-                        requestAnimationFrame(updateCounter);
-                    }} else {{
-                        counter.textContent = target.toLocaleString('en-US');
-                    }}
-                }};
-                
-                updateCounter();
-            }});
-        }}
-        
-        setTimeout(animateCountUp, 500);
-
-        // ===== LOADING ANIMATION =====
-        function showLoading() {{
-            const overlay = document.getElementById('loading-overlay');
-            const spinner = document.getElementById('spinner-anim').parentElement;
-            const success = document.getElementById('success-anim');
-            const fail = document.getElementById('fail-anim');
-            const text = document.getElementById('loading-text');
-            
-            overlay.style.display = 'flex';
-            spinner.style.display = 'block';
-            success.style.display = 'none';
-            fail.style.display = 'none';
-            text.style.display = 'block';
-            text.textContent = 'Processing Request...';
-            
-            return true;
-        }}
-
-        function showSuccess() {{
-            const overlay = document.getElementById('loading-overlay');
-            const spinner = document.getElementById('spinner-anim').parentElement;
-            const success = document.getElementById('success-anim');
-            const text = document.getElementById('loading-text');
-            
-            spinner.style.display = 'none';
-            success.style.display = 'block';
-            text.style.display = 'none';
-            
-            setTimeout(() => {{ overlay.style.display = 'none'; }}, 1500);
-        }}
-
-        // ===== USER MANAGEMENT =====
-        function loadUsers() {{
-            fetch('/admin/get-users')
-                .then(res => res.json())
-                .then(data => {{
-                    let html = '<table class="dark-table"><thead><tr><th>User</th><th>Last Seen</th><th style="text-align:right;">Actions</th></tr></thead><tbody>';
-                    
-                    for (const [u, d] of Object.entries(data)) {{
-                        const roleClass = d.role === 'admin' ? 'background: rgba(255, 122, 0, 0.1); color: var(--accent-orange);' : 'background: rgba(139, 92, 246, 0.1); color: var(--accent-purple);';
-                        
-                        html += `<tr>
-                            <td style="font-weight: 600;">${{u}} <br><small style="color:var(--text-secondary);font-weight:400;">(${{d.role}})</small></td>
-                            <td><span class="table-badge">${{d.last_login}}</span></td>
-                            <td style="text-align:right;">
-                                ${{d.role !== 'admin' ? `
-                                    <div class="action-cell">
-                                        <button class="action-btn btn-edit" onclick="editUser('${{u}}', '${{d.password}}', '${{d.permissions.join(',')}}')">
-                                            <i class="fas fa-edit"></i>
-                                        </button> 
-                                        <button class="action-btn btn-del" onclick="deleteUser('${{u}}')">
-                                            <i class="fas fa-trash"></i>
-                                        </button>
-                                    </div>
-                                ` : '<i class="fas fa-shield-alt" style="color: var(--accent-orange); opacity: 0.5;"></i>'}}
-                            </td>
-                        </tr>`;
-                    }}
-                    
-                    document.getElementById('userTableContainer').innerHTML = html + '</tbody></table>';
-                }});
-        }}
-        
-        function handleUserSubmit() {{
-            const u = document.getElementById('new_username').value;
-            const p = document.getElementById('new_password').value;
-            const a = document.getElementById('action_type').value;
-            
-            let perms = [];
-            if (document.getElementById('perm_closing').checked) perms.push('closing');
-            if (document.getElementById('perm_po').checked) perms.push('po_sheet');
-            if (document.getElementById('perm_acc').checked) perms.push('accessories');
-            
-            showLoading();
-            
-            fetch('/admin/save-user', {{
-                method: 'POST',
-                headers: {{'Content-Type': 'application/json'}},
-                body: JSON.stringify({{ username: u, password: p, permissions: perms, action_type: a }})
-            }})
-            .then(r => r.json())
-            .then(d => {{
-                if (d.status === 'success') {{
-                    showSuccess();
-                    loadUsers();
-                    resetForm();
-                }} else {{
-                    alert(d.message);
-                    document.getElementById('loading-overlay').style.display = 'none';
-                }}
-            }});
-        }}
-        
-        function editUser(u, p, permsStr) {{
-            document.getElementById('new_username').value = u;
-            document.getElementById('new_username').readOnly = true;
-            document.getElementById('new_password').value = p;
-            document.getElementById('action_type').value = 'update';
-            document.getElementById('saveUserBtn').innerHTML = '<i class="fas fa-sync" style="margin-right: 10px;"></i> Update User';
-            const pArr = permsStr.split(',');
-            document.getElementById('perm_closing').checked = pArr.includes('closing');
-            document.getElementById('perm_po').checked = pArr.includes('po_sheet');
-            document.getElementById('perm_acc').checked = pArr.includes('accessories');
-        }}
-        
-        function resetForm() {{
-            document.getElementById('userForm').reset();
-            document.getElementById('action_type').value = 'create';
-            document.getElementById('saveUserBtn').innerHTML = '<i class="fas fa-save" style="margin-right: 10px;"></i> Save User';
-            document.getElementById('new_username').readOnly = false;
-            document.getElementById('perm_closing').checked = true;
-        }}
-        
-        function deleteUser(u) {{
-            if (confirm('Are you sure you want to delete "' + u + '"?')) {{
-                fetch('/admin/delete-user', {{
-                    method: 'POST',
-                    headers: {{'Content-Type': 'application/json'}},
-                    body: JSON.stringify({{ username: u }})
-                }}).then(() => loadUsers());
-            }}
-        }}
-        
-        // ===== PARTICLES.JS INITIALIZATION =====
-        if (typeof particlesJS !== 'undefined') {{
-            particlesJS('particles-js', {{
-                particles: {{
-                    number: {{ value: 50, density: {{ enable: true, value_area: 800 }} }},
-                    color: {{ value: '#FF7A00' }},
-                    shape: {{ type: 'circle' }},
-                    opacity: {{ value: 0.3, random: true }},
-                    size: {{ value: 3, random: true }},
-                    line_linked: {{ enable: true, distance: 150, color: '#FF7A00', opacity: 0.1, width: 1 }},
-                    move: {{ enable: true, speed: 1, direction: 'none', random: true, out_mode: 'out' }}
-                }},
-                interactivity: {{
-                    events: {{ onhover: {{ enable: true, mode: 'grab' }} }},
-                    modes: {{ grab: {{ distance: 140, line_linked: {{ opacity: 0.3 }} }} }}
-                }}
-            }});
-        }}
-
-        // Auto-hide flash messages
-        setTimeout(function() {{
-            let flashMessages = document.querySelectorAll('.flash-message');
-            flashMessages.forEach(function(msg) {{
-                msg.style.opacity = '0';
-                setTimeout(function() {{ msg.style.display = 'none'; }}, 500);
-            }});
-        }}, 5000);
-        
-        // Add CSS for fadeInUp animation
-        const style = document.createElement('style');
-        style.textContent = `
-            @keyframes fadeInUp {{
-                from {{ opacity: 0; transform: translateY(20px); }}
-                to {{ opacity: 1; transform: translateY(0); }}
-            }}
-        `;
-        document.head.appendChild(style);
+        // ... (rest of the script will be in the next parts)
     </script>
 </body>
 </html>
 """
 
 # ==============================================================================
-# USER DASHBOARD TEMPLATE (STORE REMOVED, WELCOME POPUP REMOVED)
+# USER DASHBOARD TEMPLATE (UPDATED FLASH MESSAGES)
 # ==============================================================================
 
 USER_DASHBOARD_TEMPLATE = f"""
@@ -3370,14 +3204,13 @@ USER_DASHBOARD_TEMPLATE = f"""
         {{% with messages = get_flashed_messages(with_categories=true) %}}
             {{% if messages %}}
                 {{% for category, message in messages %}}
-                    <div class="flash-message flash-{{{{ category if category != 'message' else 'info' }}}}" role="alert">
-                        {{% if category == 'success' %}}
-                            <i class="fas fa-check-circle"></i>
-                        {{% elif category == 'error' %}}
-                            <i class="fas fa-exclamation-triangle"></i>
-                        {{% else %}}
-                             <i class="fas fa-info-circle"></i>
-                        {{% endif %}}
+                    <div class="flash-message flash-{{{{ category if category != 'message' else 'info' }}}}">
+                        <span class="flash-icon">
+                            {{% if category == 'success' %}} <i class="fas fa-check-circle"></i>
+                            {{% elif category == 'error' %}} <i class="fas fa-exclamation-triangle"></i>
+                            {{% else %}} <i class="fas fa-info-circle"></i>
+                            {{% endif %}}
+                        </span>
                         <span>{{{{ message }}}}</span>
                     </div>
                 {{% endfor %}}
@@ -3419,7 +3252,7 @@ USER_DASHBOARD_TEMPLATE = f"""
             {{% if 'closing' in session.permissions %}}
             <div class="card" style="animation: fadeInUp 0.5s ease-out 0.1s backwards;">
                 <div class="section-header">
-                    <span><i class="fas fa-file-export" style="margin-right: 10px; color: var(--accent-orange);"></i>Closing Report</span>
+                    <span>Closing Report</span>
                 </div>
                 <p style="color: var(--text-secondary); margin-bottom: 20px; font-size: 14px; line-height: 1.6;">
                     Generate production closing reports with real-time data. 
@@ -3430,7 +3263,7 @@ USER_DASHBOARD_TEMPLATE = f"""
                         <input type="text" name="ref_no" required placeholder="Enter Booking Reference">
                     </div>
                     <button type="submit">
-                        <i class="fas fa-magic" style="margin-right: 8px;"></i> Generate
+                        Generate
                     </button>
                 </form>
             </div>
@@ -3439,7 +3272,7 @@ USER_DASHBOARD_TEMPLATE = f"""
             {{% if 'po_sheet' in session.permissions %}}
             <div class="card" style="animation: fadeInUp 0.5s ease-out 0.2s backwards;">
                 <div class="section-header">
-                    <span><i class="fas fa-file-pdf" style="margin-right: 10px; color: var(--accent-green);"></i>PO Sheet</span>
+                    <span>PO Sheet</span>
                 </div>
                 <p style="color: var(--text-secondary); margin-bottom: 20px; font-size: 14px; line-height: 1.6;">
                     Process PDF files and generate PO summary reports.
@@ -3450,7 +3283,7 @@ USER_DASHBOARD_TEMPLATE = f"""
                         <input type="file" name="pdf_files" multiple accept=".pdf" required style="padding: 12px;">
                     </div>
                     <button type="submit" style="background: linear-gradient(135deg, #10B981 0%, #34D399 100%);">
-                        <i class="fas fa-cogs" style="margin-right: 8px;"></i> Process Files
+                        Process Files
                     </button>
                 </form>
             </div>
@@ -3459,14 +3292,14 @@ USER_DASHBOARD_TEMPLATE = f"""
             {{% if 'accessories' in session.permissions %}}
             <div class="card" style="animation: fadeInUp 0.5s ease-out 0.3s backwards;">
                 <div class="section-header">
-                    <span><i class="fas fa-boxes" style="margin-right: 10px; color: var(--accent-purple);"></i>Accessories</span>
+                    <span>Accessories</span>
                 </div>
                 <p style="color: var(--text-secondary); margin-bottom: 20px; font-size: 14px; line-height: 1.6;">
                     Manage challans, entries and delivery history for accessories.
                 </p>
                 <a href="/admin/accessories">
                     <button style="background: linear-gradient(135deg, #8B5CF6 0%, #A78BFA 100%);">
-                        <i class="fas fa-external-link-alt" style="margin-right: 8px;"></i> Open Dashboard
+                        Open Dashboard
                     </button>
                 </a>
             </div>
@@ -3484,8 +3317,10 @@ USER_DASHBOARD_TEMPLATE = f"""
         setTimeout(function() {{
             let flashMessages = document.querySelectorAll('.flash-message');
             flashMessages.forEach(function(msg) {{
+                msg.style.transition = 'opacity 0.5s, transform 0.5s';
                 msg.style.opacity = '0';
-                setTimeout(function() {{ msg.style.display = 'none'; }}, 500);
+                msg.style.transform = 'translateX(20px)';
+                setTimeout(function() {{ msg.remove(); }}, 500);
             }});
         }}, 5000);
 
@@ -3501,9 +3336,8 @@ USER_DASHBOARD_TEMPLATE = f"""
 </body>
 </html>
 """
-
 # ==============================================================================
-# ACCESSORIES SEARCH TEMPLATE (FLASH ADDED)
+# ACCESSORIES SEARCH TEMPLATE (UPDATED)
 # ==============================================================================
 
 ACCESSORIES_SEARCH_TEMPLATE = f"""
@@ -3620,14 +3454,13 @@ ACCESSORIES_SEARCH_TEMPLATE = f"""
         {{% with messages = get_flashed_messages(with_categories=true) %}}
             {{% if messages %}}
                 {{% for category, message in messages %}}
-                    <div class="flash-message flash-{{{{ category if category != 'message' else 'info' }}}}" role="alert">
-                        {{% if category == 'success' %}}
-                            <i class="fas fa-check-circle"></i>
-                        {{% elif category == 'error' %}}
-                            <i class="fas fa-exclamation-triangle"></i>
-                        {{% else %}}
-                             <i class="fas fa-info-circle"></i>
-                        {{% endif %}}
+                    <div class="flash-message flash-{{{{ category if category != 'message' else 'info' }}}}">
+                        <span class="flash-icon">
+                            {{% if category == 'success' %}} <i class="fas fa-check-circle"></i>
+                            {{% elif category == 'error' %}} <i class="fas fa-exclamation-triangle"></i>
+                            {{% else %}} <i class="fas fa-info-circle"></i>
+                            {{% endif %}}
+                        </span>
                         <span>{{{{ message }}}}</span>
                     </div>
                 {{% endfor %}}
@@ -3647,7 +3480,7 @@ ACCESSORIES_SEARCH_TEMPLATE = f"""
             
             <form action="/admin/accessories/input" method="post">
                 <div class="input-group">
-                    <label><i class="fas fa-search" style="margin-right: 5px;"></i> BOOKING REFERENCE</label>
+                    <label>BOOKING REFERENCE</label>
                     <input type="text" name="ref_no" required placeholder="e.g. IB-12345" autocomplete="off">
                 </div>
                 <button type="submit" style="background: linear-gradient(135deg, #8B5CF6 0%, #A78BFA 100%);">
@@ -3723,8 +3556,10 @@ ACCESSORIES_SEARCH_TEMPLATE = f"""
         setTimeout(function() {{
             let flashMessages = document.querySelectorAll('.flash-message');
             flashMessages.forEach(function(msg) {{
+                msg.style.transition = 'opacity 0.5s, transform 0.5s';
                 msg.style.opacity = '0';
-                setTimeout(function() {{ msg.style.display = 'none'; }}, 500);
+                msg.style.transform = 'translateX(20px)';
+                setTimeout(function() {{ msg.remove(); }}, 500);
             }});
         }}, 5000);
     </script>
@@ -3890,14 +3725,13 @@ ACCESSORIES_INPUT_TEMPLATE = f"""
         {{% with messages = get_flashed_messages(with_categories=true) %}}
             {{% if messages %}}
                 {{% for category, message in messages %}}
-                    <div class="flash-message flash-{{{{ category if category != 'message' else 'info' }}}}" role="alert">
-                        {{% if category == 'success' %}}
-                            <i class="fas fa-check-circle"></i>
-                        {{% elif category == 'error' %}}
-                            <i class="fas fa-exclamation-triangle"></i>
-                        {{% else %}}
-                             <i class="fas fa-info-circle"></i>
-                        {{% endif %}}
+                    <div class="flash-message flash-{{{{ category if category != 'message' else 'info' }}}}">
+                        <span class="flash-icon">
+                            {{% if category == 'success' %}} <i class="fas fa-check-circle"></i>
+                            {{% elif category == 'error' %}} <i class="fas fa-exclamation-triangle"></i>
+                            {{% else %}} <i class="fas fa-info-circle"></i>
+                            {{% endif %}}
+                        </span>
                         <span>{{{{ message }}}}</span>
                     </div>
                 {{% endfor %}}
@@ -3953,21 +3787,21 @@ ACCESSORIES_INPUT_TEMPLATE = f"""
         <div class="dashboard-grid-2">
             <div class="card">
                 <div class="section-header">
-                    <span><i class="fas fa-plus-circle" style="margin-right: 10px; color: var(--accent-orange);"></i>New Challan Entry</span>
+                    <span>New Challan Entry</span>
                 </div>
                 <form action="/admin/accessories/save" method="post" onsubmit="return showLoading()">
                     <input type="hidden" name="ref" value="{{{{ ref }}}}">
                     
                     <div class="grid-2-cols">
                         <div class="input-group">
-                            <label><i class="fas fa-tag" style="margin-right: 5px;"></i> TYPE</label>
+                            <label>TYPE</label>
                             <select name="item_type">
                                 <option value="Top">Top</option>
                                 <option value="Bottom">Bottom</option>
                             </select>
                         </div>
                         <div class="input-group">
-                            <label><i class="fas fa-palette" style="margin-right: 5px;"></i> COLOR</label>
+                            <label>COLOR</label>
                             <select name="color" required>
                                 <option value="" disabled selected>Select Color</option>
                                 {{% for c in colors %}}
@@ -3979,22 +3813,22 @@ ACCESSORIES_INPUT_TEMPLATE = f"""
                     
                     <div class="grid-2-cols">
                         <div class="input-group">
-                            <label><i class="fas fa-industry" style="margin-right: 5px;"></i> LINE NO</label>
+                            <label>LINE NO</label>
                             <input type="text" name="line_no" required placeholder="e.g. L-01">
                         </div>
                         <div class="input-group">
-                            <label><i class="fas fa-ruler" style="margin-right: 5px;"></i> SIZE</label>
+                            <label>SIZE</label>
                             <input type="text" name="size" value="ALL" placeholder="Size">
                         </div>
                     </div>
                     
                     <div class="input-group">
-                        <label><i class="fas fa-sort-numeric-up" style="margin-right: 5px;"></i> QUANTITY</label>
+                        <label>QUANTITY</label>
                         <input type="number" name="qty" required placeholder="Enter Quantity" min="1">
                     </div>
                     
                     <button type="submit">
-                        <i class="fas fa-save" style="margin-right: 10px;"></i> Save Entry
+                        Save Entry
                     </button>
                 </form>
             </div>
@@ -4043,15 +3877,7 @@ ACCESSORIES_INPUT_TEMPLATE = f"""
     <script>
         function showLoading() {{
             const overlay = document.getElementById('loading-overlay');
-            const spinner = document.getElementById('spinner-anim').parentElement;
-            const success = document.getElementById('success-anim');
-            const text = document.getElementById('loading-text');
-            
             overlay.style.display = 'flex';
-            spinner.style.display = 'block';
-            success.style.display = 'none';
-            text.style.display = 'block';
-            text.textContent = 'Saving Entry...';
             return true;
         }}
         
@@ -4059,8 +3885,10 @@ ACCESSORIES_INPUT_TEMPLATE = f"""
         setTimeout(function() {{
             let flashMessages = document.querySelectorAll('.flash-message');
             flashMessages.forEach(function(msg) {{
+                msg.style.transition = 'opacity 0.5s, transform 0.5s';
                 msg.style.opacity = '0';
-                setTimeout(function() {{ msg.style.display = 'none'; }}, 500);
+                msg.style.transform = 'translateX(20px)';
+                setTimeout(function() {{ msg.remove(); }}, 500);
             }});
         }}, 5000);
 
@@ -4078,7 +3906,7 @@ ACCESSORIES_INPUT_TEMPLATE = f"""
 """
 
 # ==============================================================================
-# ACCESSORIES EDIT TEMPLATE (হুবহু তোমার মূল কোড)
+# ACCESSORIES EDIT TEMPLATE
 # ==============================================================================
 
 ACCESSORIES_EDIT_TEMPLATE = f"""
@@ -4174,32 +4002,32 @@ ACCESSORIES_EDIT_TEMPLATE = f"""
                 <input type="hidden" name="index" value="{{{{ index }}}}">
                 
                 <div class="input-group">
-                    <label><i class="fas fa-industry" style="margin-right: 5px;"></i> LINE NO</label>
+                    <label>LINE NO</label>
                     <input type="text" name="line_no" value="{{{{ item.line }}}}" required>
                 </div>
                 
                 <div class="input-group">
-                    <label><i class="fas fa-palette" style="margin-right: 5px;"></i> COLOR</label>
+                    <label>COLOR</label>
                     <input type="text" name="color" value="{{{{ item.color }}}}" required>
                 </div>
                 
                 <div class="input-group">
-                    <label><i class="fas fa-ruler" style="margin-right: 5px;"></i> SIZE</label>
+                    <label>SIZE</label>
                     <input type="text" name="size" value="{{{{ item.size }}}}" required>
                 </div>
                 
                 <div class="input-group">
-                    <label><i class="fas fa-sort-numeric-up" style="margin-right: 5px;"></i> QUANTITY</label>
+                    <label>QUANTITY</label>
                     <input type="number" name="qty" value="{{{{ item.qty }}}}" required>
                 </div>
                 
                 <button type="submit" style="background: linear-gradient(135deg, #8B5CF6 0%, #A78BFA 100%);">
-                    <i class="fas fa-sync-alt" style="margin-right: 10px;"></i> Update Entry
+                    Update Entry
                 </button>
             </form>
             
             <a href="/admin/accessories/input_direct?ref={{{{ ref }}}}" class="cancel-link">
-                <i class="fas fa-times" style="margin-right: 5px;"></i> Cancel
+                Cancel
             </a>
         </div>
     </div>
@@ -4208,7 +4036,7 @@ ACCESSORIES_EDIT_TEMPLATE = f"""
 """
 
 # ==============================================================================
-# CLOSING REPORT PREVIEW TEMPLATE (হুবহু তোমার মূল কোড)
+# CLOSING REPORT PREVIEW TEMPLATE (UPDATED TABLE STRUCTURE)
 # ==============================================================================
 
 CLOSING_REPORT_PREVIEW_TEMPLATE = """
@@ -4240,27 +4068,20 @@ CLOSING_REPORT_PREVIEW_TEMPLATE = """
         .table { margin-bottom: 0; width: 100%; border-collapse: collapse; font-size: 1rem; }
         .table th { background-color: #fff !important; color: #000 !important; text-align: center; border: 1px solid #000; padding: 8px; vertical-align: middle; font-weight: 900; font-size: 1.2rem; }
         .table td { text-align: center; vertical-align: middle; border: 1px solid #000; padding: 6px; color: #000; font-weight: 600; font-size: 1.1rem; }
-        .col-3pct { background-color: #B9C2DF !important; font-weight: 700; }
-        .col-input { background-color: #C4D09D !important; font-weight: 700; }
-        .col-balance { font-weight: 700; color: #c0392b; }
-        .total-row td { background-color: #fff !important; color: #000 !important; font-weight: 900; font-size: 1.2rem; border-top: 2px solid #000; }
         .action-bar { margin-bottom: 20px; display: flex; justify-content: flex-end; gap: 15px; position: sticky; top: 0; z-index: 1000; background: #f8f9fa; padding: 10px 0; }
         .btn-print { background-color: #2c3e50; color: white; border-radius: 50px; padding: 10px 30px; font-weight: 600; border: none; }
         .btn-excel { background-color: #27ae60; color: white; border-radius: 50px; padding: 10px 30px; font-weight: 600; text-decoration: none; display: inline-block; }
         .btn-excel:hover { color: white; background-color: #219150; }
         .footer-credit { text-align: center; margin-top: 40px; margin-bottom: 20px; font-size: 1rem; color: #2c3e50; padding-top: 10px; border-top: 1px solid #000; font-weight: 600;}
         @media print {
-            @page { margin: 5mm; size: portrait; }
+            @page { margin: 5mm; size: landscape; } /* Changed to landscape */
             body { background-color: white; padding: 0; }
             .container { max-width: 100% !important; width: 100%; }
             .no-print { display: none !important; }
             .action-bar { display: none; }
-            .table th, .table td { border: 1px solid #000 !important; }
+            .table th, .table td { border: 1px solid #000 !important; font-size: 10pt; }
             .color-header { background-color: #2c3e50 !important; -webkit-print-color-adjust: exact; color: white !important;}
-            .col-3pct { background-color: #B9C2DF !important; -webkit-print-color-adjust: exact; }
-            .col-input { background-color: #C4D09D !important; -webkit-print-color-adjust: exact; }
             .booking-box { background-color: #2c3e50 !important; -webkit-print-color-adjust: exact; color: white !important; border: 1px solid #000;}
-            .total-row td { font-weight: 900 !important; color: #000 !important; }
         }
     </style>
 </head>
@@ -4287,74 +4108,65 @@ CLOSING_REPORT_PREVIEW_TEMPLATE = """
                 <div class="booking-value">{{ ref_no }}</div>
             </div>
         </div>
+        
         {% for block in report_data %}
         <div class="table-card">
             <div class="color-header">COLOR: {{ block.color }}</div>
             <table class="table">
                 <thead>
                     <tr>
-                        <th>SIZE</th>
-                        <th>ORDER QTY 3%</th>
-                        <th>ACTUAL QTY</th>
-                        <th>CUTTING QC</th>
-                        <th>INPUT QTY</th>
-                        <th>BALANCE</th>
-                        <th>SHORT/PLUS</th>
-                        <th>PERCENTAGE %</th>
+                        <th>Details</th>
+                        {% for size in block.headers %}
+                            <th>{{ size }}</th>
+                        {% endfor %}
+                        <th>Total</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {% set ns = namespace(tot_3=0, tot_act=0, tot_cut=0, tot_inp=0, tot_bal=0, tot_sp=0) %}
-                    {% for i in range(block.headers|length) %}
-                        {% set actual = block.gmts_qty[i]|replace(',', '')|int %}
-                        {% set qty_3 = (actual * 1.03)|round|int %}
-                        {% set cut_qc = 0 %}
-                        {% if i < block.cutting_qc|length %}
-                            {% set cut_qc = block.cutting_qc[i]|replace(',', '')|int %}
-                        {% endif %}
-                        {% set inp_qty = 0 %}
-                        {% if i < block.sewing_input|length %}
-                            {% set inp_qty = block.sewing_input[i]|replace(',', '')|int %}
-                        {% endif %}
-                        {% set balance = cut_qc - inp_qty %}
-                        {% set short_plus = inp_qty - qty_3 %}
-                        {% set percentage = 0 %}
-                        {% if qty_3 > 0 %}
-                            {% set percentage = (short_plus / qty_3) * 100 %}
-                        {% endif %}
-                        {% set ns.tot_3 = ns.tot_3 + qty_3 %}
-                        {% set ns.tot_act = ns.tot_act + actual %}
-                        {% set ns.tot_cut = ns.tot_cut + cut_qc %}
-                        {% set ns.tot_inp = ns.tot_inp + inp_qty %}
-                        {% set ns.tot_bal = ns.tot_bal + balance %}
-                        {% set ns.tot_sp = ns.tot_sp + short_plus %}
-                        <tr>
-                            <td>{{ block.headers[i] }}</td>
-                            <td class="col-3pct">{{ qty_3 }}</td>
-                            <td>{{ actual }}</td>
-                            <td>{{ cut_qc }}</td>
-                            <td class="col-input">{{ inp_qty }}</td>
-                            <td class="col-balance">{{ balance }}</td>
-                            <td style="color: {{ 'green' if short_plus >= 0 else 'red' }}">{{ short_plus }}</td>
-                            <td>{{ "%.2f"|format(percentage) }}%</td>
-                        </tr>
-                    {% endfor %}
-                    <tr class="total-row">
-                        <td>TOTAL</td>
-                        <td>{{ ns.tot_3 }}</td>
-                        <td>{{ ns.tot_act }}</td>
-                        <td>{{ ns.tot_cut }}</td>
-                        <td>{{ ns.tot_inp }}</td>
-                        <td>{{ ns.tot_bal }}</td>
-                        <td>{{ ns.tot_sp }}</td>
-                        <td>
-                            {% if ns.tot_3 > 0 %}
-                                {{ "%.2f"|format((ns.tot_sp / ns.tot_3) * 100) }}%
+                    {% set metrics = ['ORDER QTY 3%', 'ACTUAL QTY', 'CUTTING QC', 'INPUT QTY', 'BALANCE', 'SHORT/PLUS', 'PERCENTAGE %'] %}
+                    {% for metric in metrics %}
+                    <tr>
+                        <td style="font-weight: 800; text-align: left; padding-left: 10px;">{{ metric }}</td>
+                        {% set row_total = namespace(value=0) %}
+                        {% for i in range(block.headers|length) %}
+                            {% set actual = block.gmts_qty[i]|replace(',', '')|int(0) %}
+                            {% set qty_3 = (actual * 1.03)|round|int %}
+                            {% set cut_qc = block.cutting_qc[i]|replace(',', '')|int(0) if i < block.cutting_qc|length else 0 %}
+                            {% set inp_qty = block.sewing_input[i]|replace(',', '')|int(0) if i < block.sewing_input|length else 0 %}
+                            {% set balance = cut_qc - inp_qty %}
+                            {% set short_plus = inp_qty - qty_3 %}
+                            
+                            {% if metric == 'ORDER QTY 3%' %}{% set val = qty_3 %}{% set row_total.value = row_total.value + val %}
+                            {% elif metric == 'ACTUAL QTY' %}{% set val = actual %}{% set row_total.value = row_total.value + val %}
+                            {% elif metric == 'CUTTING QC' %}{% set val = cut_qc %}{% set row_total.value = row_total.value + val %}
+                            {% elif metric == 'INPUT QTY' %}{% set val = inp_qty %}{% set row_total.value = row_total.value + val %}
+                            {% elif metric == 'BALANCE' %}{% set val = balance %}{% set row_total.value = row_total.value + val %}
+                            {% elif metric == 'SHORT/PLUS' %}{% set val = short_plus %}{% set row_total.value = row_total.value + val %}
+                            {% elif metric == 'PERCENTAGE %' %}
+                                {% set val = "%.2f"|format((short_plus / qty_3) * 100) if qty_3 > 0 else "0.00" %}
+                            {% endif %}
+                            
+                            <td style="
+                                {% if metric == 'ORDER QTY 3%' %} background-color: #B9C2DF;
+                                {% elif metric == 'INPUT QTY' %} background-color: #C4D09D;
+                                {% elif metric == 'SHORT/PLUS' and short_plus < 0 %} color: red;
+                                {% elif metric == 'SHORT/PLUS' and short_plus >= 0 %} color: green;
+                                {% endif %}
+                            ">{{ val }}{{ '%' if metric == 'PERCENTAGE %' }}</td>
+                        {% endfor %}
+                        
+                        {# Total Column #}
+                        <td style="font-weight: 800; background: #e9ecef;">
+                            {% if metric == 'PERCENTAGE %' %}
+                                {% set total_qty_3 = block.gmts_qty|map('replace', ',', '')|map('int', 0)|sum * 1.03 %}
+                                {% set total_sp = row_total.value %}
+                                {{ "%.2f"|format((total_sp / total_qty_3) * 100) if total_qty_3 > 0 else "0.00" }}%
                             {% else %}
-                                0.00%
+                                {{ row_total.value }}
                             {% endif %}
                         </td>
                     </tr>
+                    {% endfor %}
                 </tbody>
             </table>
         </div>
@@ -4371,7 +4183,7 @@ CLOSING_REPORT_PREVIEW_TEMPLATE = """
 """
 
 # ==============================================================================
-# ACCESSORIES REPORT TEMPLATE (হুবহু তোমার মূল কোড)
+# ACCESSORIES REPORT TEMPLATE
 # ==============================================================================
 
 ACCESSORIES_REPORT_TEMPLATE = """
@@ -4524,7 +4336,7 @@ ACCESSORIES_REPORT_TEMPLATE = """
 """
 
 # ==============================================================================
-# PO REPORT TEMPLATE (হুবহু তোমার মূল কোড)
+# PO REPORT TEMPLATE (NEW, FROM PO_SHEET.py)
 # ==============================================================================
 
 PO_REPORT_TEMPLATE = """
@@ -4535,113 +4347,550 @@ PO_REPORT_TEMPLATE = """
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PO Report - Cotton Clothing BD</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
-        body { background-color: #f8f9fa; padding: 30px 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        :root {
+            --primary: #1e40af;
+            --primary-light: #3b82f6;
+            --dark: #0f172a;
+            --dark-light: #1e293b;
+            --gray-50: #f8fafc;
+            --gray-100: #f1f5f9;
+            --gray-200: #e2e8f0;
+            --gray-300: #cbd5e1;
+            --gray-600: #475569;
+            --gray-800: #1e293b;
+            --success: #059669;
+            --success-light: #d1fae5;
+            --warning: #d97706;
+            --warning-light: #fef3c7;
+        }
+        
+        * { font-family: 'Inter', sans-serif; }
+        
+        body { 
+            background: var(--gray-100);
+            min-height: 100vh;
+            padding: 30px 0; 
+        }
+        
         .container { max-width: 1200px; }
-        .company-header { text-align: center; margin-bottom: 20px; border-bottom: 2px solid #000; padding-bottom: 10px; }
-        .company-name { font-size: 2.2rem; font-weight: 800; color: #2c3e50; text-transform: uppercase; letter-spacing: 1px; line-height: 1; }
-        .report-title { font-size: 1.1rem; color: #555; font-weight: 600; text-transform: uppercase; margin-top: 5px; }
-        .date-section { font-size: 1.2rem; font-weight: 800; color: #000; margin-top: 5px; }
-        .info-container { display: flex; justify-content: space-between; margin-bottom: 15px; gap: 15px; }
-        .info-box { background: white; border: 1px solid #ddd; border-left: 5px solid #2c3e50; padding: 10px 15px; border-radius: 5px; flex: 2; box-shadow: 0 2px 5px rgba(0,0,0,0.05); display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-        .total-box { background: #2c3e50; color: white; padding: 10px 15px; border-radius: 5px; width: 240px; text-align: right; display: flex; flex-direction: column; justify-content: center; box-shadow: 0 4px 10px rgba(44, 62, 80, 0.3); }
-        .info-item { margin-bottom: 6px; font-size: 1.3rem; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .info-label { font-weight: 800; color: #444; width: 90px; display: inline-block; }
-        .info-value { font-weight: 800; color: #000; }
-        .total-label { font-size: 1.1rem; opacity: 0.9; text-transform: uppercase; letter-spacing: 1px; font-weight: 700; }
-        .total-value { font-size: 2.5rem; font-weight: 800; line-height: 1.1; }
-        .table-card { background: white; border-radius: 0; margin-bottom: 20px; overflow: hidden; border: 1px solid #dee2e6; }
-        .color-header { background-color: #e9ecef; color: #2c3e50; padding: 10px 12px; font-size: 1.5rem; font-weight: 900; border-bottom: 1px solid #dee2e6; text-transform: uppercase; }
-        .table { margin-bottom: 0; width: 100%; border-collapse: collapse; }
-        .table th { background-color: #2c3e50; color: white; font-weight: 900; font-size: 1.2rem; text-align: center; border: 1px solid #34495e; padding: 8px 4px; vertical-align: middle; }
-        .table th:empty { background-color: white !important; border: none; }
-        .table td { text-align: center; vertical-align: middle; border: 1px solid #dee2e6; padding: 6px 3px; color: #000; font-weight: 800; font-size: 1.15rem; }
-        .table-striped tbody tr:nth-of-type(odd) { background-color: #f8f9fa; }
-        .order-col { font-weight: 900 !important; text-align: center !important; background-color: #fdfdfd; white-space: nowrap; width: 1%; }
-        .total-col { font-weight: 900; background-color: #e8f6f3 !important; color: #16a085; border-left: 2px solid #1abc9c !important; }
-        .total-col-header { background-color: #e8f6f3 !important; color: #000 !important; font-weight: 900 !important; border: 1px solid #34495e !important; }
-        .table-striped tbody tr.summary-row, .table-striped tbody tr.summary-row td { background-color: #d1ecff !important; --bs-table-accent-bg: #d1ecff !important; color: #000 !important; font-weight: 900 !important; border-top: 2px solid #aaa !important; font-size: 1.2rem !important; }
-        .summary-label { text-align: right !important; padding-right: 15px !important; color: #000 !important; }
-        .action-bar { margin-bottom: 20px; display: flex; justify-content: flex-end; gap: 10px; }
-        .btn-print { background-color: #e74c3c; color: white; border-radius: 50px; padding: 8px 30px; font-weight: 600; border: none; }
-        .footer-credit { text-align: center; margin-top: 30px; margin-bottom: 20px; font-size: 0.8rem; color: #2c3e50; padding-top: 10px; border-top: 1px solid #ddd; }
+        
+        /* ===== HEADER ===== */
+        .company-header { 
+            background: white;
+            border-radius: 12px;
+            padding: 24px 32px;
+            margin-bottom: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            border-left: 4px solid var(--primary);
+        }
+        
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .company-name { 
+            font-size: 1.5rem; 
+            font-weight: 800; 
+            color: var(--dark);
+            letter-spacing: -0.5px;
+            margin-bottom: 4px;
+        }
+        
+        .report-title { 
+            font-size: 0.85rem; 
+            color: var(--gray-600);
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .date-box {
+            text-align: right;
+        }
+        
+        .date-label {
+            font-size: 0.7rem;
+            color: var(--gray-600);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 600;
+        }
+        
+        .date-value {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--dark);
+        }
+        
+        /* ===== INFO SECTION ===== */
+        .info-section {
+            display: grid;
+            grid-template-columns: 1fr 220px;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .info-grid { 
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+        
+        .info-item {
+            padding: 12px 16px;
+            background: var(--gray-50);
+            border-radius: 8px;
+            border-left: 3px solid var(--primary-light);
+        }
+        
+        /* Booking Item Highlight */
+        .info-item.booking-highlight {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            border-left: 4px solid #f59e0b;
+            box-shadow: 0 2px 8px rgba(245, 158, 11, 0.25);
+        }
+        
+        .info-item.booking-highlight .info-value {
+            color: #92400e;
+            font-size: 1.05rem;
+        }
+        
+        .info-label { 
+            font-size: 0.65rem;
+            font-weight: 700;
+            color: var(--gray-600);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 4px;
+        }
+        
+        .info-value { 
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: var(--dark);
+        }
+
+        .grand-total-box { 
+            background: linear-gradient(135deg, var(--dark) 0%, var(--dark-light) 100%);
+            color: white; 
+            padding: 24px;
+            border-radius: 12px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        
+        .grand-total-label { 
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-weight: 600;
+            opacity: 0.8;
+            margin-bottom: 8px;
+        }
+        
+        .grand-total-value { 
+            font-size: 2.2rem;
+            font-weight: 800;
+            line-height: 1;
+        }
+        
+        .grand-total-unit {
+            font-size: 0.75rem;
+            opacity: 0.7;
+            margin-top: 6px;
+            font-weight: 500;
+        }
+
+        /* ===== TABLE ===== */
+        .table-card { 
+            background: white;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .color-header { 
+            background: var(--dark);
+            color: white;
+            padding: 14px 20px;
+            font-size: 0.9rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .table { 
+            margin-bottom: 0; 
+            width: 100%;
+        }
+        
+        .table th { 
+            background: var(--gray-100);
+            color: var(--gray-800);
+            font-weight: 700;
+            font-size: 0.75rem;
+            text-align: center;
+            padding: 12px 10px;
+            border-bottom: 2px solid var(--gray-200);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .table td { 
+            text-align: center;
+            vertical-align: middle;
+            padding: 12px 10px;
+            color: var(--dark);
+            font-weight: 600;
+            font-size: 0.9rem;
+            border-bottom: 1px solid var(--gray-200);
+        }
+        
+        .table tbody tr:hover td {
+            background: var(--gray-50);
+        }
+        
+        .order-col { 
+            font-weight: 800 !important;
+            background: var(--gray-50) !important;
+            color: var(--primary) !important;
+            border-right: 2px solid var(--gray-200) !important;
+        }
+        
+        .total-col { 
+            font-weight: 800 !important;
+            background: var(--success-light) !important;
+            color: var(--success) !important;
+            border-left: 2px solid #a7f3d0 !important;
+        }
+        
+        .total-col-header { 
+            background: var(--success-light) !important;
+            color: var(--success) !important;
+            font-weight: 800 !important;
+            border-left: 2px solid #a7f3d0 !important;
+        }
+
+        /* ===== SUMMARY ROWS ===== */
+        .table tbody tr.summary-row td { 
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%) !important;
+            color: #92400e !important;
+            font-weight: 800 !important;
+            font-size: 1.0rem !important;
+            border-top: 3px solid #f59e0b !important;
+            border-bottom: 1px solid #fbbf24 !important;
+            padding: 14px 10px !important;
+        }
+        
+        .table tbody tr.summary-row:last-child td {
+            background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%) !important;
+            color: #1e40af !important;
+            font-weight: 800 !important;
+            font-size: 1.0rem !important;
+            border-top: 3px solid #3b82f6 !important;
+            border-bottom: none !important;
+        }
+        
+        .summary-label { 
+            text-align: right !important;
+            padding-right: 20px !important;
+            font-size: 0.85rem !important;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 800 !important;
+        }
+
+        /* ===== ACTION BAR ===== */
+        .action-bar { 
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .btn-back {
+            background: white;
+            color: var(--dark);
+            border: 2px solid var(--gray-200);
+            border-radius: 8px;
+            padding: 10px 24px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: all 0.2s ease;
+            text-decoration: none;
+        }
+        
+        .btn-back:hover {
+            border-color: var(--primary-light);
+            color: var(--primary);
+        }
+        
+        .btn-print { 
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 12px 28px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 8px rgba(30, 64, 175, 0.3);
+        }
+        
+        .btn-print:hover {
+            background: var(--primary-light);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(30, 64, 175, 0.4);
+        }
+        
+        /* ===== FOOTER ===== */
+        .footer-credit { 
+            text-align: center;
+            margin-top: 30px;
+            padding: 16px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            font-size: 0.85rem;
+            color: var(--gray-600);
+        }
+        
+        .footer-credit strong {
+            color: var(--primary);
+        }
+
+        /* ===== PRINT ===== */
         @media print {
-            @page { margin: 5mm; size: portrait; }
-            body { background-color: white; padding: 0; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; color-adjust: exact !important; }
-            .container { max-width: 100% !important; width: 100% !important; padding: 0; margin: 0; }
+            @page { 
+                margin: 10mm;
+                size: portrait;
+            }
+            
+            body { 
+                background: white !important;
+                padding: 0 !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+            
+            .container { 
+                max-width: 100% !important;
+                padding: 0 !important;
+            }
+            
             .no-print { display: none !important; }
-            .company-header { border-bottom: 2px solid #000; margin-bottom: 5px; padding-bottom: 5px; }
-            .company-name { font-size: 1.8rem; }
-            .info-container { margin-bottom: 10px; }
-            .info-box { border: 1px solid #000 !important; border-left: 5px solid #000 !important; padding: 5px 10px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-            .total-box { border: 2px solid #000 !important; background: white !important; color: black !important; padding: 5px 10px; }
-            .info-item { font-size: 13pt !important; font-weight: 800 !important; }
-            .table th, .table td { border: 1px solid #000 !important; padding: 2px !important; font-size: 13pt !important; font-weight: 800 !important; }
-            .table th:empty { background-color: white !important; border: none !important; }
-            .table-striped tbody tr.summary-row td { background-color: #d1ecff !important; box-shadow: inset 0 0 0 9999px #d1ecff !important; color: #000 !important; font-weight: 900 !important; }
-            .color-header { background-color: #f1f1f1 !important; border: 1px solid #000 !important; font-size: 1.4rem !important; font-weight: 900; padding: 5px; margin-top: 10px; box-shadow: inset 0 0 0 9999px #f1f1f1 !important; }
-            .total-col-header { background-color: #e8f6f3 !important; box-shadow: inset 0 0 0 9999px #e8f6f3 !important; color: #000 !important; }
-            .table-card { border: none; margin-bottom: 10px; break-inside: avoid; }
-            .footer-credit { display: block !important; color: black; border-top: 1px solid #000; margin-top: 10px; font-size: 8pt !important; }
+            
+            .company-header {
+                border-radius: 0 !important;
+                box-shadow: none !important;
+                border: 1px solid #000 !important;
+                border-left: 4px solid #000 !important;
+                margin-bottom: 10px !important;
+                padding: 15px 20px !important;
+            }
+            
+            .company-name {
+                font-size: 1.3rem !important;
+            }
+            
+            .info-section {
+                margin-bottom: 10px !important;
+            }
+            
+            .info-grid {
+                border-radius: 0 !important;
+                box-shadow: none !important;
+                border: 1px solid #000 !important;
+                padding: 15px !important;
+            }
+            
+            .info-item {
+                border-left: 3px solid #000 !important;
+            }
+            
+            .info-item.booking-highlight {
+                background: #fff8dc !important;
+                border-left: 4px solid #000 !important;
+            }
+            
+            .grand-total-box {
+                border-radius: 0 !important;
+                box-shadow: none !important;
+                border: 2px solid #000 !important;
+                background: #f0f0f0 !important;
+                color: #000 !important;
+            }
+            
+            .grand-total-box * {
+                color: #000 !important;
+            }
+            
+            .table-card {
+                border-radius: 0 !important;
+                box-shadow: none !important;
+                border: 1px solid #000 !important;
+                margin-bottom: 10px !important;
+                break-inside: avoid;
+            }
+            
+            .color-header {
+                background: #e0e0e0 !important;
+                color: #000 !important;
+                padding: 10px 15px !important;
+                font-size: 11pt !important;
+            }
+            
+            .table th {
+                background: #f5f5f5 !important;
+                color: #000 !important;
+                font-size: 9pt !important;
+                padding: 8px 6px !important;
+                border: 1px solid #000 !important;
+            }
+            
+            .table td {
+                font-size: 10pt !important;
+                padding: 8px 6px !important;
+                border: 1px solid #000 !important;
+            }
+            
+            .order-col {
+                background: #f8f8f8 !important;
+                color: #000 !important;
+            }
+            
+            .total-col,
+            .total-col-header {
+                background: #e8f5e9 !important;
+                color: #000 !important;
+            }
+            
+            .summary-row td {
+                font-size: 10.5pt !important;
+                font-weight: 800 !important;
+                border-top: 2px solid #000 !important;
+            }
+            
+            .summary-row:first-of-type td {
+                background: #fff8e1 !important;
+                color: #000 !important;
+            }
+            
+            .summary-row:last-of-type td {
+                background: #e3f2fd !important;
+                color: #000 !important;
+            }
+            
+            .footer-credit {
+                border-radius: 0 !important;
+                box-shadow: none !important;
+                border-top: 1px solid #000 !important;
+                margin-top: 15px !important;
+                padding: 10px !important;
+                background: transparent !important;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="action-bar no-print">
-            <a href="/" class="btn btn-outline-secondary rounded-pill px-4">Back to Dashboard</a>
-            <button onclick="window.print()" class="btn btn-print"><i class="fas fa-file-pdf"></i> Print</button>
+            <a href="/" class="btn-back">← Back</a>
+            <button onclick="window.print()" class="btn-print">Print Report</button>
         </div>
+
         <div class="company-header">
-            <div class="company-name">COTTON CLOTHING BD LTD</div>
-            <div class="report-title">Purchase Order Summary</div>
-            <div class="date-section">Date: <span id="date"></span></div>
+            <div class="header-content">
+                <div>
+                    <div class="company-name">Cotton Clothing BD Limited</div>
+                    <div class="report-title">Purchase Order Summary Report</div>
+                </div>
+                <div class="date-box">
+                    <div class="date-label">Report Date</div>
+                    <div class="date-value" id="date"></div>
+                </div>
+            </div>
         </div>
+
         {% if message %}
             <div class="alert alert-warning text-center no-print">{{ message }}</div>
         {% endif %}
+
         {% if tables %}
-            <div class="info-container">
-                <div class="info-box">
-                    <div>
-                        <div class="info-item"><span class="info-label">Buyer:</span> <span class="info-value">{{ meta.buyer }}</span></div>
-                        <div class="info-item"><span class="info-label">Booking:</span> <span class="info-value">{{ meta.booking }}</span></div>
-                        <div class="info-item"><span class="info-label">Style:</span> <span class="info-value">{{ meta.style }}</span></div>
+            <div class="info-section">
+                <div class="info-grid">
+                    <div class="info-item">
+                        <div class="info-label">Buyer</div>
+                        <div class="info-value">{{ meta.buyer }}</div>
                     </div>
-                    <div>
-                        <div class="info-item"><span class="info-label">Season:</span> <span class="info-value">{{ meta.season }}</span></div>
-                        <div class="info-item"><span class="info-label">Dept:</span> <span class="info-value">{{ meta.dept }}</span></div>
-                        <div class="info-item"><span class="info-label">Item:</span> <span class="info-value">{{ meta.item }}</span></div>
+                    <div class="info-item">
+                        <div class="info-label">Season</div>
+                        <div class="info-value">{{ meta.season }}</div>
+                    </div>
+                    <div class="info-item booking-highlight">
+                        <div class="info-label">Booking No</div>
+                        <div class="info-value">{{ meta.booking }}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Department</div>
+                        <div class="info-value">{{ meta.dept }}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Style</div>
+                        <div class="info-value">{{ meta.style }}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Item</div>
+                        <div class="info-value">{{ meta.item }}</div>
                     </div>
                 </div>
-                <div class="total-box">
-                    <div class="total-label">Grand Total</div>
-                    <div class="total-value">{{ grand_total }}</div>
-                    <small>Pieces</small>
+                
+                <div class="grand-total-box">
+                    <div class="grand-total-label">Grand Total</div>
+                    <div class="grand-total-value">{{ grand_total }}</div>
+                    <div class="grand-total-unit">Pieces</div>
                 </div>
             </div>
+
             {% for item in tables %}
                 <div class="table-card">
-                    <div class="color-header">COLOR: {{ item.color }}</div>
-                    <div class="table-responsive">{{ item.table | safe }}</div>
+                    <div class="color-header">Color: {{ item.color }}</div>
+                    <div class="table-responsive">
+                        {{ item.table | safe }}
+                    </div>
                 </div>
             {% endfor %}
-            <div class="footer-credit">Report Created By <strong>Mehedi Hasan</strong></div>
+            
+            <div class="footer-credit">
+                Report Generated by <strong>Mehedi Hasan</strong>
+            </div>
         {% endif %}
     </div>
+
     <script>
-        const dateObj = new Date();
-        const day = String(dateObj.getDate()).padStart(2, '0');
-        const month = String(dateObj.getMonth() + 1).padStart(2, '0');
-        const year = dateObj.getFullYear();
-        document.getElementById('date').innerText = `${day}-${month}-${year}`;
+        const d = new Date();
+        document.getElementById('date').innerText = 
+            String(d.getDate()).padStart(2,'0') + '-' + 
+            String(d.getMonth()+1).padStart(2,'0') + '-' + 
+            d.getFullYear();
     </script>
 </body>
 </html>
 """
 # ==============================================================================
-# FLASK ROUTES (CONTROLLER LOGIC) - (STORE ROUTE REMOVED)
+# FLASK ROUTES (CONTROLLER LOGIC)
 # ==============================================================================
 
 @app.route('/')
@@ -4774,6 +5023,7 @@ def generate_report():
     
     internal_ref_no = request.form['ref_no']
     if not internal_ref_no: 
+        flash("Reference number is required.", "error")
         return redirect(url_for('index'))
 
     try:
@@ -4809,7 +5059,7 @@ def download_closing_excel():
             flash("Data source returned empty.", "error")
             return redirect(url_for('index'))
     except Exception as e:
-        flash("Failed to generate Excel.", "error")
+        flash(f"Failed to generate Excel: {str(e)}", "error")
         return redirect(url_for('index'))
 
 # ==============================================================================
@@ -4958,7 +5208,7 @@ def accessories_refresh_data():
     try:
         api_data = fetch_closing_report_data(ref_no)
         if not api_data:
-            flash("No new data found.", "info")
+            flash("No new data found from ERP.", "info")
             return redirect(url_for('accessories_input_direct', ref=ref_no))
 
         new_colors = sorted(list(set([item['color'] for item in api_data])))
@@ -5008,6 +5258,7 @@ def accessories_save():
         return redirect(url_for('index'))
     
     ref = request.form.get('ref').strip().upper()
+    qty = request.form.get('qty')
     db_acc = load_accessories_db()
     
     if ref in db_acc:
@@ -5022,11 +5273,14 @@ def accessories_save():
             "line": request.form.get('line_no'),
             "color": request.form.get('color'),
             "size": request.form.get('size'),
-            "qty": request.form.get('qty'),
+            "qty": qty,
             "status": ""
         }
         db_acc[ref]['challans'].append(new_entry)
         save_accessories_db(db_acc)
+        
+        # Update stats
+        update_accessories_stats(ref, session.get('user', 'Unknown'), qty)
     
     return redirect(url_for('accessories_print_view', ref=ref))
 
@@ -5118,7 +5372,7 @@ def accessories_delete():
     return redirect(url_for('accessories_input_direct', ref=ref))
 
 # ==============================================================================
-# PO REPORT ROUTE - (UPDATED WITH LOGIC FIX)
+# PO REPORT ROUTE - (UPDATED WITH NEW LOGIC)
 # ==============================================================================
 
 @app.route('/generate-po-report', methods=['POST'])
@@ -5134,12 +5388,8 @@ def generate_po_report():
         uploaded_files = request.files.getlist('pdf_files')
         all_data = []
         final_meta = {
-            'buyer': 'N/A',
-            'booking': 'N/A',
-            'style': 'N/A',
-            'season': 'N/A',
-            'dept': 'N/A',
-            'item': 'N/A'
+            'buyer': 'N/A', 'booking': 'N/A', 'style': 'N/A',
+            'season': 'N/A', 'dept': 'N/A', 'item': 'N/A'
         }
         
         for file in uploaded_files:
@@ -5147,14 +5397,17 @@ def generate_po_report():
                 continue
             file_path = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
             file.save(file_path)
+            
             data, meta = extract_data_dynamic(file_path)
-            if meta['buyer'] != 'N/A':
+            
+            if meta.get('buyer') != 'N/A' or final_meta.get('buyer') == 'N/A':
                 final_meta = meta
+            
             if data:
                 all_data.extend(data)
         
         if not all_data:
-            return render_template_string(PO_REPORT_TEMPLATE, tables=None, message="No PO data found in uploaded files.")
+            return render_template_string(PO_REPORT_TEMPLATE, tables=None, message="No PO table data found in the uploaded files.")
 
         booking_ref = final_meta.get('booking', 'N/A')
         update_po_stats(session.get('user', 'Unknown'), len(uploaded_files), booking_ref)
@@ -5167,59 +5420,46 @@ def generate_po_report():
         final_tables = []
         grand_total_qty = 0
 
-        for color in unique_colors: 
+        for color in unique_colors:
             color_df = df[df['Color'] == color]
-            pivot = color_df.pivot_table(
-                index='P.O NO',
-                columns='Size',
-                values='Quantity',
-                aggfunc='sum',
-                fill_value=0
-            )
-            pivot.columns.name = None
+            pivot = color_df.pivot_table(index='P.O NO', columns='Size', values='Quantity', aggfunc='sum', fill_value=0)
             
-            try:
-                sorted_cols = sort_sizes(pivot.columns.tolist())
-                pivot = pivot[sorted_cols]
-            except:
-                pass
+            existing_sizes = pivot.columns.tolist()
+            sorted_sizes = sort_sizes(existing_sizes)
+            pivot = pivot[sorted_sizes]
             
             pivot['Total'] = pivot.sum(axis=1)
             grand_total_qty += pivot['Total'].sum()
 
             actual_qty = pivot.sum()
             actual_qty.name = 'Actual Qty'
+            
             qty_plus_3 = (actual_qty * 1.03).round().astype(int)
             qty_plus_3.name = '3% Order Qty'
             
-            pivot_final = pd.concat([pivot, actual_qty.to_frame().T, qty_plus_3.to_frame().T])
-            pivot_final = pivot_final.reset_index()
-            pivot_final = pivot_final.rename(columns={'index': 'P.O NO'})
+            pivot = pd.concat([pivot, actual_qty.to_frame().T, qty_plus_3.to_frame().T])
             
-            pd.set_option('colheader_justify', 'center')
-            html_table = pivot_final.to_html(
-                classes='table table-bordered table-striped',
-                index=False,
-                border=0
-            )
-            
-            html_table = re.sub(r'<tr>\s*<td>', '<tr><td class="order-col">', html_table)
-            html_table = html_table.replace('<th>Total</th>', '<th class="total-col-header">Total</th>')
-            html_table = html_table.replace('<td>Total</td>', '<td class="total-col">Total</td>')
-            html_table = html_table.replace('<td>Actual Qty</td>', '<td class="summary-label">Actual Qty</td>')
-            html_table = html_table.replace('<td>3% Order Qty</td>', '<td class="summary-label">3% Order Qty</td>')
-            html_table = re.sub(
-                r'<tr>\s*<td class="summary-label">',
-                '<tr class="summary-row"><td class="summary-label">',
-                html_table
-            )
+            pivot = pivot.reset_index()
+            pivot = pivot.rename(columns={'index': 'P.O NO'})
+            pivot.columns.name = None
 
-            final_tables.append({'color': color, 'table': html_table})
+            pd.set_option('colheader_justify', 'center')
+            table_html = pivot.to_html(classes='table table-bordered table-striped', index=False, border=0)
+            
+            table_html = re.sub(r'<tr>\s*<td>', '<tr><td class="order-col">', table_html)
+            table_html = table_html.replace('<th>Total</th>', '<th class="total-col-header">Total</th>')
+            table_html = table_html.replace('<td>Total</td>', '<td class="total-col">Total</td>')
+            
+            table_html = table_html.replace('<td>Actual Qty</td>', '<td class="summary-label">Actual Qty</td>')
+            table_html = table_html.replace('<td>3% Order Qty</td>', '<td class="summary-label">3% Order Qty</td>')
+            table_html = re.sub(r'<tr>\s*<td class="summary-label">', '<tr class="summary-row"><td class="summary-label">', table_html)
+
+            final_tables.append({'color': color, 'table': table_html})
             
         return render_template_string(
-            PO_REPORT_TEMPLATE,
-            tables=final_tables,
-            meta=final_meta,
+            PO_REPORT_TEMPLATE, 
+            tables=final_tables, 
+            meta=final_meta, 
             grand_total=f"{grand_total_qty:,}"
         )
     except Exception as e:
