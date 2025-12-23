@@ -2124,11 +2124,10 @@ def parse_report_data(html_content):
                     'sewing_input': sewing_input_data if sewing_input_data else [], 
                     'cutting_qc': cutting_qc_data if cutting_qc_data else []
                 })
-        return all_report_data
-    except Exception as e: 
+def create_formatted_excel_report(report_data, internal_ref_no=""):
+    if not report_data:
         return None
-        def create_formatted_excel_report(report_data, internal_ref_no=""):
-    if not report_data: return None
+    
     wb = openpyxl.Workbook()
     ws = wb.active
     ws.title = "Closing Report"
@@ -5474,3 +5473,4 @@ def generate_po_report():
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))
     app.run(host='0.0.0.0', port=port, debug=True)
+
