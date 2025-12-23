@@ -2347,7 +2347,7 @@ def fetch_closing_report_data(internal_ref_no):
     if not active_session: return None
 
     report_url = 'http://180.92.235.190:8022/erp/prod_planning/reports/requires/cutting_lay_production_report_controller.php'
-    payload_template = {'action': 'report_generate', 'cbo_wo_company_name': '2', 'cbo_location_name': '2', 'cbo_floor_id': '0', 'cbo_buyer_name': '0', 'txt_internal_ref_no': internal_ref_no, 'report_type': 'details'}
+    payload_template = {'action': 'report_generate', 'cbo_wo_company_name': '2', 'cbo_location_name': '2', 'cbo_floor_id': '0', 'cbo_buyer_name': '0', 'txt_internal_ref_no': internal_ref_no, 'reportType': '3'}
     found_data = None
    
     for year in ['2025', '2024', '2023']: 
@@ -2366,7 +2366,6 @@ def fetch_closing_report_data(internal_ref_no):
     if found_data:
         return parse_report_data(found_data)
     return None
-
 def parse_report_data(html_content):
     all_report_data = []
     try:
@@ -6235,3 +6234,4 @@ if __name__ == "__main__":
     print("=" * 60)
     
     app.run(host='0.0.0.0', port=5000, debug=False)
+
