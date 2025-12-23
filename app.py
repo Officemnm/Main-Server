@@ -370,7 +370,7 @@ COMMON_STYLES = """
             transition: var(--transition-smooth);
         }
         
-        /* Status Dot Animation - FIXED */
+        /* Status Dot Animation */
         .status-dot {
             width: 10px;
             height: 10px;
@@ -392,7 +392,8 @@ COMMON_STYLES = """
                 box-shadow: 0 0 0 10px rgba(16, 185, 129, 0);
             }
         }
-                /* Enhanced Cards & Grid */
+        
+        /* Enhanced Cards & Grid */
         .stats-grid { 
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); 
@@ -459,6 +460,7 @@ COMMON_STYLES = """
             opacity: 1;
             transform: rotate(10deg) scale(1.1);
         }
+        
         /* Stat Cards with Animations */
         .stat-card { 
             display: flex;
@@ -537,6 +539,7 @@ COMMON_STYLES = """
         .count-up {
             display: inline-block;
         }
+        
         /* Progress Bars with Animation */
         .progress-item { margin-bottom: 24px; }
 
@@ -594,6 +597,7 @@ COMMON_STYLES = """
         .progress-orange { background: var(--gradient-orange); }
         .progress-purple { background: linear-gradient(135deg, #8B5CF6 0%, #A78BFA 100%); }
         .progress-green { background: linear-gradient(135deg, #10B981 0%, #34D399 100%); }
+        
         /* Enhanced Forms */
         .input-group { margin-bottom: 20px; }
 
@@ -773,7 +777,8 @@ COMMON_STYLES = """
             transform: scale(1.1);
             box-shadow: 0 0 20px rgba(239, 68, 68, 0.4);
         }
-                /* Enhanced Loading Overlay */
+        
+        /* Enhanced Loading Overlay */
         #loading-overlay { 
             display: none;
             position: fixed; 
@@ -859,6 +864,7 @@ COMMON_STYLES = """
             opacity: 0;
             animation: checkmark-anim 0.4s 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
         }
+        
         /* Fail Cross Animation */
         .fail-container { 
             display: none; 
@@ -938,7 +944,7 @@ COMMON_STYLES = """
             50% { opacity: 1; }
         }
 
-        /* Tooltip - UPDATED */
+        /* Tooltip */
         .tooltip {
             position: relative;
         }
@@ -946,7 +952,7 @@ COMMON_STYLES = """
         .tooltip::after {
             content: attr(data-tooltip);
             position: absolute;
-            top: 125%; /* Move to bottom */
+            top: 125%;
             left: 50%;
             transform: translateX(-50%);
             background: var(--bg-card);
@@ -1040,63 +1046,159 @@ COMMON_STYLES = """
             font-weight: 600;
         }
 
-        /* Flash Messages - UPDATED POSITION */
+        /* Professional Flash Messages */
         #flash-container {
             position: fixed;
             top: 20px;
-            left: 50%;
-            transform: translateX(-50%);
+            right: 20px;
             z-index: 10001;
             width: auto;
             min-width: 320px;
-            max-width: 90%;
+            max-width: 450px;
             display: flex;
             flex-direction: column;
-            align-items: center;
+            align-items: flex-end;
+            gap: 12px;
         }
 
         .flash-message {
-            margin-bottom: 10px;
-            padding: 16px 25px;
-            border-radius: 50px;
-            font-size: 15px;
+            padding: 16px 24px;
+            border-radius: 12px;
+            font-size: 14px;
             font-weight: 600;
-            display: inline-flex;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            animation: flashSlideIn 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 10px 40px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.05);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .flash-message::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+        }
+
+        .flash-message .flash-icon {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
             align-items: center;
             justify-content: center;
-            gap: 12px;
-            animation: flashSlideIn 0.4s ease-out;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-            white-space: nowrap;
+            font-size: 12px;
+            flex-shrink: 0;
+        }
+
+        .flash-message .flash-content {
+            flex: 1;
+        }
+
+        .flash-message .flash-close {
+            background: none;
+            border: none;
+            color: inherit;
+            opacity: 0.6;
+            cursor: pointer;
+            padding: 4px;
+            font-size: 16px;
+            transition: opacity 0.2s;
+            width: auto;
+        }
+
+        .flash-message .flash-close:hover {
+            opacity: 1;
+            transform: none;
+            box-shadow: none;
         }
 
         @keyframes flashSlideIn {
             from { 
                 opacity: 0;
-                transform: translateY(-20px);
+                transform: translateX(100%);
             }
             to { 
                 opacity: 1;
-                transform: translateY(0);
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes flashSlideOut {
+            from { 
+                opacity: 1;
+                transform: translateX(0);
+            }
+            to { 
+                opacity: 0;
+                transform: translateX(100%);
             }
         }
 
         .flash-error {
-            background: rgba(239, 68, 68, 0.95);
-            border: 1px solid rgba(239, 68, 68, 0.4);
-            color: white;
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.15) 0%, rgba(185, 28, 28, 0.15) 100%);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #FCA5A5;
+        }
+
+        .flash-error::before {
+            background: linear-gradient(180deg, #EF4444 0%, #B91C1C 100%);
+        }
+
+        .flash-error .flash-icon {
+            background: rgba(239, 68, 68, 0.2);
+            color: #EF4444;
         }
 
         .flash-success {
-            background: rgba(16, 185, 129, 0.95);
-            border: 1px solid rgba(16, 185, 129, 0.4);
-            color: white;
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(5, 150, 105, 0.15) 100%);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            color: #6EE7B7;
+        }
+
+        .flash-success::before {
+            background: linear-gradient(180deg, #10B981 0%, #059669 100%);
+        }
+
+        .flash-success .flash-icon {
+            background: rgba(16, 185, 129, 0.2);
+            color: #10B981;
         }
 
         .flash-info {
-            background: rgba(59, 130, 246, 0.95);
-            border: 1px solid rgba(59, 130, 246, 0.4);
-            color: white;
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.15) 0%, rgba(37, 99, 235, 0.15) 100%);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            color: #93C5FD;
+        }
+
+        .flash-info::before {
+            background: linear-gradient(180deg, #3B82F6 0%, #2563EB 100%);
+        }
+
+        .flash-info .flash-icon {
+            background: rgba(59, 130, 246, 0.2);
+            color: #3B82F6;
+        }
+
+        .flash-warning {
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.15) 0%, rgba(217, 119, 6, 0.15) 100%);
+            border: 1px solid rgba(245, 158, 11, 0.3);
+            color: #FCD34D;
+        }
+
+        .flash-warning::before {
+            background: linear-gradient(180deg, #F59E0B 0%, #D97706 100%);
+        }
+
+        .flash-warning .flash-icon {
+            background: rgba(245, 158, 11, 0.2);
+            color: #F59E0B;
         }
         
         /* Ripple Effect */
@@ -1120,7 +1222,8 @@ COMMON_STYLES = """
                 opacity: 0;
             }
         }
-                /* Mobile */
+        
+        /* Mobile */
         .mobile-toggle { 
             display: none; 
             position: fixed; 
@@ -1164,6 +1267,12 @@ COMMON_STYLES = """
             .header-section {
                 flex-direction: column;
                 gap: 15px;
+            }
+            #flash-container {
+                right: 10px;
+                left: 10px;
+                max-width: none;
+                min-width: auto;
             }
         }
 
@@ -1357,7 +1466,7 @@ COMMON_STYLES = """
             color: var(--accent-orange);
         }
         
-        /* History Card Styles - NEW ADDED */
+        /* History Card Styles */
         .history-section {
             margin-top: 25px;
             padding-top: 25px;
@@ -1521,6 +1630,142 @@ COMMON_STYLES = """
             margin-bottom: 10px;
             display: block;
         }
+
+        /* Search and Filter Styles */
+        .search-filter-container {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .search-box {
+            flex: 1;
+            min-width: 250px;
+            position: relative;
+        }
+
+        .search-box input {
+            padding-left: 45px;
+            width: 100%;
+        }
+
+        .search-box i {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        .filter-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .filter-select {
+            min-width: 150px;
+        }
+
+        .filter-date {
+            min-width: 140px;
+        }
+
+        .filter-btn {
+            padding: 12px 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            color: var(--text-secondary);
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            width: auto;
+        }
+
+        .filter-btn:hover {
+            border-color: var(--accent-orange);
+            color: var(--accent-orange);
+            background: rgba(255, 122, 0, 0.05);
+            transform: none;
+            box-shadow: none;
+        }
+
+        .filter-btn.active {
+            border-color: var(--accent-orange);
+            color: var(--accent-orange);
+            background: rgba(255, 122, 0, 0.1);
+        }
+
+        .clear-filter-btn {
+            padding: 12px 16px;
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            border-radius: 12px;
+            color: var(--accent-red);
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+            width: auto;
+        }
+
+        .clear-filter-btn:hover {
+            background: rgba(239, 68, 68, 0.2);
+            transform: none;
+            box-shadow: none;
+        }
+
+        /* Type Badge Colors */
+        .type-badge {
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .type-closing {
+            background: rgba(255, 122, 0, 0.15);
+            color: var(--accent-orange);
+        }
+
+        .type-po {
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--accent-green);
+        }
+
+        .type-accessories {
+            background: rgba(139, 92, 246, 0.15);
+            color: var(--accent-purple);
+        }
+
+        /* No Results Message */
+        .no-results {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-secondary);
+        }
+
+        .no-results i {
+            font-size: 50px;
+            opacity: 0.3;
+            margin-bottom: 15px;
+            display: block;
+        }
+
+        .no-results h4 {
+            color: white;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
     </style>
 """
 # ==============================================================================
@@ -1641,12 +1886,92 @@ def get_all_accessories_bookings():
             'last_updated': data.get('last_api_call', 'N/A')
         })
     
-    # Sort by ref, assuming ref is a string that can be sorted naturally
     bookings = sorted(bookings, key=lambda x: x['ref'], reverse=True)
     return bookings
 
 # ==============================================================================
-# ড্যাশবোর্ড সামারি ফাংশন
+# নতুন ফাংশন: গত ২৪ ঘন্টার হিস্ট্রি ফিল্টার (Accessories সহ)
+# ==============================================================================
+
+def get_last_24h_history():
+    """
+    গত ২৪ ঘন্টার সকল অ্যাক্টিভিটি (Closing, PO, Accessories) রিটার্ন করে
+    """
+    now = get_bd_time()
+    twenty_four_hours_ago = now - timedelta(hours=24)
+    
+    all_history = []
+    
+    # Closing এবং PO Sheet হিস্ট্রি
+    stats_data = load_stats()
+    for item in stats_data.get('downloads', []):
+        try:
+            if 'iso_time' in item:
+                item_time = datetime.fromisoformat(item['iso_time'])
+                if item_time.tzinfo is None:
+                    item_time = bd_tz.localize(item_time)
+                if item_time >= twenty_four_hours_ago:
+                    all_history.append(item)
+            else:
+                item_date_str = item.get('date', '')
+                item_time_str = item.get('time', '')
+                if item_date_str:
+                    try:
+                        dt_str = f"{item_date_str} {item_time_str}"
+                        item_time = datetime.strptime(dt_str, '%d-%m-%Y %I:%M %p')
+                        item_time = bd_tz.localize(item_time)
+                        if item_time >= twenty_four_hours_ago:
+                            all_history.append(item)
+                    except:
+                        pass
+        except:
+            pass
+    
+    # Accessories Challan হিস্ট্রি
+    db_acc = load_accessories_db()
+    for ref, data in db_acc.items():
+        for challan in data.get('challans', []):
+            try:
+                challan_date_str = challan.get('date', '')
+                if challan_date_str:
+                    challan_date = datetime.strptime(challan_date_str, '%d-%m-%Y')
+                    challan_date = bd_tz.localize(challan_date)
+                    
+                    # শুধু আজকের তারিখ চেক করা হচ্ছে কারণ চালানে সময় নেই
+                    today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
+                    yesterday_start = today_start - timedelta(days=1)
+                    
+                    if challan_date >= yesterday_start:
+                        acc_record = {
+                            "ref": ref,
+                            "user": "System",
+                            "date": challan_date_str,
+                            "time": "N/A",
+                            "type": "Accessories",
+                            "line": challan.get('line', 'N/A'),
+                            "qty": challan.get('qty', 0),
+                            "color": challan.get('color', 'N/A'),
+                            "iso_time": challan_date.isoformat()
+                        }
+                        all_history.append(acc_record)
+            except:
+                pass
+    
+    # iso_time অনুযায়ী সর্ট করা
+    def get_sort_key(item):
+        try:
+            if 'iso_time' in item:
+                return datetime.fromisoformat(item['iso_time'])
+        except:
+            pass
+        return datetime.min.replace(tzinfo=bd_tz)
+    
+    all_history.sort(key=get_sort_key, reverse=True)
+    
+    return all_history
+
+# ==============================================================================
+# ড্যাশবোর্ড সামারি ফাংশন (আপডেটেড - গত ২৪ ঘন্টার হিস্ট্রি সহ)
 # ==============================================================================
 
 def get_dashboard_summary_v2():
@@ -1746,6 +2071,9 @@ def get_dashboard_summary_v2():
             chart_po.append(d['po'])
             chart_acc.append(d['acc'])
 
+    # গত ২৪ ঘন্টার হিস্ট্রি
+    last_24h_history = get_last_24h_history()
+
     return {
         "users": {"count": len(users_data), "details": user_details},
         "accessories": {"count": acc_lifetime_count, "details": acc_today_list},
@@ -1757,11 +2085,12 @@ def get_dashboard_summary_v2():
             "po": chart_po,
             "acc": chart_acc
         },
-        "history": history
+        "history": history,
+        "history_24h": last_24h_history
     }
 
 # ==============================================================================
-# লজিক পার্ট: PURCHASE ORDER SHEET PARSER (PDF) - UPDATED LOGIC (FIXED)
+# লজিক পার্ট: PURCHASE ORDER SHEET PARSER (PDF) - NEW UPDATED LOGIC
 # ==============================================================================
 
 def is_potential_size(header):
@@ -1795,37 +2124,152 @@ def extract_metadata(first_page_text):
         'buyer': 'N/A', 'booking': 'N/A', 'style': 'N/A', 
         'season': 'N/A', 'dept': 'N/A', 'item': 'N/A'
     }
+    
     if "KIABI" in first_page_text.upper():
         meta['buyer'] = "KIABI"
     else:
         buyer_match = re.search(r"Buyer.*?Name[\s\S]*?([\w\s&]+)(?:\n|$)", first_page_text)
         if buyer_match: meta['buyer'] = buyer_match.group(1).strip()
 
-    booking_block_match = re.search(r"(?:Internal )?Booking NO\. ?[:\s]*([\s\S]*?)(?:System NO|Control No|Buyer)", first_page_text, re.IGNORECASE)
-    if booking_block_match:
+    booking_block_match = re.search(r"(?:Internal )?Booking NO\.?[:\s]*([\s\S]*?)(?:System NO|Control No|Buyer)", first_page_text, re.IGNORECASE)
+    if booking_block_match: 
         raw_booking = booking_block_match.group(1).strip()
         clean_booking = raw_booking.replace('\n', '').replace('\r', '').replace(' ', '')
         if "System" in clean_booking: clean_booking = clean_booking.split("System")[0]
         meta['booking'] = clean_booking
 
-    style_match = re.search(r"Style Ref\. ?[:\s]*([\w-]+)", first_page_text, re.IGNORECASE)
+    style_match = re.search(r"Style Ref\.?[:\s]*([\w-]+)", first_page_text, re.IGNORECASE)
     if style_match: meta['style'] = style_match.group(1).strip()
-    else: 
+    else:
         style_match = re.search(r"Style Des\.?[\s\S]*?([\w-]+)", first_page_text, re.IGNORECASE)
         if style_match: meta['style'] = style_match.group(1).strip()
 
     season_match = re.search(r"Season\s*[:\n\"]*([\w\d-]+)", first_page_text, re.IGNORECASE)
     if season_match: meta['season'] = season_match.group(1).strip()
-    dept_match = re.search(r"Dept\. ?[\s\n: ]*([A-Za-z]+)", first_page_text, re.IGNORECASE)
+
+    dept_match = re.search(r"Dept\.?[\s\n:]*([A-Za-z]+)", first_page_text, re.IGNORECASE)
     if dept_match: meta['dept'] = dept_match.group(1).strip()
 
-    item_match = re.search(r"Garments?\s*Item[\s\n: ]*([^\n\r]+)", first_page_text, re.IGNORECASE)
+    item_match = re.search(r"Garments? Item[\s\n:]*([^\n\r]+)", first_page_text, re.IGNORECASE)
     if item_match: 
         item_text = item_match.group(1).strip()
         if "Style" in item_text: item_text = item_text.split("Style")[0].strip()
         meta['item'] = item_text
 
     return meta
+
+def is_color_name(text):
+    text = text.strip()
+    if not text:
+        return False
+    if re.match(r'^\d+$', text):
+        return False
+    if re.match(r'^\d+[,\.]\d{2}$', text):
+        return False
+    if is_potential_size(text):
+        return False
+    keywords = ['spec', 'price', 'total', 'quantity', 'amount', 'currency', 'order']
+    if any(kw in text.lower() for kw in keywords):
+        return False
+    if not re.search(r'[a-zA-Z]', text):
+        return False
+    return True
+
+def is_partial_color_name(text):
+    text = text.strip()
+    if not text:
+        return False
+    if re.match(r'^[A-Za-z\s]+$', text):
+        keywords = ['spec', 'price', 'total', 'quantity', 'amount']
+        if not any(kw in text.lower() for kw in keywords):
+            return True
+    return False
+
+def parse_vertical_table(lines, start_idx, sizes, order_no):
+    extracted_data = []
+    i = start_idx
+    
+    while i < len(lines):
+        line = lines[i].strip()
+        
+        if line.startswith("Total") and i + 1 < len(lines):
+            next_line = lines[i + 1].strip() if i + 1 < len(lines) else ""
+            if "Quantity" in next_line or "Amount" in next_line or re.match(r'^Quantity', next_line):
+                break
+            if re.match(r'^\d', next_line):
+                break
+        
+        if line and is_color_name(line):
+            color_name = line
+            i += 1
+            
+            while i < len(lines):
+                next_line = lines[i].strip()
+                
+                if 'spec' in next_line.lower():
+                    i += 1
+                    break
+                
+                if re.match(r'^\d+$', next_line):
+                    break
+                
+                if not next_line:
+                    i += 1
+                    continue
+                
+                if is_partial_color_name(next_line):
+                    color_name = color_name + " " + next_line
+                    i += 1
+                else:
+                    break
+            
+            if i < len(lines) and 'spec' in lines[i].lower():
+                i += 1
+            
+            quantities = []
+            size_idx = 0
+            
+            while size_idx < len(sizes) and i < len(lines):
+                qty_line = lines[i].strip() if i < len(lines) else ""
+                price_line = lines[i + 1].strip() if i + 1 < len(lines) else ""
+                
+                if qty_line and is_color_name(qty_line):
+                    while size_idx < len(sizes):
+                        quantities.append(0)
+                        size_idx += 1
+                    break
+                
+                if (qty_line == "" or qty_line.isspace()) and (price_line == "" or price_line.isspace()):
+                    quantities.append(0)
+                    size_idx += 1
+                    i += 2
+                    continue
+                
+                if re.match(r'^\d+$', qty_line):
+                    quantities.append(int(qty_line))
+                    size_idx += 1
+                    i += 2
+                    continue
+                
+                i += 1
+            
+            if quantities:
+                while len(quantities) < len(sizes):
+                    quantities.append(0)
+                
+                for idx, size in enumerate(sizes):
+                    extracted_data.append({
+                        'P.O NO': order_no,
+                        'Color': color_name,
+                        'Size': size,
+                        'Quantity': quantities[idx] if idx < len(quantities) else 0
+                    })
+            
+            continue
+        
+        i += 1
+    
+    return extracted_data
 
 def extract_data_dynamic(file_path):
     extracted_data = []
@@ -1839,108 +2283,42 @@ def extract_data_dynamic(file_path):
         reader = pypdf.PdfReader(file_path)
         first_page_text = reader.pages[0].extract_text()
         
-        if "Main Fabric Booking" in first_page_text or "Fabric Booking Sheet" in first_page_text: 
+        if "Main Fabric Booking" in first_page_text or "Fabric Booking Sheet" in first_page_text:
             metadata = extract_metadata(first_page_text)
-            return [], metadata
+            return [], metadata 
 
         order_match = re.search(r"Order no\D*(\d+)", first_page_text, re.IGNORECASE)
         if order_match: order_no = order_match.group(1)
-        else: 
+        else:
             alt_match = re.search(r"Order\s*[:\.]?\s*(\d+)", first_page_text, re.IGNORECASE)
             if alt_match: order_no = alt_match.group(1)
         
         order_no = str(order_no).strip()
         if order_no.endswith("00"): order_no = order_no[:-2]
-        
-        metadata = extract_metadata(first_page_text)
 
         for page in reader.pages:
             text = page.extract_text()
             lines = text.split('\n')
-            sizes = []
-            capturing_data = False
             
             for i, line in enumerate(lines):
-                line = line.strip()
-                if not line: continue
-
                 if ("Colo" in line or "Size" in line) and "Total" in line:
                     parts = line.split()
                     try:
                         total_idx = [idx for idx, x in enumerate(parts) if 'Total' in x][0]
                         raw_sizes = parts[:total_idx]
-                        temp_sizes = [s for s in raw_sizes if s not in ["Colo", "/", "Size", "Colo/Size", "Colo/", "Size's"]]
+                        sizes = [s for s in raw_sizes if s not in ["Colo", "/", "Size", "Colo/Size", "Colo/", "Size's"]]
                         
-                        valid_size_count = sum(1 for s in temp_sizes if is_potential_size(s))
-                        if temp_sizes and valid_size_count >= len(temp_sizes) / 2:
-                            sizes = temp_sizes
-                            capturing_data = True
-                        else:
-                            sizes = []
-                            capturing_data = False
-                    except: pass
-                    continue
-                
-                if capturing_data and sizes:
-                    if line.startswith("Total") or "currency" in line.lower():
-                        capturing_data = False
-                        continue
+                        valid_size_count = sum(1 for s in sizes if is_potential_size(s))
+                        if sizes and valid_size_count >= len(sizes) / 2:
+                            data = parse_vertical_table(lines, i + 1, sizes, order_no)
+                            extracted_data.extend(data)
+                    except: 
+                        pass
+                    break
                     
-                    clean_line = line.replace("Spec. price", "").replace("Spec", "").strip()
-                    if not re.search(r'[a-zA-Z]', clean_line): continue
-                    if re.match(r'^[A-Z]\d+$', clean_line) or "Assortment" in clean_line: continue
-                    
-                    # LOGIC FIX: Handle shifting by strict tokenizing
-                    parts = re.split(r'\s{2,}', line) # Split by double spaces first
-                    if len(parts) < 2: parts = line.split() 
-                    
-                    color_parts = []
-                    qty_values = []
-                    
-                    for part in parts:
-                        clean_part = part.replace(',', '').replace('.', '')
-                        if clean_part.isdigit():
-                            qty_values.append(int(part.replace(',', '')))
-                        elif part in ['-', 'x']:
-                            qty_values.append(0)
-                        else:
-                            if len(qty_values) == 0:
-                                color_parts.append(part)
-                    
-                    color_name = " ".join(color_parts).strip()
-                    
-                    final_qtys = []
-                    
-                    if len(qty_values) == len(sizes):
-                        final_qtys = qty_values
-                    elif len(qty_values) == len(sizes) + 1:
-                        final_qtys = qty_values[:-1]
-                    elif len(qty_values) < len(sizes):
-                        # Attempt to check next line for spillover
-                        next_line_qtys = []
-                        if i + 1 < len(lines):
-                            next_line = lines[i+1].strip()
-                            if not re.search(r'[a-zA-Z]', next_line) and re.search(r'\d', next_line):
-                                next_line_qtys = [int(n) for n in re.findall(r'\b\d+\b', next_line)]
-                        
-                        combined = qty_values + next_line_qtys
-                        if len(combined) >= len(sizes):
-                            final_qtys = combined[:len(sizes)]
-                        else:
-                            # Pad with 0 at end to prevent shifting
-                            final_qtys = combined + [0] * (len(sizes) - len(combined))
-                    else:
-                        final_qtys = qty_values[:len(sizes)]
-
-                    if final_qtys and color_name:
-                        for idx, size in enumerate(sizes):
-                            extracted_data.append({
-                                'P.O NO': order_no,
-                                'Color': color_name,
-                                'Size': size,
-                                'Quantity': final_qtys[idx] if idx < len(final_qtys) else 0
-                            })
-    except Exception as e: print(f"Error processing file: {e}")
+    except Exception as e: 
+        print(f"Error processing file: {e}")
+    
     return extracted_data, metadata
 
 # ==============================================================================
@@ -1969,7 +2347,7 @@ def fetch_closing_report_data(internal_ref_no):
     if not active_session: return None
 
     report_url = 'http://180.92.235.190:8022/erp/prod_planning/reports/requires/cutting_lay_production_report_controller.php'
-    payload_template = {'action': 'report_generate', 'cbo_wo_company_name': '2', 'cbo_location_name': '2', 'cbo_floor_id': '0', 'cbo_buyer_name': '0', 'txt_internal_ref_no': internal_ref_no, 'reportType': '3'}
+    payload_template = {'action': 'report_generate', 'cbo_wo_company_name': '2', 'cbo_location_name': '2', 'cbo_floor_id': '0', 'cbo_buyer_name': '0', 'txt_internal_ref_no': internal_ref_no, 'report_type': '3'}
     found_data = None
    
     for year in ['2025', '2024', '2023']: 
@@ -2270,9 +2648,8 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
     wb.save(file_stream)
     file_stream.seek(0)
     return file_stream
-
-# ==============================================================================
-# HTML TEMPLATES: LOGIN PAGE (WELCOME POPUP REMOVED, FLASH ADDED)
+    # ==============================================================================
+# HTML TEMPLATES: LOGIN PAGE
 # ==============================================================================
 
 LOGIN_TEMPLATE = f"""
@@ -2468,26 +2845,6 @@ LOGIN_TEMPLATE = f"""
             transform: translateX(5px);
         }}
         
-        .error-box {{
-            margin-top: 20px;
-            padding: 14px 18px;
-            background: rgba(239, 68, 68, 0.1);
-            border: 1px solid rgba(239, 68, 68, 0.2);
-            border-radius: 10px;
-            color: #F87171;
-            font-size: 13px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            animation: errorShake 0.5s ease-out;
-        }}
-        
-        @keyframes errorShake {{
-            0%, 100% {{ transform: translateX(0); }}
-            20%, 60% {{ transform: translateX(-5px); }}
-            40%, 80% {{ transform: translateX(5px); }}
-        }}
-        
         .footer-credit {{
             text-align: center;
             margin-top: 25px;
@@ -2567,7 +2924,21 @@ LOGIN_TEMPLATE = f"""
             {{% if messages %}}
                 {{% for category, message in messages %}}
                     <div class="flash-message flash-{{{{ category if category != 'message' else 'info' }}}}">
-                        <i class="fas fa-info-circle"></i> {{{{ message }}}}
+                        <div class="flash-icon">
+                            {{% if category == 'success' %}}
+                                <i class="fas fa-check"></i>
+                            {{% elif category == 'error' %}}
+                                <i class="fas fa-times"></i>
+                            {{% elif category == 'warning' %}}
+                                <i class="fas fa-exclamation"></i>
+                            {{% else %}}
+                                <i class="fas fa-info"></i>
+                            {{% endif %}}
+                        </div>
+                        <span class="flash-content">{{{{ message }}}}</span>
+                        <button class="flash-close" onclick="this.parentElement.style.animation='flashSlideOut 0.3s ease forwards'; setTimeout(() => this.parentElement.remove(), 300);">
+                            <i class="fas fa-times"></i>
+                        </button>
                     </div>
                 {{% endfor %}}
             {{% endif %}}
@@ -2599,7 +2970,7 @@ LOGIN_TEMPLATE = f"""
             </form>
             
             <div class="footer-credit">
-                © 2025 <a href="#">Mehedi Hasan</a> • All Rights Reserved
+                2025 <a href="#">Mehedi Hasan</a> - All Rights Reserved
             </div>
         </div>
     </div>
@@ -2619,17 +2990,17 @@ LOGIN_TEMPLATE = f"""
         setTimeout(function() {{
             let flashMessages = document.querySelectorAll('.flash-message');
             flashMessages.forEach(function(msg) {{
-                msg.style.opacity = '0';
-                setTimeout(function() {{ msg.style.display = 'none'; }}, 500);
+                msg.style.animation = 'flashSlideOut 0.3s ease forwards';
+                setTimeout(function() {{ msg.remove(); }}, 300);
             }});
-        }}, 4000);
+        }}, 5000);
     </script>
 </body>
 </html>
 """
 
 # ==============================================================================
-# ADMIN DASHBOARD TEMPLATE - (STORE REMOVED, WELCOME POPUP REMOVED)
+# ADMIN DASHBOARD TEMPLATE - (Updated with 24h History, Search, Filter)
 # ==============================================================================
 
 ADMIN_DASHBOARD_TEMPLATE = f"""
@@ -2670,14 +3041,21 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
             {{% if messages %}}
                 {{% for category, message in messages %}}
                     <div class="flash-message flash-{{{{ category if category != 'message' else 'info' }}}}" role="alert">
-                        {{% if category == 'success' %}}
-                            <i class="fas fa-check-circle"></i>
-                        {{% elif category == 'error' %}}
-                            <i class="fas fa-exclamation-triangle"></i>
-                        {{% else %}}
-                             <i class="fas fa-info-circle"></i>
-                        {{% endif %}}
-                        <span>{{{{ message }}}}</span>
+                        <div class="flash-icon">
+                            {{% if category == 'success' %}}
+                                <i class="fas fa-check"></i>
+                            {{% elif category == 'error' %}}
+                                <i class="fas fa-times"></i>
+                            {{% elif category == 'warning' %}}
+                                <i class="fas fa-exclamation"></i>
+                            {{% else %}}
+                                <i class="fas fa-info"></i>
+                            {{% endif %}}
+                        </div>
+                        <span class="flash-content">{{{{ message }}}}</span>
+                        <button class="flash-close" onclick="this.parentElement.style.animation='flashSlideOut 0.3s ease forwards'; setTimeout(() => this.parentElement.remove(), 300);">
+                            <i class="fas fa-times"></i>
+                        </button>
                     </div>
                 {{% endfor %}}
             {{% endif %}}
@@ -2821,54 +3199,97 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
                 </div>
             </div>
 
+            <!-- Activity Log with Search and Filter -->
             <div class="card">
                 <div class="section-header">
-                    <span>Recent Activity Log</span>
+                    <span>Activity Log (Last 24 Hours)</span>
                     <i class="fas fa-history" style="color: var(--text-secondary);"></i>
                 </div>
+                
+                <!-- Search and Filter Container -->
+                <div class="search-filter-container">
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="searchInput" placeholder="Search by reference, user, or any text..." onkeyup="filterHistory()">
+                    </div>
+                    <div class="filter-group">
+                        <select class="filter-select" id="typeFilter" onchange="filterHistory()">
+                            <option value="all">All Types</option>
+                            <option value="Closing Report">Closing Report</option>
+                            <option value="PO Sheet">PO Sheet</option>
+                            <option value="Accessories">Accessories</option>
+                        </select>
+                        <input type="date" class="filter-date" id="dateFilter" onchange="filterHistory()">
+                        <button class="clear-filter-btn" onclick="clearFilters()">
+                            <i class="fas fa-times"></i> Clear
+                        </button>
+                    </div>
+                </div>
+                
                 <div style="overflow-x: auto;">
-                    <table class="dark-table">
+                    <table class="dark-table" id="historyTable">
                         <thead>
                             <tr>
                                 <th>Time</th>
                                 <th>User</th>
-                                <th>Action</th>
+                                <th>Type</th>
                                 <th>Reference</th>
+                                <th>Details</th>
                             </tr>
                         </thead>
-                        <tbody>
-                            {{% for log in stats.history[:10] %}}
-                            <tr style="animation: fadeInUp 0.5s ease-out {{{{ loop.index * 0.05 }}}}s backwards;">
+                        <tbody id="historyTableBody">
+                            {{% for log in stats.history_24h %}}
+                            <tr class="history-row" 
+                                data-type="{{{{ log.type }}}}" 
+                                data-date="{{{{ log.date }}}}"
+                                data-search="{{{{ log.ref|lower }}}} {{{{ log.user|lower }}}} {{{{ log.type|lower }}}} {{{{ log.get('color', '')|lower }}}} {{{{ log.get('line', '')|lower }}}}"
+                                style="animation: fadeInUp 0.5s ease-out {{{{ loop.index * 0.03 }}}}s backwards;">
                                 <td>
                                     <div class="time-badge">
                                         <i class="far fa-clock"></i>
-                                        {{{{ log.time }}}}
+                                        {{{{ log.time if log.time != 'N/A' else log.date }}}}
                                     </div>
                                 </td>
                                 <td style="font-weight: 600; color: white;">{{{{ log.user }}}}</td>
                                 <td>
-                                    <span class="table-badge" style="
-                                        {{% if log.type == 'Closing Report' %}}
-                                        background: rgba(255, 122, 0, 0.1); color: var(--accent-orange);
-                                        {{% elif log.type == 'PO Sheet' %}}
-                                        background: rgba(16, 185, 129, 0.1); color: var(--accent-green);
-                                        {{% else %}}
-                                        background: rgba(139, 92, 246, 0.1); color: var(--accent-purple);
-                                        {{% endif %}}
-                                    ">{{{{ log.type }}}}</span>
+                                    {{% if log.type == 'Closing Report' %}}
+                                        <span class="type-badge type-closing">Closing</span>
+                                    {{% elif log.type == 'PO Sheet' %}}
+                                        <span class="type-badge type-po">PO Sheet</span>
+                                    {{% elif log.type == 'Accessories' %}}
+                                        <span class="type-badge type-accessories">Accessories</span>
+                                    {{% else %}}
+                                        <span class="type-badge">{{{{ log.type }}}}</span>
+                                    {{% endif %}}
                                 </td>
-                                <td style="color: var(--text-secondary);">{{{{ log.ref if log.ref else '-' }}}}</td>
+                                <td style="color: var(--accent-orange); font-weight: 600;">{{{{ log.ref if log.ref else '-' }}}}</td>
+                                <td style="color: var(--text-secondary); font-size: 12px;">
+                                    {{% if log.type == 'Accessories' %}}
+                                        Line: {{{{ log.get('line', 'N/A') }}}} | Qty: {{{{ log.get('qty', 0) }}}} | {{{{ log.get('color', 'N/A') }}}}
+                                    {{% elif log.type == 'PO Sheet' %}}
+                                        {{{{ log.get('file_count', 1) }}}} file(s) processed
+                                    {{% else %}}
+                                        Report Generated
+                                    {{% endif %}}
+                                </td>
                             </tr>
                             {{% else %}}
-                            <tr>
-                                <td colspan="4" style="text-align: center; padding: 40px; color: var(--text-secondary);">
-                                    <i class="fas fa-inbox" style="font-size: 40px; opacity: 0.3; margin-bottom: 15px; display: block;"></i>
-                                    No activity recorded yet.
+                            <tr id="emptyRow">
+                                <td colspan="5" style="text-align: center; padding: 60px; color: var(--text-secondary);">
+                                    <i class="fas fa-inbox" style="font-size: 50px; opacity: 0.3; margin-bottom: 15px; display: block;"></i>
+                                    No activity in the last 24 hours.
                                 </td>
                             </tr>
                             {{% endfor %}}
                         </tbody>
                     </table>
+                    
+                    <!-- No Results Message -->
+                    <div class="no-results" id="noResults" style="display: none;">
+                        <i class="fas fa-search"></i>
+                        <h4>No Results Found</h4>
+                        <p>Try adjusting your search or filter criteria</p>
+                    </div>
                 </div>
             </div>
         </div>
@@ -3029,7 +3450,68 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
             }});
         }}
         
-        // ===== DEW STYLE DAILY CHART =====
+        // ===== SEARCH AND FILTER FUNCTIONS =====
+        function filterHistory() {{
+            const searchValue = document.getElementById('searchInput').value.toLowerCase();
+            const typeValue = document.getElementById('typeFilter').value;
+            const dateValue = document.getElementById('dateFilter').value;
+            
+            const rows = document.querySelectorAll('.history-row');
+            let visibleCount = 0;
+            
+            rows.forEach(row => {{
+                const searchData = row.getAttribute('data-search') || '';
+                const rowType = row.getAttribute('data-type') || '';
+                const rowDate = row.getAttribute('data-date') || '';
+                
+                let showRow = true;
+                
+                // Search filter
+                if (searchValue && !searchData.includes(searchValue)) {{
+                    showRow = false;
+                }}
+                
+                // Type filter
+                if (typeValue !== 'all' && rowType !== typeValue) {{
+                    showRow = false;
+                }}
+                
+                // Date filter
+                if (dateValue) {{
+                    const filterDate = new Date(dateValue);
+                    const rowDateParts = rowDate.split('-');
+                    if (rowDateParts.length === 3) {{
+                        const rowDateObj = new Date(rowDateParts[2], rowDateParts[1] - 1, rowDateParts[0]);
+                        if (filterDate.toDateString() !== rowDateObj.toDateString()) {{
+                            showRow = false;
+                        }}
+                    }}
+                }}
+                
+                row.style.display = showRow ? '' : 'none';
+                if (showRow) visibleCount++;
+            }});
+            
+            // Show/hide no results message
+            const noResults = document.getElementById('noResults');
+            const emptyRow = document.getElementById('emptyRow');
+            
+            if (visibleCount === 0 && rows.length > 0) {{
+                noResults.style.display = 'block';
+                if (emptyRow) emptyRow.style.display = 'none';
+            }} else {{
+                noResults.style.display = 'none';
+            }}
+        }}
+        
+        function clearFilters() {{
+            document.getElementById('searchInput').value = '';
+            document.getElementById('typeFilter').value = 'all';
+            document.getElementById('dateFilter').value = '';
+            filterHistory();
+        }}
+        
+        // ===== DAILY CHART =====
         const ctx = document.getElementById('mainChart').getContext('2d');
         const gradientOrange = ctx.createLinearGradient(0, 0, 0, 300);
         gradientOrange.addColorStop(0, 'rgba(255, 122, 0, 0.5)');
@@ -3323,8 +3805,8 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
         setTimeout(function() {{
             let flashMessages = document.querySelectorAll('.flash-message');
             flashMessages.forEach(function(msg) {{
-                msg.style.opacity = '0';
-                setTimeout(function() {{ msg.style.display = 'none'; }}, 500);
+                msg.style.animation = 'flashSlideOut 0.3s ease forwards';
+                setTimeout(function() {{ msg.remove(); }}, 300);
             }});
         }}, 5000);
         
@@ -3341,9 +3823,8 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
 </body>
 </html>
 """
-
 # ==============================================================================
-# USER DASHBOARD TEMPLATE (STORE REMOVED, WELCOME POPUP REMOVED)
+# USER DASHBOARD TEMPLATE
 # ==============================================================================
 
 USER_DASHBOARD_TEMPLATE = f"""
@@ -3371,14 +3852,21 @@ USER_DASHBOARD_TEMPLATE = f"""
             {{% if messages %}}
                 {{% for category, message in messages %}}
                     <div class="flash-message flash-{{{{ category if category != 'message' else 'info' }}}}" role="alert">
-                        {{% if category == 'success' %}}
-                            <i class="fas fa-check-circle"></i>
-                        {{% elif category == 'error' %}}
-                            <i class="fas fa-exclamation-triangle"></i>
-                        {{% else %}}
-                             <i class="fas fa-info-circle"></i>
-                        {{% endif %}}
-                        <span>{{{{ message }}}}</span>
+                        <div class="flash-icon">
+                            {{% if category == 'success' %}}
+                                <i class="fas fa-check"></i>
+                            {{% elif category == 'error' %}}
+                                <i class="fas fa-times"></i>
+                            {{% elif category == 'warning' %}}
+                                <i class="fas fa-exclamation"></i>
+                            {{% else %}}
+                                <i class="fas fa-info"></i>
+                            {{% endif %}}
+                        </div>
+                        <span class="flash-content">{{{{ message }}}}</span>
+                        <button class="flash-close" onclick="this.parentElement.style.animation='flashSlideOut 0.3s ease forwards'; setTimeout(() => this.parentElement.remove(), 300);">
+                            <i class="fas fa-times"></i>
+                        </button>
                     </div>
                 {{% endfor %}}
             {{% endif %}}
@@ -3484,8 +3972,8 @@ USER_DASHBOARD_TEMPLATE = f"""
         setTimeout(function() {{
             let flashMessages = document.querySelectorAll('.flash-message');
             flashMessages.forEach(function(msg) {{
-                msg.style.opacity = '0';
-                setTimeout(function() {{ msg.style.display = 'none'; }}, 500);
+                msg.style.animation = 'flashSlideOut 0.3s ease forwards';
+                setTimeout(function() {{ msg.remove(); }}, 300);
             }});
         }}, 5000);
 
@@ -3503,7 +3991,7 @@ USER_DASHBOARD_TEMPLATE = f"""
 """
 
 # ==============================================================================
-# ACCESSORIES SEARCH TEMPLATE (FLASH ADDED)
+# ACCESSORIES SEARCH TEMPLATE
 # ==============================================================================
 
 ACCESSORIES_SEARCH_TEMPLATE = f"""
@@ -3621,14 +4109,21 @@ ACCESSORIES_SEARCH_TEMPLATE = f"""
             {{% if messages %}}
                 {{% for category, message in messages %}}
                     <div class="flash-message flash-{{{{ category if category != 'message' else 'info' }}}}" role="alert">
-                        {{% if category == 'success' %}}
-                            <i class="fas fa-check-circle"></i>
-                        {{% elif category == 'error' %}}
-                            <i class="fas fa-exclamation-triangle"></i>
-                        {{% else %}}
-                             <i class="fas fa-info-circle"></i>
-                        {{% endif %}}
-                        <span>{{{{ message }}}}</span>
+                        <div class="flash-icon">
+                            {{% if category == 'success' %}}
+                                <i class="fas fa-check"></i>
+                            {{% elif category == 'error' %}}
+                                <i class="fas fa-times"></i>
+                            {{% elif category == 'warning' %}}
+                                <i class="fas fa-exclamation"></i>
+                            {{% else %}}
+                                <i class="fas fa-info"></i>
+                            {{% endif %}}
+                        </div>
+                        <span class="flash-content">{{{{ message }}}}</span>
+                        <button class="flash-close" onclick="this.parentElement.style.animation='flashSlideOut 0.3s ease forwards'; setTimeout(() => this.parentElement.remove(), 300);">
+                            <i class="fas fa-times"></i>
+                        </button>
                     </div>
                 {{% endfor %}}
             {{% endif %}}
@@ -3676,7 +4171,7 @@ ACCESSORIES_SEARCH_TEMPLATE = f"""
                         <a href="/admin/accessories/input_direct?ref={{{{ booking.ref }}}}" class="history-booking-item">
                             <div class="booking-item-left">
                                 <div class="booking-ref">{{{{ booking.ref }}}}</div>
-                                <div class="booking-info">{{{{ booking.buyer }}}} • {{{{ booking.style }}}}</div>
+                                <div class="booking-info">{{{{ booking.buyer }}}} - {{{{ booking.style }}}}</div>
                             </div>
                             <div class="booking-stats">
                                 <div class="booking-stat">
@@ -3709,7 +4204,7 @@ ACCESSORIES_SEARCH_TEMPLATE = f"""
         </div>
         
         <div style="text-align: center; margin-top: 25px; color: var(--text-secondary); font-size: 11px; opacity: 0.4;">
-            © 2025 Mehedi Hasan
+            2025 Mehedi Hasan
         </div>
     </div>
     
@@ -3723,8 +4218,8 @@ ACCESSORIES_SEARCH_TEMPLATE = f"""
         setTimeout(function() {{
             let flashMessages = document.querySelectorAll('.flash-message');
             flashMessages.forEach(function(msg) {{
-                msg.style.opacity = '0';
-                setTimeout(function() {{ msg.style.display = 'none'; }}, 500);
+                msg.style.animation = 'flashSlideOut 0.3s ease forwards';
+                setTimeout(function() {{ msg.remove(); }}, 300);
             }});
         }}, 5000);
     </script>
@@ -3733,7 +4228,7 @@ ACCESSORIES_SEARCH_TEMPLATE = f"""
 """
 
 # ==============================================================================
-# ACCESSORIES INPUT TEMPLATE - (UPDATED TOOLTIPS & FLASH)
+# ACCESSORIES INPUT TEMPLATE
 # ==============================================================================
 
 ACCESSORIES_INPUT_TEMPLATE = f"""
@@ -3891,14 +4386,21 @@ ACCESSORIES_INPUT_TEMPLATE = f"""
             {{% if messages %}}
                 {{% for category, message in messages %}}
                     <div class="flash-message flash-{{{{ category if category != 'message' else 'info' }}}}" role="alert">
-                        {{% if category == 'success' %}}
-                            <i class="fas fa-check-circle"></i>
-                        {{% elif category == 'error' %}}
-                            <i class="fas fa-exclamation-triangle"></i>
-                        {{% else %}}
-                             <i class="fas fa-info-circle"></i>
-                        {{% endif %}}
-                        <span>{{{{ message }}}}</span>
+                        <div class="flash-icon">
+                            {{% if category == 'success' %}}
+                                <i class="fas fa-check"></i>
+                            {{% elif category == 'error' %}}
+                                <i class="fas fa-times"></i>
+                            {{% elif category == 'warning' %}}
+                                <i class="fas fa-exclamation"></i>
+                            {{% else %}}
+                                <i class="fas fa-info"></i>
+                            {{% endif %}}
+                        </div>
+                        <span class="flash-content">{{{{ message }}}}</span>
+                        <button class="flash-close" onclick="this.parentElement.style.animation='flashSlideOut 0.3s ease forwards'; setTimeout(() => this.parentElement.remove(), 300);">
+                            <i class="fas fa-times"></i>
+                        </button>
                     </div>
                 {{% endfor %}}
             {{% endif %}}
@@ -3917,7 +4419,7 @@ ACCESSORIES_INPUT_TEMPLATE = f"""
                 <i class="fas fa-sign-out-alt"></i> Sign Out
             </a>
         </div>
-        <div class="sidebar-footer">© 2025 Mehedi Hasan</div>
+        <div class="sidebar-footer">2025 Mehedi Hasan</div>
     </div>
     
     <div class="main-content">
@@ -3926,7 +4428,7 @@ ACCESSORIES_INPUT_TEMPLATE = f"""
                 <div class="page-title">Accessories Entry</div>
                 <div class="ref-badge">
                     <span class="ref-no">{{{{ ref }}}}</span>
-                    <span class="ref-info">{{{{ buyer }}}} • {{{{ style }}}}</span>
+                    <span class="ref-info">{{{{ buyer }}}} - {{{{ style }}}}</span>
                 </div>
             </div>
             <div class="btn-group">
@@ -4011,7 +4513,7 @@ ACCESSORIES_INPUT_TEMPLATE = f"""
                             <div class="line-badge">{{{{ item.line }}}}</div>
                             <div style="color: white; font-weight: 500; font-size: 13px;">{{{{ item.color }}}}</div>
                             <div class="qty-value">{{{{ item.qty }}}}</div>
-                            <div class="status-check">{{{{ item.status if item.status else '●' }}}}</div>
+                            <div class="status-check">{{{{ item.status if item.status else '' }}}}</div>
                             <div class="action-cell">
                                 {{% if session.role == 'admin' %}}
                                 <a href="/admin/accessories/edit?ref={{{{ ref }}}}&index={{{{ (challans|length) - loop.index }}}}" class="action-btn btn-edit">
@@ -4023,7 +4525,7 @@ ACCESSORIES_INPUT_TEMPLATE = f"""
                                     <button type="submit" class="action-btn btn-del"><i class="fas fa-trash"></i></button>
                                 </form>
                                 {{% else %}}
-                                <span style="font-size: 10px; color: var(--text-secondary); opacity: 0.5;">🔒</span>
+                                <span style="font-size: 10px; color: var(--text-secondary); opacity: 0.5;"></span>
                                 {{% endif %}}
                             </div>
                         </div>
@@ -4059,8 +4561,8 @@ ACCESSORIES_INPUT_TEMPLATE = f"""
         setTimeout(function() {{
             let flashMessages = document.querySelectorAll('.flash-message');
             flashMessages.forEach(function(msg) {{
-                msg.style.opacity = '0';
-                setTimeout(function() {{ msg.style.display = 'none'; }}, 500);
+                msg.style.animation = 'flashSlideOut 0.3s ease forwards';
+                setTimeout(function() {{ msg.remove(); }}, 300);
             }});
         }}, 5000);
 
@@ -4078,7 +4580,7 @@ ACCESSORIES_INPUT_TEMPLATE = f"""
 """
 
 # ==============================================================================
-# ACCESSORIES EDIT TEMPLATE (হুবহু তোমার মূল কোড)
+# ACCESSORIES EDIT TEMPLATE
 # ==============================================================================
 
 ACCESSORIES_EDIT_TEMPLATE = f"""
@@ -4206,9 +4708,8 @@ ACCESSORIES_EDIT_TEMPLATE = f"""
 </body>
 </html>
 """
-
 # ==============================================================================
-# CLOSING REPORT PREVIEW TEMPLATE (হুবহু তোমার মূল কোড)
+# CLOSING REPORT PREVIEW TEMPLATE
 # ==============================================================================
 
 CLOSING_REPORT_PREVIEW_TEMPLATE = """
@@ -4232,7 +4733,7 @@ CLOSING_REPORT_PREVIEW_TEMPLATE = """
         .info-item { font-size: 1.2rem; font-weight: 600; color: #444; }
         .info-label { font-weight: 800; color: #444; width: 90px; display: inline-block; }
         .info-value { font-weight: 800; color: #000; }
-        .booking-box { background: #2c3e50; color: white; padding: 10px 20px; border-radius: 5px; text-align: right; box-shadow: 0 4px 10px rgba(44, 62, 80, 0.3); display: flex; flex-direction: column; justify-content: center; min-width: 200px; }
+        .booking-box { background: #2c3e50; color: white; padding: 10px 20px; border-radius: 5px; text-align: right; box-shadow: 0 4px 10px rgba(44, 62, 80, 0.3); display: flex; flex-direction: column; justify-content: center; }
         .booking-label { font-size: 1.1rem; opacity: 0.9; text-transform: uppercase; letter-spacing: 1px; font-weight: 700; }
         .booking-value { font-size: 1.8rem; font-weight: 800; line-height: 1.1; }
         .table-card { background: white; border-radius: 0; margin-bottom: 30px; border: none; }
@@ -4371,7 +4872,7 @@ CLOSING_REPORT_PREVIEW_TEMPLATE = """
 """
 
 # ==============================================================================
-# ACCESSORIES REPORT TEMPLATE (হুবহু তোমার মূল কোড)
+# ACCESSORIES REPORT TEMPLATE
 # ==============================================================================
 
 ACCESSORIES_REPORT_TEMPLATE = """
@@ -4403,7 +4904,7 @@ ACCESSORIES_REPORT_TEMPLATE = """
         .summary-table { width: 100%; font-size: 13px; font-weight: 700; }
         .summary-table td { padding: 2px 5px; }
         .main-table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 14px; }
-        .main-table th { background: #2c3e50 !important; color: white !important; padding: 10px; border: 1px solid #000; font-size: 14px; text-transform: uppercase; -webkit-print-color-adjust: exact; }
+        .main-table th { background: #2c3e50 !important; color: white !important; padding: 10px; border: 1px solid #000; font-size: 14px; text-transform: uppercase; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
         .main-table td { border: 1px solid #000; padding: 6px; text-align: center; vertical-align: middle; color: #000; font-weight: 600; }
         .line-card { display: inline-block; padding: 4px 10px; border: 2px solid #000; font-size: 16px; font-weight: 900; border-radius: 4px; box-shadow: 2px 2px 0 #000; background: #fff; }
         .line-text-bold { font-size: 14px; font-weight: 800; opacity: 0.7; }
@@ -4429,7 +4930,7 @@ ACCESSORIES_REPORT_TEMPLATE = """
 <body>
 <div class="no-print">
     <a href="/admin/accessories/input_direct?ref={{ ref }}" class="btn">Back</a>
-    <button onclick="window.print()" class="btn">🖨️ Print</button>
+    <button onclick="window.print()" class="btn">Print</button>
 </div>
 <div class="container">
     <div class="header">
@@ -4524,7 +5025,7 @@ ACCESSORIES_REPORT_TEMPLATE = """
 """
 
 # ==============================================================================
-# PO REPORT TEMPLATE (হুবহু তোমার মূল কোড)
+# PO REPORT TEMPLATE - NEW UPDATED VERSION
 # ==============================================================================
 
 PO_REPORT_TEMPLATE = """
@@ -4535,703 +5036,1202 @@ PO_REPORT_TEMPLATE = """
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PO Report - Cotton Clothing BD</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
-        body { background-color: #f8f9fa; padding: 30px 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        :root {
+            --primary: #1e40af;
+            --primary-light: #3b82f6;
+            --dark: #0f172a;
+            --dark-light: #1e293b;
+            --gray-50: #f8fafc;
+            --gray-100: #f1f5f9;
+            --gray-200: #e2e8f0;
+            --gray-300: #cbd5e1;
+            --gray-600: #475569;
+            --gray-800: #1e293b;
+            --success: #059669;
+            --success-light: #d1fae5;
+            --warning: #d97706;
+            --warning-light: #fef3c7;
+        }
+        
+        * { font-family: 'Inter', sans-serif; }
+        
+        body { 
+            background: var(--gray-100);
+            min-height: 100vh;
+            padding: 30px 0; 
+        }
+        
         .container { max-width: 1200px; }
-        .company-header { text-align: center; margin-bottom: 20px; border-bottom: 2px solid #000; padding-bottom: 10px; }
-        .company-name { font-size: 2.2rem; font-weight: 800; color: #2c3e50; text-transform: uppercase; letter-spacing: 1px; line-height: 1; }
-        .report-title { font-size: 1.1rem; color: #555; font-weight: 600; text-transform: uppercase; margin-top: 5px; }
-        .date-section { font-size: 1.2rem; font-weight: 800; color: #000; margin-top: 5px; }
-        .info-container { display: flex; justify-content: space-between; margin-bottom: 15px; gap: 15px; }
-        .info-box { background: white; border: 1px solid #ddd; border-left: 5px solid #2c3e50; padding: 10px 15px; border-radius: 5px; flex: 2; box-shadow: 0 2px 5px rgba(0,0,0,0.05); display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-        .total-box { background: #2c3e50; color: white; padding: 10px 15px; border-radius: 5px; width: 240px; text-align: right; display: flex; flex-direction: column; justify-content: center; box-shadow: 0 4px 10px rgba(44, 62, 80, 0.3); }
-        .info-item { margin-bottom: 6px; font-size: 1.3rem; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .info-label { font-weight: 800; color: #444; width: 90px; display: inline-block; }
-        .info-value { font-weight: 800; color: #000; }
-        .total-label { font-size: 1.1rem; opacity: 0.9; text-transform: uppercase; letter-spacing: 1px; font-weight: 700; }
-        .total-value { font-size: 2.5rem; font-weight: 800; line-height: 1.1; }
-        .table-card { background: white; border-radius: 0; margin-bottom: 20px; overflow: hidden; border: 1px solid #dee2e6; }
-        .color-header { background-color: #e9ecef; color: #2c3e50; padding: 10px 12px; font-size: 1.5rem; font-weight: 900; border-bottom: 1px solid #dee2e6; text-transform: uppercase; }
-        .table { margin-bottom: 0; width: 100%; border-collapse: collapse; }
-        .table th { background-color: #2c3e50; color: white; font-weight: 900; font-size: 1.2rem; text-align: center; border: 1px solid #34495e; padding: 8px 4px; vertical-align: middle; }
-        .table th:empty { background-color: white !important; border: none; }
-        .table td { text-align: center; vertical-align: middle; border: 1px solid #dee2e6; padding: 6px 3px; color: #000; font-weight: 800; font-size: 1.15rem; }
-        .table-striped tbody tr:nth-of-type(odd) { background-color: #f8f9fa; }
-        .order-col { font-weight: 900 !important; text-align: center !important; background-color: #fdfdfd; white-space: nowrap; width: 1%; }
-        .total-col { font-weight: 900; background-color: #e8f6f3 !important; color: #16a085; border-left: 2px solid #1abc9c !important; }
-        .total-col-header { background-color: #e8f6f3 !important; color: #000 !important; font-weight: 900 !important; border: 1px solid #34495e !important; }
-        .table-striped tbody tr.summary-row, .table-striped tbody tr.summary-row td { background-color: #d1ecff !important; --bs-table-accent-bg: #d1ecff !important; color: #000 !important; font-weight: 900 !important; border-top: 2px solid #aaa !important; font-size: 1.2rem !important; }
-        .summary-label { text-align: right !important; padding-right: 15px !important; color: #000 !important; }
-        .action-bar { margin-bottom: 20px; display: flex; justify-content: flex-end; gap: 10px; }
-        .btn-print { background-color: #e74c3c; color: white; border-radius: 50px; padding: 8px 30px; font-weight: 600; border: none; }
-        .footer-credit { text-align: center; margin-top: 30px; margin-bottom: 20px; font-size: 0.8rem; color: #2c3e50; padding-top: 10px; border-top: 1px solid #ddd; }
+        
+        /* ===== HEADER ===== */
+        .company-header { 
+            background: white;
+            border-radius: 12px;
+            padding: 24px 32px;
+            margin-bottom: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            border-left: 4px solid var(--primary);
+        }
+        
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .company-name { 
+            font-size: 1.5rem; 
+            font-weight: 800; 
+            color: var(--dark);
+            letter-spacing: -0.5px;
+            margin-bottom: 4px;
+        }
+        
+        .report-title { 
+            font-size: 0.85rem; 
+            color: var(--gray-600);
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .date-box {
+            text-align: right;
+        }
+        
+        .date-label {
+            font-size: 0.7rem;
+            color: var(--gray-600);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 600;
+        }
+        
+        .date-value {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--dark);
+        }
+        
+        /* ===== INFO SECTION ===== */
+        .info-section {
+            display: grid;
+            grid-template-columns: 1fr 220px;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .info-grid { 
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+        
+        .info-item {
+            padding: 12px 16px;
+            background: var(--gray-50);
+            border-radius: 8px;
+            border-left: 3px solid var(--primary-light);
+        }
+        
+        /* Booking Item Highlight */
+        .info-item.booking-highlight {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            border-left: 4px solid #f59e0b;
+            box-shadow: 0 2px 8px rgba(245, 158, 11, 0.25);
+        }
+        
+        .info-item.booking-highlight .info-value {
+            color: #92400e;
+            font-size: 1.05rem;
+        }
+        
+        .info-label { 
+            font-size: 0.65rem;
+            font-weight: 700;
+            color: var(--gray-600);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 4px;
+        }
+        
+        .info-value { 
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: var(--dark);
+        }
+
+        .grand-total-box { 
+            background: linear-gradient(135deg, var(--dark) 0%, var(--dark-light) 100%);
+            color: white; 
+            padding: 24px;
+            border-radius: 12px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        
+        .grand-total-label { 
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-weight: 600;
+            opacity: 0.8;
+            margin-bottom: 8px;
+        }
+        
+        .grand-total-value { 
+            font-size: 2.2rem;
+            font-weight: 800;
+            line-height: 1;
+        }
+        
+        .grand-total-unit {
+            font-size: 0.75rem;
+            opacity: 0.7;
+            margin-top: 6px;
+            font-weight: 500;
+        }
+
+        /* ===== TABLE ===== */
+        .table-card { 
+            background: white;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .color-header { 
+            background: var(--dark);
+            color: white;
+            padding: 14px 20px;
+            font-size: 0.9rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .table { 
+            margin-bottom: 0; 
+            width: 100%;
+        }
+        
+        .table th { 
+            background: var(--gray-100);
+            color: var(--gray-800);
+            font-weight: 700;
+            font-size: 0.75rem;
+            text-align: center;
+            padding: 12px 10px;
+            border-bottom: 2px solid var(--gray-200);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .table td { 
+            text-align: center;
+            vertical-align: middle;
+            padding: 12px 10px;
+            color: var(--dark);
+            font-weight: 600;
+            font-size: 0.9rem;
+            border-bottom: 1px solid var(--gray-200);
+        }
+        
+        .table tbody tr:hover td {
+            background: var(--gray-50);
+        }
+        
+        .order-col { 
+            font-weight: 800 !important;
+            background: var(--gray-50) !important;
+            color: var(--primary) !important;
+            border-right: 2px solid var(--gray-200) !important;
+        }
+        
+        .total-col { 
+            font-weight: 800 !important;
+            background: var(--success-light) !important;
+            color: var(--success) !important;
+            border-left: 2px solid #a7f3d0 !important;
+        }
+        
+        .total-col-header { 
+            background: var(--success-light) !important;
+            color: var(--success) !important;
+            font-weight: 800 !important;
+            border-left: 2px solid #a7f3d0 !important;
+        }
+
+        /* ===== SUMMARY ROWS ===== */
+        .table tbody tr.summary-row td { 
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%) !important;
+            color: #92400e !important;
+            font-weight: 800 !important;
+            font-size: 1.0rem !important;
+            border-top: 3px solid #f59e0b !important;
+            border-bottom: 1px solid #fbbf24 !important;
+            padding: 14px 10px !important;
+        }
+        
+        .table tbody tr.summary-row:last-child td {
+            background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%) !important;
+            color: #1e40af !important;
+            font-weight: 800 !important;
+            font-size: 1.0rem !important;
+            border-top: 3px solid #3b82f6 !important;
+            border-bottom: none !important;
+        }
+        
+        .summary-label { 
+            text-align: right !important;
+            padding-right: 20px !important;
+            font-size: 0.85rem !important;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 800 !important;
+        }
+
+        /* ===== ACTION BAR ===== */
+        .action-bar { 
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .btn-back {
+            background: white;
+            color: var(--dark);
+            border: 2px solid var(--gray-200);
+            border-radius: 8px;
+            padding: 10px 24px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: all 0.2s ease;
+            text-decoration: none;
+        }
+        
+        .btn-back:hover {
+            border-color: var(--primary-light);
+            color: var(--primary);
+        }
+        
+        .btn-print { 
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 12px 28px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 8px rgba(30, 64, 175, 0.3);
+        }
+        
+        .btn-print:hover {
+            background: var(--primary-light);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(30, 64, 175, 0.4);
+        }
+        
+        /* ===== FOOTER ===== */
+        .footer-credit { 
+            text-align: center;
+            margin-top: 30px;
+            padding: 16px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            font-size: 0.85rem;
+            color: var(--gray-600);
+        }
+        
+        .footer-credit strong {
+            color: var(--primary);
+        }
+
+        /* ===== PRINT ===== */
         @media print {
-            @page { margin: 5mm; size: portrait; }
-            body { background-color: white; padding: 0; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; color-adjust: exact !important; }
-            .container { max-width: 100% !important; width: 100% !important; padding: 0; margin: 0; }
+            @page { 
+                margin: 10mm;
+                size: portrait;
+            }
+            
+            body { 
+                background: white !important;
+                padding: 0 !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+            
+            .container { 
+                max-width: 100% !important;
+                padding: 0 !important;
+            }
+            
             .no-print { display: none !important; }
-            .company-header { border-bottom: 2px solid #000; margin-bottom: 5px; padding-bottom: 5px; }
-            .company-name { font-size: 1.8rem; }
-            .info-container { margin-bottom: 10px; }
-            .info-box { border: 1px solid #000 !important; border-left: 5px solid #000 !important; padding: 5px 10px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-            .total-box { border: 2px solid #000 !important; background: white !important; color: black !important; padding: 5px 10px; }
-            .info-item { font-size: 13pt !important; font-weight: 800 !important; }
-            .table th, .table td { border: 1px solid #000 !important; padding: 2px !important; font-size: 13pt !important; font-weight: 800 !important; }
-            .table th:empty { background-color: white !important; border: none !important; }
-            .table-striped tbody tr.summary-row td { background-color: #d1ecff !important; box-shadow: inset 0 0 0 9999px #d1ecff !important; color: #000 !important; font-weight: 900 !important; }
-            .color-header { background-color: #f1f1f1 !important; border: 1px solid #000 !important; font-size: 1.4rem !important; font-weight: 900; padding: 5px; margin-top: 10px; box-shadow: inset 0 0 0 9999px #f1f1f1 !important; }
-            .total-col-header { background-color: #e8f6f3 !important; box-shadow: inset 0 0 0 9999px #e8f6f3 !important; color: #000 !important; }
-            .table-card { border: none; margin-bottom: 10px; break-inside: avoid; }
-            .footer-credit { display: block !important; color: black; border-top: 1px solid #000; margin-top: 10px; font-size: 8pt !important; }
+            
+            .company-header {
+                border-radius: 0 !important;
+                box-shadow: none !important;
+                border: 1px solid #000 !important;
+                border-left: 4px solid #000 !important;
+                margin-bottom: 10px !important;
+                padding: 15px 20px !important;
+            }
+            
+            .company-name {
+                font-size: 1.3rem !important;
+            }
+            
+            .info-section {
+                margin-bottom: 10px !important;
+            }
+            
+            .info-grid {
+                border-radius: 0 !important;
+                box-shadow: none !important;
+                border: 1px solid #000 !important;
+                padding: 15px !important;
+            }
+            
+            .info-item {
+                border-left: 3px solid #000 !important;
+            }
+            
+            .info-item.booking-highlight {
+                background: #fff8dc !important;
+                border-left: 4px solid #000 !important;
+            }
+            
+            .grand-total-box {
+                border-radius: 0 !important;
+                box-shadow: none !important;
+                border: 2px solid #000 !important;
+                background: #f0f0f0 !important;
+                color: #000 !important;
+            }
+            
+            .grand-total-box * {
+                color: #000 !important;
+            }
+            
+            .table-card {
+                border-radius: 0 !important;
+                box-shadow: none !important;
+                border: 1px solid #000 !important;
+                margin-bottom: 10px !important;
+                break-inside: avoid;
+            }
+            
+            .color-header {
+                background: #e0e0e0 !important;
+                color: #000 !important;
+                padding: 10px 15px !important;
+                font-size: 11pt !important;
+            }
+            
+            .table th {
+                background: #f5f5f5 !important;
+                color: #000 !important;
+                font-size: 9pt !important;
+                padding: 8px 6px !important;
+                border: 1px solid #000 !important;
+            }
+            
+            .table td {
+                font-size: 10pt !important;
+                padding: 8px 6px !important;
+                border: 1px solid #000 !important;
+            }
+            
+            .order-col {
+                background: #f8f8f8 !important;
+                color: #000 !important;
+            }
+            
+            .total-col,
+            .total-col-header {
+                background: #e8f5e9 !important;
+                color: #000 !important;
+            }
+            
+            .summary-row td {
+                font-size: 10.5pt !important;
+                font-weight: 800 !important;
+                border-top: 2px solid #000 !important;
+            }
+            
+            .summary-row:first-of-type td {
+                background: #fff8e1 !important;
+                color: #000 !important;
+            }
+            
+            .summary-row:last-of-type td {
+                background: #e3f2fd !important;
+                color: #000 !important;
+            }
+            
+            .footer-credit {
+                border-radius: 0 !important;
+                box-shadow: none !important;
+                border-top: 1px solid #000 !important;
+                margin-top: 15px !important;
+                padding: 10px !important;
+                background: transparent !important;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="action-bar no-print">
-            <a href="/" class="btn btn-outline-secondary rounded-pill px-4">Back to Dashboard</a>
-            <button onclick="window.print()" class="btn btn-print"><i class="fas fa-file-pdf"></i> Print</button>
+            <a href="/" class="btn-back">Back</a>
+            <button onclick="window.print()" class="btn-print">Print Report</button>
         </div>
+
         <div class="company-header">
-            <div class="company-name">COTTON CLOTHING BD LTD</div>
-            <div class="report-title">Purchase Order Summary</div>
-            <div class="date-section">Date: <span id="date"></span></div>
+            <div class="header-content">
+                <div>
+                    <div class="company-name">Cotton Clothing BD Limited</div>
+                    <div class="report-title">Purchase Order Summary Report</div>
+                </div>
+                <div class="date-box">
+                    <div class="date-label">Report Date</div>
+                    <div class="date-value" id="date"></div>
+                </div>
+            </div>
         </div>
+
         {% if message %}
             <div class="alert alert-warning text-center no-print">{{ message }}</div>
         {% endif %}
+
         {% if tables %}
-            <div class="info-container">
-                <div class="info-box">
-                    <div>
-                        <div class="info-item"><span class="info-label">Buyer:</span> <span class="info-value">{{ meta.buyer }}</span></div>
-                        <div class="info-item"><span class="info-label">Booking:</span> <span class="info-value">{{ meta.booking }}</span></div>
-                        <div class="info-item"><span class="info-label">Style:</span> <span class="info-value">{{ meta.style }}</span></div>
+            <div class="info-section">
+                <div class="info-grid">
+                    <div class="info-item">
+                        <div class="info-label">Buyer</div>
+                        <div class="info-value">{{ meta.buyer }}</div>
                     </div>
-                    <div>
-                        <div class="info-item"><span class="info-label">Season:</span> <span class="info-value">{{ meta.season }}</span></div>
-                        <div class="info-item"><span class="info-label">Dept:</span> <span class="info-value">{{ meta.dept }}</span></div>
-                        <div class="info-item"><span class="info-label">Item:</span> <span class="info-value">{{ meta.item }}</span></div>
+                    <div class="info-item">
+                        <div class="info-label">Season</div>
+                        <div class="info-value">{{ meta.season }}</div>
+                    </div>
+                    <div class="info-item booking-highlight">
+                        <div class="info-label">Booking No</div>
+                        <div class="info-value">{{ meta.booking }}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Department</div>
+                        <div class="info-value">{{ meta.dept }}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Style</div>
+                        <div class="info-value">{{ meta.style }}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Item</div>
+                        <div class="info-value">{{ meta.item }}</div>
                     </div>
                 </div>
-                <div class="total-box">
-                    <div class="total-label">Grand Total</div>
-                    <div class="total-value">{{ grand_total }}</div>
-                    <small>Pieces</small>
+                
+                <div class="grand-total-box">
+                    <div class="grand-total-label">Grand Total</div>
+                    <div class="grand-total-value">{{ grand_total }}</div>
+                    <div class="grand-total-unit">Pieces</div>
                 </div>
             </div>
+
             {% for item in tables %}
                 <div class="table-card">
-                    <div class="color-header">COLOR: {{ item.color }}</div>
-                    <div class="table-responsive">{{ item.table | safe }}</div>
+                    <div class="color-header">Color: {{ item.color }}</div>
+                    <div class="table-responsive">
+                        {{ item.table | safe }}
+                    </div>
                 </div>
             {% endfor %}
-            <div class="footer-credit">Report Created By <strong>Mehedi Hasan</strong></div>
+            
+            <div class="footer-credit">
+                Report Generated by <strong>Mehedi Hasan</strong>
+            </div>
         {% endif %}
     </div>
+
     <script>
-        const dateObj = new Date();
-        const day = String(dateObj.getDate()).padStart(2, '0');
-        const month = String(dateObj.getMonth() + 1).padStart(2, '0');
-        const year = dateObj.getFullYear();
-        document.getElementById('date').innerText = `${day}-${month}-${year}`;
+        const d = new Date();
+        document.getElementById('date').innerText = 
+            String(d.getDate()).padStart(2,'0') + '-' + 
+            String(d.getMonth()+1).padStart(2,'0') + '-' + 
+            d.getFullYear();
     </script>
 </body>
 </html>
 """
 # ==============================================================================
-# FLASK ROUTES (CONTROLLER LOGIC) - (STORE ROUTE REMOVED)
+# FLASK ROUTES: LOGIN & LOGOUT
+# ==============================================================================
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        username = request.form.get('username')
+        password = request.form.get('password')
+        users = load_users()
+        
+        if username in users and users[username]['password'] == password:
+            session.permanent = True
+            session['user'] = username
+            session['role'] = users[username]['role']
+            session['permissions'] = users[username].get('permissions', [])
+            session['login_time'] = get_bd_time().isoformat()
+            
+            users[username]['last_login'] = get_bd_time().strftime('%d-%m-%Y %I:%M %p')
+            save_users(users)
+            
+            flash('Login successful! Welcome back.', 'success')
+            
+            if users[username]['role'] == 'admin':
+                return redirect(url_for('admin_dashboard'))
+            else:
+                return redirect(url_for('user_dashboard'))
+        else:
+            flash('Invalid username or password. Please try again.', 'error')
+            return redirect(url_for('login'))
+    
+    return render_template_string(LOGIN_TEMPLATE)
+
+@app.route('/logout')
+def logout():
+    if 'user' in session and 'login_time' in session:
+        users = load_users()
+        username = session['user']
+        
+        if username in users:
+            try:
+                login_time = datetime.fromisoformat(session['login_time'])
+                now = get_bd_time()
+                
+                if login_time.tzinfo is None:
+                    login_time = bd_tz.localize(login_time)
+                
+                duration = now - login_time
+                total_seconds = int(duration.total_seconds())
+                
+                hours, remainder = divmod(total_seconds, 3600)
+                minutes, seconds = divmod(remainder, 60)
+                
+                if hours > 0:
+                    duration_str = f"{hours}h {minutes}m {seconds}s"
+                elif minutes > 0:
+                    duration_str = f"{minutes}m {seconds}s"
+                else:
+                    duration_str = f"{seconds}s"
+                
+                users[username]['last_duration'] = duration_str
+                save_users(users)
+            except Exception as e:
+                print(f"Duration calculation error: {e}")
+    
+    session.clear()
+    flash('You have been logged out successfully.', 'info')
+    return redirect(url_for('login'))
+
+# ==============================================================================
+# FLASK ROUTES: DASHBOARD
 # ==============================================================================
 
 @app.route('/')
 def index():
-    if not session.get('logged_in'):
-        return render_template_string(LOGIN_TEMPLATE)
+    if 'user' not in session:
+        return redirect(url_for('login'))
+    
+    if session.get('role') == 'admin':
+        return redirect(url_for('admin_dashboard'))
     else:
-        if session.get('role') == 'admin':
-            stats = get_dashboard_summary_v2()
-            return render_template_string(ADMIN_DASHBOARD_TEMPLATE, stats=stats)
-        else:
-            perms = session.get('permissions', [])
-            if len(perms) == 1 and 'accessories' in perms: 
-                return redirect(url_for('accessories_search_page'))
-            else:
-                return render_template_string(USER_DASHBOARD_TEMPLATE)
+        return redirect(url_for('user_dashboard'))
 
-@app.route('/login', methods=['POST'])
-def login():
-    username = request.form.get('username')
-    password = request.form.get('password')
+@app.route('/admin/dashboard')
+def admin_dashboard():
+    if 'user' not in session or session.get('role') != 'admin':
+        flash('Access denied. Admin privileges required.', 'error')
+        return redirect(url_for('login'))
+    
+    stats = get_dashboard_summary_v2()
+    return render_template_string(ADMIN_DASHBOARD_TEMPLATE, stats=stats)
 
-    users_db = load_users()
+@app.route('/user/dashboard')
+def user_dashboard():
+    if 'user' not in session:
+        return redirect(url_for('login'))
+    
+    return render_template_string(USER_DASHBOARD_TEMPLATE)
 
-    if username in users_db and users_db[username]['password'] == password:
-        session.permanent = True
-        session['logged_in'] = True
-        session['user'] = username
-        session['role'] = users_db[username]['role']
-        session['permissions'] = users_db[username].get('permissions', [])
-        
-        now = get_bd_time()
-        session['login_start'] = now.isoformat()
-        
-        users_db[username]['last_login'] = now.strftime('%I:%M %p, %d %b')
-        save_users(users_db)
-        
-        flash(f"Welcome back, {username}! Dashboard is ready.", "success")
-        return redirect(url_for('index'))
-    else:
-        flash('Invalid Username or Password.', 'error')
-        return redirect(url_for('index'))
+# ==============================================================================
+# FLASK ROUTES: USER MANAGEMENT (API)
+# ==============================================================================
 
-@app.route('/logout')
-def logout():
-    if session.get('logged_in') and 'login_start' in session:
-        try:
-            start_time = datetime.fromisoformat(session['login_start'])
-            end_time = get_bd_time()
-            duration = end_time - start_time
-            minutes = int(duration.total_seconds() / 60)
-            dur_str = f"{minutes} mins" if minutes < 60 else f"{minutes // 60}h {minutes % 60}m"
-
-            username = session.get('user')
-            users_db = load_users()
-            if username in users_db:
-                users_db[username]['last_duration'] = dur_str
-                save_users(users_db)
-        except:
-            pass
-
-    session.clear()
-    flash('Session terminated.', 'info')
-    return redirect(url_for('index'))
-
-@app.route('/admin/get-users', methods=['GET'])
+@app.route('/admin/get-users')
 def get_users():
-    if not session.get('logged_in') or session.get('role') != 'admin':
-        return jsonify({})
-    return jsonify(load_users())
+    if 'user' not in session or session.get('role') != 'admin':
+        return jsonify({"error": "Unauthorized"}), 401
+    
+    users = load_users()
+    return jsonify(users)
 
 @app.route('/admin/save-user', methods=['POST'])
 def save_user():
-    if not session.get('logged_in') or session.get('role') != 'admin':
-        return jsonify({'status': 'error', 'message': 'Unauthorized'})
+    if 'user' not in session or session.get('role') != 'admin':
+        return jsonify({"status": "error", "message": "Unauthorized"}), 401
     
-    data = request.json
-    username = data.get('username', '').strip()
-    password = data.get('password', '').strip()
-    permissions = data.get('permissions', [])
-    action = data.get('action_type')
+    data = request.get_json()
+    users = load_users()
+    
+    username = data.get('username')
+    password = data.get('password')
+    permissions = data.get('permissions', ['closing'])
+    action_type = data.get('action_type', 'create')
     
     if not username or not password:
-        return jsonify({'status': 'error', 'message': 'Invalid Data'})
-
-    users_db = load_users()
+        return jsonify({"status": "error", "message": "Username and password required"})
     
-    if action == 'create':
-        if username in users_db:
-            return jsonify({'status': 'error', 'message': 'User already exists!'})
-        users_db[username] = {
+    if action_type == 'create' and username in users:
+        return jsonify({"status": "error", "message": "User already exists"})
+    
+    if action_type == 'create':
+        users[username] = {
             "password": password,
             "role": "user",
             "permissions": permissions,
-            "created_at": get_bd_date_str(),
+            "created_at": get_bd_time().strftime('%d-%m-%Y'),
             "last_login": "Never",
             "last_duration": "N/A"
         }
-    elif action == 'update': 
-        if username not in users_db:
-            return jsonify({'status': 'error', 'message': 'User not found!'})
-        users_db[username]['password'] = password
-        users_db[username]['permissions'] = permissions
+    else:
+        if username in users:
+            users[username]['password'] = password
+            users[username]['permissions'] = permissions
     
-    save_users(users_db)
-    return jsonify({'status': 'success', 'message': 'User saved successfully!'})
+    save_users(users)
+    return jsonify({"status": "success", "message": "User saved successfully"})
 
 @app.route('/admin/delete-user', methods=['POST'])
 def delete_user():
-    if not session.get('logged_in') or session.get('role') != 'admin':
-        return jsonify({'status': 'error', 'message': 'Unauthorized'})
+    if 'user' not in session or session.get('role') != 'admin':
+        return jsonify({"status": "error", "message": "Unauthorized"}), 401
     
-    username = request.json.get('username')
-    users_db = load_users()
+    data = request.get_json()
+    username = data.get('username')
+    users = load_users()
     
-    if username == 'Admin':
-        return jsonify({'status': 'error', 'message': 'Cannot delete Main Admin!'})
+    if username in users:
+        if users[username].get('role') == 'admin':
+            return jsonify({"status": "error", "message": "Cannot delete admin user"})
+        del users[username]
+        save_users(users)
+        return jsonify({"status": "success", "message": "User deleted"})
+    
+    return jsonify({"status": "error", "message": "User not found"})
 
-    if username in users_db:
-        del users_db[username]
-        save_users(users_db)
-        return jsonify({'status': 'success', 'message': 'User deleted!'})
-    
-    return jsonify({'status': 'error', 'message': 'User not found'})
+# ==============================================================================
+# FLASK ROUTES: CLOSING REPORT GENERATION
+# ==============================================================================
 
 @app.route('/generate-report', methods=['POST'])
 def generate_report():
-    if not session.get('logged_in'):
+    if 'user' not in session:
+        return redirect(url_for('login'))
+    
+    ref_no = request.form.get('ref_no', '').strip().upper()
+    
+    if not ref_no:
+        flash('Please enter a valid booking reference number.', 'error')
         return redirect(url_for('index'))
     
-    internal_ref_no = request.form['ref_no']
-    if not internal_ref_no: 
+    report_data = fetch_closing_report_data(ref_no)
+    
+    if report_data:
+        update_stats(ref_no, session['user'])
+        return render_template_string(CLOSING_REPORT_PREVIEW_TEMPLATE, 
+                                      report_data=report_data, 
+                                      ref_no=ref_no)
+    else:
+        flash(f'No data found for reference: {ref_no}. Please check and try again.', 'error')
         return redirect(url_for('index'))
 
-    try:
-        report_data = fetch_closing_report_data(internal_ref_no)
-        if not report_data: 
-            flash(f"Booking Not Found: {internal_ref_no}", "error")
-            return redirect(url_for('index'))
-        
-        update_stats(internal_ref_no, session.get('user', 'Unknown'))
-        return render_template_string(CLOSING_REPORT_PREVIEW_TEMPLATE, report_data=report_data, ref_no=internal_ref_no)
-    except Exception as e: 
-        flash(f"System Error: {str(e)}", "error")
-        return redirect(url_for('index'))
-
-@app.route('/download-closing-excel', methods=['GET'])
+@app.route('/download-closing-excel')
 def download_closing_excel():
-    if not session.get('logged_in'):
+    if 'user' not in session:
+        return redirect(url_for('login'))
+    
+    ref_no = request.args.get('ref_no', '').strip().upper()
+    
+    if not ref_no:
+        flash('Reference number missing.', 'error')
         return redirect(url_for('index'))
     
-    internal_ref_no = request.args.get('ref_no')
-    try:
-        report_data = fetch_closing_report_data(internal_ref_no)
-        if report_data:
-            excel_file = create_formatted_excel_report(report_data, internal_ref_no)
-            update_stats(internal_ref_no, session.get('user', 'Unknown'))
-            return make_response(send_file(
+    report_data = fetch_closing_report_data(ref_no)
+    
+    if report_data:
+        excel_file = create_formatted_excel_report(report_data, ref_no)
+        
+        if excel_file:
+            filename = f"Closing_Report_{ref_no}_{get_bd_date_str()}.xlsx"
+            return send_file(
                 excel_file,
                 as_attachment=True,
-                download_name=f"Report-{internal_ref_no.replace('/', '_')}.xlsx",
+                download_name=filename,
                 mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-            ))
-        else:
-            flash("Data source returned empty.", "error")
-            return redirect(url_for('index'))
-    except Exception as e:
-        flash("Failed to generate Excel.", "error")
-        return redirect(url_for('index'))
+            )
+    
+    flash('Failed to generate Excel file.', 'error')
+    return redirect(url_for('index'))
 
 # ==============================================================================
-# ACCESSORIES ROUTES
-# ==============================================================================
-
-@app.route('/admin/accessories', methods=['GET'])
-def accessories_search_page():
-    if not session.get('logged_in'):
-        return redirect(url_for('index'))
-    if 'accessories' not in session.get('permissions', []):
-        flash("Access Denied", "error")
-        return redirect(url_for('index'))
-    
-    history_bookings = get_all_accessories_bookings()
-    history_count = len(history_bookings)
-    
-    return render_template_string(
-        ACCESSORIES_SEARCH_TEMPLATE,
-        history_bookings=history_bookings,
-        history_count=history_count
-    )
-
-@app.route('/admin/accessories/input', methods=['POST'])
-def accessories_input_page():
-    if not session.get('logged_in'):
-        return redirect(url_for('index'))
-    
-    ref_no = request.form.get('ref_no') or request.args.get('ref')
-    if ref_no:
-        ref_no = ref_no.strip().upper()
-    
-    if not ref_no: 
-        return redirect(url_for('accessories_search_page'))
-
-    db_acc = load_accessories_db()
-
-    if ref_no in db_acc:
-        data = db_acc[ref_no]
-        colors = data['colors']
-        style = data['style']
-        buyer = data['buyer']
-        challans = data['challans']
-    else:
-        try:
-            api_data = fetch_closing_report_data(ref_no)
-            if not api_data:
-                flash(f"Booking not found: {ref_no}", "error")
-                return redirect(url_for('accessories_search_page'))
-            
-            colors = sorted(list(set([item['color'] for item in api_data])))
-            style = api_data[0].get('style', 'N/A')
-            buyer = api_data[0].get('buyer', 'N/A')
-            challans = []
-            
-            db_acc[ref_no] = {
-                "style": style,
-                "buyer": buyer,
-                "colors": colors,
-                "item_type": "",
-                "challans": challans,
-                "last_api_call": get_bd_time().isoformat()
-            }
-            save_accessories_db(db_acc)
-        except Exception as e:
-            flash(f"Connection Error with ERP: {str(e)}", "error")
-            return redirect(url_for('accessories_search_page'))
-
-    return render_template_string(
-        ACCESSORIES_INPUT_TEMPLATE,
-        ref=ref_no,
-        colors=colors,
-        style=style,
-        buyer=buyer,
-        challans=challans
-    )
-
-@app.route('/admin/accessories/input_direct')
-def accessories_input_direct():
-    if not session.get('logged_in'):
-        return redirect(url_for('index'))
-    
-    ref_no = request.args.get('ref')
-    if ref_no:
-        ref_no = ref_no.strip().upper()
-    
-    if not ref_no:
-        return redirect(url_for('accessories_search_page'))
-
-    db_acc = load_accessories_db()
-
-    if ref_no in db_acc:
-        data = db_acc[ref_no]
-        colors = data['colors']
-        style = data['style']
-        buyer = data['buyer']
-        challans = data['challans']
-    else:
-        try: 
-            api_data = fetch_closing_report_data(ref_no)
-            if not api_data:
-                flash(f"Booking not found: {ref_no}", "error")
-                return redirect(url_for('accessories_search_page'))
-            
-            colors = sorted(list(set([item['color'] for item in api_data])))
-            style = api_data[0].get('style', 'N/A')
-            buyer = api_data[0].get('buyer', 'N/A')
-            challans = []
-            
-            db_acc[ref_no] = {
-                "style": style,
-                "buyer": buyer,
-                "colors": colors,
-                "item_type": "",
-                "challans": challans,
-                "last_api_call": get_bd_time().isoformat()
-            }
-            save_accessories_db(db_acc)
-        except Exception as e:
-            flash(f"Connection Error with ERP: {str(e)}", "error")
-            return redirect(url_for('accessories_search_page'))
-
-    return render_template_string(
-        ACCESSORIES_INPUT_TEMPLATE,
-        ref=ref_no,
-        colors=colors,
-        style=style,
-        buyer=buyer,
-        challans=challans
-    )
-
-@app.route('/admin/accessories/refresh')
-def accessories_refresh_data():
-    if not session.get('logged_in'):
-        return redirect(url_for('index'))
-    
-    ref_no = request.args.get('ref')
-    if not ref_no:
-        return redirect(url_for('accessories_search_page'))
-
-    db_acc = load_accessories_db()
-    if ref_no not in db_acc:
-        flash(f"Cannot refresh. Booking {ref_no} not in database.", "error")
-        return redirect(url_for('accessories_search_page'))
-
-    try:
-        api_data = fetch_closing_report_data(ref_no)
-        if not api_data:
-            flash("No new data found.", "info")
-            return redirect(url_for('accessories_input_direct', ref=ref_no))
-
-        new_colors = sorted(list(set([item['color'] for item in api_data])))
-        existing_colors = db_acc[ref_no].get('colors', [])
-        merged_colors = sorted(list(set(existing_colors + new_colors)))
-
-        if merged_colors == existing_colors and db_acc[ref_no].get('buyer', 'N/A') == api_data[0].get('buyer', 'N/A'):
-             flash("No changes detected.", "info")
-        else:
-            db_acc[ref_no]['colors'] = merged_colors
-            if api_data[0].get('buyer', 'N/A') != 'N/A':
-                db_acc[ref_no]['buyer'] = api_data[0].get('buyer', db_acc[ref_no].get('buyer', 'N/A'))
-            if api_data[0].get('style', 'N/A') != 'N/A':
-                db_acc[ref_no]['style'] = api_data[0].get('style', db_acc[ref_no].get('style', 'N/A'))
-            
-            save_accessories_db(db_acc)
-            flash("Data refreshed successfully!", "success")
-
-    except Exception as e:
-        flash(f"Error during refresh: {e}", "error")
-
-    return redirect(url_for('accessories_input_direct', ref=ref_no))
-
-@app.route('/admin/accessories/delete_booking')
-def accessories_delete_booking():
-    if not session.get('logged_in') or session.get('role') != 'admin':
-        flash("Unauthorized access.", "error")
-        return redirect(url_for('index'))
-    
-    ref_no = request.args.get('ref')
-    if not ref_no:
-        return redirect(url_for('accessories_search_page'))
-
-    db_acc = load_accessories_db()
-    if ref_no in db_acc:
-        del db_acc[ref_no]
-        save_accessories_db(db_acc)
-        flash(f"Booking '{ref_no}' deleted.", "success")
-    else:
-        flash(f"Booking '{ref_no}' not found.", "error")
-
-    return redirect(url_for('accessories_search_page'))
-
-@app.route('/admin/accessories/save', methods=['POST'])
-def accessories_save():
-    if not session.get('logged_in'):
-        return redirect(url_for('index'))
-    
-    ref = request.form.get('ref').strip().upper()
-    db_acc = load_accessories_db()
-    
-    if ref in db_acc:
-        if request.form.get('item_type'):
-            db_acc[ref]['item_type'] = request.form.get('item_type')
-        
-        for item in db_acc[ref]['challans']:
-            item['status'] = "✔"
-        
-        new_entry = {
-            "date": get_bd_date_str(),
-            "line": request.form.get('line_no'),
-            "color": request.form.get('color'),
-            "size": request.form.get('size'),
-            "qty": request.form.get('qty'),
-            "status": ""
-        }
-        db_acc[ref]['challans'].append(new_entry)
-        save_accessories_db(db_acc)
-    
-    return redirect(url_for('accessories_print_view', ref=ref))
-
-@app.route('/admin/accessories/print', methods=['GET'])
-def accessories_print_view():
-    if not session.get('logged_in'):
-        return redirect(url_for('index'))
-    
-    ref = request.args.get('ref').strip().upper()
-    db_acc = load_accessories_db()
-    
-    if ref not in db_acc:
-        return redirect(url_for('accessories_search_page'))
-    
-    data = db_acc[ref]
-    challans = data['challans']
-    
-    line_summary = {}
-    for c in challans:
-        ln = c['line']
-        try:
-            q = int(c['qty'])
-        except:
-            q = 0
-        line_summary[ln] = line_summary.get(ln, 0) + q
-    sorted_line_summary = dict(sorted(line_summary.items()))
-
-    return render_template_string(
-        ACCESSORIES_REPORT_TEMPLATE,
-        ref=ref,
-        buyer=data['buyer'],
-        style=data['style'],
-        item_type=data.get('item_type', ''),
-        challans=challans,
-        line_summary=sorted_line_summary,
-        count=len(challans),
-        today=get_bd_date_str()
-    )
-
-@app.route('/admin/accessories/edit', methods=['GET'])
-def accessories_edit():
-    if not session.get('logged_in'):
-        return redirect(url_for('index'))
-    
-    ref = request.args.get('ref')
-    try:
-        index = int(request.args.get('index'))
-    except:
-        return redirect(url_for('accessories_search_page'))
-    
-    db_acc = load_accessories_db()
-    if ref in db_acc and 0 <= index < len(db_acc[ref]['challans']):
-        item = db_acc[ref]['challans'][index]
-        return render_template_string(ACCESSORIES_EDIT_TEMPLATE, ref=ref, index=index, item=item)
-    
-    return redirect(url_for('accessories_print_view', ref=ref))
-
-@app.route('/admin/accessories/update', methods=['POST'])
-def accessories_update():
-    if not session.get('logged_in'):
-        return redirect(url_for('index'))
-    
-    ref = request.form.get('ref')
-    index = int(request.form.get('index'))
-    db_acc = load_accessories_db()
-
-    if ref in db_acc and 0 <= index < len(db_acc[ref]['challans']):
-        db_acc[ref]['challans'][index]['line'] = request.form.get('line_no')
-        db_acc[ref]['challans'][index]['color'] = request.form.get('color')
-        db_acc[ref]['challans'][index]['size'] = request.form.get('size')
-        db_acc[ref]['challans'][index]['qty'] = request.form.get('qty')
-        save_accessories_db(db_acc)
-    
-    return redirect(url_for('accessories_input_direct', ref=ref))
-
-@app.route('/admin/accessories/delete', methods=['POST'])
-def accessories_delete():
-    if not session.get('logged_in') or session.get('role') != 'admin':
-        return redirect(url_for('index'))
-    
-    ref = request.form.get('ref')
-    index = int(request.form.get('index'))
-    db_acc = load_accessories_db()
-
-    if ref in db_acc and 0 <= index < len(db_acc[ref]['challans']):
-        del db_acc[ref]['challans'][index]
-        save_accessories_db(db_acc)
-    
-    return redirect(url_for('accessories_input_direct', ref=ref))
-
-# ==============================================================================
-# PO REPORT ROUTE - (UPDATED WITH LOGIC FIX)
+# FLASK ROUTES: PO SHEET GENERATION - NEW UPDATED LOGIC
 # ==============================================================================
 
 @app.route('/generate-po-report', methods=['POST'])
 def generate_po_report():
-    if not session.get('logged_in'):
-        return redirect(url_for('index'))
-
-    if os.path.exists(UPLOAD_FOLDER):
+    if 'user' not in session:
+        return redirect(url_for('login'))
+    
+    # আপলোড ফোল্ডার ক্লিয়ার
+    if os.path.exists(UPLOAD_FOLDER): 
         shutil.rmtree(UPLOAD_FOLDER)
     os.makedirs(UPLOAD_FOLDER)
 
-    try:
-        uploaded_files = request.files.getlist('pdf_files')
-        all_data = []
-        final_meta = {
-            'buyer': 'N/A',
-            'booking': 'N/A',
-            'style': 'N/A',
-            'season': 'N/A',
-            'dept': 'N/A',
-            'item': 'N/A'
-        }
+    uploaded_files = request.files.getlist('pdf_files')
+    all_data = []
+    final_meta = {
+        'buyer': 'N/A', 'booking': 'N/A', 'style': 'N/A',
+        'season': 'N/A', 'dept': 'N/A', 'item': 'N/A'
+    }
+    
+    for file in uploaded_files:
+        if file.filename == '': 
+            continue
+        file_path = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
+        file.save(file_path)
         
-        for file in uploaded_files:
-            if file.filename == '':
-                continue
-            file_path = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
-            file.save(file_path)
-            data, meta = extract_data_dynamic(file_path)
-            if meta['buyer'] != 'N/A':
-                final_meta = meta
-            if data:
-                all_data.extend(data)
+        data, meta = extract_data_dynamic(file_path)
         
-        if not all_data:
-            return render_template_string(PO_REPORT_TEMPLATE, tables=None, message="No PO data found in uploaded files.")
-
-        booking_ref = final_meta.get('booking', 'N/A')
-        update_po_stats(session.get('user', 'Unknown'), len(uploaded_files), booking_ref)
-
-        df = pd.DataFrame(all_data)
-        df['Color'] = df['Color'].str.strip()
-        df = df[df['Color'] != ""]
-        unique_colors = df['Color'].unique()
+        if meta['buyer'] != 'N/A':
+            final_meta = meta
         
-        final_tables = []
-        grand_total_qty = 0
+        if data:
+            all_data.extend(data)
+    
+    if not all_data:
+        flash('No PO table data found in the uploaded files.', 'warning')
+        return render_template_string(PO_REPORT_TEMPLATE, tables=None, message="No PO table data found.")
 
-        for color in unique_colors: 
-            color_df = df[df['Color'] == color]
-            pivot = color_df.pivot_table(
-                index='P.O NO',
-                columns='Size',
-                values='Quantity',
-                aggfunc='sum',
-                fill_value=0
-            )
-            pivot.columns.name = None
-            
-            try:
-                sorted_cols = sort_sizes(pivot.columns.tolist())
-                pivot = pivot[sorted_cols]
-            except:
-                pass
-            
-            pivot['Total'] = pivot.sum(axis=1)
-            grand_total_qty += pivot['Total'].sum()
+    df = pd.DataFrame(all_data)
+    df['Color'] = df['Color'].str.strip()
+    df = df[df['Color'] != ""]
+    unique_colors = df['Color'].unique()
+    
+    final_tables = []
+    grand_total_qty = 0
 
-            actual_qty = pivot.sum()
-            actual_qty.name = 'Actual Qty'
-            qty_plus_3 = (actual_qty * 1.03).round().astype(int)
-            qty_plus_3.name = '3% Order Qty'
-            
-            pivot_final = pd.concat([pivot, actual_qty.to_frame().T, qty_plus_3.to_frame().T])
-            pivot_final = pivot_final.reset_index()
-            pivot_final = pivot_final.rename(columns={'index': 'P.O NO'})
-            
-            pd.set_option('colheader_justify', 'center')
-            html_table = pivot_final.to_html(
-                classes='table table-bordered table-striped',
-                index=False,
-                border=0
-            )
-            
-            html_table = re.sub(r'<tr>\s*<td>', '<tr><td class="order-col">', html_table)
-            html_table = html_table.replace('<th>Total</th>', '<th class="total-col-header">Total</th>')
-            html_table = html_table.replace('<td>Total</td>', '<td class="total-col">Total</td>')
-            html_table = html_table.replace('<td>Actual Qty</td>', '<td class="summary-label">Actual Qty</td>')
-            html_table = html_table.replace('<td>3% Order Qty</td>', '<td class="summary-label">3% Order Qty</td>')
-            html_table = re.sub(
-                r'<tr>\s*<td class="summary-label">',
-                '<tr class="summary-row"><td class="summary-label">',
-                html_table
-            )
+    for color in unique_colors:
+        color_df = df[df['Color'] == color]
+        pivot = color_df.pivot_table(index='P.O NO', columns='Size', values='Quantity', aggfunc='sum', fill_value=0)
+        
+        existing_sizes = pivot.columns.tolist()
+        sorted_sizes = sort_sizes(existing_sizes)
+        pivot = pivot[sorted_sizes]
+        
+        pivot['Total'] = pivot.sum(axis=1)
+        grand_total_qty += pivot['Total'].sum()
 
-            final_tables.append({'color': color, 'table': html_table})
-            
-        return render_template_string(
-            PO_REPORT_TEMPLATE,
-            tables=final_tables,
-            meta=final_meta,
-            grand_total=f"{grand_total_qty:,}"
-        )
-    except Exception as e:
-        flash(f"Error processing files: {str(e)}", "error")
+        actual_qty = pivot.sum()
+        actual_qty.name = 'Actual Qty'
+        
+        qty_plus_3 = (actual_qty * 1.03).round().astype(int)
+        qty_plus_3.name = '3% Order Qty'
+        
+        pivot = pd.concat([pivot, actual_qty.to_frame().T, qty_plus_3.to_frame().T])
+        
+        pivot = pivot.reset_index()
+        pivot = pivot.rename(columns={'index': 'P.O NO'})
+        pivot.columns.name = None
+
+        pd.set_option('colheader_justify', 'center')
+        table_html = pivot.to_html(classes='table table-bordered table-striped', index=False, border=0)
+        
+        table_html = re.sub(r'<tr>\s*<td>', '<tr><td class="order-col">', table_html)
+        table_html = table_html.replace('<th>Total</th>', '<th class="total-col-header">Total</th>')
+        table_html = table_html.replace('<td>Total</td>', '<td class="total-col">Total</td>')
+        
+        table_html = table_html.replace('<td>Actual Qty</td>', '<td class="summary-label">Actual Qty</td>')
+        table_html = table_html.replace('<td>3% Order Qty</td>', '<td class="summary-label">3% Order Qty</td>')
+        table_html = re.sub(r'<tr>\s*<td class="summary-label">', '<tr class="summary-row"><td class="summary-label">', table_html)
+
+        final_tables.append({'color': color, 'table': table_html})
+    
+    # Stats আপডেট
+    update_po_stats(session['user'], len(uploaded_files), final_meta.get('booking', 'N/A'))
+    
+    return render_template_string(PO_REPORT_TEMPLATE, 
+                                  tables=final_tables, 
+                                  meta=final_meta, 
+                                  grand_total=f"{int(grand_total_qty):,}")
+
+# ==============================================================================
+# FLASK ROUTES: ACCESSORIES MANAGEMENT
+# ==============================================================================
+
+@app.route('/admin/accessories')
+def accessories_search():
+    if 'user' not in session:
+        return redirect(url_for('login'))
+    
+    # পার্মিশন চেক
+    if session.get('role') != 'admin' and 'accessories' not in session.get('permissions', []):
+        flash('Access denied. You do not have permission for Accessories module.', 'error')
         return redirect(url_for('index'))
+    
+    # হিস্ট্রি বুকিং লোড
+    history_bookings = get_all_accessories_bookings()
+    history_count = len(history_bookings)
+    
+    return render_template_string(ACCESSORIES_SEARCH_TEMPLATE, 
+                                  history_bookings=history_bookings,
+                                  history_count=history_count)
 
+@app.route('/admin/accessories/input', methods=['POST'])
+def accessories_input():
+    if 'user' not in session:
+        return redirect(url_for('login'))
+    
+    ref_no = request.form.get('ref_no', '').strip().upper()
+    
+    if not ref_no:
+        flash('Please enter a valid booking reference.', 'error')
+        return redirect(url_for('accessories_search'))
+    
+    return redirect(url_for('accessories_input_direct', ref=ref_no))
 
+@app.route('/admin/accessories/input_direct')
+def accessories_input_direct():
+    if 'user' not in session:
+        return redirect(url_for('login'))
+    
+    ref = request.args.get('ref', '').strip().upper()
+    
+    if not ref:
+        flash('Missing booking reference.', 'error')
+        return redirect(url_for('accessories_search'))
+    
+    db_acc = load_accessories_db()
+    
+    if ref in db_acc:
+        booking_data = db_acc[ref]
+        buyer = booking_data.get('buyer', 'N/A')
+        style = booking_data.get('style', 'N/A')
+        colors = booking_data.get('colors', [])
+        challans = booking_data.get('challans', [])
+    else:
+        # API থেকে ডেটা ফেচ করুন
+        report_data = fetch_closing_report_data(ref)
+        
+        if report_data:
+            buyer = report_data[0].get('buyer', 'N/A')
+            style = report_data[0].get('style', 'N/A')
+            colors = list(set([block.get('color', 'Unknown') for block in report_data]))
+            challans = []
+            
+            db_acc[ref] = {
+                'buyer': buyer,
+                'style': style,
+                'colors': colors,
+                'challans': challans,
+                'last_api_call': get_bd_time().strftime('%d-%m-%Y %I:%M %p')
+            }
+            save_accessories_db(db_acc)
+        else:
+            flash(f'No data found for reference: {ref}', 'error')
+            return redirect(url_for('accessories_search'))
+    
+    return render_template_string(ACCESSORIES_INPUT_TEMPLATE,
+                                  ref=ref,
+                                  buyer=buyer,
+                                  style=style,
+                                  colors=colors,
+                                  challans=challans)
+
+@app.route('/admin/accessories/refresh')
+def accessories_refresh():
+    if 'user' not in session:
+        return redirect(url_for('login'))
+    
+    ref = request.args.get('ref', '').strip().upper()
+    
+    if not ref:
+        flash('Missing reference.', 'error')
+        return redirect(url_for('accessories_search'))
+    
+    db_acc = load_accessories_db()
+    
+    # API থেকে ডেটা রিফ্রেশ
+    report_data = fetch_closing_report_data(ref)
+    
+    if report_data:
+        buyer = report_data[0].get('buyer', 'N/A')
+        style = report_data[0].get('style', 'N/A')
+        colors = list(set([block.get('color', 'Unknown') for block in report_data]))
+        
+        existing_challans = []
+        if ref in db_acc:
+            existing_challans = db_acc[ref].get('challans', [])
+        
+        db_acc[ref] = {
+            'buyer': buyer,
+            'style': style,
+            'colors': colors,
+            'challans': existing_challans,
+            'last_api_call': get_bd_time().strftime('%d-%m-%Y %I:%M %p')
+        }
+        save_accessories_db(db_acc)
+        flash('Data refreshed successfully from server.', 'success')
+    else:
+        flash('Failed to refresh data. Server may be unavailable.', 'error')
+    
+    return redirect(url_for('accessories_input_direct', ref=ref))
+
+@app.route('/admin/accessories/save', methods=['POST'])
+def accessories_save():
+    if 'user' not in session:
+        return redirect(url_for('login'))
+    
+    ref = request.form.get('ref', '').strip().upper()
+    item_type = request.form.get('item_type', 'Top')
+    color = request.form.get('color', '')
+    line_no = request.form.get('line_no', '')
+    size = request.form.get('size', 'ALL')
+    qty = request.form.get('qty', '0')
+    
+    if not ref or not color or not line_no or not qty:
+        flash('All fields are required.', 'error')
+        return redirect(url_for('accessories_input_direct', ref=ref))
+    
+    db_acc = load_accessories_db()
+    
+    if ref not in db_acc:
+        flash('Booking not found. Please search again.', 'error')
+        return redirect(url_for('accessories_search'))
+    
+    new_challan = {
+        'date': get_bd_date_str(),
+        'item_type': item_type,
+        'color': color,
+        'line': line_no.upper(),
+        'size': size,
+        'qty': qty,
+        'status': 'OK'
+    }
+    
+    db_acc[ref]['challans'].append(new_challan)
+    save_accessories_db(db_acc)
+    
+    flash(f'Entry saved: {line_no} - {color} - {qty} pcs', 'success')
+    return redirect(url_for('accessories_input_direct', ref=ref))
+
+@app.route('/admin/accessories/edit')
+def accessories_edit():
+    if 'user' not in session or session.get('role') != 'admin':
+        flash('Admin access required for editing.', 'error')
+        return redirect(url_for('login'))
+    
+    ref = request.args.get('ref', '').strip().upper()
+    index = request.args.get('index', type=int)
+    
+    if not ref or index is None:
+        flash('Invalid request.', 'error')
+        return redirect(url_for('accessories_search'))
+    
+    db_acc = load_accessories_db()
+    
+    if ref not in db_acc:
+        flash('Booking not found.', 'error')
+        return redirect(url_for('accessories_search'))
+    
+    challans = db_acc[ref].get('challans', [])
+    
+    if index < 0 or index >= len(challans):
+        flash('Entry not found.', 'error')
+        return redirect(url_for('accessories_input_direct', ref=ref))
+    
+    item = challans[index]
+    
+    return render_template_string(ACCESSORIES_EDIT_TEMPLATE,
+                                  ref=ref,
+                                  index=index,
+                                  item=item)
+
+@app.route('/admin/accessories/update', methods=['POST'])
+def accessories_update():
+    if 'user' not in session or session.get('role') != 'admin':
+        flash('Admin access required.', 'error')
+        return redirect(url_for('login'))
+    
+    ref = request.form.get('ref', '').strip().upper()
+    index = request.form.get('index', type=int)
+    line_no = request.form.get('line_no', '')
+    color = request.form.get('color', '')
+    size = request.form.get('size', 'ALL')
+    qty = request.form.get('qty', '0')
+    
+    if not ref or index is None:
+        flash('Invalid request.', 'error')
+        return redirect(url_for('accessories_search'))
+    
+    db_acc = load_accessories_db()
+    
+    if ref not in db_acc:
+        flash('Booking not found.', 'error')
+        return redirect(url_for('accessories_search'))
+    
+    challans = db_acc[ref].get('challans', [])
+    
+    if index < 0 or index >= len(challans):
+        flash('Entry not found.', 'error')
+        return redirect(url_for('accessories_input_direct', ref=ref))
+    
+    # আপডেট
+    challans[index]['line'] = line_no.upper()
+    challans[index]['color'] = color
+    challans[index]['size'] = size
+    challans[index]['qty'] = qty
+    
+    db_acc[ref]['challans'] = challans
+    save_accessories_db(db_acc)
+    
+    flash('Entry updated successfully.', 'success')
+    return redirect(url_for('accessories_input_direct', ref=ref))
+
+@app.route('/admin/accessories/delete', methods=['POST'])
+def accessories_delete():
+    if 'user' not in session or session.get('role') != 'admin':
+        flash('Admin access required.', 'error')
+        return redirect(url_for('login'))
+    
+    ref = request.form.get('ref', '').strip().upper()
+    index = request.form.get('index', type=int)
+    
+    if not ref or index is None:
+        flash('Invalid request.', 'error')
+        return redirect(url_for('accessories_search'))
+    
+    db_acc = load_accessories_db()
+    
+    if ref not in db_acc:
+        flash('Booking not found.', 'error')
+        return redirect(url_for('accessories_search'))
+    
+    challans = db_acc[ref].get('challans', [])
+    
+    if index < 0 or index >= len(challans):
+        flash('Entry not found.', 'error')
+        return redirect(url_for('accessories_input_direct', ref=ref))
+    
+    deleted_item = challans.pop(index)
+    db_acc[ref]['challans'] = challans
+    save_accessories_db(db_acc)
+    
+    flash(f'Entry deleted: {deleted_item.get("line")} - {deleted_item.get("color")}', 'info')
+    return redirect(url_for('accessories_input_direct', ref=ref))
+
+@app.route('/admin/accessories/delete_booking')
+def accessories_delete_booking():
+    if 'user' not in session or session.get('role') != 'admin':
+        flash('Admin access required.', 'error')
+        return redirect(url_for('login'))
+    
+    ref = request.args.get('ref', '').strip().upper()
+    
+    if not ref:
+        flash('Missing reference.', 'error')
+        return redirect(url_for('accessories_search'))
+    
+    db_acc = load_accessories_db()
+    
+    if ref in db_acc:
+        del db_acc[ref]
+        save_accessories_db(db_acc)
+        flash(f'Booking {ref} deleted completely.', 'success')
+    else:
+        flash('Booking not found.', 'error')
+    
+    return redirect(url_for('accessories_search'))
+
+@app.route('/admin/accessories/print')
+def accessories_print():
+    if 'user' not in session:
+        return redirect(url_for('login'))
+    
+    ref = request.args.get('ref', '').strip().upper()
+    
+    if not ref:
+        flash('Missing reference.', 'error')
+        return redirect(url_for('accessories_search'))
+    
+    db_acc = load_accessories_db()
+    
+    if ref not in db_acc:
+        flash('Booking not found.', 'error')
+        return redirect(url_for('accessories_search'))
+    
+    booking_data = db_acc[ref]
+    buyer = booking_data.get('buyer', 'N/A')
+    style = booking_data.get('style', 'N/A')
+    challans = booking_data.get('challans', [])
+    
+    # লাইন-ওয়াইজ সামারি
+    line_summary = {}
+    for c in challans:
+        line = c.get('line', 'Unknown')
+        qty = int(c.get('qty', 0))
+        if line in line_summary:
+            line_summary[line] += qty
+        else:
+            line_summary[line] = qty
+    
+    # সর্ট
+    line_summary = dict(sorted(line_summary.items()))
+    
+    # আইটেম টাইপ
+    item_type = challans[0].get('item_type', 'Top') if challans else 'Top'
+    
+    return render_template_string(ACCESSORIES_REPORT_TEMPLATE,
+                                  ref=ref,
+                                  buyer=buyer,
+                                  style=style,
+                                  challans=challans,
+                                  count=len(challans),
+                                  line_summary=line_summary,
+                                  item_type=item_type,
+                                  today=get_bd_date_str())
 # ==============================================================================
 # APPLICATION ENTRY POINT
 # ==============================================================================
 
-if __name__ == '__main__':
-    port = int(os.environ.get("PORT", 5000))
-    app.run(host='0.0.0.0', port=port, debug=True)
-
+if __name__ == "__main__":
+    print("=" * 60)
+    print("  MNM Software - Production Management System")
+    print("  Developed by Mehedi Hasan")
+    print("  Server Starting...")
+    print("=" * 60)
+    
+    app.run(host='0.0.0.0', port=5000, debug=False)
