@@ -11,3 +11,4 @@ Pillow
 lxml
 numpy
 dnspython
+pdfplumber
