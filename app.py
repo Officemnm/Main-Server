@@ -73,7 +73,7 @@ except Exception as e:
     print(f"MongoDB Connection Error: {e}")
 
 # ==============================================================================
-# ENHANCED CSS STYLES - PREMIUM MODERN UI WITH ANIMATIONS
+# ENHANCED CSS STYLES - PREMIUM MODERN UI (UPDATED FLASH & SEARCH)
 # ==============================================================================
 COMMON_STYLES = """
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -221,12 +221,6 @@ COMMON_STYLES = """
             font-size: 28px;
             color: var(--accent-orange);
             filter: drop-shadow(0 0 10px var(--accent-orange-glow));
-            animation: logoFloat 3s ease-in-out infinite;
-        }
-
-        @keyframes logoFloat {
-            0%, 100% { transform: translateY(0) rotate(0deg); }
-            50% { transform: translateY(-5px) rotate(5deg); }
         }
         
         .nav-menu { 
@@ -296,11 +290,6 @@ COMMON_STYLES = """
             border-radius: 10px;
             font-size: 11px;
             font-weight: 700;
-            animation: badgePulse 2s ease-in-out infinite;
-        }
-        @keyframes badgePulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.1); }
         }
 
         .sidebar-footer {
@@ -325,280 +314,56 @@ COMMON_STYLES = """
             min-height: 100vh;
         }
 
-        .header-section { 
+        /* PROFESSIONAL FLASH MESSAGES (Updated) */
+        #flash-container {
+            position: fixed;
+            top: 30px;
+            right: 30px;
+            z-index: 10001;
+            width: auto;
+            min-width: 300px;
             display: flex;
-            justify-content: space-between; 
-            align-items: flex-start; 
-            margin-bottom: 35px;
-            animation: fadeInDown 0.6s ease-out;
+            flex-direction: column;
+            gap: 15px;
         }
 
-        @keyframes fadeInDown {
-            from { opacity: 0; transform: translateY(-20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .page-title { 
-            font-size: 32px;
-            font-weight: 800; 
-            color: white; 
-            margin-bottom: 8px;
-            letter-spacing: -0.5px;
-            background: linear-gradient(135deg, #fff 0%, #ccc 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .page-subtitle { 
-            color: var(--text-secondary);
+        .flash-message {
+            background: #1a1a25;
+            color: white;
+            padding: 16px 24px;
+            border-radius: 8px;
             font-size: 14px;
-            font-weight: 400;
-        }
-
-        .status-badge {
-            background: var(--bg-card);
-            padding: 12px 24px;
-            border-radius: 50px;
-            border: 1px solid var(--border-color);
-            font-size: 13px;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            box-shadow: var(--shadow-card);
-            transition: var(--transition-smooth);
-        }
-        
-        /* Status Dot Animation */
-        .status-dot {
-            width: 10px;
-            height: 10px;
-            background: var(--accent-green);
-            border-radius: 50%;
-            animation: statusPulse 1.5s ease-in-out infinite;
-            box-shadow: 0 0 10px var(--accent-green);
-        }
-        
-        @keyframes statusPulse {
-            0%, 100% { 
-                opacity: 1; 
-                transform: scale(1);
-                box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
-            }
-            50% { 
-                opacity: 0.8; 
-                transform: scale(1.2);
-                box-shadow: 0 0 0 10px rgba(16, 185, 129, 0);
-            }
-        }
-        
-        /* Enhanced Cards & Grid */
-        .stats-grid { 
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); 
-            gap: 24px; 
-            margin-bottom: 35px;
-        }
-
-        .dashboard-grid-2 { 
-            display: grid;
-            grid-template-columns: 2fr 1fr; 
-            gap: 24px; 
-            margin-bottom: 24px; 
-        }
-
-        .card { 
-            background: var(--gradient-card);
-            border: 1px solid var(--border-color);
-            border-radius: var(--card-radius);
-            padding: 28px;
-            backdrop-filter: blur(10px);
-            transition: var(--transition-smooth);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 1px;
-            background: linear-gradient(90deg, transparent, var(--accent-orange-glow), transparent);
-            opacity: 0;
-            transition: var(--transition-smooth);
-        }
-
-        .card:hover {
-            border-color: var(--border-glow);
-            box-shadow: var(--shadow-glow);
-            transform: translateY(-4px);
-        }
-
-        .card:hover::before { opacity: 1; }
-        
-        .section-header { 
-            display: flex;
-            justify-content: space-between; 
-            align-items: center; 
-            margin-bottom: 24px; 
-            font-weight: 700;
-            font-size: 16px; 
-            color: white;
-            letter-spacing: -0.3px;
-        }
-
-        .section-header i {
-            font-size: 20px;
-            opacity: 0.7;
-            transition: var(--transition-smooth);
-        }
-
-        .card:hover .section-header i {
-            opacity: 1;
-            transform: rotate(10deg) scale(1.1);
-        }
-        
-        /* Stat Cards with Animations */
-        .stat-card { 
-            display: flex;
-            align-items: center; 
-            gap: 24px; 
-            transition: var(--transition-smooth);
-            cursor: pointer;
-        }
-
-        .stat-card:hover { 
-            transform: translateY(-6px) scale(1.02);
-        }
-
-        .stat-icon { 
-            width: 64px;
-            height: 64px; 
-            background: linear-gradient(145deg, rgba(255, 122, 0, 0.15), rgba(255, 122, 0, 0.05));
-            border-radius: 16px; 
-            display: flex; 
-            justify-content: center; 
-            align-items: center;
-            font-size: 26px; 
-            color: var(--accent-orange);
-            position: relative;
-            overflow: hidden;
-            transition: var(--transition-smooth);
-        }
-
-        .stat-icon::after {
-            content: '';
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            background: var(--gradient-orange);
-            opacity: 0;
-            transition: var(--transition-smooth);
-        }
-
-        .stat-card:hover .stat-icon {
-            transform: rotate(-10deg) scale(1.1);
-            box-shadow: 0 0 30px var(--accent-orange-glow);
-        }
-
-        .stat-card:hover .stat-icon i {
-            animation: iconBounce 0.5s ease-out;
-        }
-
-        @keyframes iconBounce {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.3); }
-        }
-
-        .stat-info h3 { 
-            font-size: 36px;
-            font-weight: 800; 
-            margin: 0; 
-            color: white;
-            letter-spacing: -1px;
-            line-height: 1;
-            background: linear-gradient(135deg, #fff 0%, var(--accent-orange-light) 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .stat-info p { 
-            font-size: 13px;
-            color: var(--text-secondary); 
-            margin: 6px 0 0 0; 
-            text-transform: uppercase;
-            letter-spacing: 1.5px;
-            font-weight: 600;
-        }
-
-        /* Animated Counter */
-        .count-up {
-            display: inline-block;
-        }
-        
-        /* Progress Bars with Animation */
-        .progress-item { margin-bottom: 24px; }
-
-        .progress-header {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 10px;
-            font-size: 14px;
-            color: white;
             font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+            border-left: 4px solid;
+            animation: slideInRight 0.5s ease-out;
+            border: 1px solid rgba(255,255,255,0.05);
         }
 
-        .progress-value {
-            color: var(--text-secondary);
-            font-weight: 600;
+        @keyframes slideInRight {
+            from { opacity: 0; transform: translateX(100%); }
+            to { opacity: 1; transform: translateX(0); }
         }
 
-        .progress-bar-container {
-            height: 8px;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 10px;
-            overflow: hidden;
-            position: relative;
+        .flash-error {
+            border-left-color: var(--accent-red);
+            background: linear-gradient(90deg, rgba(239, 68, 68, 0.1), transparent);
         }
 
-        .progress-bar-fill {
-            height: 100%;
-            border-radius: 10px;
-            position: relative;
-            animation: progressFill 1.5s ease-out forwards;
-            transform-origin: left;
+        .flash-success {
+            border-left-color: var(--accent-green);
+            background: linear-gradient(90deg, rgba(16, 185, 129, 0.1), transparent);
         }
 
-        .progress-bar-fill::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
-            animation: shimmer 2s infinite;
+        .flash-info {
+            border-left-color: var(--accent-blue);
+            background: linear-gradient(90deg, rgba(59, 130, 246, 0.1), transparent);
         }
 
-        @keyframes progressFill {
-            from { transform: scaleX(0); }
-            to { transform: scaleX(1); }
-        }
-
-        @keyframes shimmer {
-            0% { transform: translateX(-100%); }
-            100% { transform: translateX(100%); }
-        }
-
-        .progress-orange { background: var(--gradient-orange); }
-        .progress-purple { background: linear-gradient(135deg, #8B5CF6 0%, #A78BFA 100%); }
-        .progress-green { background: linear-gradient(135deg, #10B981 0%, #34D399 100%); }
-        
-        /* Enhanced Forms */
+        /* Enhanced Forms & Search */
         .input-group { margin-bottom: 20px; }
 
         .input-group label { 
@@ -632,25 +397,151 @@ COMMON_STYLES = """
         input:focus, select:focus { 
             border-color: var(--accent-orange);
             background: rgba(255, 122, 0, 0.05);
-            box-shadow: 0 0 0 4px var(--accent-orange-glow), 0 0 20px var(--accent-orange-glow);
+            box-shadow: 0 0 0 4px var(--accent-orange-glow);
+        }
+        
+        /* Table Search & Filter Bar */
+        .table-controls {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            background: rgba(255, 255, 255, 0.02);
+            padding: 15px;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+        }
+        
+        .search-box {
+            flex: 1;
+            position: relative;
+        }
+        
+        .search-box i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-secondary);
+        }
+        
+        .search-box input {
+            padding-left: 40px;
+            background: #12121a;
         }
 
-        select {
+        /* Dashboard & Layout Styles */
+        .header-section { 
+            display: flex;
+            justify-content: space-between; 
+            align-items: flex-start; 
+            margin-bottom: 35px;
+        }
+
+        .page-title { 
+            font-size: 32px;
+            font-weight: 800; 
+            color: white; 
+            margin-bottom: 8px;
+            letter-spacing: -0.5px;
+        }
+
+        .page-subtitle { 
+            color: var(--text-secondary);
+            font-size: 14px;
+            font-weight: 400;
+        }
+
+        .status-badge {
+            background: var(--bg-card);
+            padding: 12px 24px;
+            border-radius: 50px;
+            border: 1px solid var(--border-color);
+            font-size: 13px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: var(--shadow-card);
+        }
+        
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            background: var(--accent-green);
+            border-radius: 50%;
+            box-shadow: 0 0 10px var(--accent-green);
+        }
+
+        .stats-grid { 
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); 
+            gap: 24px; 
+            margin-bottom: 35px;
+        }
+
+        .dashboard-grid-2 { 
+            display: grid;
+            grid-template-columns: 2fr 1fr; 
+            gap: 24px; 
+            margin-bottom: 24px; 
+        }
+
+        .card { 
+            background: var(--gradient-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--card-radius);
+            padding: 28px;
+            backdrop-filter: blur(10px);
+            transition: var(--transition-smooth);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card:hover {
+            border-color: var(--border-glow);
+            box-shadow: var(--shadow-glow);
+            transform: translateY(-4px);
+        }
+        
+        /* Stat Cards */
+        .stat-card { 
+            display: flex;
+            align-items: center; 
+            gap: 24px; 
+            transition: var(--transition-smooth);
             cursor: pointer;
-            appearance: none;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%23FF7A00' viewBox='0 0 24 24'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
-            background-repeat: no-repeat;
-            background-position: right 12px center;
-            background-size: 24px;
-            background-color: rgba(255, 255, 255, 0.03);
         }
-        
-        select option {
-            background-color: #1a1a25;
+
+        .stat-icon { 
+            width: 64px;
+            height: 64px; 
+            background: linear-gradient(145deg, rgba(255, 122, 0, 0.15), rgba(255, 122, 0, 0.05));
+            border-radius: 16px; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center;
+            font-size: 26px; 
+            color: var(--accent-orange);
+        }
+
+        .stat-info h3 { 
+            font-size: 36px;
+            font-weight: 800; 
+            margin: 0; 
             color: white;
-            padding: 10px;
+            line-height: 1;
         }
-        
+
+        .stat-info p { 
+            font-size: 13px;
+            color: var(--text-secondary); 
+            margin: 6px 0 0 0; 
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            font-weight: 600;
+        }
+
+        /* Buttons */
         button { 
             width: 100%;
             padding: 14px 24px; 
@@ -662,33 +553,14 @@ COMMON_STYLES = """
             font-size: 15px;
             cursor: pointer; 
             transition: var(--transition-smooth);
-            position: relative;
-            overflow: hidden;
-            letter-spacing: 0.5px;
         }
-        button::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-            transition: 0.5s;
-        }
-
-        button:hover::before { left: 100%; }
 
         button:hover { 
             transform: translateY(-3px);
             box-shadow: 0 10px 30px var(--accent-orange-glow);
         }
 
-        button:active {
-            transform: translateY(0);
-        }
-
-        /* Enhanced Tables */
+        /* Tables */
         .dark-table { 
             width: 100%;
             border-collapse: collapse; 
@@ -712,11 +584,6 @@ COMMON_STYLES = """
             font-size: 14px; 
             border-bottom: 1px solid rgba(255,255,255,0.03);
             vertical-align: middle;
-            transition: var(--transition-smooth);
-        }
-
-        .dark-table tr {
-            transition: var(--transition-smooth);
         }
 
         .dark-table tr:hover td { 
@@ -732,53 +599,30 @@ COMMON_STYLES = """
             display: inline-block;
         }
         
-        /* Action Buttons */
-        .action-cell { 
-            display: flex;
-            gap: 8px; 
-            justify-content: flex-end; 
+        /* Mobile */
+        .mobile-toggle { 
+            display: none; 
+            position: fixed; 
+            top: 20px;
+            right: 20px; 
+            z-index: 2000; 
+            color: white; 
+            background: var(--bg-card);
+            padding: 12px 14px; 
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
         }
 
-        .action-btn { 
-            padding: 8px 12px;
-            border-radius: 8px; 
-            text-decoration: none; 
-            font-size: 12px; 
-            display: inline-flex; 
-            align-items: center; 
-            justify-content: center; 
-            cursor: pointer; 
-            border: none; 
-            transition: var(--transition-smooth);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .btn-edit { 
-            background: rgba(139, 92, 246, 0.15);
-            color: #A78BFA; 
-        }
-
-        .btn-edit:hover { 
-            background: var(--accent-purple);
-            color: white;
-            transform: scale(1.1);
-            box-shadow: 0 0 20px rgba(139, 92, 246, 0.4);
-        }
-
-        .btn-del { 
-            background: rgba(239, 68, 68, 0.15);
-            color: #F87171; 
-        }
-
-        .btn-del:hover { 
-            background: var(--accent-red);
-            color: white;
-            transform: scale(1.1);
-            box-shadow: 0 0 20px rgba(239, 68, 68, 0.4);
+        @media (max-width: 1024px) {
+            .sidebar { transform: translateX(-100%); width: 280px; } 
+            .sidebar.active { transform: translateX(0); }
+            .main-content { margin-left: 0; width: 100%; padding: 20px; }
+            .mobile-toggle { display: flex; }
+            .dashboard-grid-2 { grid-template-columns: 1fr; }
+            .table-controls { flex-direction: column; }
         }
         
-        /* Enhanced Loading Overlay */
+        /* Loading Overlay */
         #loading-overlay { 
             display: none;
             position: fixed; 
@@ -792,980 +636,18 @@ COMMON_STYLES = """
             justify-content: center; 
             align-items: center; 
             backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
         }
         
-        /* Modern Spinner */
-        .spinner-container {
-            position: relative;
-            width: 80px;
-            height: 80px;
-        }
-
         .spinner { 
-            width: 80px;
-            height: 80px; 
+            width: 60px;
+            height: 60px; 
             border: 4px solid rgba(255, 122, 0, 0.1);
             border-top: 4px solid var(--accent-orange);
-            border-right: 4px solid var(--accent-orange-light);
             border-radius: 50%;
             animation: spin 0.8s linear infinite;
-            box-shadow: 0 0 30px var(--accent-orange-glow);
         }
 
-        .spinner-inner {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 50px;
-            height: 50px;
-            border: 3px solid rgba(139, 92, 246, 0.1);
-            border-bottom: 3px solid var(--accent-purple);
-            border-left: 3px solid var(--accent-purple);
-            border-radius: 50%;
-            animation: spin 1.2s linear infinite reverse;
-        }
-
-        @keyframes spin { 
-            0% { transform: rotate(0deg); } 
-            100% { transform: rotate(360deg); } 
-        }
-
-        /* Success Checkmark Animation */
-        .checkmark-container { 
-            display: none;
-            text-align: center; 
-        }
-
-        .checkmark-circle {
-            width: 100px;
-            height: 100px; 
-            position: relative; 
-            display: inline-block;
-            border-radius: 50%; 
-            border: 3px solid var(--accent-green);
-            margin-bottom: 24px;
-            animation: success-anim 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-            box-shadow: 0 0 40px rgba(16, 185, 129, 0.3);
-        }
-
-        .checkmark-circle::before {
-            content: '';
-            display: block; 
-            width: 30px; 
-            height: 50px;
-            border: solid var(--accent-green); 
-            border-width: 0 4px 4px 0;
-            position: absolute; 
-            top: 15px; 
-            left: 35px;
-            transform: rotate(45deg); 
-            opacity: 0;
-            animation: checkmark-anim 0.4s 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-        }
-        
-        /* Fail Cross Animation */
-        .fail-container { 
-            display: none; 
-            text-align: center;
-        }
-
-        .fail-circle {
-            width: 100px;
-            height: 100px; 
-            position: relative; 
-            display: inline-block;
-            border-radius: 50%; 
-            border: 3px solid var(--accent-red);
-            margin-bottom: 24px;
-            animation: fail-anim 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-            box-shadow: 0 0 40px rgba(239, 68, 68, 0.3);
-        }
-
-        .fail-circle::before, .fail-circle::after {
-            content: '';
-            position: absolute; 
-            width: 4px; 
-            height: 50px; 
-            background: var(--accent-red);
-            top: 23px; 
-            left: 46px; 
-            border-radius: 4px;
-            animation: crossAnim 0.3s 0.4s ease-out forwards;
-            opacity: 0;
-        }
-
-        .fail-circle::before { transform: rotate(45deg); }
-        .fail-circle::after { transform: rotate(-45deg); }
-
-        @keyframes success-anim { 
-            0% { transform: scale(0); opacity: 0; } 
-            50% { transform: scale(1.2); } 
-            100% { transform: scale(1); opacity: 1; } 
-        }
-
-        @keyframes checkmark-anim { 
-            0% { opacity: 0; height: 0; width: 0; } 
-            100% { opacity: 1; height: 50px; width: 30px; } 
-        }
-
-        @keyframes fail-anim { 
-            0% { transform: scale(0); opacity: 0; } 
-            50% { transform: scale(1.2); } 
-            100% { transform: scale(1); opacity: 1; } 
-        }
-
-        @keyframes crossAnim {
-            0% { opacity: 0; transform: rotate(45deg) scale(0); }
-            100% { opacity: 1; transform: rotate(45deg) scale(1); }
-        }
-
-        .anim-text { 
-            font-size: 24px; 
-            font-weight: 800; 
-            color: white;
-            margin-top: 10px; 
-            letter-spacing: 1px;
-        }
-
-        .loading-text {
-            color: var(--text-secondary);
-            font-size: 15px;
-            margin-top: 20px;
-            font-weight: 500;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-            animation: textPulse 1.5s ease-in-out infinite;
-        }
-
-        @keyframes textPulse {
-            0%, 100% { opacity: 0.5; }
-            50% { opacity: 1; }
-        }
-
-        /* Tooltip */
-        .tooltip {
-            position: relative;
-        }
-
-        .tooltip::after {
-            content: attr(data-tooltip);
-            position: absolute;
-            top: 125%;
-            left: 50%;
-            transform: translateX(-50%);
-            background: var(--bg-card);
-            color: white;
-            padding: 8px 14px;
-            border-radius: 8px;
-            font-size: 12px;
-            white-space: nowrap;
-            opacity: 0;
-            visibility: hidden;
-            transition: var(--transition-smooth);
-            border: 1px solid var(--border-color);
-            z-index: 1000;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-        }
-
-        .tooltip:hover::after {
-            opacity: 1;
-            visibility: visible;
-            top: 115%;
-        }
-        
-        /* File Upload Zone */
-        .upload-zone {
-            border: 2px dashed var(--border-color);
-            padding: 50px;
-            text-align: center;
-            border-radius: 16px;
-            transition: var(--transition-smooth);
-            cursor: pointer;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .upload-zone::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: var(--gradient-orange);
-            opacity: 0;
-            transition: var(--transition-smooth);
-        }
-
-        .upload-zone:hover {
-            border-color: var(--accent-orange);
-            background: rgba(255, 122, 0, 0.05);
-        }
-
-        .upload-zone:hover::before {
-            opacity: 0.03;
-        }
-
-        .upload-zone.dragover {
-            border-color: var(--accent-orange);
-            background: rgba(255, 122, 0, 0.1);
-            transform: scale(1.02);
-        }
-
-        .upload-icon {
-            font-size: 60px;
-            color: var(--accent-orange);
-            margin-bottom: 20px;
-            display: inline-block;
-            animation: uploadFloat 3s ease-in-out infinite;
-        }
-
-        @keyframes uploadFloat {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-10px); }
-        }
-
-        .upload-text {
-            color: var(--accent-orange);
-            font-weight: 600;
-            font-size: 16px;
-            margin-bottom: 8px;
-        }
-
-        .upload-hint {
-            color: var(--text-secondary);
-            font-size: 13px;
-        }
-
-        #file-count {
-            margin-top: 20px;
-            font-size: 14px;
-            color: var(--accent-green);
-            font-weight: 600;
-        }
-
-        /* Professional Flash Messages */
-        #flash-container {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            z-index: 10001;
-            width: auto;
-            min-width: 320px;
-            max-width: 450px;
-            display: flex;
-            flex-direction: column;
-            align-items: flex-end;
-            gap: 12px;
-        }
-
-        .flash-message {
-            padding: 16px 24px;
-            border-radius: 12px;
-            font-size: 14px;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 14px;
-            animation: flashSlideIn 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: 0 10px 40px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.05);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .flash-message::before {
-            content: '';
-            position: absolute;
-            left: 0;
-            top: 0;
-            bottom: 0;
-            width: 4px;
-        }
-
-        .flash-message .flash-icon {
-            width: 24px;
-            height: 24px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 12px;
-            flex-shrink: 0;
-        }
-
-        .flash-message .flash-content {
-            flex: 1;
-        }
-
-        .flash-message .flash-close {
-            background: none;
-            border: none;
-            color: inherit;
-            opacity: 0.6;
-            cursor: pointer;
-            padding: 4px;
-            font-size: 16px;
-            transition: opacity 0.2s;
-            width: auto;
-        }
-
-        .flash-message .flash-close:hover {
-            opacity: 1;
-            transform: none;
-            box-shadow: none;
-        }
-
-        @keyframes flashSlideIn {
-            from { 
-                opacity: 0;
-                transform: translateX(100%);
-            }
-            to { 
-                opacity: 1;
-                transform: translateX(0);
-            }
-        }
-
-        @keyframes flashSlideOut {
-            from { 
-                opacity: 1;
-                transform: translateX(0);
-            }
-            to { 
-                opacity: 0;
-                transform: translateX(100%);
-            }
-        }
-
-        .flash-error {
-            background: linear-gradient(135deg, rgba(239, 68, 68, 0.15) 0%, rgba(185, 28, 28, 0.15) 100%);
-            border: 1px solid rgba(239, 68, 68, 0.3);
-            color: #FCA5A5;
-        }
-
-        .flash-error::before {
-            background: linear-gradient(180deg, #EF4444 0%, #B91C1C 100%);
-        }
-
-        .flash-error .flash-icon {
-            background: rgba(239, 68, 68, 0.2);
-            color: #EF4444;
-        }
-
-        .flash-success {
-            background: linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(5, 150, 105, 0.15) 100%);
-            border: 1px solid rgba(16, 185, 129, 0.3);
-            color: #6EE7B7;
-        }
-
-        .flash-success::before {
-            background: linear-gradient(180deg, #10B981 0%, #059669 100%);
-        }
-
-        .flash-success .flash-icon {
-            background: rgba(16, 185, 129, 0.2);
-            color: #10B981;
-        }
-
-        .flash-info {
-            background: linear-gradient(135deg, rgba(59, 130, 246, 0.15) 0%, rgba(37, 99, 235, 0.15) 100%);
-            border: 1px solid rgba(59, 130, 246, 0.3);
-            color: #93C5FD;
-        }
-
-        .flash-info::before {
-            background: linear-gradient(180deg, #3B82F6 0%, #2563EB 100%);
-        }
-
-        .flash-info .flash-icon {
-            background: rgba(59, 130, 246, 0.2);
-            color: #3B82F6;
-        }
-
-        .flash-warning {
-            background: linear-gradient(135deg, rgba(245, 158, 11, 0.15) 0%, rgba(217, 119, 6, 0.15) 100%);
-            border: 1px solid rgba(245, 158, 11, 0.3);
-            color: #FCD34D;
-        }
-
-        .flash-warning::before {
-            background: linear-gradient(180deg, #F59E0B 0%, #D97706 100%);
-        }
-
-        .flash-warning .flash-icon {
-            background: rgba(245, 158, 11, 0.2);
-            color: #F59E0B;
-        }
-        
-        /* Ripple Effect */
-        .ripple {
-            position: relative;
-            overflow: hidden;
-        }
-
-        .ripple-effect {
-            position: absolute;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.3);
-            transform: scale(0);
-            animation: rippleAnim 0.6s ease-out;
-            pointer-events: none;
-        }
-
-        @keyframes rippleAnim {
-            to {
-                transform: scale(4);
-                opacity: 0;
-            }
-        }
-        
-        /* Mobile */
-        .mobile-toggle { 
-            display: none; 
-            position: fixed; 
-            top: 20px;
-            right: 20px; 
-            z-index: 2000; 
-            color: white; 
-            background: var(--bg-card);
-            padding: 12px 14px; 
-            border-radius: 12px;
-            border: 1px solid var(--border-color);
-            cursor: pointer;
-            transition: var(--transition-smooth);
-        }
-
-        .mobile-toggle:hover {
-            background: var(--accent-orange);
-        }
-
-        @media (max-width: 1024px) {
-            .sidebar { 
-                transform: translateX(-100%);
-                width: 280px;
-            } 
-            .sidebar.active { 
-                transform: translateX(0);
-            }
-            .main-content { 
-                margin-left: 0;
-                width: 100%; 
-                padding: 20px; 
-            }
-            .dashboard-grid-2 { 
-                grid-template-columns: 1fr;
-            }
-            .mobile-toggle { 
-                display: flex;
-                align-items: center;
-                justify-content: center;
-            }
-            .header-section {
-                flex-direction: column;
-                gap: 15px;
-            }
-            #flash-container {
-                right: 10px;
-                left: 10px;
-                max-width: none;
-                min-width: auto;
-            }
-        }
-
-        @media (max-width: 768px) {
-            .stats-grid {
-                grid-template-columns: 1fr;
-            }
-            .page-title {
-                font-size: 24px;
-            }
-        }
-
-        /* Skeleton Loading */
-        .skeleton {
-            background: linear-gradient(90deg, var(--bg-card) 25%, rgba(255,255,255,0.05) 50%, var(--bg-card) 75%);
-            background-size: 200% 100%;
-            animation: skeletonLoad 1.5s infinite;
-            border-radius: 8px;
-        }
-
-        @keyframes skeletonLoad {
-            0% { background-position: 200% 0; }
-            100% { background-position: -200% 0; }
-        }
-        
-        /* Notification Dot */
-        .notification-dot {
-            position: absolute;
-            top: -2px;
-            right: -2px;
-            width: 10px;
-            height: 10px;
-            background: var(--accent-red);
-            border-radius: 50%;
-            border: 2px solid var(--bg-sidebar);
-            animation: notifyPulse 2s infinite;
-        }
-
-        @keyframes notifyPulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.2); }
-        }
-
-        /* Chart Container */
-        .chart-container {
-            position: relative;
-            height: 280px;
-            padding: 10px;
-        }
-
-        /* Real-time Indicator */
-        .realtime-indicator {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 12px;
-            color: var(--text-secondary);
-            padding: 6px 12px;
-            background: rgba(16, 185, 129, 0.1);
-            border-radius: 20px;
-            border: 1px solid rgba(16, 185, 129, 0.2);
-        }
-
-        .realtime-dot {
-            width: 8px;
-            height: 8px;
-            background: var(--accent-green);
-            border-radius: 50%;
-            animation: realtimePulse 1s infinite;
-        }
-
-        @keyframes realtimePulse {
-            0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
-            70% { opacity: 1; box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
-        }
-
-        /* Floating Action Button */
-        .fab {
-            position: fixed;
-            bottom: 30px;
-            right: 30px;
-            width: 60px;
-            height: 60px;
-            background: var(--gradient-orange);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 24px;
-            color: white;
-            cursor: pointer;
-            box-shadow: 0 8px 30px var(--accent-orange-glow);
-            transition: var(--transition-smooth);
-            z-index: 100;
-        }
-
-        .fab:hover {
-            transform: scale(1.1) rotate(90deg);
-            box-shadow: 0 12px 40px var(--accent-orange-glow);
-        }
-        
-        /* Glow Text */
-        .glow-text {
-            text-shadow: 0 0 20px var(--accent-orange-glow);
-        }
-
-        /* Animated Border */
-        .animated-border {
-            position: relative;
-        }
-
-        .animated-border::after {
-            content: '';
-            position: absolute;
-            top: -2px;
-            left: -2px;
-            right: -2px;
-            bottom: -2px;
-            background: linear-gradient(45deg, var(--accent-orange), var(--accent-purple), var(--accent-green), var(--accent-orange));
-            background-size: 400% 400%;
-            border-radius: inherit;
-            z-index: -1;
-            animation: gradientBorder 3s ease infinite;
-            opacity: 0;
-            transition: opacity 0.3s;
-        }
-
-        .animated-border:hover::after {
-            opacity: 1;
-        }
-
-        @keyframes gradientBorder {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
-        
-        /* Permission Checkbox Styles */
-        .perm-checkbox {
-            background: rgba(255, 255, 255, 0.03);
-            padding: 14px 18px;
-            border-radius: 12px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            border: 1px solid var(--border-color);
-            transition: var(--transition-smooth);
-            flex: 1;
-            min-width: 100px;
-        }
-
-        .perm-checkbox:hover {
-            border-color: var(--accent-orange);
-            background: rgba(255, 122, 0, 0.05);
-        }
-
-        .perm-checkbox input {
-            width: auto;
-            margin-right: 10px;
-            accent-color: var(--accent-orange);
-        }
-
-        .perm-checkbox span {
-            font-size: 13px;
-            font-weight: 500;
-            color: var(--text-secondary);
-        }
-
-        .perm-checkbox:has(input:checked) {
-            border-color: var(--accent-orange);
-            background: rgba(255, 122, 0, 0.1);
-        }
-
-        .perm-checkbox:has(input:checked) span {
-            color: var(--accent-orange);
-        }
-
-        /* Time Badge */
-        .time-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            background: rgba(255, 255, 255, 0.03);
-            padding: 8px 14px;
-            border-radius: 8px;
-            font-size: 13px;
-            color: var(--text-secondary);
-        }
-
-        .time-badge i {
-            color: var(--accent-orange);
-        }
-        
-        /* History Card Styles */
-        .history-section {
-            margin-top: 25px;
-            padding-top: 25px;
-            border-top: 1px solid var(--border-color);
-        }
-        
-        .history-toggle {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            cursor: pointer;
-            padding: 15px 20px;
-            background: linear-gradient(145deg, rgba(139, 92, 246, 0.1), rgba(139, 92, 246, 0.02));
-            border: 1px solid rgba(139, 92, 246, 0.2);
-            border-radius: 14px;
-            transition: var(--transition-smooth);
-        }
-        
-        .history-toggle:hover {
-            border-color: var(--accent-purple);
-            background: linear-gradient(145deg, rgba(139, 92, 246, 0.15), rgba(139, 92, 246, 0.05));
-            transform: translateY(-2px);
-        }
-        
-        .history-toggle-left {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-        
-        .history-toggle-icon {
-            width: 42px;
-            height: 42px;
-            background: linear-gradient(145deg, rgba(139, 92, 246, 0.3), rgba(139, 92, 246, 0.1));
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 18px;
-            color: var(--accent-purple);
-        }
-        
-        .history-toggle-text {
-            font-size: 15px;
-            font-weight: 600;
-            color: white;
-        }
-        
-        .history-toggle-sub {
-            font-size: 12px;
-            color: var(--text-secondary);
-            margin-top: 2px;
-        }
-        
-        .history-badge {
-            background: var(--accent-purple);
-            color: white;
-            padding: 5px 14px;
-            border-radius: 20px;
-            font-size: 13px;
-            font-weight: 700;
-        }
-        
-        .history-dropdown {
-            display: none;
-            margin-top: 15px;
-            max-height: 320px;
-            overflow-y: auto;
-            padding: 5px;
-        }
-        
-        .history-dropdown.active {
-            display: block;
-            animation: slideDown 0.3s ease-out;
-        }
-        
-        @keyframes slideDown {
-            from { opacity: 0; transform: translateY(-10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        
-        .history-booking-item {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 14px 16px;
-            background: rgba(255, 255, 255, 0.02);
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            margin-bottom: 10px;
-            cursor: pointer;
-            transition: var(--transition-smooth);
-            text-decoration: none;
-        }
-        
-        .history-booking-item:hover {
-            background: rgba(139, 92, 246, 0.1);
-            border-color: rgba(139, 92, 246, 0.3);
-            transform: translateX(5px);
-        }
-        
-        .booking-item-left {
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-        }
-        
-        .booking-ref {
-            font-size: 15px;
-            font-weight: 700;
-            color: var(--accent-purple);
-        }
-        
-        .booking-info {
-            font-size: 12px;
-            color: var(--text-secondary);
-        }
-        
-        .booking-stats {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-        
-        .booking-stat {
-            text-align: center;
-        }
-        
-        .booking-stat-value {
-            font-size: 16px;
-            font-weight: 800;
-            color: var(--accent-green);
-        }
-        
-        .booking-stat-label {
-            font-size: 10px;
-            color: var(--text-secondary);
-            text-transform: uppercase;
-        }
-        
-        .booking-arrow {
-            color: var(--text-secondary);
-            font-size: 14px;
-            transition: var(--transition-smooth);
-        }
-        
-        .history-booking-item:hover .booking-arrow {
-            color: var(--accent-purple);
-            transform: translateX(5px);
-        }
-        
-        .empty-history {
-            text-align: center;
-            padding: 30px;
-            color: var(--text-secondary);
-        }
-        
-        .empty-history i {
-            font-size: 40px;
-            opacity: 0.3;
-            margin-bottom: 10px;
-            display: block;
-        }
-
-        /* Search and Filter Styles */
-        .search-filter-container {
-            display: flex;
-            gap: 15px;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-        }
-
-        .search-box {
-            flex: 1;
-            min-width: 250px;
-            position: relative;
-        }
-
-        .search-box input {
-            padding-left: 45px;
-            width: 100%;
-        }
-
-        .search-box i {
-            position: absolute;
-            left: 16px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: var(--text-secondary);
-            font-size: 14px;
-        }
-
-        .filter-group {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-
-        .filter-select {
-            min-width: 150px;
-        }
-
-        .filter-date {
-            min-width: 140px;
-        }
-
-        .filter-btn {
-            padding: 12px 20px;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            color: var(--text-secondary);
-            font-size: 13px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: var(--transition-smooth);
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            width: auto;
-        }
-
-        .filter-btn:hover {
-            border-color: var(--accent-orange);
-            color: var(--accent-orange);
-            background: rgba(255, 122, 0, 0.05);
-            transform: none;
-            box-shadow: none;
-        }
-
-        .filter-btn.active {
-            border-color: var(--accent-orange);
-            color: var(--accent-orange);
-            background: rgba(255, 122, 0, 0.1);
-        }
-
-        .clear-filter-btn {
-            padding: 12px 16px;
-            background: rgba(239, 68, 68, 0.1);
-            border: 1px solid rgba(239, 68, 68, 0.2);
-            border-radius: 12px;
-            color: var(--accent-red);
-            font-size: 13px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: var(--transition-smooth);
-            width: auto;
-        }
-
-        .clear-filter-btn:hover {
-            background: rgba(239, 68, 68, 0.2);
-            transform: none;
-            box-shadow: none;
-        }
-
-        /* Type Badge Colors */
-        .type-badge {
-            padding: 6px 12px;
-            border-radius: 6px;
-            font-size: 11px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .type-closing {
-            background: rgba(255, 122, 0, 0.15);
-            color: var(--accent-orange);
-        }
-
-        .type-po {
-            background: rgba(16, 185, 129, 0.15);
-            color: var(--accent-green);
-        }
-
-        .type-accessories {
-            background: rgba(139, 92, 246, 0.15);
-            color: var(--accent-purple);
-        }
-
-        /* No Results Message */
-        .no-results {
-            text-align: center;
-            padding: 60px 20px;
-            color: var(--text-secondary);
-        }
-
-        .no-results i {
-            font-size: 50px;
-            opacity: 0.3;
-            margin-bottom: 15px;
-            display: block;
-        }
-
-        .no-results h4 {
-            color: white;
-            font-weight: 600;
-            margin-bottom: 8px;
-        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 """
 # ==============================================================================
@@ -1773,6 +655,9 @@ COMMON_STYLES = """
 # ==============================================================================
 
 def load_users():
+    """
+    MongoDB থেকে ইউজার ডেটা লোড করে। যদি কোনো ডেটা না থাকে, ডিফল্ট অ্যাডমিন তৈরি করে।
+    """
     record = users_col.find_one({"_id": "global_users"})
     default_users = {
         "Admin": {
@@ -1791,6 +676,9 @@ def load_users():
         return default_users
 
 def save_users(users_data):
+    """
+    MongoDB তে ইউজার ডেটা সেভ করে।
+    """
     users_col.replace_one(
         {"_id": "global_users"}, 
         {"_id": "global_users", "data": users_data}, 
@@ -1798,6 +686,9 @@ def save_users(users_data):
     )
 
 def load_stats():
+    """
+    MongoDB থেকে স্ট্যাটস ডেটা লোড করে।
+    """
     record = stats_col.find_one({"_id": "dashboard_stats"})
     if record:
         return record['data']
@@ -1807,13 +698,19 @@ def load_stats():
         return default_stats
 
 def save_stats(data):
+    """
+    MongoDB তে স্ট্যাটস ডেটা সেভ করে।
+    """
     stats_col.replace_one(
         {"_id": "dashboard_stats"},
         {"_id": "dashboard_stats", "data": data},
         upsert=True
     )
 
-def update_stats(ref_no, username):
+def update_stats(ref_no, username, type_label="Closing Report"):
+    """
+    সাধারণ হিস্ট্রি আপডেট ফাংশন (Closing Report এর জন্য)।
+    """
     data = load_stats()
     now = get_bd_time()
     new_record = {
@@ -1821,10 +718,12 @@ def update_stats(ref_no, username):
         "user": username,
         "date": now.strftime('%d-%m-%Y'),
         "time": now.strftime('%I:%M %p'),
-        "type": "Closing Report",
+        "type": type_label,
         "iso_time": now.isoformat()
     }
+    # লেটেস্ট এন্ট্রি শুরুতে যোগ করা
     data['downloads'].insert(0, new_record)
+    # ৩০০০ রেকর্ডের বেশি হলে পুরনো ডিলিট
     if len(data['downloads']) > 3000:
         data['downloads'] = data['downloads'][:3000]
         
@@ -1832,6 +731,9 @@ def update_stats(ref_no, username):
     save_stats(data)
 
 def update_po_stats(username, file_count, booking_ref="N/A"):
+    """
+    PO Sheet জেনারেশনের হিস্ট্রি আপডেট ফাংশন।
+    """
     data = load_stats()
     now = get_bd_time()
     new_record = {
@@ -1886,92 +788,12 @@ def get_all_accessories_bookings():
             'last_updated': data.get('last_api_call', 'N/A')
         })
     
+    # Sort by ref
     bookings = sorted(bookings, key=lambda x: x['ref'], reverse=True)
     return bookings
 
 # ==============================================================================
-# নতুন ফাংশন: গত ২৪ ঘন্টার হিস্ট্রি ফিল্টার (Accessories সহ)
-# ==============================================================================
-
-def get_last_24h_history():
-    """
-    গত ২৪ ঘন্টার সকল অ্যাক্টিভিটি (Closing, PO, Accessories) রিটার্ন করে
-    """
-    now = get_bd_time()
-    twenty_four_hours_ago = now - timedelta(hours=24)
-    
-    all_history = []
-    
-    # Closing এবং PO Sheet হিস্ট্রি
-    stats_data = load_stats()
-    for item in stats_data.get('downloads', []):
-        try:
-            if 'iso_time' in item:
-                item_time = datetime.fromisoformat(item['iso_time'])
-                if item_time.tzinfo is None:
-                    item_time = bd_tz.localize(item_time)
-                if item_time >= twenty_four_hours_ago:
-                    all_history.append(item)
-            else:
-                item_date_str = item.get('date', '')
-                item_time_str = item.get('time', '')
-                if item_date_str:
-                    try:
-                        dt_str = f"{item_date_str} {item_time_str}"
-                        item_time = datetime.strptime(dt_str, '%d-%m-%Y %I:%M %p')
-                        item_time = bd_tz.localize(item_time)
-                        if item_time >= twenty_four_hours_ago:
-                            all_history.append(item)
-                    except:
-                        pass
-        except:
-            pass
-    
-    # Accessories Challan হিস্ট্রি
-    db_acc = load_accessories_db()
-    for ref, data in db_acc.items():
-        for challan in data.get('challans', []):
-            try:
-                challan_date_str = challan.get('date', '')
-                if challan_date_str:
-                    challan_date = datetime.strptime(challan_date_str, '%d-%m-%Y')
-                    challan_date = bd_tz.localize(challan_date)
-                    
-                    # শুধু আজকের তারিখ চেক করা হচ্ছে কারণ চালানে সময় নেই
-                    today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
-                    yesterday_start = today_start - timedelta(days=1)
-                    
-                    if challan_date >= yesterday_start:
-                        acc_record = {
-                            "ref": ref,
-                            "user": "System",
-                            "date": challan_date_str,
-                            "time": "N/A",
-                            "type": "Accessories",
-                            "line": challan.get('line', 'N/A'),
-                            "qty": challan.get('qty', 0),
-                            "color": challan.get('color', 'N/A'),
-                            "iso_time": challan_date.isoformat()
-                        }
-                        all_history.append(acc_record)
-            except:
-                pass
-    
-    # iso_time অনুযায়ী সর্ট করা
-    def get_sort_key(item):
-        try:
-            if 'iso_time' in item:
-                return datetime.fromisoformat(item['iso_time'])
-        except:
-            pass
-        return datetime.min.replace(tzinfo=bd_tz)
-    
-    all_history.sort(key=get_sort_key, reverse=True)
-    
-    return all_history
-
-# ==============================================================================
-# ড্যাশবোর্ড সামারি ফাংশন (আপডেটেড - গত ২৪ ঘন্টার হিস্ট্রি সহ)
+# ড্যাশবোর্ড সামারি ফাংশন (UPDATED WITH 24H HISTORY & SEARCH)
 # ==============================================================================
 
 def get_dashboard_summary_v2():
@@ -1982,6 +804,7 @@ def get_dashboard_summary_v2():
     now = get_bd_time()
     today_str = now.strftime('%d-%m-%Y')
     
+    # ইউজার ডিটেইলস প্রসেসিং
     user_details = []
     for u, d in users_data.items():
         user_details.append({
@@ -1992,14 +815,30 @@ def get_dashboard_summary_v2():
             "last_duration": d.get('last_duration', 'N/A')
         })
 
+    # এক্সেসরিজ ডেটা প্রসেসিং (চার্টের জন্য)
     acc_lifetime_count = 0
     acc_today_list = []
     daily_data = defaultdict(lambda: {'closing': 0, 'po': 0, 'acc': 0})
+    
+    # এক্সেসরিজ হিস্ট্রি ইন্টিগ্রেশন
+    accessories_history_items = []
 
     for ref, data in acc_db.items():
         for challan in data.get('challans', []):
             acc_lifetime_count += 1
             c_date = challan.get('date')
+            
+            # এক্সেসরিজ এন্ট্রিকে হিস্ট্রি অবজেক্টে রূপান্তর
+            acc_entry = {
+                "ref": ref,
+                "user": "System", # সাধারণত কে এন্ট্রি দিয়েছে তা স্টোর করা নেই, তাই ডিফল্ট
+                "date": c_date,
+                "time": "N/A", # চালানে সময় নেই, শুধু তারিখ আছে
+                "type": "Accessories",
+                "iso_time": "" # সর্টিংয়ের জন্য পরে হ্যান্ডেল করা হবে
+            }
+            accessories_history_items.append(acc_entry)
+            
             if c_date == today_str:
                 acc_today_list.append({
                     "ref": ref,
@@ -2014,16 +853,29 @@ def get_dashboard_summary_v2():
                 sort_key = dt_obj.strftime('%Y-%m-%d')
                 daily_data[sort_key]['acc'] += 1
                 daily_data[sort_key]['label'] = dt_obj.strftime('%d-%b')
+                
+                # ISO টাইম বানানো সর্টিংয়ের জন্য (দিনের শেষে ধরা হলো)
+                acc_entry['iso_time'] = dt_obj.replace(hour=23, minute=59).isoformat()
             except: 
                 pass
 
+    # অন্যান্য হিস্ট্রি ডেটা প্রসেসিং
     closing_lifetime_count = 0
     po_lifetime_count = 0
     closing_list = []
     po_list = []
     
-    history = stats_data.get('downloads', [])
-    for item in history:
+    existing_history = stats_data.get('downloads', [])
+    
+    # দুটি লিস্ট মার্জ করা (Existing + Accessories)
+    full_history = existing_history + accessories_history_items
+    
+    # সর্টিং (ISO Time অনুযায়ী, লেটেস্ট আগে)
+    # যেসব ডেটায় iso_time নেই, সেগুলোকে শেষে ফেলা হবে
+    full_history.sort(key=lambda x: x.get('iso_time') or '1970-01-01', reverse=True)
+
+    # লুপ চালিয়ে কাউন্ট বের করা
+    for item in existing_history:
         item_date = item.get('date', '')
         if item.get('type') == 'PO Sheet':
             po_lifetime_count += 1
@@ -2046,6 +898,7 @@ def get_dashboard_summary_v2():
         except:
             pass
     
+    # চার্ট ডেটা তৈরি
     first_of_last_month = (now.replace(day=1) - timedelta(days=1)).replace(day=1)
     start_date = first_of_last_month.strftime('%Y-%m-%d')
     end_date = now.strftime('%Y-%m-%d')
@@ -2071,9 +924,6 @@ def get_dashboard_summary_v2():
             chart_po.append(d['po'])
             chart_acc.append(d['acc'])
 
-    # গত ২৪ ঘন্টার হিস্ট্রি
-    last_24h_history = get_last_24h_history()
-
     return {
         "users": {"count": len(users_data), "details": user_details},
         "accessories": {"count": acc_lifetime_count, "details": acc_today_list},
@@ -2085,12 +935,10 @@ def get_dashboard_summary_v2():
             "po": chart_po,
             "acc": chart_acc
         },
-        "history": history,
-        "history_24h": last_24h_history
+        "history": full_history  # এখন এখানে এক্সেসরিজ সহ সব হিস্ট্রি আছে
     }
-
-# ==============================================================================
-# লজিক পার্ট: PURCHASE ORDER SHEET PARSER (PDF) - NEW UPDATED LOGIC
+    # ==============================================================================
+# লজিক পার্ট: PURCHASE ORDER SHEET PARSER (PO SHEET.py থেকে হুবহু)
 # ==============================================================================
 
 def is_potential_size(header):
@@ -2320,8 +1168,7 @@ def extract_data_dynamic(file_path):
         print(f"Error processing file: {e}")
     
     return extracted_data, metadata
-
-# ==============================================================================
+    # ==============================================================================
 # লজিক পার্ট: CLOSING REPORT API & EXCEL GENERATION
 # ==============================================================================
 
@@ -2366,6 +1213,7 @@ def fetch_closing_report_data(internal_ref_no):
     if found_data:
         return parse_report_data(found_data)
     return None
+
 def parse_report_data(html_content):
     all_report_data = []
     try:
@@ -2647,2068 +1495,9 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
     wb.save(file_stream)
     file_stream.seek(0)
     return file_stream
-    # ==============================================================================
-# HTML TEMPLATES: LOGIN PAGE
-# ==============================================================================
-
-LOGIN_TEMPLATE = f"""
-<!doctype html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Login - MNM Software</title>
-    {COMMON_STYLES}
-    <style>
-        html, body {{
-            height: 100%;
-            margin: 0;
-            padding: 0;
-            overflow-x: hidden;
-        }}
-        
-        body {{
-            background: var(--bg-body);
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            position: relative;
-            overflow-y: auto;
-        }}
-        
-        .bg-orb {{
-            position: fixed;
-            border-radius: 50%;
-            filter: blur(80px);
-            opacity: 0.4;
-            animation: orbFloat 20s ease-in-out infinite;
-            pointer-events: none;
-        }}
-        
-        .orb-1 {{
-            width: 300px;
-            height: 300px;
-            background: var(--accent-orange);
-            top: -100px;
-            left: -100px;
-            animation-delay: 0s;
-        }}
-        
-        .orb-2 {{
-            width: 250px;
-            height: 250px;
-            background: var(--accent-purple);
-            bottom: -50px;
-            right: -50px;
-            animation-delay: -5s;
-        }}
-        
-        .orb-3 {{
-            width: 150px;
-            height: 150px;
-            background: var(--accent-green);
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            animation-delay: -10s;
-        }}
-        
-        @keyframes orbFloat {{
-            0%, 100% {{ transform: translate(0, 0) scale(1); }}
-            25% {{ transform: translate(30px, -30px) scale(1.05); }}
-            50% {{ transform: translate(-20px, 20px) scale(0.95); }}
-            75% {{ transform: translate(15px, 30px) scale(1.02); }}
-        }}
-        
-        .login-container {{
-            position: relative;
-            z-index: 10;
-            width: 100%;
-            max-width: 420px;
-            padding: 20px;
-            margin: auto;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            min-height: 100vh;
-        }}
-        
-        .login-card {{
-            background: var(--gradient-card);
-            border: 1px solid var(--border-color);
-            border-radius: 24px;
-            padding: 40px 35px;
-            backdrop-filter: blur(20px);
-            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.5), 0 0 60px var(--accent-orange-glow);
-            animation: loginCardAppear 0.8s cubic-bezier(0.4, 0, 0.2, 1);
-        }}
-        
-        @keyframes loginCardAppear {{
-            from {{
-                opacity: 0;
-                transform: translateY(30px) scale(0.95);
-            }}
-            to {{
-                opacity: 1;
-                transform: translateY(0) scale(1);
-            }}
-        }}
-        
-        .brand-section {{
-            text-align: center;
-            margin-bottom: 35px;
-        }}
-        
-        .brand-icon {{
-            width: 70px;
-            height: 70px;
-            background: var(--gradient-orange);
-            border-radius: 18px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 32px;
-            color: white;
-            margin-bottom: 18px;
-            box-shadow: 0 15px 40px var(--accent-orange-glow);
-            animation: brandIconPulse 3s ease-in-out infinite;
-        }}
-        
-        @keyframes brandIconPulse {{
-            0%, 100% {{ transform: scale(1) rotate(0deg); box-shadow: 0 15px 40px var(--accent-orange-glow); }}
-            50% {{ transform: scale(1.05) rotate(5deg); box-shadow: 0 20px 50px var(--accent-orange-glow); }}
-        }}
-        
-        .brand-name {{
-            font-size: 28px;
-            font-weight: 900;
-            color: white;
-            letter-spacing: -1px;
-        }}
-        
-        .brand-name span {{
-            background: var(--gradient-orange);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }}
-        
-        .brand-tagline {{
-            color: var(--text-secondary);
-            font-size: 11px;
-            letter-spacing: 2px;
-            margin-top: 6px;
-            font-weight: 600;
-            text-transform: uppercase;
-        }}
-        
-        .login-form .input-group {{
-            margin-bottom: 20px;
-        }}
-        
-        .login-form .input-group label {{
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin-bottom: 8px;
-        }}
-        
-        .login-form .input-group label i {{
-            color: var(--accent-orange);
-            font-size: 13px;
-        }}
-        
-        .login-form input {{
-            padding: 14px 18px;
-            font-size: 14px;
-            border-radius: 12px;
-        }}
-        
-        .login-btn {{
-            margin-top: 8px;
-            padding: 14px 24px;
-            font-size: 15px;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-        }}
-        
-        .login-btn i {{
-            transition: transform 0.3s;
-        }}
-        
-        .login-btn:hover i {{
-            transform: translateX(5px);
-        }}
-        
-        .footer-credit {{
-            text-align: center;
-            margin-top: 25px;
-            color: var(--text-secondary);
-            font-size: 11px;
-            opacity: 0.5;
-            font-weight: 500;
-        }}
-        
-        .footer-credit a {{
-            color: var(--accent-orange);
-            text-decoration: none;
-        }}
-        
-        @media (max-width: 480px) {{
-            .login-container {{
-                padding: 15px;
-            }}
-            
-            .login-card {{
-                padding: 30px 25px;
-                border-radius: 20px;
-            }}
-            
-            .brand-icon {{
-                width: 60px;
-                height: 60px;
-                font-size: 28px;
-            }}
-            
-            .brand-name {{
-                font-size: 24px;
-            }}
-            
-            .brand-tagline {{
-                font-size: 10px;
-            }}
-            
-            .login-form input {{
-                padding: 12px 16px;
-                font-size: 14px;
-            }}
-            
-            .login-btn {{
-                padding: 12px 20px;
-                font-size: 14px;
-            }}
-        }}
-        
-        @media (max-height: 700px) {{
-            .login-container {{
-                min-height: auto;
-                padding-top: 30px;
-                padding-bottom: 30px;
-            }}
-            
-            .brand-section {{
-                margin-bottom: 25px;
-            }}
-            
-            .brand-icon {{
-                width: 60px;
-                height: 60px;
-                font-size: 26px;
-                margin-bottom: 12px;
-            }}
-        }}
-    </style>
-</head>
-<body>
-    <div class="bg-orb orb-1"></div>
-    <div class="bg-orb orb-2"></div>
-    <div class="bg-orb orb-3"></div>
-    
-    <div id="flash-container">
-        {{% with messages = get_flashed_messages(with_categories=true) %}}
-            {{% if messages %}}
-                {{% for category, message in messages %}}
-                    <div class="flash-message flash-{{{{ category if category != 'message' else 'info' }}}}">
-                        <div class="flash-icon">
-                            {{% if category == 'success' %}}
-                                <i class="fas fa-check"></i>
-                            {{% elif category == 'error' %}}
-                                <i class="fas fa-times"></i>
-                            {{% elif category == 'warning' %}}
-                                <i class="fas fa-exclamation"></i>
-                            {{% else %}}
-                                <i class="fas fa-info"></i>
-                            {{% endif %}}
-                        </div>
-                        <span class="flash-content">{{{{ message }}}}</span>
-                        <button class="flash-close" onclick="this.parentElement.style.animation='flashSlideOut 0.3s ease forwards'; setTimeout(() => this.parentElement.remove(), 300);">
-                            <i class="fas fa-times"></i>
-                        </button>
-                    </div>
-                {{% endfor %}}
-            {{% endif %}}
-        {{% endwith %}}
-    </div>
-
-    <div class="login-container">
-        <div class="login-card">
-            <div class="brand-section">
-                <div class="brand-icon">
-                    <i class="fas fa-layer-group"></i>
-                </div>
-                <div class="brand-name">MNM<span>Software</span></div>
-                <div class="brand-tagline">Secure Access Portal</div>
-            </div>
-            
-            <form action="/login" method="post" class="login-form">
-                <div class="input-group">
-                    <label><i class="fas fa-user"></i> USERNAME</label>
-                    <input type="text" name="username" required placeholder="Enter your ID" autocomplete="off">
-                </div>
-                <div class="input-group">
-                    <label><i class="fas fa-lock"></i> PASSWORD</label>
-                    <input type="password" name="password" required placeholder="Enter your Password">
-                </div>
-                <button type="submit" class="login-btn">
-                    Sign In <i class="fas fa-arrow-right"></i>
-                </button>
-            </form>
-            
-            <div class="footer-credit">
-                2025 <a href="#">Mehedi Hasan</a> - All Rights Reserved
-            </div>
-        </div>
-    </div>
-    
-    <script>
-        document.querySelector('.login-btn').addEventListener('click', function(e) {{
-            const ripple = document.createElement('span');
-            ripple.classList.add('ripple-effect');
-            const rect = this.getBoundingClientRect();
-            ripple.style.left = (e.clientX - rect.left) + 'px';
-            ripple.style.top = (e.clientY - rect.top) + 'px';
-            this.appendChild(ripple);
-            setTimeout(() => ripple.remove(), 600);
-        }});
-
-        // Auto-hide flash messages
-        setTimeout(function() {{
-            let flashMessages = document.querySelectorAll('.flash-message');
-            flashMessages.forEach(function(msg) {{
-                msg.style.animation = 'flashSlideOut 0.3s ease forwards';
-                setTimeout(function() {{ msg.remove(); }}, 300);
-            }});
-        }}, 5000);
-    </script>
-</body>
-</html>
-"""
 
 # ==============================================================================
-# ADMIN DASHBOARD TEMPLATE - (Updated with 24h History, Search, Filter)
-# ==============================================================================
-
-ADMIN_DASHBOARD_TEMPLATE = f"""
-<!doctype html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Admin Dashboard - MNM Software</title>
-    {COMMON_STYLES}
-</head>
-<body>
-    <div class="animated-bg"></div>
-    <div id="particles-js"></div>
-
-    <div id="loading-overlay">
-        <div class="spinner-container">
-            <div class="spinner" id="spinner-anim"></div>
-            <div class="spinner-inner"></div>
-        </div>
-        
-        <div class="checkmark-container" id="success-anim">
-            <div class="checkmark-circle"></div>
-            <div class="anim-text">Successful!</div>
-        </div>
-
-        <div class="fail-container" id="fail-anim">
-            <div class="fail-circle"></div>
-            <div class="anim-text">Action Failed!</div>
-            <div style="font-size: 13px; color:#F87171; margin-top: 8px;">Please check server or inputs</div>
-        </div>
-        
-        <div class="loading-text" id="loading-text">Processing Request...</div>
-    </div>
-
-    <div id="flash-container">
-        {{% with messages = get_flashed_messages(with_categories=true) %}}
-            {{% if messages %}}
-                {{% for category, message in messages %}}
-                    <div class="flash-message flash-{{{{ category if category != 'message' else 'info' }}}}" role="alert">
-                        <div class="flash-icon">
-                            {{% if category == 'success' %}}
-                                <i class="fas fa-check"></i>
-                            {{% elif category == 'error' %}}
-                                <i class="fas fa-times"></i>
-                            {{% elif category == 'warning' %}}
-                                <i class="fas fa-exclamation"></i>
-                            {{% else %}}
-                                <i class="fas fa-info"></i>
-                            {{% endif %}}
-                        </div>
-                        <span class="flash-content">{{{{ message }}}}</span>
-                        <button class="flash-close" onclick="this.parentElement.style.animation='flashSlideOut 0.3s ease forwards'; setTimeout(() => this.parentElement.remove(), 300);">
-                            <i class="fas fa-times"></i>
-                        </button>
-                    </div>
-                {{% endfor %}}
-            {{% endif %}}
-        {{% endwith %}}
-    </div>
-
-    <div class="mobile-toggle" onclick="document.querySelector('.sidebar').classList.toggle('active')">
-        <i class="fas fa-bars"></i>
-    </div>
-
-    <div class="sidebar">
-        <div class="brand-logo">
-            <i class="fas fa-layer-group"></i> 
-            MNM<span>Software</span>
-        </div>
-        <div class="nav-menu">
-            <div class="nav-link active" onclick="showSection('dashboard', this)">
-                <i class="fas fa-home"></i> Dashboard
-                <span class="nav-badge">Live</span>
-            </div>
-            <div class="nav-link" onclick="showSection('analytics', this)">
-                <i class="fas fa-chart-pie"></i> Closing Report
-            </div>
-            <a href="/admin/accessories" class="nav-link">
-                <i class="fas fa-database"></i> Accessories Challan
-            </a>
-            <div class="nav-link" onclick="showSection('help', this)">
-                <i class="fas fa-file-invoice"></i> PO Generator
-            </div>
-            <div class="nav-link" onclick="showSection('settings', this)">
-                <i class="fas fa-users-cog"></i> User Manage
-            </div>
-            <a href="/logout" class="nav-link" style="color: var(--accent-red); margin-top: 20px;">
-                <i class="fas fa-sign-out-alt"></i> Sign Out
-            </a>
-        </div>
-        <div class="sidebar-footer">
-            <i class="fas fa-code" style="margin-right: 5px;"></i> Powered by Mehedi Hasan
-        </div>
-    </div>
-
-    <div class="main-content">
-        
-        <div id="section-dashboard">
-            <div class="header-section">
-                <div>
-                    <div class="page-title">Main Dashboard</div>
-                    <div class="page-subtitle">Lifetime Overview & Analytics</div>
-                </div>
-                <div class="status-badge">
-                    <div class="status-dot"></div>
-                    <span>System Online</span>
-                </div>
-            </div>
-
-            <div class="stats-grid">
-                <div class="card stat-card" style="animation-delay: 0.1s;">
-                    <div class="stat-icon"><i class="fas fa-file-export"></i></div>
-                    <div class="stat-info">
-                        <h3 class="count-up" data-target="{{{{ stats.closing.count }}}}">0</h3>
-                        <p>Lifetime Closing</p>
-                    </div>
-                </div>
-                <div class="card stat-card" style="animation-delay: 0.2s;">
-                    <div class="stat-icon" style="background: linear-gradient(145deg, rgba(139, 92, 246, 0.15), rgba(139, 92, 246, 0.05));">
-                        <i class="fas fa-boxes" style="color: var(--accent-purple);"></i>
-                    </div>
-                    <div class="stat-info">
-                        <h3 class="count-up" data-target="{{{{ stats.accessories.count }}}}">0</h3>
-                        <p>Lifetime Accessories</p>
-                    </div>
-                </div>
-                <div class="card stat-card" style="animation-delay: 0.3s;">
-                    <div class="stat-icon" style="background: linear-gradient(145deg, rgba(16, 185, 129, 0.15), rgba(16, 185, 129, 0.05));">
-                        <i class="fas fa-file-pdf" style="color: var(--accent-green);"></i>
-                    </div>
-                    <div class="stat-info">
-                        <h3 class="count-up" data-target="{{{{ stats.po.count }}}}">0</h3>
-                        <p>Lifetime PO Sheets</p>
-                    </div>
-                </div>
-                <div class="card stat-card" style="animation-delay: 0.4s;">
-                    <div class="stat-icon" style="background: linear-gradient(145deg, rgba(59, 130, 246, 0.15), rgba(59, 130, 246, 0.05));">
-                        <i class="fas fa-users" style="color: var(--accent-blue);"></i>
-                    </div>
-                    <div class="stat-info">
-                        <h3 class="count-up" data-target="{{{{ stats.users.count }}}}">0</h3>
-                        <p>Total Users</p>
-                    </div>
-                </div>
-            </div>
-
-            <div class="dashboard-grid-2">
-                <div class="card">
-                    <div class="section-header">
-                        <span>Daily Activity Chart</span>
-                        <div class="realtime-indicator">
-                            <div class="realtime-dot"></div>
-                            <span>Real-time</span>
-                        </div>
-                    </div>
-                    <div class="chart-container" style="height: 320px;">
-                        <canvas id="mainChart"></canvas>
-                    </div>
-                </div>
-                <div class="card">
-                    <div class="section-header">
-                        <span>Module Usage</span>
-                        <i class="fas fa-chart-bar" style="color: var(--accent-orange);"></i>
-                    </div>
-                    
-                    <div class="progress-item">
-                        <div class="progress-header">
-                            <span>Closing Report</span>
-                            <span class="progress-value">{{{{ stats.closing.count }}}} Lifetime</span>
-                        </div>
-                        <div class="progress-bar-container">
-                            <div class="progress-bar-fill progress-orange" style="width: 85%;"></div>
-                        </div>
-                    </div>
-                    
-                    <div class="progress-item">
-                        <div class="progress-header">
-                            <span>Accessories</span>
-                            <span class="progress-value">{{{{ stats.accessories.count }}}} Challans</span>
-                        </div>
-                        <div class="progress-bar-container">
-                            <div class="progress-bar-fill progress-purple" style="width: 65%;"></div>
-                        </div>
-                    </div>
-                    
-                    <div class="progress-item">
-                        <div class="progress-header">
-                            <span>PO Generator</span>
-                            <span class="progress-value">{{{{ stats.po.count }}}} Files</span>
-                        </div>
-                        <div class="progress-bar-container">
-                            <div class="progress-bar-fill progress-green" style="width: 45%;"></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Activity Log with Search and Filter -->
-            <div class="card">
-                <div class="section-header">
-                    <span>Activity Log (Last 24 Hours)</span>
-                    <i class="fas fa-history" style="color: var(--text-secondary);"></i>
-                </div>
-                
-                <!-- Search and Filter Container -->
-                <div class="search-filter-container">
-                    <div class="search-box">
-                        <i class="fas fa-search"></i>
-                        <input type="text" id="searchInput" placeholder="Search by reference, user, or any text..." onkeyup="filterHistory()">
-                    </div>
-                    <div class="filter-group">
-                        <select class="filter-select" id="typeFilter" onchange="filterHistory()">
-                            <option value="all">All Types</option>
-                            <option value="Closing Report">Closing Report</option>
-                            <option value="PO Sheet">PO Sheet</option>
-                            <option value="Accessories">Accessories</option>
-                        </select>
-                        <input type="date" class="filter-date" id="dateFilter" onchange="filterHistory()">
-                        <button class="clear-filter-btn" onclick="clearFilters()">
-                            <i class="fas fa-times"></i> Clear
-                        </button>
-                    </div>
-                </div>
-                
-                <div style="overflow-x: auto;">
-                    <table class="dark-table" id="historyTable">
-                        <thead>
-                            <tr>
-                                <th>Time</th>
-                                <th>User</th>
-                                <th>Type</th>
-                                <th>Reference</th>
-                                <th>Details</th>
-                            </tr>
-                        </thead>
-                        <tbody id="historyTableBody">
-                            {{% for log in stats.history_24h %}}
-                            <tr class="history-row" 
-                                data-type="{{{{ log.type }}}}" 
-                                data-date="{{{{ log.date }}}}"
-                                data-search="{{{{ log.ref|lower }}}} {{{{ log.user|lower }}}} {{{{ log.type|lower }}}} {{{{ log.get('color', '')|lower }}}} {{{{ log.get('line', '')|lower }}}}"
-                                style="animation: fadeInUp 0.5s ease-out {{{{ loop.index * 0.03 }}}}s backwards;">
-                                <td>
-                                    <div class="time-badge">
-                                        <i class="far fa-clock"></i>
-                                        {{{{ log.time if log.time != 'N/A' else log.date }}}}
-                                    </div>
-                                </td>
-                                <td style="font-weight: 600; color: white;">{{{{ log.user }}}}</td>
-                                <td>
-                                    {{% if log.type == 'Closing Report' %}}
-                                        <span class="type-badge type-closing">Closing</span>
-                                    {{% elif log.type == 'PO Sheet' %}}
-                                        <span class="type-badge type-po">PO Sheet</span>
-                                    {{% elif log.type == 'Accessories' %}}
-                                        <span class="type-badge type-accessories">Accessories</span>
-                                    {{% else %}}
-                                        <span class="type-badge">{{{{ log.type }}}}</span>
-                                    {{% endif %}}
-                                </td>
-                                <td style="color: var(--accent-orange); font-weight: 600;">{{{{ log.ref if log.ref else '-' }}}}</td>
-                                <td style="color: var(--text-secondary); font-size: 12px;">
-                                    {{% if log.type == 'Accessories' %}}
-                                        Line: {{{{ log.get('line', 'N/A') }}}} | Qty: {{{{ log.get('qty', 0) }}}} | {{{{ log.get('color', 'N/A') }}}}
-                                    {{% elif log.type == 'PO Sheet' %}}
-                                        {{{{ log.get('file_count', 1) }}}} file(s) processed
-                                    {{% else %}}
-                                        Report Generated
-                                    {{% endif %}}
-                                </td>
-                            </tr>
-                            {{% else %}}
-                            <tr id="emptyRow">
-                                <td colspan="5" style="text-align: center; padding: 60px; color: var(--text-secondary);">
-                                    <i class="fas fa-inbox" style="font-size: 50px; opacity: 0.3; margin-bottom: 15px; display: block;"></i>
-                                    No activity in the last 24 hours.
-                                </td>
-                            </tr>
-                            {{% endfor %}}
-                        </tbody>
-                    </table>
-                    
-                    <!-- No Results Message -->
-                    <div class="no-results" id="noResults" style="display: none;">
-                        <i class="fas fa-search"></i>
-                        <h4>No Results Found</h4>
-                        <p>Try adjusting your search or filter criteria</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div id="section-analytics" style="display: none;">
-            <div class="header-section">
-                <div>
-                    <div class="page-title">Closing Report</div>
-                    <div class="page-subtitle">Generate production closing reports</div>
-                </div>
-            </div>
-            <div class="card" style="max-width: 550px; margin: 0 auto; margin-top: 30px;">
-                <div class="section-header">
-                    <span><i class="fas fa-magic" style="margin-right: 10px; color: var(--accent-orange);"></i>Generate Report</span>
-                </div>
-                <form action="/generate-report" method="post" onsubmit="return showLoading()">
-                    <div class="input-group">
-                        <label><i class="fas fa-bookmark" style="margin-right: 5px;"></i> INTERNAL REF NO</label>
-                        <input type="text" name="ref_no" placeholder="e.g. IB-12345 or Booking-123" required>
-                    </div>
-                    <button type="submit">
-                        <i class="fas fa-bolt" style="margin-right: 10px;"></i> Generate Report
-                    </button>
-                </form>
-            </div>
-        </div>
-
-        <div id="section-help" style="display: none;">
-            <div class="header-section">
-                <div>
-                    <div class="page-title">PO Sheet Generator</div>
-                    <div class="page-subtitle">Process and generate PO summary sheets</div>
-                </div>
-            </div>
-            <div class="card" style="max-width: 650px; margin: 0 auto; margin-top: 30px;">
-                <div class="section-header">
-                    <span><i class="fas fa-file-pdf" style="margin-right: 10px; color: var(--accent-green);"></i>Upload PDF Files</span>
-                </div>
-                <form action="/generate-po-report" method="post" enctype="multipart/form-data" onsubmit="return showLoading()">
-                    <div class="upload-zone" id="uploadZone" onclick="document.getElementById('file-upload').click()">
-                        <input type="file" name="pdf_files" multiple accept=".pdf" required style="display: none;" id="file-upload">
-                        <div class="upload-icon">
-                            <i class="fas fa-cloud-upload-alt"></i>
-                        </div>
-                        <div class="upload-text">Click or Drag to Upload PDF Files</div>
-                        <div class="upload-hint">Supports multiple PDF files</div>
-                        <div id="file-count">No files selected</div>
-                    </div>
-                    <button type="submit" style="margin-top: 25px; background: linear-gradient(135deg, #10B981 0%, #34D399 100%);">
-                        <i class="fas fa-cogs" style="margin-right: 10px;"></i> Process Files
-                    </button>
-                </form>
-            </div>
-        </div>
-
-        <div id="section-settings" style="display:none;">
-            <div class="header-section">
-                <div>
-                    <div class="page-title">User Management</div>
-                    <div class="page-subtitle">Manage user accounts and permissions</div>
-                </div>
-            </div>
-            <div class="dashboard-grid-2">
-                <div class="card">
-                    <div class="section-header">
-                        <span>User Directory</span>
-                        <span class="table-badge" style="background: var(--accent-orange); color: white;">{{{{ stats.users.count }}}} Users</span>
-                    </div>
-                    <div id="userTableContainer" style="max-height: 450px; overflow-y: auto;">
-                        <div class="skeleton" style="height: 50px; margin-bottom: 10px;"></div>
-                        <div class="skeleton" style="height: 50px; margin-bottom: 10px;"></div>
-                        <div class="skeleton" style="height: 50px;"></div>
-                    </div>
-                </div>
-                <div class="card">
-                    <div class="section-header">
-                        <span>Create / Edit User</span>
-                        <i class="fas fa-user-plus" style="color: var(--accent-orange);"></i>
-                    </div>
-                    <form id="userForm">
-                        <input type="hidden" id="action_type" value="create">
-                        <div class="input-group">
-                            <label><i class="fas fa-user" style="margin-right: 5px;"></i> USERNAME</label>
-                            <input type="text" id="new_username" required placeholder="Enter username">
-                        </div>
-                        <div class="input-group">
-                            <label><i class="fas fa-key" style="margin-right: 5px;"></i> PASSWORD</label>
-                            <input type="text" id="new_password" required placeholder="Enter password">
-                        </div>
-                        <div class="input-group">
-                            <label><i class="fas fa-shield-alt" style="margin-right: 5px;"></i> PERMISSIONS</label>
-                            <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 5px;">
-                                <label class="perm-checkbox">
-                                    <input type="checkbox" id="perm_closing" checked>
-                                    <span>Closing</span>
-                                </label>
-                                <label class="perm-checkbox">
-                                    <input type="checkbox" id="perm_po">
-                                    <span>PO Sheet</span>
-                                </label>
-                                <label class="perm-checkbox">
-                                    <input type="checkbox" id="perm_acc">
-                                    <span>Accessories</span>
-                                </label>
-                            </div>
-                        </div>
-                        <button type="button" onclick="handleUserSubmit()" id="saveUserBtn">
-                            <i class="fas fa-save" style="margin-right: 10px;"></i> Save User
-                        </button>
-                        <button type="button" onclick="resetForm()" style="margin-top: 12px; background: rgba(255,255,255,0.05); border: 1px solid var(--border-color);">
-                            <i class="fas fa-undo" style="margin-right: 10px;"></i> Reset Form
-                        </button>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
-    <script>
-        // ===== SECTION NAVIGATION =====
-        function showSection(id, element) {{
-            ['dashboard', 'analytics', 'help', 'settings'].forEach(sid => {{
-                document.getElementById('section-' + sid).style.display = 'none';
-            }});
-            document.getElementById('section-' + id).style.display = 'block';
-            
-            if (element) {{
-                document.querySelectorAll('.nav-link').forEach(el => el.classList.remove('active'));
-                element.classList.add('active');
-            }}
-            
-            if (id === 'settings') loadUsers();
-            if (window.innerWidth < 1024) document.querySelector('.sidebar').classList.remove('active');
-        }}
-        
-        // ===== FILE UPLOAD HANDLER =====
-        const fileUpload = document.getElementById('file-upload');
-        const uploadZone = document.getElementById('uploadZone');
-        
-        if (fileUpload) {{
-            fileUpload.addEventListener('change', function() {{
-                const count = this.files.length;
-                document.getElementById('file-count').innerHTML = count > 0 
-                    ? `<i class="fas fa-check-circle" style="margin-right: 5px;"></i>${{count}} file(s) selected`
-                    : 'No files selected';
-            }});
-            uploadZone.addEventListener('dragover', (e) => {{
-                e.preventDefault();
-                uploadZone.classList.add('dragover');
-            }});
-            uploadZone.addEventListener('dragleave', () => {{
-                uploadZone.classList.remove('dragover');
-            }});
-            uploadZone.addEventListener('drop', (e) => {{
-                e.preventDefault();
-                uploadZone.classList.remove('dragover');
-                fileUpload.files = e.dataTransfer.files;
-                fileUpload.dispatchEvent(new Event('change'));
-            }});
-        }}
-        
-        // ===== SEARCH AND FILTER FUNCTIONS =====
-        function filterHistory() {{
-            const searchValue = document.getElementById('searchInput').value.toLowerCase();
-            const typeValue = document.getElementById('typeFilter').value;
-            const dateValue = document.getElementById('dateFilter').value;
-            
-            const rows = document.querySelectorAll('.history-row');
-            let visibleCount = 0;
-            
-            rows.forEach(row => {{
-                const searchData = row.getAttribute('data-search') || '';
-                const rowType = row.getAttribute('data-type') || '';
-                const rowDate = row.getAttribute('data-date') || '';
-                
-                let showRow = true;
-                
-                // Search filter
-                if (searchValue && !searchData.includes(searchValue)) {{
-                    showRow = false;
-                }}
-                
-                // Type filter
-                if (typeValue !== 'all' && rowType !== typeValue) {{
-                    showRow = false;
-                }}
-                
-                // Date filter
-                if (dateValue) {{
-                    const filterDate = new Date(dateValue);
-                    const rowDateParts = rowDate.split('-');
-                    if (rowDateParts.length === 3) {{
-                        const rowDateObj = new Date(rowDateParts[2], rowDateParts[1] - 1, rowDateParts[0]);
-                        if (filterDate.toDateString() !== rowDateObj.toDateString()) {{
-                            showRow = false;
-                        }}
-                    }}
-                }}
-                
-                row.style.display = showRow ? '' : 'none';
-                if (showRow) visibleCount++;
-            }});
-            
-            // Show/hide no results message
-            const noResults = document.getElementById('noResults');
-            const emptyRow = document.getElementById('emptyRow');
-            
-            if (visibleCount === 0 && rows.length > 0) {{
-                noResults.style.display = 'block';
-                if (emptyRow) emptyRow.style.display = 'none';
-            }} else {{
-                noResults.style.display = 'none';
-            }}
-        }}
-        
-        function clearFilters() {{
-            document.getElementById('searchInput').value = '';
-            document.getElementById('typeFilter').value = 'all';
-            document.getElementById('dateFilter').value = '';
-            filterHistory();
-        }}
-        
-        // ===== DAILY CHART =====
-        const ctx = document.getElementById('mainChart').getContext('2d');
-        const gradientOrange = ctx.createLinearGradient(0, 0, 0, 300);
-        gradientOrange.addColorStop(0, 'rgba(255, 122, 0, 0.5)');
-        gradientOrange.addColorStop(1, 'rgba(255, 122, 0, 0.0)');
-        const gradientPurple = ctx.createLinearGradient(0, 0, 0, 300);
-        gradientPurple.addColorStop(0, 'rgba(139, 92, 246, 0.5)');
-        gradientPurple.addColorStop(1, 'rgba(139, 92, 246, 0.0)');
-        const gradientGreen = ctx.createLinearGradient(0, 0, 0, 300);
-        gradientGreen.addColorStop(0, 'rgba(16, 185, 129, 0.5)');
-        gradientGreen.addColorStop(1, 'rgba(16, 185, 129, 0.0)');
-        new Chart(ctx, {{
-            type: 'line',
-            data: {{
-                labels: {{{{ stats.chart.labels | tojson }}}},
-                datasets: [
-                    {{
-                        label: 'Closing',
-                        data: {{{{ stats.chart.closing | tojson }}}},
-                        borderColor: '#FF7A00',
-                        backgroundColor: gradientOrange,
-                        tension: 0.4,
-                        fill: true,
-                        pointBackgroundColor: '#FF7A00',
-                        pointBorderColor: '#fff',
-                        pointBorderWidth: 2,
-                        pointRadius: 4,
-                        pointHoverRadius: 7,
-                        borderWidth: 3
-                    }},
-                    {{
-                        label: 'Accessories',
-                        data: {{{{ stats.chart.acc | tojson }}}},
-                        borderColor: '#8B5CF6',
-                        backgroundColor: gradientPurple,
-                        tension: 0.4,
-                        fill: true,
-                        pointBackgroundColor: '#8B5CF6',
-                        pointBorderColor: '#fff',
-                        pointBorderWidth: 2,
-                        pointRadius: 4,
-                        pointHoverRadius: 7,
-                        borderWidth: 3
-                    }},
-                    {{
-                        label: 'PO Sheets',
-                        data: {{{{ stats.chart.po | tojson }}}},
-                        borderColor: '#10B981',
-                        backgroundColor: gradientGreen,
-                        tension: 0.4,
-                        fill: true,
-                        pointBackgroundColor: '#10B981',
-                        pointBorderColor: '#fff',
-                        pointBorderWidth: 2,
-                        pointRadius: 4,
-                        pointHoverRadius: 7,
-                        borderWidth: 3
-                    }}
-                ]
-            }},
-            options: {{
-                plugins: {{
-                    legend: {{
-                        display: true,
-                        position: 'top',
-                        labels: {{
-                            color: '#8b8b9e',
-                            font: {{ size: 11, weight: 500 }},
-                            usePointStyle: true,
-                            padding: 15,
-                            boxWidth: 8
-                        }}
-                    }},
-                    tooltip: {{
-                        mode: 'index',
-                        intersect: false,
-                        backgroundColor: 'rgba(22, 22, 31, 0.95)',
-                        titleColor: '#fff',
-                        bodyColor: '#8b8b9e',
-                        borderColor: 'rgba(255, 122, 0, 0.3)',
-                        borderWidth: 1,
-                        padding: 12,
-                        cornerRadius: 10,
-                        displayColors: true
-                    }}
-                }},
-                scales: {{
-                    x: {{
-                        grid: {{ display: false }},
-                        ticks: {{ 
-                            color: '#8b8b9e', 
-                            font: {{ size: 10 }},
-                            maxRotation: 45,
-                            minRotation: 45
-                        }}
-                    }},
-                    y: {{
-                        grid: {{ 
-                            color: 'rgba(255,255,255,0.03)',
-                            drawBorder: false
-                        }},
-                        ticks: {{ 
-                            color: '#8b8b9e', 
-                            font: {{ size: 10 }},
-                            stepSize: 1
-                        }},
-                        beginAtZero: true
-                    }}
-                }},
-                responsive: true,
-                maintainAspectRatio: false,
-                interaction: {{
-                    intersect: false,
-                    mode: 'index'
-                }},
-                animation: {{
-                    duration: 2000,
-                    easing: 'easeOutQuart'
-                }}
-            }}
-        }});
-
-        // ===== COUNT UP ANIMATION =====
-        function animateCountUp() {{
-            document.querySelectorAll('.count-up').forEach(counter => {{
-                const target = parseInt(counter.getAttribute('data-target'));
-                const duration = 2000;
-                let start = 0;
-                const stepTime = 16;
-                const totalSteps = Math.round(duration / stepTime);
-                const increment = target / totalSteps;
-                
-                const updateCounter = () => {{
-                    start += increment;
-                    if (start < target) {{
-                        counter.textContent = Math.floor(start).toLocaleString('en-US');
-                        requestAnimationFrame(updateCounter);
-                    }} else {{
-                        counter.textContent = target.toLocaleString('en-US');
-                    }}
-                }};
-                
-                updateCounter();
-            }});
-        }}
-        
-        setTimeout(animateCountUp, 500);
-
-        // ===== LOADING ANIMATION =====
-        function showLoading() {{
-            const overlay = document.getElementById('loading-overlay');
-            const spinner = document.getElementById('spinner-anim').parentElement;
-            const success = document.getElementById('success-anim');
-            const fail = document.getElementById('fail-anim');
-            const text = document.getElementById('loading-text');
-            
-            overlay.style.display = 'flex';
-            spinner.style.display = 'block';
-            success.style.display = 'none';
-            fail.style.display = 'none';
-            text.style.display = 'block';
-            text.textContent = 'Processing Request...';
-            
-            return true;
-        }}
-
-        function showSuccess() {{
-            const overlay = document.getElementById('loading-overlay');
-            const spinner = document.getElementById('spinner-anim').parentElement;
-            const success = document.getElementById('success-anim');
-            const text = document.getElementById('loading-text');
-            
-            spinner.style.display = 'none';
-            success.style.display = 'block';
-            text.style.display = 'none';
-            
-            setTimeout(() => {{ overlay.style.display = 'none'; }}, 1500);
-        }}
-
-        // ===== USER MANAGEMENT =====
-        function loadUsers() {{
-            fetch('/admin/get-users')
-                .then(res => res.json())
-                .then(data => {{
-                    let html = '<table class="dark-table"><thead><tr><th>User</th><th>Last Seen</th><th style="text-align:right;">Actions</th></tr></thead><tbody>';
-                    
-                    for (const [u, d] of Object.entries(data)) {{
-                        const roleClass = d.role === 'admin' ? 'background: rgba(255, 122, 0, 0.1); color: var(--accent-orange);' : 'background: rgba(139, 92, 246, 0.1); color: var(--accent-purple);';
-                        
-                        html += `<tr>
-                            <td style="font-weight: 600;">${{u}} <br><small style="color:var(--text-secondary);font-weight:400;">(${{d.role}})</small></td>
-                            <td><span class="table-badge">${{d.last_login}}</span></td>
-                            <td style="text-align:right;">
-                                ${{d.role !== 'admin' ? `
-                                    <div class="action-cell">
-                                        <button class="action-btn btn-edit" onclick="editUser('${{u}}', '${{d.password}}', '${{d.permissions.join(',')}}')">
-                                            <i class="fas fa-edit"></i>
-                                        </button> 
-                                        <button class="action-btn btn-del" onclick="deleteUser('${{u}}')">
-                                            <i class="fas fa-trash"></i>
-                                        </button>
-                                    </div>
-                                ` : '<i class="fas fa-shield-alt" style="color: var(--accent-orange); opacity: 0.5;"></i>'}}
-                            </td>
-                        </tr>`;
-                    }}
-                    
-                    document.getElementById('userTableContainer').innerHTML = html + '</tbody></table>';
-                }});
-        }}
-        
-        function handleUserSubmit() {{
-            const u = document.getElementById('new_username').value;
-            const p = document.getElementById('new_password').value;
-            const a = document.getElementById('action_type').value;
-            
-            let perms = [];
-            if (document.getElementById('perm_closing').checked) perms.push('closing');
-            if (document.getElementById('perm_po').checked) perms.push('po_sheet');
-            if (document.getElementById('perm_acc').checked) perms.push('accessories');
-            
-            showLoading();
-            
-            fetch('/admin/save-user', {{
-                method: 'POST',
-                headers: {{'Content-Type': 'application/json'}},
-                body: JSON.stringify({{ username: u, password: p, permissions: perms, action_type: a }})
-            }})
-            .then(r => r.json())
-            .then(d => {{
-                if (d.status === 'success') {{
-                    showSuccess();
-                    loadUsers();
-                    resetForm();
-                }} else {{
-                    alert(d.message);
-                    document.getElementById('loading-overlay').style.display = 'none';
-                }}
-            }});
-        }}
-        
-        function editUser(u, p, permsStr) {{
-            document.getElementById('new_username').value = u;
-            document.getElementById('new_username').readOnly = true;
-            document.getElementById('new_password').value = p;
-            document.getElementById('action_type').value = 'update';
-            document.getElementById('saveUserBtn').innerHTML = '<i class="fas fa-sync" style="margin-right: 10px;"></i> Update User';
-            const pArr = permsStr.split(',');
-            document.getElementById('perm_closing').checked = pArr.includes('closing');
-            document.getElementById('perm_po').checked = pArr.includes('po_sheet');
-            document.getElementById('perm_acc').checked = pArr.includes('accessories');
-        }}
-        
-        function resetForm() {{
-            document.getElementById('userForm').reset();
-            document.getElementById('action_type').value = 'create';
-            document.getElementById('saveUserBtn').innerHTML = '<i class="fas fa-save" style="margin-right: 10px;"></i> Save User';
-            document.getElementById('new_username').readOnly = false;
-            document.getElementById('perm_closing').checked = true;
-        }}
-        
-        function deleteUser(u) {{
-            if (confirm('Are you sure you want to delete "' + u + '"?')) {{
-                fetch('/admin/delete-user', {{
-                    method: 'POST',
-                    headers: {{'Content-Type': 'application/json'}},
-                    body: JSON.stringify({{ username: u }})
-                }}).then(() => loadUsers());
-            }}
-        }}
-        
-        // ===== PARTICLES.JS INITIALIZATION =====
-        if (typeof particlesJS !== 'undefined') {{
-            particlesJS('particles-js', {{
-                particles: {{
-                    number: {{ value: 50, density: {{ enable: true, value_area: 800 }} }},
-                    color: {{ value: '#FF7A00' }},
-                    shape: {{ type: 'circle' }},
-                    opacity: {{ value: 0.3, random: true }},
-                    size: {{ value: 3, random: true }},
-                    line_linked: {{ enable: true, distance: 150, color: '#FF7A00', opacity: 0.1, width: 1 }},
-                    move: {{ enable: true, speed: 1, direction: 'none', random: true, out_mode: 'out' }}
-                }},
-                interactivity: {{
-                    events: {{ onhover: {{ enable: true, mode: 'grab' }} }},
-                    modes: {{ grab: {{ distance: 140, line_linked: {{ opacity: 0.3 }} }} }}
-                }}
-            }});
-        }}
-
-        // Auto-hide flash messages
-        setTimeout(function() {{
-            let flashMessages = document.querySelectorAll('.flash-message');
-            flashMessages.forEach(function(msg) {{
-                msg.style.animation = 'flashSlideOut 0.3s ease forwards';
-                setTimeout(function() {{ msg.remove(); }}, 300);
-            }});
-        }}, 5000);
-        
-        // Add CSS for fadeInUp animation
-        const style = document.createElement('style');
-        style.textContent = `
-            @keyframes fadeInUp {{
-                from {{ opacity: 0; transform: translateY(20px); }}
-                to {{ opacity: 1; transform: translateY(0); }}
-            }}
-        `;
-        document.head.appendChild(style);
-    </script>
-</body>
-</html>
-"""
-# ==============================================================================
-# USER DASHBOARD TEMPLATE
-# ==============================================================================
-
-USER_DASHBOARD_TEMPLATE = f"""
-<!doctype html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Dashboard - MNM Software</title>
-    {COMMON_STYLES}
-</head>
-<body>
-    <div class="animated-bg"></div>
-    
-    <div id="loading-overlay">
-        <div class="spinner-container">
-            <div class="spinner"></div>
-            <div class="spinner-inner"></div>
-        </div>
-        <div class="loading-text">Processing...</div>
-    </div>
-    
-    <div id="flash-container">
-        {{% with messages = get_flashed_messages(with_categories=true) %}}
-            {{% if messages %}}
-                {{% for category, message in messages %}}
-                    <div class="flash-message flash-{{{{ category if category != 'message' else 'info' }}}}" role="alert">
-                        <div class="flash-icon">
-                            {{% if category == 'success' %}}
-                                <i class="fas fa-check"></i>
-                            {{% elif category == 'error' %}}
-                                <i class="fas fa-times"></i>
-                            {{% elif category == 'warning' %}}
-                                <i class="fas fa-exclamation"></i>
-                            {{% else %}}
-                                <i class="fas fa-info"></i>
-                            {{% endif %}}
-                        </div>
-                        <span class="flash-content">{{{{ message }}}}</span>
-                        <button class="flash-close" onclick="this.parentElement.style.animation='flashSlideOut 0.3s ease forwards'; setTimeout(() => this.parentElement.remove(), 300);">
-                            <i class="fas fa-times"></i>
-                        </button>
-                    </div>
-                {{% endfor %}}
-            {{% endif %}}
-        {{% endwith %}}
-    </div>
-    
-    <div class="sidebar">
-        <div class="brand-logo">
-            <i class="fas fa-layer-group"></i> 
-            MNM<span>Software</span>
-        </div>
-        <div class="nav-menu">
-            <div class="nav-link active">
-                <i class="fas fa-home"></i> Home
-            </div>
-            <a href="/logout" class="nav-link" style="color: var(--accent-red); margin-top: auto;">
-                <i class="fas fa-sign-out-alt"></i> Sign Out
-            </a>
-        </div>
-        <div class="sidebar-footer">
-            <i class="fas fa-code" style="margin-right: 5px;"></i> Powered by Mehedi Hasan
-        </div>
-    </div>
-    
-    <div class="main-content">
-        <div class="header-section">
-            <div>
-                <div class="page-title">Welcome, {{{{ session.user }}}}!</div>
-                <div class="page-subtitle">Your assigned production modules</div>
-            </div>
-            <div class="status-badge">
-                <div class="status-dot"></div>
-                <span>Online</span>
-            </div>
-        </div>
-
-        <div class="stats-grid">
-            {{% if 'closing' in session.permissions %}}
-            <div class="card" style="animation: fadeInUp 0.5s ease-out 0.1s backwards;">
-                <div class="section-header">
-                    <span><i class="fas fa-file-export" style="margin-right: 10px; color: var(--accent-orange);"></i>Closing Report</span>
-                </div>
-                <p style="color: var(--text-secondary); margin-bottom: 20px; font-size: 14px; line-height: 1.6;">
-                    Generate production closing reports with real-time data. 
-                </p>
-                <form action="/generate-report" method="post" onsubmit="showLoading()">
-                    <div class="input-group">
-                        <label>BOOKING REF NO</label>
-                        <input type="text" name="ref_no" required placeholder="Enter Booking Reference">
-                    </div>
-                    <button type="submit">
-                        <i class="fas fa-magic" style="margin-right: 8px;"></i> Generate
-                    </button>
-                </form>
-            </div>
-            {{% endif %}}
-            
-            {{% if 'po_sheet' in session.permissions %}}
-            <div class="card" style="animation: fadeInUp 0.5s ease-out 0.2s backwards;">
-                <div class="section-header">
-                    <span><i class="fas fa-file-pdf" style="margin-right: 10px; color: var(--accent-green);"></i>PO Sheet</span>
-                </div>
-                <p style="color: var(--text-secondary); margin-bottom: 20px; font-size: 14px; line-height: 1.6;">
-                    Process PDF files and generate PO summary reports.
-                </p>
-                <form action="/generate-po-report" method="post" enctype="multipart/form-data" onsubmit="showLoading()">
-                    <div class="input-group">
-                        <label>PDF FILES</label>
-                        <input type="file" name="pdf_files" multiple accept=".pdf" required style="padding: 12px;">
-                    </div>
-                    <button type="submit" style="background: linear-gradient(135deg, #10B981 0%, #34D399 100%);">
-                        <i class="fas fa-cogs" style="margin-right: 8px;"></i> Process Files
-                    </button>
-                </form>
-            </div>
-            {{% endif %}}
-            
-            {{% if 'accessories' in session.permissions %}}
-            <div class="card" style="animation: fadeInUp 0.5s ease-out 0.3s backwards;">
-                <div class="section-header">
-                    <span><i class="fas fa-boxes" style="margin-right: 10px; color: var(--accent-purple);"></i>Accessories</span>
-                </div>
-                <p style="color: var(--text-secondary); margin-bottom: 20px; font-size: 14px; line-height: 1.6;">
-                    Manage challans, entries and delivery history for accessories.
-                </p>
-                <a href="/admin/accessories">
-                    <button style="background: linear-gradient(135deg, #8B5CF6 0%, #A78BFA 100%);">
-                        <i class="fas fa-external-link-alt" style="margin-right: 8px;"></i> Open Dashboard
-                    </button>
-                </a>
-            </div>
-            {{% endif %}}
-        </div>
-    </div>
-    
-    <script>
-        function showLoading() {{
-            document.getElementById('loading-overlay').style.display = 'flex';
-            return true;
-        }}
-        
-        // Auto-hide flash messages
-        setTimeout(function() {{
-            let flashMessages = document.querySelectorAll('.flash-message');
-            flashMessages.forEach(function(msg) {{
-                msg.style.animation = 'flashSlideOut 0.3s ease forwards';
-                setTimeout(function() {{ msg.remove(); }}, 300);
-            }});
-        }}, 5000);
-
-        const style = document.createElement('style');
-        style.textContent = `
-            @keyframes fadeInUp {{
-                from {{ opacity: 0; transform: translateY(20px); }}
-                to {{ opacity: 1; transform: translateY(0); }}
-            }}
-        `;
-        document.head.appendChild(style);
-    </script>
-</body>
-</html>
-"""
-
-# ==============================================================================
-# ACCESSORIES SEARCH TEMPLATE
-# ==============================================================================
-
-ACCESSORIES_SEARCH_TEMPLATE = f"""
-<!doctype html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Accessories Search - MNM Software</title>
-    {COMMON_STYLES}
-    <style>
-        body {{
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-        }}
-        
-        .search-container {{
-            position: relative;
-            z-index: 10;
-            width: 100%;
-            max-width: 520px;
-            padding: 20px;
-        }}
-        
-        .search-card {{
-            background: var(--gradient-card);
-            border: 1px solid var(--border-color);
-            border-radius: 24px;
-            padding: 50px 45px;
-            backdrop-filter: blur(20px);
-            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.5), 0 0 60px var(--accent-orange-glow);
-            animation: cardAppear 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-        }}
-        
-        @keyframes cardAppear {{
-            from {{ opacity: 0; transform: translateY(20px) scale(0.95); }}
-            to {{ opacity: 1; transform: translateY(0) scale(1); }}
-        }}
-        
-        .search-header {{
-            text-align: center;
-            margin-bottom: 40px;
-        }}
-        
-        .search-icon {{
-            width: 80px;
-            height: 80px;
-            background: linear-gradient(145deg, rgba(139, 92, 246, 0.2), rgba(139, 92, 246, 0.05));
-            border-radius: 20px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 36px;
-            color: var(--accent-purple);
-            margin-bottom: 20px;
-            animation: iconFloat 3s ease-in-out infinite;
-        }}
-        
-        @keyframes iconFloat {{
-            0%, 100% {{ transform: translateY(0); }}
-            50% {{ transform: translateY(-10px); }}
-        }}
-        
-        .search-title {{
-            font-size: 28px;
-            font-weight: 800;
-            color: white;
-            margin-bottom: 8px;
-        }}
-        
-        .search-subtitle {{
-            color: var(--text-secondary);
-            font-size: 14px;
-        }}
-        
-        .nav-links {{
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-top: 30px;
-            padding-top: 20px;
-            border-top: 1px solid var(--border-color);
-        }}
-        
-        .nav-links a {{
-            color: var(--text-secondary);
-            text-decoration: none;
-            font-size: 13px;
-            font-weight: 500;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            transition: var(--transition-smooth);
-        }}
-        
-        .nav-links a:hover {{
-            color: var(--accent-orange);
-        }}
-        
-        .nav-links a.logout {{
-            color: var(--accent-red);
-        }}
-        
-        .nav-links a.logout:hover {{
-            color: #ff6b6b;
-        }}
-    </style>
-</head>
-<body>
-    <div class="animated-bg"></div>
-    
-    <div id="flash-container">
-        {{% with messages = get_flashed_messages(with_categories=true) %}}
-            {{% if messages %}}
-                {{% for category, message in messages %}}
-                    <div class="flash-message flash-{{{{ category if category != 'message' else 'info' }}}}" role="alert">
-                        <div class="flash-icon">
-                            {{% if category == 'success' %}}
-                                <i class="fas fa-check"></i>
-                            {{% elif category == 'error' %}}
-                                <i class="fas fa-times"></i>
-                            {{% elif category == 'warning' %}}
-                                <i class="fas fa-exclamation"></i>
-                            {{% else %}}
-                                <i class="fas fa-info"></i>
-                            {{% endif %}}
-                        </div>
-                        <span class="flash-content">{{{{ message }}}}</span>
-                        <button class="flash-close" onclick="this.parentElement.style.animation='flashSlideOut 0.3s ease forwards'; setTimeout(() => this.parentElement.remove(), 300);">
-                            <i class="fas fa-times"></i>
-                        </button>
-                    </div>
-                {{% endfor %}}
-            {{% endif %}}
-        {{% endwith %}}
-    </div>
-    
-    <div class="search-container">
-        <div class="search-card">
-            <div class="search-header">
-                <div class="search-icon">
-                    <i class="fas fa-boxes"></i>
-                </div>
-                <div class="search-title">Accessories Challan</div>
-                <div class="search-subtitle">Enter booking reference to continue</div>
-            </div>
-            
-            <form action="/admin/accessories/input" method="post">
-                <div class="input-group">
-                    <label><i class="fas fa-search" style="margin-right: 5px;"></i> BOOKING REFERENCE</label>
-                    <input type="text" name="ref_no" required placeholder="e.g. IB-12345" autocomplete="off">
-                </div>
-                <button type="submit" style="background: linear-gradient(135deg, #8B5CF6 0%, #A78BFA 100%);">
-                    Proceed to Entry <i class="fas fa-arrow-right" style="margin-left: 10px;"></i>
-                </button>
-            </form>
-            
-            <!-- History Section -->
-            <div class="history-section">
-                <div class="history-toggle" onclick="toggleHistory()">
-                    <div class="history-toggle-left">
-                        <div class="history-toggle-icon">
-                            <i class="fas fa-history"></i>
-                        </div>
-                        <div>
-                            <div class="history-toggle-text">Challan History</div>
-                            <div class="history-toggle-sub">View all saved bookings</div>
-                        </div>
-                    </div>
-                    <div class="history-badge">{{{{ history_count }}}}</div>
-                </div>
-                
-                <div class="history-dropdown" id="historyDropdown">
-                    {{% if history_bookings %}}
-                        {{% for booking in history_bookings %}}
-                        <a href="/admin/accessories/input_direct?ref={{{{ booking.ref }}}}" class="history-booking-item">
-                            <div class="booking-item-left">
-                                <div class="booking-ref">{{{{ booking.ref }}}}</div>
-                                <div class="booking-info">{{{{ booking.buyer }}}} - {{{{ booking.style }}}}</div>
-                            </div>
-                            <div class="booking-stats">
-                                <div class="booking-stat">
-                                    <div class="booking-stat-value">{{{{ booking.challan_count }}}}</div>
-                                    <div class="booking-stat-label">Challans</div>
-                                </div>
-                                <div class="booking-stat">
-                                    <div class="booking-stat-value">{{{{ booking.total_qty }}}}</div>
-                                    <div class="booking-stat-label">Total Qty</div>
-                                </div>
-                                <div class="booking-arrow">
-                                    <i class="fas fa-chevron-right"></i>
-                                </div>
-                            </div>
-                        </a>
-                        {{% endfor %}}
-                    {{% else %}}
-                        <div class="empty-history">
-                            <i class="fas fa-folder-open"></i>
-                            <div>No saved bookings yet</div>
-                        </div>
-                    {{% endif %}}
-                </div>
-            </div>
-            
-            <div class="nav-links">
-                <a href="/"><i class="fas fa-arrow-left"></i> Back to Dashboard</a>
-                <a href="/logout" class="logout">Sign Out <i class="fas fa-sign-out-alt"></i></a>
-            </div>
-        </div>
-        
-        <div style="text-align: center; margin-top: 25px; color: var(--text-secondary); font-size: 11px; opacity: 0.4;">
-            2025 Mehedi Hasan
-        </div>
-    </div>
-    
-    <script>
-        function toggleHistory() {{
-            const dropdown = document.getElementById('historyDropdown');
-            dropdown.classList.toggle('active');
-        }}
-
-        // Auto-hide flash messages
-        setTimeout(function() {{
-            let flashMessages = document.querySelectorAll('.flash-message');
-            flashMessages.forEach(function(msg) {{
-                msg.style.animation = 'flashSlideOut 0.3s ease forwards';
-                setTimeout(function() {{ msg.remove(); }}, 300);
-            }});
-        }}, 5000);
-    </script>
-</body>
-</html>
-"""
-
-# ==============================================================================
-# ACCESSORIES INPUT TEMPLATE
-# ==============================================================================
-
-ACCESSORIES_INPUT_TEMPLATE = f"""
-<!doctype html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Accessories Entry - MNM Software</title>
-    {COMMON_STYLES}
-    <style>
-        .ref-badge {{
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-            background: rgba(255, 122, 0, 0.1);
-            border: 1px solid rgba(255, 122, 0, 0.2);
-            padding: 10px 20px;
-            border-radius: 12px;
-            margin-top: 10px;
-        }}
-        
-        .ref-badge .ref-no {{
-            font-size: 18px;
-            font-weight: 800;
-            color: var(--accent-orange);
-        }}
-        
-        .ref-badge .ref-info {{
-            color: var(--text-secondary);
-            font-size: 13px;
-            font-weight: 500;
-        }}
-        
-        .history-scroll {{
-            max-height: 500px;
-            overflow-y: auto;
-            padding-right: 5px;
-        }}
-        
-        .challan-row {{
-            display: grid;
-            grid-template-columns: 60px 1fr 80px 60px 80px;
-            gap: 10px;
-            padding: 14px;
-            background: rgba(255, 255, 255, 0.02);
-            border-radius: 10px;
-            margin-bottom: 8px;
-            align-items: center;
-            transition: var(--transition-smooth);
-            border: 1px solid transparent;
-        }}
-        
-        .challan-row:hover {{
-            background: rgba(255, 122, 0, 0.05);
-            border-color: var(--border-glow);
-        }}
-        
-        .line-badge {{
-            background: var(--gradient-orange);
-            color: white;
-            padding: 6px 12px;
-            border-radius: 8px;
-            font-weight: 700;
-            font-size: 13px;
-            text-align: center;
-        }}
-        
-        .qty-value {{
-            font-size: 18px;
-            font-weight: 800;
-            color: var(--accent-green);
-        }}
-        
-        .status-check {{
-            color: var(--accent-green);
-            font-size: 20px;
-        }}
-        
-        .print-btn {{
-            background: linear-gradient(135deg, #10B981 0%, #34D399 100%) !important;
-        }}
-
-        .refresh-btn {{
-            background: linear-gradient(135deg, #3B82F6 0%, #60A5FA 100%) !important;
-        }}
-
-        .delete-booking-btn {{
-             background: linear-gradient(135deg, #EF4444 0%, #F87171 100%) !important;
-        }}
-        
-        .empty-state {{
-            text-align: center;
-            padding: 50px 20px;
-            color: var(--text-secondary);
-        }}
-        
-        .empty-state i {{
-            font-size: 50px;
-            opacity: 0.2;
-            margin-bottom: 15px;
-        }}
-        
-        .grid-2-cols {{
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-        }}
-        
-        .count-badge {{
-            background: var(--accent-purple);
-            color: white;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 700;
-            margin-left: 10px;
-        }}
-        
-        select {{
-            background-color: #1a1a25 !important;
-            color: white !important;
-        }}
-        
-        select option {{
-            background-color: #1a1a25 !important;
-            color: white !important;
-            padding: 10px;
-        }}
-
-        .header-section .btn-group {{
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }}
-    </style>
-</head>
-<body>
-    <div class="animated-bg"></div>
-    
-    <div id="loading-overlay">
-        <div class="spinner-container">
-            <div class="spinner" id="spinner-anim"></div>
-            <div class="spinner-inner"></div>
-        </div>
-        <div class="checkmark-container" id="success-anim">
-            <div class="checkmark-circle"></div>
-            <div class="anim-text">Saved!</div>
-        </div>
-        <div class="loading-text" id="loading-text">Saving Entry...</div>
-    </div>
-
-    <div id="flash-container">
-        {{% with messages = get_flashed_messages(with_categories=true) %}}
-            {{% if messages %}}
-                {{% for category, message in messages %}}
-                    <div class="flash-message flash-{{{{ category if category != 'message' else 'info' }}}}" role="alert">
-                        <div class="flash-icon">
-                            {{% if category == 'success' %}}
-                                <i class="fas fa-check"></i>
-                            {{% elif category == 'error' %}}
-                                <i class="fas fa-times"></i>
-                            {{% elif category == 'warning' %}}
-                                <i class="fas fa-exclamation"></i>
-                            {{% else %}}
-                                <i class="fas fa-info"></i>
-                            {{% endif %}}
-                        </div>
-                        <span class="flash-content">{{{{ message }}}}</span>
-                        <button class="flash-close" onclick="this.parentElement.style.animation='flashSlideOut 0.3s ease forwards'; setTimeout(() => this.parentElement.remove(), 300);">
-                            <i class="fas fa-times"></i>
-                        </button>
-                    </div>
-                {{% endfor %}}
-            {{% endif %}}
-        {{% endwith %}}
-    </div>
-
-    <div class="sidebar">
-        <div class="brand-logo">
-            <i class="fas fa-boxes"></i> 
-            Accessories
-        </div>
-        <div class="nav-menu">
-            <a href="/" class="nav-link"><i class="fas fa-home"></i> Dashboard</a>
-            <a href="/admin/accessories" class="nav-link active"><i class="fas fa-search"></i> Search</a>
-            <a href="/logout" class="nav-link" style="color: var(--accent-red); margin-top: 20px;">
-                <i class="fas fa-sign-out-alt"></i> Sign Out
-            </a>
-        </div>
-        <div class="sidebar-footer">2025 Mehedi Hasan</div>
-    </div>
-    
-    <div class="main-content">
-        <div class="header-section">
-            <div>
-                <div class="page-title">Accessories Entry</div>
-                <div class="ref-badge">
-                    <span class="ref-no">{{{{ ref }}}}</span>
-                    <span class="ref-info">{{{{ buyer }}}} - {{{{ style }}}}</span>
-                </div>
-            </div>
-            <div class="btn-group">
-                <a href="/admin/accessories/refresh?ref={{{{ ref }}}}" class="tooltip" data-tooltip="Reload Data">
-                    <button class="refresh-btn" style="width: auto; padding: 14px 20px;">
-                        <i class="fas fa-sync-alt"></i>
-                    </button>
-                </a>
-                <a href="/admin/accessories/print?ref={{{{ ref }}}}" target="_blank" class="tooltip" data-tooltip="Print Report">
-                    <button class="print-btn" style="width: auto; padding: 14px 20px;">
-                        <i class="fas fa-print"></i>
-                    </button>
-                </a>
-                {{% if session.role == 'admin' %}}
-                <a href="/admin/accessories/delete_booking?ref={{{{ ref }}}}" onclick="return confirm('Delete Entire Booking?');" class="tooltip" data-tooltip="Delete All">
-                    <button class="delete-booking-btn" style="width: auto; padding: 14px 20px;">
-                        <i class="fas fa-trash-alt"></i>
-                    </button>
-                </a>
-                {{% endif %}}
-            </div>
-        </div>
-
-        <div class="dashboard-grid-2">
-            <div class="card">
-                <div class="section-header">
-                    <span><i class="fas fa-plus-circle" style="margin-right: 10px; color: var(--accent-orange);"></i>New Challan Entry</span>
-                </div>
-                <form action="/admin/accessories/save" method="post" onsubmit="return showLoading()">
-                    <input type="hidden" name="ref" value="{{{{ ref }}}}">
-                    
-                    <div class="grid-2-cols">
-                        <div class="input-group">
-                            <label><i class="fas fa-tag" style="margin-right: 5px;"></i> TYPE</label>
-                            <select name="item_type">
-                                <option value="Top">Top</option>
-                                <option value="Bottom">Bottom</option>
-                            </select>
-                        </div>
-                        <div class="input-group">
-                            <label><i class="fas fa-palette" style="margin-right: 5px;"></i> COLOR</label>
-                            <select name="color" required>
-                                <option value="" disabled selected>Select Color</option>
-                                {{% for c in colors %}}
-                                <option value="{{{{ c }}}}">{{{{ c }}}}</option>
-                                {{% endfor %}}
-                            </select>
-                        </div>
-                    </div>
-                    
-                    <div class="grid-2-cols">
-                        <div class="input-group">
-                            <label><i class="fas fa-industry" style="margin-right: 5px;"></i> LINE NO</label>
-                            <input type="text" name="line_no" required placeholder="e.g. L-01">
-                        </div>
-                        <div class="input-group">
-                            <label><i class="fas fa-ruler" style="margin-right: 5px;"></i> SIZE</label>
-                            <input type="text" name="size" value="ALL" placeholder="Size">
-                        </div>
-                    </div>
-                    
-                    <div class="input-group">
-                        <label><i class="fas fa-sort-numeric-up" style="margin-right: 5px;"></i> QUANTITY</label>
-                        <input type="number" name="qty" required placeholder="Enter Quantity" min="1">
-                    </div>
-                    
-                    <button type="submit">
-                        <i class="fas fa-save" style="margin-right: 10px;"></i> Save Entry
-                    </button>
-                </form>
-            </div>
-
-            <div class="card">
-                <div class="section-header">
-                    <span>Recent History</span>
-                    <span class="count-badge">{{{{ challans|length }}}}</span>
-                </div>
-                <div class="history-scroll">
-                    {{% if challans %}}
-                        {{% for item in challans|reverse %}}
-                        <div class="challan-row" style="animation: fadeInUp 0.3s ease-out {{{{ loop.index * 0.05 }}}}s backwards;">
-                            <div class="line-badge">{{{{ item.line }}}}</div>
-                            <div style="color: white; font-weight: 500; font-size: 13px;">{{{{ item.color }}}}</div>
-                            <div class="qty-value">{{{{ item.qty }}}}</div>
-                            <div class="status-check">{{{{ item.status if item.status else '' }}}}</div>
-                            <div class="action-cell">
-                                {{% if session.role == 'admin' %}}
-                                <a href="/admin/accessories/edit?ref={{{{ ref }}}}&index={{{{ (challans|length) - loop.index }}}}" class="action-btn btn-edit">
-                                    <i class="fas fa-pen"></i>
-                                </a>
-                                <form action="/admin/accessories/delete" method="POST" style="display: inline;" onsubmit="return confirm('Delete this entry?');">
-                                    <input type="hidden" name="ref" value="{{{{ ref }}}}">
-                                    <input type="hidden" name="index" value="{{{{ (challans|length) - loop.index }}}}">
-                                    <button type="submit" class="action-btn btn-del"><i class="fas fa-trash"></i></button>
-                                </form>
-                                {{% else %}}
-                                <span style="font-size: 10px; color: var(--text-secondary); opacity: 0.5;"></span>
-                                {{% endif %}}
-                            </div>
-                        </div>
-                        {{% endfor %}}
-                    {{% else %}}
-                        <div class="empty-state">
-                            <i class="fas fa-inbox"></i>
-                            <div>No challans added yet</div>
-                            <div style="font-size: 12px; margin-top: 5px;">Add your first entry using the form</div>
-                        </div>
-                    {{% endif %}}
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <script>
-        function showLoading() {{
-            const overlay = document.getElementById('loading-overlay');
-            const spinner = document.getElementById('spinner-anim').parentElement;
-            const success = document.getElementById('success-anim');
-            const text = document.getElementById('loading-text');
-            
-            overlay.style.display = 'flex';
-            spinner.style.display = 'block';
-            success.style.display = 'none';
-            text.style.display = 'block';
-            text.textContent = 'Saving Entry...';
-            return true;
-        }}
-        
-        // Auto-hide flash messages
-        setTimeout(function() {{
-            let flashMessages = document.querySelectorAll('.flash-message');
-            flashMessages.forEach(function(msg) {{
-                msg.style.animation = 'flashSlideOut 0.3s ease forwards';
-                setTimeout(function() {{ msg.remove(); }}, 300);
-            }});
-        }}, 5000);
-
-        const style = document.createElement('style');
-        style.textContent = `
-            @keyframes fadeInUp {{
-                from {{ opacity: 0; transform: translateY(10px); }}
-                to {{ opacity: 1; transform: translateY(0); }}
-            }}
-        `;
-        document.head.appendChild(style);
-    </script>
-</body>
-</html>
-"""
-
-# ==============================================================================
-# ACCESSORIES EDIT TEMPLATE
-# ==============================================================================
-
-ACCESSORIES_EDIT_TEMPLATE = f"""
-<!doctype html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Edit Entry - MNM Software</title>
-    {COMMON_STYLES}
-    <style>
-        body {{
-            justify-content: center;
-            align-items: center;
-        }}
-        
-        .edit-container {{
-            position: relative;
-            z-index: 10;
-            width: 100%;
-            max-width: 450px;
-            padding: 20px;
-        }}
-        
-        .edit-card {{
-            background: var(--gradient-card);
-            border: 1px solid var(--border-color);
-            border-radius: 24px;
-            padding: 45px;
-            backdrop-filter: blur(20px);
-            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.5);
-            animation: cardAppear 0.5s ease-out;
-        }}
-        
-        @keyframes cardAppear {{
-            from {{ opacity: 0; transform: scale(0.95); }}
-            to {{ opacity: 1; transform: scale(1); }}
-        }}
-        
-        .edit-header {{
-            text-align: center;
-            margin-bottom: 35px;
-        }}
-        
-        .edit-icon {{
-            width: 70px;
-            height: 70px;
-            background: linear-gradient(145deg, rgba(139, 92, 246, 0.2), rgba(139, 92, 246, 0.05));
-            border-radius: 16px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 28px;
-            color: var(--accent-purple);
-            margin-bottom: 15px;
-        }}
-        
-        .edit-title {{
-            font-size: 24px;
-            font-weight: 800;
-            color: white;
-        }}
-        
-        .cancel-link {{
-            display: block;
-            text-align: center;
-            margin-top: 20px;
-            color: var(--text-secondary);
-            font-size: 13px;
-            text-decoration: none;
-            transition: var(--transition-smooth);
-        }}
-        
-        .cancel-link:hover {{
-            color: var(--accent-orange);
-        }}
-    </style>
-</head>
-<body>
-    <div class="animated-bg"></div>
-    
-    <div class="edit-container">
-        <div class="edit-card">
-            <div class="edit-header">
-                <div class="edit-icon">
-                    <i class="fas fa-edit"></i>
-                </div>
-                <div class="edit-title">Edit Entry</div>
-            </div>
-            
-            <form action="/admin/accessories/update" method="post">
-                <input type="hidden" name="ref" value="{{{{ ref }}}}">
-                <input type="hidden" name="index" value="{{{{ index }}}}">
-                
-                <div class="input-group">
-                    <label><i class="fas fa-industry" style="margin-right: 5px;"></i> LINE NO</label>
-                    <input type="text" name="line_no" value="{{{{ item.line }}}}" required>
-                </div>
-                
-                <div class="input-group">
-                    <label><i class="fas fa-palette" style="margin-right: 5px;"></i> COLOR</label>
-                    <input type="text" name="color" value="{{{{ item.color }}}}" required>
-                </div>
-                
-                <div class="input-group">
-                    <label><i class="fas fa-ruler" style="margin-right: 5px;"></i> SIZE</label>
-                    <input type="text" name="size" value="{{{{ item.size }}}}" required>
-                </div>
-                
-                <div class="input-group">
-                    <label><i class="fas fa-sort-numeric-up" style="margin-right: 5px;"></i> QUANTITY</label>
-                    <input type="number" name="qty" value="{{{{ item.qty }}}}" required>
-                </div>
-                
-                <button type="submit" style="background: linear-gradient(135deg, #8B5CF6 0%, #A78BFA 100%);">
-                    <i class="fas fa-sync-alt" style="margin-right: 10px;"></i> Update Entry
-                </button>
-            </form>
-            
-            <a href="/admin/accessories/input_direct?ref={{{{ ref }}}}" class="cancel-link">
-                <i class="fas fa-times" style="margin-right: 5px;"></i> Cancel
-            </a>
-        </div>
-    </div>
-</body>
-</html>
-"""
-# ==============================================================================
-# CLOSING REPORT PREVIEW TEMPLATE
+# CLOSING REPORT PREVIEW TEMPLATE (TRANSPOSED VERSION)
 # ==============================================================================
 
 CLOSING_REPORT_PREVIEW_TEMPLATE = """
@@ -4721,7 +1510,7 @@ CLOSING_REPORT_PREVIEW_TEMPLATE = """
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        body { background-color: #f8f9fa; padding: 30px 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; font-size: 1.1rem; }
+        body { background-color: #f8f9fa; padding: 30px 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; font-size: 1.0rem; }
         .container { max-width: 1400px; }
         .company-header { text-align: center; margin-bottom: 20px; border-bottom: 2px solid #000; padding-bottom: 10px; }
         .company-name { font-size: 2.2rem; font-weight: 800; color: #2c3e50; text-transform: uppercase; letter-spacing: 1px; line-height: 1; }
@@ -4732,35 +1521,63 @@ CLOSING_REPORT_PREVIEW_TEMPLATE = """
         .info-item { font-size: 1.2rem; font-weight: 600; color: #444; }
         .info-label { font-weight: 800; color: #444; width: 90px; display: inline-block; }
         .info-value { font-weight: 800; color: #000; }
-        .booking-box { background: #2c3e50; color: white; padding: 10px 20px; border-radius: 5px; text-align: right; box-shadow: 0 4px 10px rgba(44, 62, 80, 0.3); display: flex; flex-direction: column; justify-content: center; }
+        .booking-box { background: #2c3e50; color: white; padding: 10px 20px; border-radius: 5px; text-align: right; box-shadow: 0 4px 10px rgba(44, 62, 80, 0.3); display: flex; flex-direction: column; justify-content: center; min-width: 200px; }
         .booking-label { font-size: 1.1rem; opacity: 0.9; text-transform: uppercase; letter-spacing: 1px; font-weight: 700; }
         .booking-value { font-size: 1.8rem; font-weight: 800; line-height: 1.1; }
-        .table-card { background: white; border-radius: 0; margin-bottom: 30px; border: none; }
+        
+        /* Table Styles */
+        .table-card { background: white; border-radius: 0; margin-bottom: 30px; border: none; overflow-x: auto; }
         .color-header { background-color: #2c3e50 !important; color: white; padding: 10px 15px; font-size: 1.4rem; font-weight: 800; text-transform: uppercase; border: 1px solid #000;}
-        .table { margin-bottom: 0; width: 100%; border-collapse: collapse; font-size: 1rem; }
-        .table th { background-color: #fff !important; color: #000 !important; text-align: center; border: 1px solid #000; padding: 8px; vertical-align: middle; font-weight: 900; font-size: 1.2rem; }
-        .table td { text-align: center; vertical-align: middle; border: 1px solid #000; padding: 6px; color: #000; font-weight: 600; font-size: 1.1rem; }
-        .col-3pct { background-color: #B9C2DF !important; font-weight: 700; }
-        .col-input { background-color: #C4D09D !important; font-weight: 700; }
-        .col-balance { font-weight: 700; color: #c0392b; }
-        .total-row td { background-color: #fff !important; color: #000 !important; font-weight: 900; font-size: 1.2rem; border-top: 2px solid #000; }
+        .table { margin-bottom: 0; width: 100%; border-collapse: collapse; font-size: 0.95rem; }
+        
+        .table th, .table td { text-align: center; vertical-align: middle; border: 1px solid #000; padding: 8px 10px; color: #000; font-weight: 600; }
+        
+        /* First Column (Metric Names) */
+        .table td:first-child { 
+            text-align: left; 
+            font-weight: 800; 
+            background-color: #f1f2e8; 
+            width: 180px; 
+            white-space: nowrap;
+        }
+        
+        /* Header Row (Sizes) */
+        .table thead th { 
+            background-color: #fff !important; 
+            color: #000 !important; 
+            font-weight: 900; 
+            font-size: 1.1rem;
+        }
+        
+        /* Special Row Styling */
+        .row-3pct { background-color: #B9C2DF !important; }
+        .row-3pct td:not(:first-child) { background-color: #B9C2DF !important; }
+        
+        .row-input { background-color: #C4D09D !important; }
+        .row-input td:not(:first-child) { background-color: #C4D09D !important; }
+        
+        .row-balance td:not(:first-child) { font-weight: 700; color: #c0392b; }
+        
+        /* Last Column (Total) */
+        .col-total { font-weight: 900 !important; background-color: #e8f6f3; }
+        
         .action-bar { margin-bottom: 20px; display: flex; justify-content: flex-end; gap: 15px; position: sticky; top: 0; z-index: 1000; background: #f8f9fa; padding: 10px 0; }
         .btn-print { background-color: #2c3e50; color: white; border-radius: 50px; padding: 10px 30px; font-weight: 600; border: none; }
         .btn-excel { background-color: #27ae60; color: white; border-radius: 50px; padding: 10px 30px; font-weight: 600; text-decoration: none; display: inline-block; }
         .btn-excel:hover { color: white; background-color: #219150; }
         .footer-credit { text-align: center; margin-top: 40px; margin-bottom: 20px; font-size: 1rem; color: #2c3e50; padding-top: 10px; border-top: 1px solid #000; font-weight: 600;}
+        
         @media print {
-            @page { margin: 5mm; size: portrait; }
+            @page { margin: 5mm; size: landscape; }
             body { background-color: white; padding: 0; }
             .container { max-width: 100% !important; width: 100%; }
             .no-print { display: none !important; }
             .action-bar { display: none; }
             .table th, .table td { border: 1px solid #000 !important; }
             .color-header { background-color: #2c3e50 !important; -webkit-print-color-adjust: exact; color: white !important;}
-            .col-3pct { background-color: #B9C2DF !important; -webkit-print-color-adjust: exact; }
-            .col-input { background-color: #C4D09D !important; -webkit-print-color-adjust: exact; }
+            .row-3pct td { background-color: #B9C2DF !important; -webkit-print-color-adjust: exact; }
+            .row-input td { background-color: #C4D09D !important; -webkit-print-color-adjust: exact; }
             .booking-box { background-color: #2c3e50 !important; -webkit-print-color-adjust: exact; color: white !important; border: 1px solid #000;}
-            .total-row td { font-weight: 900 !important; color: #000 !important; }
         }
     </style>
 </head>
@@ -4787,24 +1604,31 @@ CLOSING_REPORT_PREVIEW_TEMPLATE = """
                 <div class="booking-value">{{ ref_no }}</div>
             </div>
         </div>
+        
         {% for block in report_data %}
         <div class="table-card">
             <div class="color-header">COLOR: {{ block.color }}</div>
             <table class="table">
                 <thead>
                     <tr>
-                        <th>SIZE</th>
-                        <th>ORDER QTY 3%</th>
-                        <th>ACTUAL QTY</th>
-                        <th>CUTTING QC</th>
-                        <th>INPUT QTY</th>
-                        <th>BALANCE</th>
-                        <th>SHORT/PLUS</th>
-                        <th>PERCENTAGE %</th>
+                        <th style="text-align: left; background-color: #f1f2e8 !important;">METRICS</th>
+                        {% for size in block.headers %}
+                            <th>{{ size }}</th>
+                        {% endfor %}
+                        <th class="col-total">TOTAL</th>
                     </tr>
                 </thead>
                 <tbody>
+                    <!-- Calculation Logic -->
                     {% set ns = namespace(tot_3=0, tot_act=0, tot_cut=0, tot_inp=0, tot_bal=0, tot_sp=0) %}
+                    {% set data_3pct = [] %}
+                    {% set data_actual = [] %}
+                    {% set data_cut = [] %}
+                    {% set data_inp = [] %}
+                    {% set data_bal = [] %}
+                    {% set data_sp = [] %}
+                    {% set data_pct = [] %}
+                    
                     {% for i in range(block.headers|length) %}
                         {% set actual = block.gmts_qty[i]|replace(',', '')|int %}
                         {% set qty_3 = (actual * 1.03)|round|int %}
@@ -4822,32 +1646,63 @@ CLOSING_REPORT_PREVIEW_TEMPLATE = """
                         {% if qty_3 > 0 %}
                             {% set percentage = (short_plus / qty_3) * 100 %}
                         {% endif %}
+                        
                         {% set ns.tot_3 = ns.tot_3 + qty_3 %}
                         {% set ns.tot_act = ns.tot_act + actual %}
                         {% set ns.tot_cut = ns.tot_cut + cut_qc %}
                         {% set ns.tot_inp = ns.tot_inp + inp_qty %}
                         {% set ns.tot_bal = ns.tot_bal + balance %}
                         {% set ns.tot_sp = ns.tot_sp + short_plus %}
-                        <tr>
-                            <td>{{ block.headers[i] }}</td>
-                            <td class="col-3pct">{{ qty_3 }}</td>
-                            <td>{{ actual }}</td>
-                            <td>{{ cut_qc }}</td>
-                            <td class="col-input">{{ inp_qty }}</td>
-                            <td class="col-balance">{{ balance }}</td>
-                            <td style="color: {{ 'green' if short_plus >= 0 else 'red' }}">{{ short_plus }}</td>
-                            <td>{{ "%.2f"|format(percentage) }}%</td>
-                        </tr>
+                        
+                        <!-- Append to lists -->
+                        {% set _ = data_3pct.append(qty_3) %}
+                        {% set _ = data_actual.append(actual) %}
+                        {% set _ = data_cut.append(cut_qc) %}
+                        {% set _ = data_inp.append(inp_qty) %}
+                        {% set _ = data_bal.append(balance) %}
+                        {% set _ = data_sp.append(short_plus) %}
+                        {% set _ = data_pct.append(percentage) %}
                     {% endfor %}
-                    <tr class="total-row">
-                        <td>TOTAL</td>
-                        <td>{{ ns.tot_3 }}</td>
-                        <td>{{ ns.tot_act }}</td>
-                        <td>{{ ns.tot_cut }}</td>
-                        <td>{{ ns.tot_inp }}</td>
-                        <td>{{ ns.tot_bal }}</td>
-                        <td>{{ ns.tot_sp }}</td>
-                        <td>
+
+                    <!-- Render Transposed Rows -->
+                    <tr class="row-3pct">
+                        <td>ORDER QTY 3%</td>
+                        {% for val in data_3pct %} <td>{{ val }}</td> {% endfor %}
+                        <td class="col-total">{{ ns.tot_3 }}</td>
+                    </tr>
+                    <tr>
+                        <td>ACTUAL QTY</td>
+                        {% for val in data_actual %} <td>{{ val }}</td> {% endfor %}
+                        <td class="col-total">{{ ns.tot_act }}</td>
+                    </tr>
+                    <tr>
+                        <td>CUTTING QC</td>
+                        {% for val in data_cut %} <td>{{ val }}</td> {% endfor %}
+                        <td class="col-total">{{ ns.tot_cut }}</td>
+                    </tr>
+                    <tr class="row-input">
+                        <td>INPUT QTY</td>
+                        {% for val in data_inp %} <td>{{ val }}</td> {% endfor %}
+                        <td class="col-total">{{ ns.tot_inp }}</td>
+                    </tr>
+                    <tr class="row-balance">
+                        <td>BALANCE</td>
+                        {% for val in data_bal %} <td>{{ val }}</td> {% endfor %}
+                        <td class="col-total">{{ ns.tot_bal }}</td>
+                    </tr>
+                    <tr>
+                        <td>SHORT/PLUS</td>
+                        {% for val in data_sp %} 
+                            <td style="color: {{ 'green' if val >= 0 else 'red' }}">{{ val }}</td> 
+                        {% endfor %}
+                        <td class="col-total">{{ ns.tot_sp }}</td>
+                    </tr>
+                    <tr>
+                        <td>PERCENTAGE %</td>
+                        {% for val in data_pct %} 
+                            <td>{{ "%.2f"|format(val) }}%</td> 
+                        {% endfor %}
+                        <td class="col-total">
                             {% if ns.tot_3 > 0 %}
                                 {{ "%.2f"|format((ns.tot_sp / ns.tot_3) * 100) }}%
                             {% else %}
@@ -4869,7 +1724,6 @@ CLOSING_REPORT_PREVIEW_TEMPLATE = """
 </body>
 </html>
 """
-
 # ==============================================================================
 # ACCESSORIES REPORT TEMPLATE
 # ==============================================================================
@@ -4903,7 +1757,7 @@ ACCESSORIES_REPORT_TEMPLATE = """
         .summary-table { width: 100%; font-size: 13px; font-weight: 700; }
         .summary-table td { padding: 2px 5px; }
         .main-table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 14px; }
-        .main-table th { background: #2c3e50 !important; color: white !important; padding: 10px; border: 1px solid #000; font-size: 14px; text-transform: uppercase; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        .main-table th { background: #2c3e50 !important; color: white !important; padding: 10px; border: 1px solid #000; font-size: 14px; text-transform: uppercase; -webkit-print-color-adjust: exact; }
         .main-table td { border: 1px solid #000; padding: 6px; text-align: center; vertical-align: middle; color: #000; font-weight: 600; }
         .line-card { display: inline-block; padding: 4px 10px; border: 2px solid #000; font-size: 16px; font-weight: 900; border-radius: 4px; box-shadow: 2px 2px 0 #000; background: #fff; }
         .line-text-bold { font-size: 14px; font-weight: 800; opacity: 0.7; }
@@ -4929,7 +1783,7 @@ ACCESSORIES_REPORT_TEMPLATE = """
 <body>
 <div class="no-print">
     <a href="/admin/accessories/input_direct?ref={{ ref }}" class="btn">Back</a>
-    <button onclick="window.print()" class="btn">Print</button>
+    <button onclick="window.print()" class="btn">🖨️ Print</button>
 </div>
 <div class="container">
     <div class="header">
@@ -5024,7 +1878,7 @@ ACCESSORIES_REPORT_TEMPLATE = """
 """
 
 # ==============================================================================
-# PO REPORT TEMPLATE - NEW UPDATED VERSION
+# PO REPORT TEMPLATE (HUBUHU FROM PO SHEET.py)
 # ==============================================================================
 
 PO_REPORT_TEMPLATE = """
@@ -5495,7 +2349,7 @@ PO_REPORT_TEMPLATE = """
 <body>
     <div class="container">
         <div class="action-bar no-print">
-            <a href="/" class="btn-back">Back</a>
+            <a href="/" class="btn-back">← Back</a>
             <button onclick="window.print()" class="btn-print">Print Report</button>
         </div>
 
@@ -5577,661 +2431,1101 @@ PO_REPORT_TEMPLATE = """
 </body>
 </html>
 """
+
 # ==============================================================================
-# FLASK ROUTES: LOGIN & LOGOUT
+# LOGIN TEMPLATE
 # ==============================================================================
 
-@app.route('/login', methods=['GET', 'POST'])
-def login():
-    if request.method == 'POST':
-        username = request.form.get('username')
-        password = request.form.get('password')
-        users = load_users()
+LOGIN_TEMPLATE = f"""
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Login - MNM Software</title>
+    {COMMON_STYLES}
+    <style>
+        html, body {{
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+        }}
         
-        if username in users and users[username]['password'] == password:
-            session.permanent = True
-            session['user'] = username
-            session['role'] = users[username]['role']
-            session['permissions'] = users[username].get('permissions', [])
-            session['login_time'] = get_bd_time().isoformat()
-            
-            users[username]['last_login'] = get_bd_time().strftime('%d-%m-%Y %I:%M %p')
-            save_users(users)
-            
-            flash('Login successful! Welcome back.', 'success')
-            
-            if users[username]['role'] == 'admin':
-                return redirect(url_for('admin_dashboard'))
-            else:
-                return redirect(url_for('user_dashboard'))
-        else:
-            flash('Invalid username or password. Please try again.', 'error')
-            return redirect(url_for('login'))
-    
-    return render_template_string(LOGIN_TEMPLATE)
-
-@app.route('/logout')
-def logout():
-    if 'user' in session and 'login_time' in session:
-        users = load_users()
-        username = session['user']
+        body {{
+            background: var(--bg-body);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            overflow-y: auto;
+        }}
         
-        if username in users:
-            try:
-                login_time = datetime.fromisoformat(session['login_time'])
-                now = get_bd_time()
-                
-                if login_time.tzinfo is None:
-                    login_time = bd_tz.localize(login_time)
-                
-                duration = now - login_time
-                total_seconds = int(duration.total_seconds())
-                
-                hours, remainder = divmod(total_seconds, 3600)
-                minutes, seconds = divmod(remainder, 60)
-                
-                if hours > 0:
-                    duration_str = f"{hours}h {minutes}m {seconds}s"
-                elif minutes > 0:
-                    duration_str = f"{minutes}m {seconds}s"
-                else:
-                    duration_str = f"{seconds}s"
-                
-                users[username]['last_duration'] = duration_str
-                save_users(users)
-            except Exception as e:
-                print(f"Duration calculation error: {e}")
+        .bg-orb {{
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.4;
+            animation: orbFloat 20s ease-in-out infinite;
+            pointer-events: none;
+        }}
+        
+        .orb-1 {{
+            width: 300px;
+            height: 300px;
+            background: var(--accent-orange);
+            top: -100px;
+            left: -100px;
+            animation-delay: 0s;
+        }}
+        
+        .orb-2 {{
+            width: 250px;
+            height: 250px;
+            background: var(--accent-purple);
+            bottom: -50px;
+            right: -50px;
+            animation-delay: -5s;
+        }}
+        
+        .orb-3 {{
+            width: 150px;
+            height: 150px;
+            background: var(--accent-green);
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            animation-delay: -10s;
+        }}
+        
+        @keyframes orbFloat {{
+            0%, 100% {{ transform: translate(0, 0) scale(1); }}
+            25% {{ transform: translate(30px, -30px) scale(1.05); }}
+            50% {{ transform: translate(-20px, 20px) scale(0.95); }}
+            75% {{ transform: translate(15px, 30px) scale(1.02); }}
+        }}
+        
+        .login-container {{
+            position: relative;
+            z-index: 10;
+            width: 100%;
+            max-width: 420px;
+            padding: 20px;
+            margin: auto;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            min-height: 100vh;
+        }}
+        
+        .login-card {{
+            background: var(--gradient-card);
+            border: 1px solid var(--border-color);
+            border-radius: 24px;
+            padding: 40px 35px;
+            backdrop-filter: blur(20px);
+            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.5), 0 0 60px var(--accent-orange-glow);
+            animation: loginCardAppear 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }}
+        
+        @keyframes loginCardAppear {{
+            from {{
+                opacity: 0;
+                transform: translateY(30px) scale(0.95);
+            }}
+            to {{
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }}
+        }}
+        
+        .brand-section {{
+            text-align: center;
+            margin-bottom: 35px;
+        }}
+        
+        .brand-icon {{
+            width: 70px;
+            height: 70px;
+            background: var(--gradient-orange);
+            border-radius: 18px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            color: white;
+            margin-bottom: 18px;
+            box-shadow: 0 15px 40px var(--accent-orange-glow);
+            animation: brandIconPulse 3s ease-in-out infinite;
+        }}
+        
+        @keyframes brandIconPulse {{
+            0%, 100% {{ transform: scale(1) rotate(0deg); box-shadow: 0 15px 40px var(--accent-orange-glow); }}
+            50% {{ transform: scale(1.05) rotate(5deg); box-shadow: 0 20px 50px var(--accent-orange-glow); }}
+        }}
+        
+        .brand-name {{
+            font-size: 28px;
+            font-weight: 900;
+            color: white;
+            letter-spacing: -1px;
+        }}
+        
+        .brand-name span {{
+            background: var(--gradient-orange);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }}
+        
+        .brand-tagline {{
+            color: var(--text-secondary);
+            font-size: 11px;
+            letter-spacing: 2px;
+            margin-top: 6px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }}
+        
+        .login-form .input-group {{
+            margin-bottom: 20px;
+        }}
+        
+        .login-form .input-group label {{
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+        }}
+        
+        .login-form .input-group label i {{
+            color: var(--accent-orange);
+            font-size: 13px;
+        }}
+        
+        .login-form input {{
+            padding: 14px 18px;
+            font-size: 14px;
+            border-radius: 12px;
+        }}
+        
+        .login-btn {{
+            margin-top: 8px;
+            padding: 14px 24px;
+            font-size: 15px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }}
+        
+        .login-btn i {{
+            transition: transform 0.3s;
+        }}
+        
+        .login-btn:hover i {{
+            transform: translateX(5px);
+        }}
+        
+        .footer-credit {{
+            text-align: center;
+            margin-top: 25px;
+            color: var(--text-secondary);
+            font-size: 11px;
+            opacity: 0.5;
+            font-weight: 500;
+        }}
+        
+        .footer-credit a {{
+            color: var(--accent-orange);
+            text-decoration: none;
+        }}
+    </style>
+</head>
+<body>
+    <div class="bg-orb orb-1"></div>
+    <div class="bg-orb orb-2"></div>
+    <div class="bg-orb orb-3"></div>
     
-    session.clear()
-    flash('You have been logged out successfully.', 'info')
-    return redirect(url_for('login'))
+    <!-- Updated Flash Container -->
+    <div id="flash-container">
+        {{% with messages = get_flashed_messages(with_categories=true) %}}
+            {{% if messages %}}
+                {{% for category, message in messages %}}
+                    <div class="flash-message flash-{{{{ category if category != 'message' else 'info' }}}}">
+                        {{{{ message }}}}
+                    </div>
+                {{% endfor %}}
+            {{% endif %}}
+        {{% endwith %}}
+    </div>
+
+    <div class="login-container">
+        <div class="login-card">
+            <div class="brand-section">
+                <div class="brand-icon">
+                    <i class="fas fa-layer-group"></i>
+                </div>
+                <div class="brand-name">MNM<span>Software</span></div>
+                <div class="brand-tagline">Secure Access Portal</div>
+            </div>
+            
+            <form action="/login" method="post" class="login-form">
+                <div class="input-group">
+                    <label><i class="fas fa-user"></i> USERNAME</label>
+                    <input type="text" name="username" required placeholder="Enter your ID" autocomplete="off">
+                </div>
+                <div class="input-group">
+                    <label><i class="fas fa-lock"></i> PASSWORD</label>
+                    <input type="password" name="password" required placeholder="Enter your Password">
+                </div>
+                <button type="submit" class="login-btn">
+                    Sign In <i class="fas fa-arrow-right"></i>
+                </button>
+            </form>
+            
+            <div class="footer-credit">
+                © 2025 <a href="#">Mehedi Hasan</a> • All Rights Reserved
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Auto-hide flash messages
+        setTimeout(function() {{
+            let flashMessages = document.querySelectorAll('.flash-message');
+            flashMessages.forEach(function(msg) {{
+                msg.style.opacity = '0';
+                setTimeout(function() {{ msg.style.display = 'none'; }}, 500);
+            }});
+        }}, 4000);
+    </script>
+</body>
+</html>
+"""
+# ==============================================================================
+# MAIN DASHBOARD TEMPLATE (ADMIN & USER)
+# ==============================================================================
+
+DASHBOARD_TEMPLATE = f"""
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>MNM Production Dashboard</title>
+    {COMMON_STYLES}
+</head>
+<body>
+    <div id="particles-js"></div>
+    <div class="animated-bg"></div>
+    
+    <!-- Loading Overlay -->
+    <div id="loading-overlay">
+        <div class="spinner"></div>
+        <h3 style="color:white; margin-top:20px; font-weight:300;">Processing Request...</h3>
+    </div>
+
+    <!-- Flash Messages -->
+    <div id="flash-container">
+        {{% with messages = get_flashed_messages(with_categories=true) %}}
+            {{% if messages %}}
+                {{% for category, message in messages %}}
+                    <div class="flash-message flash-{{{{ category if category != 'message' else 'info' }}}}">
+                        {{{{ message }}}}
+                    </div>
+                {{% endfor %}}
+            {{% endif %}}
+        {{% endwith %}}
+    </div>
+
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <div class="brand-logo">
+            <i class="fas fa-layer-group"></i>
+            <div>MNM<span>Pro</span></div>
+        </div>
+        
+        <div class="nav-menu">
+            <div class="nav-item">
+                <a href="/" class="nav-link active">
+                    <i class="fas fa-home"></i> Dashboard
+                </a>
+            </div>
+            
+            {{% if 'closing' in permissions %}}
+            <div class="nav-item">
+                <a href="#closing-section" class="nav-link" onclick="showSection('closing')">
+                    <i class="fas fa-file-invoice"></i> Closing Report
+                </a>
+            </div>
+            {{% endif %}}
+            
+            {{% if 'po_sheet' in permissions %}}
+            <div class="nav-item">
+                <a href="#po-section" class="nav-link" onclick="showSection('po')">
+                    <i class="fas fa-file-pdf"></i> PO Sheet Parser
+                </a>
+            </div>
+            {{% endif %}}
+
+            {{% if 'accessories' in permissions %}}
+            <div class="nav-item">
+                <a href="#accessories-section" class="nav-link" onclick="showSection('accessories')">
+                    <i class="fas fa-box-open"></i> Accessories
+                    <span class="nav-badge">{{{{ summary.accessories.count }}}}</span>
+                </a>
+            </div>
+            {{% endif %}}
+            
+            {{% if session.role == 'admin' %}}
+            <div class="nav-item">
+                <a href="#users-section" class="nav-link" onclick="showSection('users')">
+                    <i class="fas fa-users-cog"></i> User Management
+                </a>
+            </div>
+            {{% endif %}}
+        </div>
+        
+        <div class="sidebar-footer">
+            Logged in as: <strong>{{{{ session.username }}}}</strong><br>
+            <a href="/logout" style="color: var(--accent-red); text-decoration: none; font-weight: 700; margin-top: 10px; display: inline-block;">
+                <i class="fas fa-sign-out-alt"></i> Logout
+            </a>
+        </div>
+    </div>
+
+    <button class="mobile-toggle" onclick="document.getElementById('sidebar').classList.toggle('active')">
+        <i class="fas fa-bars"></i>
+    </button>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Dashboard Home Section -->
+        <div id="dashboard-section">
+            <div class="header-section">
+                <div>
+                    <div class="page-title">Dashboard Overview</div>
+                    <div class="page-subtitle">Welcome back, {{{{ session.username }}}}</div>
+                </div>
+                <div class="status-badge">
+                    <div class="status-dot"></div> System Active
+                </div>
+            </div>
+
+            <!-- Stats Grid -->
+            <div class="stats-grid">
+                <div class="card stat-card">
+                    <div class="stat-icon"><i class="fas fa-file-invoice"></i></div>
+                    <div class="stat-info">
+                        <h3>{{{{ summary.closing.count }}}}</h3>
+                        <p>Closing Reports</p>
+                    </div>
+                </div>
+                <div class="card stat-card">
+                    <div class="stat-icon" style="color: var(--accent-purple); background: rgba(139, 92, 246, 0.1);"><i class="fas fa-file-pdf"></i></div>
+                    <div class="stat-info">
+                        <h3>{{{{ summary.po.count }}}}</h3>
+                        <p>PO Sheets Processed</p>
+                    </div>
+                </div>
+                <div class="card stat-card">
+                    <div class="stat-icon" style="color: var(--accent-cyan); background: rgba(6, 182, 212, 0.1);"><i class="fas fa-users"></i></div>
+                    <div class="stat-info">
+                        <h3>{{{{ summary.users.count }}}}</h3>
+                        <p>Active Users</p>
+                    </div>
+                </div>
+                <div class="card stat-card">
+                    <div class="stat-icon" style="color: var(--accent-green); background: rgba(16, 185, 129, 0.1);"><i class="fas fa-box"></i></div>
+                    <div class="stat-info">
+                        <h3>{{{{ summary.accessories.count }}}}</h3>
+                        <p>Accessories Challans</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="dashboard-grid-2">
+                <!-- Activity Chart -->
+                <div class="card">
+                    <div class="page-title" style="font-size: 20px; margin-bottom: 20px;">Production Analytics</div>
+                    <canvas id="activityChart" height="150"></canvas>
+                </div>
+
+                <!-- Recent History (Last 24h & Search) -->
+                <div class="card" style="max-height: 500px; display: flex; flex-direction: column;">
+                    <div class="page-title" style="font-size: 20px; margin-bottom: 15px;">Recent Activity</div>
+                    
+                    <!-- Search & Filter Controls -->
+                    <div class="table-controls" style="padding: 10px; margin-bottom: 10px;">
+                        <div class="search-box">
+                            <i class="fas fa-search"></i>
+                            <input type="text" id="historySearch" placeholder="Search ref, user..." onkeyup="filterHistory()">
+                        </div>
+                        <select id="historyFilter" onchange="filterHistory()" style="width: auto; padding: 10px;">
+                            <option value="all">All Types</option>
+                            <option value="Closing Report">Closing</option>
+                            <option value="PO Sheet">PO Sheet</option>
+                            <option value="Accessories">Accessories</option>
+                        </select>
+                    </div>
+
+                    <div style="overflow-y: auto; flex-grow: 1;">
+                        <table class="dark-table" id="historyTable">
+                            <thead>
+                                <tr>
+                                    <th>Ref / Booking</th>
+                                    <th>Type</th>
+                                    <th>User</th>
+                                    <th>Time</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {{% for item in summary.history %}}
+                                <tr>
+                                    <td style="font-weight: 700; color: white;">{{{{ item.ref }}}}</td>
+                                    <td>
+                                        <span class="table-badge" 
+                                              style="color: {{{{ 'var(--accent-orange)' if item.type == 'Closing Report' else ('var(--accent-purple)' if item.type == 'PO Sheet' else 'var(--accent-green)') }}}};">
+                                            {{{{ item.type }}}}
+                                        </span>
+                                    </td>
+                                    <td style="color: var(--text-secondary);">{{{{ item.user }}}}</td>
+                                    <td style="font-size: 11px; opacity: 0.7;">
+                                        {{{{ item.time }}}}<br>
+                                        <span style="font-size: 9px;">{{{{ item.date }}}}</span>
+                                    </td>
+                                </tr>
+                                {{% endfor %}}
+                            </tbody>
+                        </table>
+                        
+                        <!-- No Data Message -->
+                        <div id="noDataMessage" style="display: none; text-align: center; padding: 20px; color: var(--text-secondary);">
+                            No matching records found.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Closing Report Section -->
+        <div id="closing-section" style="display: none;">
+            <div class="header-section">
+                <div>
+                    <div class="page-title">Closing Report Generator</div>
+                    <div class="page-subtitle">Automated ERP data extraction & formatting</div>
+                </div>
+            </div>
+            
+            <div class="card" style="max-width: 600px; margin: 0 auto;">
+                <form action="/generate_closing" method="post" onsubmit="showLoading()">
+                    <div class="input-group">
+                        <label>Booking Reference No</label>
+                        <input type="text" name="ref_no" required placeholder="e.g. UFL-2024-1234" style="font-size: 18px;">
+                    </div>
+                    <button type="submit">
+                        <i class="fas fa-magic"></i> Generate Report
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- PO Sheet Section -->
+        <div id="po-section" style="display: none;">
+            <div class="header-section">
+                <div>
+                    <div class="page-title">PO Sheet Parser</div>
+                    <div class="page-subtitle">Extract structured data from PDF orders</div>
+                </div>
+            </div>
+
+            <div class="card" style="max-width: 600px; margin: 0 auto;">
+                <form action="/upload_po" method="post" enctype="multipart/form-data" onsubmit="showLoading()">
+                    <div class="input-group">
+                        <label>Select PDF Files (Multiple Allowed)</label>
+                        <input type="file" name="files" multiple accept=".pdf" required 
+                               style="padding: 30px; border: 2px dashed var(--border-color); text-align: center;">
+                    </div>
+                    <button type="submit" style="background: linear-gradient(135deg, var(--accent-purple) 0%, #6D28D9 100%);">
+                        <i class="fas fa-cogs"></i> Process PDFs
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- User Management Section (Admin Only) -->
+        {{% if session.role == 'admin' %}}
+        <div id="users-section" style="display: none;">
+            <div class="header-section">
+                <div>
+                    <div class="page-title">User Management</div>
+                    <div class="page-subtitle">Manage access and permissions</div>
+                </div>
+            </div>
+
+            <div class="dashboard-grid-2">
+                <div class="card">
+                    <h3 style="margin-bottom: 20px;">Create New User</h3>
+                    <form action="/create_user" method="post">
+                        <div class="input-group">
+                            <label>Username</label>
+                            <input type="text" name="new_username" required>
+                        </div>
+                        <div class="input-group">
+                            <label>Password</label>
+                            <input type="password" name="new_password" required>
+                        </div>
+                        <div class="input-group">
+                            <label>Role</label>
+                            <select name="role">
+                                <option value="user">Standard User</option>
+                                <option value="admin">Administrator</option>
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <label>Permissions</label>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                                <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; padding: 10px; background: rgba(255,255,255,0.05); border-radius: 8px;">
+                                    <input type="checkbox" name="perms" value="closing" checked style="width: auto;"> Closing Report
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; padding: 10px; background: rgba(255,255,255,0.05); border-radius: 8px;">
+                                    <input type="checkbox" name="perms" value="po_sheet" checked style="width: auto;"> PO Parser
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; padding: 10px; background: rgba(255,255,255,0.05); border-radius: 8px;">
+                                    <input type="checkbox" name="perms" value="accessories" checked style="width: auto;"> Accessories
+                                </label>
+                            </div>
+                        </div>
+                        <button type="submit" style="background: var(--accent-green);">Create User</button>
+                    </form>
+                </div>
+
+                <div class="card">
+                    <h3 style="margin-bottom: 20px;">Existing Users</h3>
+                    <div style="overflow-y: auto; max-height: 400px;">
+                        <table class="dark-table">
+                            <thead>
+                                <tr>
+                                    <th>User</th>
+                                    <th>Role</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {{% for u in summary.users.details %}}
+                                <tr>
+                                    <td>{{{{ u.username }}}}</td>
+                                    <td>
+                                        <span class="table-badge" style="background: {{{{ 'var(--accent-red)' if u.role == 'admin' else 'var(--accent-blue)' }}}};">
+                                            {{{{ u.role }}}}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        {{% if u.username != 'Admin' %}}
+                                        <form action="/delete_user" method="post" onsubmit="return confirm('Delete user?');">
+                                            <input type="hidden" name="username" value="{{{{ u.username }}}}">
+                                            <button type="submit" style="padding: 5px 10px; font-size: 12px; background: var(--accent-red); width: auto;">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </form>
+                                        {{% endif %}}
+                                    </td>
+                                </tr>
+                                {{% endfor %}}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {{% endif %}}
+"""
+# ==============================================================================
+# JAVASCRIPT FOR DASHBOARD (Chart & Interaction)
+# ==============================================================================
+
+DASHBOARD_SCRIPT = """
+<script>
+    // Initialize Particles
+    particlesJS('particles-js', {
+        particles: {
+            number: { value: 60, density: { enable: true, value_area: 800 } },
+            color: { value: '#ffffff' },
+            opacity: { value: 0.1, random: false },
+            size: { value: 3, random: true },
+            line_linked: { enable: true, distance: 150, color: '#ffffff', opacity: 0.1, width: 1 },
+            move: { enable: true, speed: 2 }
+        }
+    });
+
+    // Chart Configuration
+    const ctx = document.getElementById('activityChart').getContext('2d');
+    const chartData = {
+        labels: {{ summary.chart.labels | tojson }},
+        datasets: [
+            {
+                label: 'Closing Reports',
+                data: {{ summary.chart.closing | tojson }},
+                borderColor: '#FF7A00',
+                backgroundColor: 'rgba(255, 122, 0, 0.1)',
+                tension: 0.4, fill: true
+            },
+            {
+                label: 'PO Sheets',
+                data: {{ summary.chart.po | tojson }},
+                borderColor: '#8B5CF6',
+                backgroundColor: 'rgba(139, 92, 246, 0.1)',
+                tension: 0.4, fill: true
+            },
+            {
+                label: 'Accessories',
+                data: {{ summary.chart.acc | tojson }},
+                borderColor: '#10B981',
+                backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                tension: 0.4, fill: true
+            }
+        ]
+    };
+
+    new Chart(ctx, {
+        type: 'line',
+        data: chartData,
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { labels: { color: '#8b8b9e' } }
+            },
+            scales: {
+                y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#8b8b9e' } },
+                x: { grid: { display: false }, ticks: { color: '#8b8b9e' } }
+            }
+        }
+    });
+
+    // Section Navigation
+    function showSection(sectionId) {
+        document.querySelectorAll('.main-content > div').forEach(el => el.style.display = 'none');
+        document.querySelectorAll('.nav-link').forEach(el => el.classList.remove('active'));
+        
+        const target = sectionId === 'dashboard' ? 'dashboard-section' : 
+                      sectionId === 'closing' ? 'closing-section' : 
+                      sectionId === 'po' ? 'po-section' : 
+                      sectionId === 'accessories' ? 'accessories-section' : 
+                      sectionId === 'users' ? 'users-section' : 'dashboard-section';
+                      
+        document.getElementById(target).style.display = 'block';
+        event.currentTarget.classList.add('active');
+        
+        // Hide sidebar on mobile after click
+        if (window.innerWidth <= 1024) {
+            document.getElementById('sidebar').classList.remove('active');
+        }
+    }
+
+    // Search & Filter Logic
+    function filterHistory() {
+        const searchText = document.getElementById('historySearch').value.toLowerCase();
+        const filterType = document.getElementById('historyFilter').value;
+        const rows = document.querySelectorAll('#historyTable tbody tr');
+        let hasVisible = false;
+
+        rows.forEach(row => {
+            const text = row.innerText.toLowerCase();
+            const typeBadge = row.querySelector('.table-badge').innerText;
+            
+            const matchesSearch = text.includes(searchText);
+            const matchesType = filterType === 'all' || typeBadge === filterType;
+
+            if (matchesSearch && matchesType) {
+                row.style.display = '';
+                hasVisible = true;
+            } else {
+                row.style.display = 'none';
+            }
+        });
+        
+        document.getElementById('noDataMessage').style.display = hasVisible ? 'none' : 'block';
+    }
+
+    function showLoading() {
+        document.getElementById('loading-overlay').style.display = 'flex';
+    }
+    
+    // Auto-hide Flash Messages
+    setTimeout(() => {
+        const flashes = document.querySelectorAll('.flash-message');
+        flashes.forEach(f => {
+            f.style.opacity = '0';
+            setTimeout(() => f.remove(), 500);
+        });
+    }, 4000);
+</script>
+</body>
+</html>
+"""
 
 # ==============================================================================
-# FLASK ROUTES: DASHBOARD
+# FLASK ROUTES
 # ==============================================================================
+
+@app.before_request
+def check_session():
+    if request.endpoint not in ['login', 'static'] and 'username' not in session:
+        return render_template_string(LOGIN_TEMPLATE)
+    session.permanent = True
 
 @app.route('/')
 def index():
-    if 'user' not in session:
-        return redirect(url_for('login'))
-    
-    if session.get('role') == 'admin':
-        return redirect(url_for('admin_dashboard'))
-    else:
-        return redirect(url_for('user_dashboard'))
+    if 'username' in session:
+        return redirect(url_for('dashboard'))
+    return render_template_string(LOGIN_TEMPLATE)
 
-@app.route('/admin/dashboard')
-def admin_dashboard():
-    if 'user' not in session or session.get('role') != 'admin':
-        flash('Access denied. Admin privileges required.', 'error')
-        return redirect(url_for('login'))
+@app.route('/login', methods=['POST'])
+def login():
+    username = request.form['username']
+    password = request.form['password']
+    users_db = load_users()
     
-    stats = get_dashboard_summary_v2()
-    return render_template_string(ADMIN_DASHBOARD_TEMPLATE, stats=stats)
+    if username in users_db and users_db[username]['password'] == password:
+        session['username'] = username
+        session['role'] = users_db[username]['role']
+        
+        # Update Login Time
+        now = get_bd_time()
+        users_db[username]['last_login'] = now.strftime('%d-%m-%Y %I:%M %p')
+        save_users(users_db)
+        
+        flash("Welcome back! Login successful.", "success")
+        return redirect(url_for('dashboard'))
+    
+    flash("Invalid credentials provided.", "error")
+    return redirect(url_for('index'))
 
-@app.route('/user/dashboard')
-def user_dashboard():
-    if 'user' not in session:
-        return redirect(url_for('login'))
-    
-    return render_template_string(USER_DASHBOARD_TEMPLATE)
+@app.route('/logout')
+def logout():
+    # Calculate duration
+    if 'username' in session:
+        user = session['username']
+        users_db = load_users()
+        if user in users_db:
+            last_login = users_db[user].get('last_login')
+            if last_login != 'Never':
+                try:
+                    login_dt = datetime.strptime(last_login, '%d-%m-%Y %I:%M %p')
+                    logout_dt = get_bd_time()
+                    duration = logout_dt - login_dt
+                    minutes = int(duration.total_seconds() / 60)
+                    users_db[user]['last_duration'] = f"{minutes} mins"
+                    save_users(users_db)
+                except: pass
 
-# ==============================================================================
-# FLASK ROUTES: USER MANAGEMENT (API)
-# ==============================================================================
+    session.clear()
+    flash("You have been logged out securely.", "info")
+    return redirect(url_for('index'))
 
-@app.route('/admin/get-users')
-def get_users():
-    if 'user' not in session or session.get('role') != 'admin':
-        return jsonify({"error": "Unauthorized"}), 401
+@app.route('/dashboard')
+def dashboard():
+    users_db = load_users()
+    permissions = users_db.get(session['username'], {}).get('permissions', [])
+    summary_data = get_dashboard_summary_v2()
     
-    users = load_users()
-    return jsonify(users)
+    return render_template_string(
+        DASHBOARD_TEMPLATE + DASHBOARD_SCRIPT, 
+        permissions=permissions,
+        summary=summary_data
+    )
 
-@app.route('/admin/save-user', methods=['POST'])
-def save_user():
-    if 'user' not in session or session.get('role') != 'admin':
-        return jsonify({"status": "error", "message": "Unauthorized"}), 401
+# --------------------------
+# CLOSING REPORT ROUTES
+# --------------------------
+@app.route('/generate_closing', methods=['POST'])
+def generate_closing():
+    ref_no = request.form.get('ref_no', '').strip()
+    users_db = load_users()
+    perms = users_db.get(session['username'], {}).get('permissions', [])
     
-    data = request.get_json()
-    users = load_users()
-    
-    username = data.get('username')
-    password = data.get('password')
-    permissions = data.get('permissions', ['closing'])
-    action_type = data.get('action_type', 'create')
-    
-    if not username or not password:
-        return jsonify({"status": "error", "message": "Username and password required"})
-    
-    if action_type == 'create' and username in users:
-        return jsonify({"status": "error", "message": "User already exists"})
-    
-    if action_type == 'create':
-        users[username] = {
-            "password": password,
-            "role": "user",
-            "permissions": permissions,
-            "created_at": get_bd_time().strftime('%d-%m-%Y'),
-            "last_login": "Never",
-            "last_duration": "N/A"
-        }
-    else:
-        if username in users:
-            users[username]['password'] = password
-            users[username]['permissions'] = permissions
-    
-    save_users(users)
-    return jsonify({"status": "success", "message": "User saved successfully"})
+    if 'closing' not in perms:
+        flash("Access Denied: You do not have permission for Closing Reports.", "error")
+        return redirect(url_for('dashboard'))
 
-@app.route('/admin/delete-user', methods=['POST'])
-def delete_user():
-    if 'user' not in session or session.get('role') != 'admin':
-        return jsonify({"status": "error", "message": "Unauthorized"}), 401
-    
-    data = request.get_json()
-    username = data.get('username')
-    users = load_users()
-    
-    if username in users:
-        if users[username].get('role') == 'admin':
-            return jsonify({"status": "error", "message": "Cannot delete admin user"})
-        del users[username]
-        save_users(users)
-        return jsonify({"status": "success", "message": "User deleted"})
-    
-    return jsonify({"status": "error", "message": "User not found"})
-
-# ==============================================================================
-# FLASK ROUTES: CLOSING REPORT GENERATION
-# ==============================================================================
-
-@app.route('/generate-report', methods=['POST'])
-def generate_report():
-    if 'user' not in session:
-        return redirect(url_for('login'))
-    
-    ref_no = request.form.get('ref_no', '').strip().upper()
-    
     if not ref_no:
-        flash('Please enter a valid booking reference number.', 'error')
-        return redirect(url_for('index'))
-    
-    report_data = fetch_closing_report_data(ref_no)
-    
-    if report_data:
-        update_stats(ref_no, session['user'])
-        return render_template_string(CLOSING_REPORT_PREVIEW_TEMPLATE, 
-                                      report_data=report_data, 
-                                      ref_no=ref_no)
-    else:
-        flash(f'No data found for reference: {ref_no}. Please check and try again.', 'error')
-        return redirect(url_for('index'))
+        flash("Reference Number is required.", "error")
+        return redirect(url_for('dashboard'))
+
+    try:
+        report_data = fetch_closing_report_data(ref_no)
+        if report_data:
+            update_stats(ref_no, session['username'], "Closing Report")
+            return render_template_string(CLOSING_REPORT_PREVIEW_TEMPLATE, report_data=report_data, ref_no=ref_no)
+        else:
+            flash(f"Data not found for Ref: {ref_no}", "error")
+            return redirect(url_for('dashboard'))
+    except Exception as e:
+        flash(f"System Error: {str(e)}", "error")
+        return redirect(url_for('dashboard'))
 
 @app.route('/download-closing-excel')
 def download_closing_excel():
-    if 'user' not in session:
-        return redirect(url_for('login'))
-    
-    ref_no = request.args.get('ref_no', '').strip().upper()
-    
-    if not ref_no:
-        flash('Reference number missing.', 'error')
-        return redirect(url_for('index'))
+    ref_no = request.args.get('ref_no')
+    if not ref_no: return redirect(url_for('dashboard'))
     
     report_data = fetch_closing_report_data(ref_no)
-    
-    if report_data:
-        excel_file = create_formatted_excel_report(report_data, ref_no)
+    if not report_data:
+        flash("Data expired. Please generate report again.", "error")
+        return redirect(url_for('dashboard'))
         
-        if excel_file:
-            filename = f"Closing_Report_{ref_no}_{get_bd_date_str()}.xlsx"
-            return send_file(
-                excel_file,
-                as_attachment=True,
-                download_name=filename,
-                mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-            )
+    excel_file = create_formatted_excel_report(report_data, ref_no)
+    if excel_file:
+        response = make_response(excel_file.read())
+        response.headers['Content-Disposition'] = f'attachment; filename=Closing_Report_{ref_no}.xlsx'
+        response.headers['Content-Type'] = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        return response
+    return redirect(url_for('dashboard'))
+
+# --------------------------
+# PO SHEET ROUTES (EXACT LOGIC FROM UPLOADED FILE)
+# --------------------------
+@app.route('/upload_po', methods=['POST'])
+def upload_po():
+    users_db = load_users()
+    perms = users_db.get(session['username'], {}).get('permissions', [])
     
-    flash('Failed to generate Excel file.', 'error')
-    return redirect(url_for('index'))
+    if 'po_sheet' not in perms:
+        flash("Access Denied: Permission restricted.", "error")
+        return redirect(url_for('dashboard'))
 
-# ==============================================================================
-# FLASK ROUTES: PO SHEET GENERATION - NEW UPDATED LOGIC
-# ==============================================================================
-
-@app.route('/generate-po-report', methods=['POST'])
-def generate_po_report():
-    if 'user' not in session:
-        return redirect(url_for('login'))
+    if 'files' not in request.files:
+        flash("No files uploaded.", "error")
+        return redirect(url_for('dashboard'))
     
-    # আপলোড ফোল্ডার ক্লিয়ার
-    if os.path.exists(UPLOAD_FOLDER): 
-        shutil.rmtree(UPLOAD_FOLDER)
-    os.makedirs(UPLOAD_FOLDER)
+    files = request.files.getlist('files')
+    if not files or files[0].filename == '':
+        flash("No files selected.", "error")
+        return redirect(url_for('dashboard'))
 
-    uploaded_files = request.files.getlist('pdf_files')
     all_data = []
-    final_meta = {
-        'buyer': 'N/A', 'booking': 'N/A', 'style': 'N/A',
-        'season': 'N/A', 'dept': 'N/A', 'item': 'N/A'
-    }
+    final_meta = {}
     
-    for file in uploaded_files:
-        if file.filename == '': 
-            continue
-        file_path = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
-        file.save(file_path)
-        
-        data, meta = extract_data_dynamic(file_path)
-        
-        if meta['buyer'] != 'N/A':
-            final_meta = meta
-        
-        if data:
-            all_data.extend(data)
-    
-    if not all_data:
-        flash('No PO table data found in the uploaded files.', 'warning')
-        return render_template_string(PO_REPORT_TEMPLATE, tables=None, message="No PO table data found.")
+    try:
+        # প্রসেসিং শুরু
+        for file in files:
+            if file and file.filename.endswith('.pdf'):
+                temp_path = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
+                file.save(temp_path)
+                
+                extracted, meta = extract_data_dynamic(temp_path)
+                if extracted:
+                    all_data.extend(extracted)
+                if meta['buyer'] != 'N/A':
+                    final_meta = meta 
+                
+                os.remove(temp_path) # ক্লিনআপ
 
-    df = pd.DataFrame(all_data)
-    df['Color'] = df['Color'].str.strip()
-    df = df[df['Color'] != ""]
-    unique_colors = df['Color'].unique()
-    
-    final_tables = []
-    grand_total_qty = 0
+        if not all_data:
+            flash("Could not extract valid data from the provided PDFs.", "error")
+            return redirect(url_for('dashboard'))
 
-    for color in unique_colors:
-        color_df = df[df['Color'] == color]
-        pivot = color_df.pivot_table(index='P.O NO', columns='Size', values='Quantity', aggfunc='sum', fill_value=0)
+        # ডেটাফ্রেম প্রসেসিং এবং পিভট টেবিল (PO SHEET.py এর লজিক)
+        df = pd.DataFrame(all_data)
         
-        existing_sizes = pivot.columns.tolist()
-        sorted_sizes = sort_sizes(existing_sizes)
-        pivot = pivot[sorted_sizes]
+        # সাইজ সর্টিং
+        all_sizes = list(df['Size'].unique())
+        sorted_sizes = sort_sizes(all_sizes)
         
-        pivot['Total'] = pivot.sum(axis=1)
-        grand_total_qty += pivot['Total'].sum()
+        # কালার অনুযায়ী গ্রুপিং
+        colors = df['Color'].unique()
+        final_tables = []
+        grand_total_qty = 0
 
-        actual_qty = pivot.sum()
-        actual_qty.name = 'Actual Qty'
-        
-        qty_plus_3 = (actual_qty * 1.03).round().astype(int)
-        qty_plus_3.name = '3% Order Qty'
-        
-        pivot = pd.concat([pivot, actual_qty.to_frame().T, qty_plus_3.to_frame().T])
-        
-        pivot = pivot.reset_index()
-        pivot = pivot.rename(columns={'index': 'P.O NO'})
-        pivot.columns.name = None
-
-        pd.set_option('colheader_justify', 'center')
-        table_html = pivot.to_html(classes='table table-bordered table-striped', index=False, border=0)
-        
-        table_html = re.sub(r'<tr>\s*<td>', '<tr><td class="order-col">', table_html)
-        table_html = table_html.replace('<th>Total</th>', '<th class="total-col-header">Total</th>')
-        table_html = table_html.replace('<td>Total</td>', '<td class="total-col">Total</td>')
-        
-        table_html = table_html.replace('<td>Actual Qty</td>', '<td class="summary-label">Actual Qty</td>')
-        table_html = table_html.replace('<td>3% Order Qty</td>', '<td class="summary-label">3% Order Qty</td>')
-        table_html = re.sub(r'<tr>\s*<td class="summary-label">', '<tr class="summary-row"><td class="summary-label">', table_html)
-
-        final_tables.append({'color': color, 'table': table_html})
-    
-    # Stats আপডেট
-    update_po_stats(session['user'], len(uploaded_files), final_meta.get('booking', 'N/A'))
-    
-    return render_template_string(PO_REPORT_TEMPLATE, 
-                                  tables=final_tables, 
-                                  meta=final_meta, 
-                                  grand_total=f"{int(grand_total_qty):,}")
-
-# ==============================================================================
-# FLASK ROUTES: ACCESSORIES MANAGEMENT
-# ==============================================================================
-
-@app.route('/admin/accessories')
-def accessories_search():
-    if 'user' not in session:
-        return redirect(url_for('login'))
-    
-    # পার্মিশন চেক
-    if session.get('role') != 'admin' and 'accessories' not in session.get('permissions', []):
-        flash('Access denied. You do not have permission for Accessories module.', 'error')
-        return redirect(url_for('index'))
-    
-    # হিস্ট্রি বুকিং লোড
-    history_bookings = get_all_accessories_bookings()
-    history_count = len(history_bookings)
-    
-    return render_template_string(ACCESSORIES_SEARCH_TEMPLATE, 
-                                  history_bookings=history_bookings,
-                                  history_count=history_count)
-
-@app.route('/admin/accessories/input', methods=['POST'])
-def accessories_input():
-    if 'user' not in session:
-        return redirect(url_for('login'))
-    
-    ref_no = request.form.get('ref_no', '').strip().upper()
-    
-    if not ref_no:
-        flash('Please enter a valid booking reference.', 'error')
-        return redirect(url_for('accessories_search'))
-    
-    return redirect(url_for('accessories_input_direct', ref=ref_no))
-
-@app.route('/admin/accessories/input_direct')
-def accessories_input_direct():
-    if 'user' not in session:
-        return redirect(url_for('login'))
-    
-    ref = request.args.get('ref', '').strip().upper()
-    
-    if not ref:
-        flash('Missing booking reference.', 'error')
-        return redirect(url_for('accessories_search'))
-    
-    db_acc = load_accessories_db()
-    
-    if ref in db_acc:
-        booking_data = db_acc[ref]
-        buyer = booking_data.get('buyer', 'N/A')
-        style = booking_data.get('style', 'N/A')
-        colors = booking_data.get('colors', [])
-        challans = booking_data.get('challans', [])
-    else:
-        # API থেকে ডেটা ফেচ করুন
-        report_data = fetch_closing_report_data(ref)
-        
-        if report_data:
-            buyer = report_data[0].get('buyer', 'N/A')
-            style = report_data[0].get('style', 'N/A')
-            colors = list(set([block.get('color', 'Unknown') for block in report_data]))
-            challans = []
+        for color in colors:
+            color_df = df[df['Color'] == color]
             
-            db_acc[ref] = {
-                'buyer': buyer,
-                'style': style,
-                'colors': colors,
-                'challans': challans,
-                'last_api_call': get_bd_time().strftime('%d-%m-%Y %I:%M %p')
-            }
-            save_accessories_db(db_acc)
-        else:
-            flash(f'No data found for reference: {ref}', 'error')
-            return redirect(url_for('accessories_search'))
-    
-    return render_template_string(ACCESSORIES_INPUT_TEMPLATE,
-                                  ref=ref,
-                                  buyer=buyer,
-                                  style=style,
-                                  colors=colors,
-                                  challans=challans)
+            # পিভট টেবিল তৈরি
+            pivot = color_df.pivot_table(
+                index='P.O NO', 
+                columns='Size', 
+                values='Quantity', 
+                aggfunc='sum', 
+                fill_value=0
+            )
+            
+            # মিসিং সাইজ কলাম অ্যাড করা
+            for size in sorted_sizes:
+                if size not in pivot.columns:
+                    pivot[size] = 0
+            
+            # কলাম রি-অর্ডার
+            pivot = pivot[sorted_sizes]
+            
+            # Total কলাম (প্রতিটি রো এর যোগফল)
+            pivot['Total'] = pivot.sum(axis=1)
+            
+            # Actual Qty (প্রতিটি কলামের যোগফল) - নিচের সারি
+            actual_qty_row = pivot.sum(axis=0)
+            actual_qty_row.name = 'Actual Qty'
+            
+            # 3% Order Qty ক্যালকুলেশন
+            qty_plus_3 = actual_qty_row.apply(lambda x: int(np.ceil(x * 1.03)))
+            qty_plus_3.name = '3% Order Qty'
+            
+            # গ্র্যান্ড টোটাল আপডেট
+            grand_total_qty += actual_qty_row['Total']
+            
+            # সারিগুলো যুক্ত করা
+            pivot = pd.concat([pivot, actual_qty_row.to_frame().T])
+            pivot = pd.concat([pivot, qty_plus_3.to_frame().T])
+            
+            # ফরম্যাটিং
+            pivot = pivot.reset_index()
+            pivot = pivot.rename(columns={'index': 'P.O NO'})
+            pivot.columns.name = None
 
-@app.route('/admin/accessories/refresh')
-def accessories_refresh():
-    if 'user' not in session:
-        return redirect(url_for('login'))
-    
-    ref = request.args.get('ref', '').strip().upper()
-    
-    if not ref:
-        flash('Missing reference.', 'error')
-        return redirect(url_for('accessories_search'))
-    
-    db_acc = load_accessories_db()
-    
-    # API থেকে ডেটা রিফ্রেশ
-    report_data = fetch_closing_report_data(ref)
-    
-    if report_data:
-        buyer = report_data[0].get('buyer', 'N/A')
-        style = report_data[0].get('style', 'N/A')
-        colors = list(set([block.get('color', 'Unknown') for block in report_data]))
-        
-        existing_challans = []
-        if ref in db_acc:
-            existing_challans = db_acc[ref].get('challans', [])
-        
-        db_acc[ref] = {
-            'buyer': buyer,
-            'style': style,
-            'colors': colors,
-            'challans': existing_challans,
-            'last_api_call': get_bd_time().strftime('%d-%m-%Y %I:%M %p')
-        }
-        save_accessories_db(db_acc)
-        flash('Data refreshed successfully from server.', 'success')
-    else:
-        flash('Failed to refresh data. Server may be unavailable.', 'error')
-    
-    return redirect(url_for('accessories_input_direct', ref=ref))
+            pd.set_option('colheader_justify', 'center')
+            
+            # HTML কনভার্শন
+            table_html = pivot.to_html(classes='table table-bordered', index=False, border=0)
+            
+            # REGEX REPLACEMENTS (HUBUHU FROM PO SHEET.py)
+            table_html = re.sub(r'<tr>\s*<td>', '<tr><td class="order-col">', table_html)
+            table_html = table_html.replace('<th>Total</th>', '<th class="total-col-header">Total</th>')
+            table_html = table_html.replace('<td>Total</td>', '<td class="total-col">Total</td>')
+            
+            table_html = table_html.replace('<td>Actual Qty</td>', '<td class="summary-label">Actual Qty</td>')
+            table_html = table_html.replace('<td>3% Order Qty</td>', '<td class="summary-label">3% Order Qty</td>')
+            table_html = re.sub(r'<tr>\s*<td class="summary-label">', '<tr class="summary-row"><td class="summary-label">', table_html)
 
+            final_tables.append({'color': color, 'table': table_html})
+        
+        # স্ট্যাটস আপডেট
+        update_po_stats(session['username'], len(files), final_meta.get('booking', 'N/A'))
+
+        return render_template_string(
+            PO_REPORT_TEMPLATE, 
+            tables=final_tables, 
+            meta=final_meta, 
+            grand_total=f"{grand_total_qty:,}"
+        )
+
+    except Exception as e:
+        flash(f"Error processing PO files: {str(e)}", "error")
+        return redirect(url_for('dashboard'))
+
+# --------------------------
+# ACCESSORIES ROUTES
+# --------------------------
 @app.route('/admin/accessories/save', methods=['POST'])
-def accessories_save():
-    if 'user' not in session:
-        return redirect(url_for('login'))
-    
-    ref = request.form.get('ref', '').strip().upper()
-    item_type = request.form.get('item_type', 'Top')
-    color = request.form.get('color', '')
-    line_no = request.form.get('line_no', '')
-    size = request.form.get('size', 'ALL')
-    qty = request.form.get('qty', '0')
-    
-    if not ref or not color or not line_no or not qty:
-        flash('All fields are required.', 'error')
-        return redirect(url_for('accessories_input_direct', ref=ref))
-    
-    db_acc = load_accessories_db()
-    
-    if ref not in db_acc:
-        flash('Booking not found. Please search again.', 'error')
-        return redirect(url_for('accessories_search'))
-    
-    new_challan = {
-        'date': get_bd_date_str(),
-        'item_type': item_type,
-        'color': color,
-        'line': line_no.upper(),
-        'size': size,
-        'qty': qty,
-        'status': 'OK'
-    }
-    
-    db_acc[ref]['challans'].append(new_challan)
-    save_accessories_db(db_acc)
-    
-    flash(f'Entry saved: {line_no} - {color} - {qty} pcs', 'success')
-    return redirect(url_for('accessories_input_direct', ref=ref))
+def save_accessories_entry():
+    # এই রাউটটি আগের কোড থেকে অপরিবর্তিত রাখা হয়েছে, শুধু DB ইন্টিগ্রেশন আপডেট
+    if request.method == 'POST':
+        ref = request.form.get('ref_no')
+        buyer = request.form.get('buyer')
+        style = request.form.get('style')
+        item_type = request.form.get('item_type')
+        
+        # চালান ডিটেইলস
+        lines = request.form.getlist('line[]')
+        colors = request.form.getlist('color[]')
+        sizes = request.form.getlist('size[]')
+        qtys = request.form.getlist('qty[]')
+        
+        acc_db = load_accessories_db()
+        
+        if ref not in acc_db:
+            acc_db[ref] = {
+                'buyer': buyer, 'style': style, 'item_type': item_type,
+                'challans': [], 'created_at': get_bd_time().strftime('%d-%m-%Y')
+            }
+        
+        new_entries = []
+        today_str = get_bd_date_str()
+        
+        for i in range(len(lines)):
+            if lines[i] and qtys[i]:
+                entry = {
+                    'date': today_str,
+                    'line': lines[i],
+                    'color': colors[i],
+                    'size': sizes[i],
+                    'qty': qtys[i],
+                    'status': 'Done'
+                }
+                acc_db[ref]['challans'].append(entry)
+                new_entries.append(entry)
+        
+        save_accessories_db(acc_db)
+        flash("Accessories challan saved successfully!", "success")
+        return redirect(f'/admin/accessories/input_direct?ref={ref}')
 
-@app.route('/admin/accessories/edit')
-def accessories_edit():
-    if 'user' not in session or session.get('role') != 'admin':
-        flash('Admin access required for editing.', 'error')
-        return redirect(url_for('login'))
+# Accessories পেজ রেন্ডারিং এর জন্য একটি রাউট দরকার
+@app.route('/admin/accessories/input_direct')
+def accessories_input():
+    ref = request.args.get('ref', '')
+    acc_db = load_accessories_db()
     
-    ref = request.args.get('ref', '').strip().upper()
-    index = request.args.get('index', type=int)
+    data = acc_db.get(ref, {})
+    challans = data.get('challans', [])
     
-    if not ref or index is None:
-        flash('Invalid request.', 'error')
-        return redirect(url_for('accessories_search'))
-    
-    db_acc = load_accessories_db()
-    
-    if ref not in db_acc:
-        flash('Booking not found.', 'error')
-        return redirect(url_for('accessories_search'))
-    
-    challans = db_acc[ref].get('challans', [])
-    
-    if index < 0 or index >= len(challans):
-        flash('Entry not found.', 'error')
-        return redirect(url_for('accessories_input_direct', ref=ref))
-    
-    item = challans[index]
-    
-    return render_template_string(ACCESSORIES_EDIT_TEMPLATE,
-                                  ref=ref,
-                                  index=index,
-                                  item=item)
-
-@app.route('/admin/accessories/update', methods=['POST'])
-def accessories_update():
-    if 'user' not in session or session.get('role') != 'admin':
-        flash('Admin access required.', 'error')
-        return redirect(url_for('login'))
-    
-    ref = request.form.get('ref', '').strip().upper()
-    index = request.form.get('index', type=int)
-    line_no = request.form.get('line_no', '')
-    color = request.form.get('color', '')
-    size = request.form.get('size', 'ALL')
-    qty = request.form.get('qty', '0')
-    
-    if not ref or index is None:
-        flash('Invalid request.', 'error')
-        return redirect(url_for('accessories_search'))
-    
-    db_acc = load_accessories_db()
-    
-    if ref not in db_acc:
-        flash('Booking not found.', 'error')
-        return redirect(url_for('accessories_search'))
-    
-    challans = db_acc[ref].get('challans', [])
-    
-    if index < 0 or index >= len(challans):
-        flash('Entry not found.', 'error')
-        return redirect(url_for('accessories_input_direct', ref=ref))
-    
-    # আপডেট
-    challans[index]['line'] = line_no.upper()
-    challans[index]['color'] = color
-    challans[index]['size'] = size
-    challans[index]['qty'] = qty
-    
-    db_acc[ref]['challans'] = challans
-    save_accessories_db(db_acc)
-    
-    flash('Entry updated successfully.', 'success')
-    return redirect(url_for('accessories_input_direct', ref=ref))
-
-@app.route('/admin/accessories/delete', methods=['POST'])
-def accessories_delete():
-    if 'user' not in session or session.get('role') != 'admin':
-        flash('Admin access required.', 'error')
-        return redirect(url_for('login'))
-    
-    ref = request.form.get('ref', '').strip().upper()
-    index = request.form.get('index', type=int)
-    
-    if not ref or index is None:
-        flash('Invalid request.', 'error')
-        return redirect(url_for('accessories_search'))
-    
-    db_acc = load_accessories_db()
-    
-    if ref not in db_acc:
-        flash('Booking not found.', 'error')
-        return redirect(url_for('accessories_search'))
-    
-    challans = db_acc[ref].get('challans', [])
-    
-    if index < 0 or index >= len(challans):
-        flash('Entry not found.', 'error')
-        return redirect(url_for('accessories_input_direct', ref=ref))
-    
-    deleted_item = challans.pop(index)
-    db_acc[ref]['challans'] = challans
-    save_accessories_db(db_acc)
-    
-    flash(f'Entry deleted: {deleted_item.get("line")} - {deleted_item.get("color")}', 'info')
-    return redirect(url_for('accessories_input_direct', ref=ref))
-
-@app.route('/admin/accessories/delete_booking')
-def accessories_delete_booking():
-    if 'user' not in session or session.get('role') != 'admin':
-        flash('Admin access required.', 'error')
-        return redirect(url_for('login'))
-    
-    ref = request.args.get('ref', '').strip().upper()
-    
-    if not ref:
-        flash('Missing reference.', 'error')
-        return redirect(url_for('accessories_search'))
-    
-    db_acc = load_accessories_db()
-    
-    if ref in db_acc:
-        del db_acc[ref]
-        save_accessories_db(db_acc)
-        flash(f'Booking {ref} deleted completely.', 'success')
-    else:
-        flash('Booking not found.', 'error')
-    
-    return redirect(url_for('accessories_search'))
-
-@app.route('/admin/accessories/print')
-def accessories_print():
-    if 'user' not in session:
-        return redirect(url_for('login'))
-    
-    ref = request.args.get('ref', '').strip().upper()
-    
-    if not ref:
-        flash('Missing reference.', 'error')
-        return redirect(url_for('accessories_search'))
-    
-    db_acc = load_accessories_db()
-    
-    if ref not in db_acc:
-        flash('Booking not found.', 'error')
-        return redirect(url_for('accessories_search'))
-    
-    booking_data = db_acc[ref]
-    buyer = booking_data.get('buyer', 'N/A')
-    style = booking_data.get('style', 'N/A')
-    challans = booking_data.get('challans', [])
-    
-    # লাইন-ওয়াইজ সামারি
-    line_summary = {}
+    # লাইন ওয়াইজ সামারি
+    line_summary = defaultdict(int)
     for c in challans:
-        line = c.get('line', 'Unknown')
-        qty = int(c.get('qty', 0))
-        if line in line_summary:
-            line_summary[line] += qty
-        else:
-            line_summary[line] = qty
-    
-    # সর্ট
-    line_summary = dict(sorted(line_summary.items()))
-    
-    # আইটেম টাইপ
-    item_type = challans[0].get('item_type', 'Top') if challans else 'Top'
-    
-    return render_template_string(ACCESSORIES_REPORT_TEMPLATE,
-                                  ref=ref,
-                                  buyer=buyer,
-                                  style=style,
-                                  challans=challans,
-                                  count=len(challans),
-                                  line_summary=line_summary,
-                                  item_type=item_type,
-                                  today=get_bd_date_str())
-# ==============================================================================
-# APPLICATION ENTRY POINT
-# ==============================================================================
+        line_summary[c['line']] += int(c['qty'])
+        
+    return render_template_string(
+        ACCESSORIES_REPORT_TEMPLATE,
+        ref=ref,
+        buyer=data.get('buyer', ''),
+        style=data.get('style', ''),
+        item_type=data.get('item_type', ''),
+        challans=challans,
+        count=len(challans),
+        today=get_bd_date_str(),
+        line_summary=dict(line_summary)
+    )
 
-if __name__ == "__main__":
-    print("=" * 60)
-    print("  MNM Software - Production Management System")
-    print("  Developed by Mehedi Hasan")
-    print("  Server Starting...")
-    print("=" * 60)
+# --------------------------
+# USER MANAGEMENT ROUTES
+# --------------------------
+@app.route('/create_user', methods=['POST'])
+def create_user():
+    if session.get('role') != 'admin': return redirect(url_for('dashboard'))
     
-    app.run(host='0.0.0.0', port=5000, debug=False)
+    username = request.form['new_username']
+    password = request.form['new_password']
+    role = request.form['role']
+    perms = request.form.getlist('perms')
+    
+    users = load_users()
+    if username in users:
+        flash("Username already exists.", "error")
+    else:
+        users[username] = {
+            "password": password,
+            "role": role,
+            "permissions": perms,
+            "created_at": get_bd_date_str(),
+            "last_login": "Never",
+            "last_duration": "N/A"
+        }
+        save_users(users)
+        flash(f"User {username} created successfully.", "success")
+    
+    return redirect(url_for('dashboard'))
 
+@app.route('/delete_user', methods=['POST'])
+def delete_user():
+    if session.get('role') != 'admin': return redirect(url_for('dashboard'))
+    username = request.form['username']
+    
+    users = load_users()
+    if username in users and username != 'Admin':
+        del users[username]
+        save_users(users)
+        flash(f"User {username} deleted.", "success")
+    
+    return redirect(url_for('dashboard'))
+
+if __name__ == '__main__':
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host='0.0.0.0', port=port, debug=True)
