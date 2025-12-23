@@ -370,7 +370,7 @@ COMMON_STYLES = """
             transition: var(--transition-smooth);
         }
         
-        /* Status Dot Animation */
+        /* Status Dot Animation - FIXED */
         .status-dot {
             width: 10px;
             height: 10px;
@@ -392,8 +392,7 @@ COMMON_STYLES = """
                 box-shadow: 0 0 0 10px rgba(16, 185, 129, 0);
             }
         }
-
-        /* Enhanced Cards & Grid */
+                /* Enhanced Cards & Grid */
         .stats-grid { 
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); 
@@ -460,7 +459,6 @@ COMMON_STYLES = """
             opacity: 1;
             transform: rotate(10deg) scale(1.1);
         }
-
         /* Stat Cards with Animations */
         .stat-card { 
             display: flex;
@@ -539,7 +537,6 @@ COMMON_STYLES = """
         .count-up {
             display: inline-block;
         }
-
         /* Progress Bars with Animation */
         .progress-item { margin-bottom: 24px; }
 
@@ -597,7 +594,6 @@ COMMON_STYLES = """
         .progress-orange { background: var(--gradient-orange); }
         .progress-purple { background: linear-gradient(135deg, #8B5CF6 0%, #A78BFA 100%); }
         .progress-green { background: linear-gradient(135deg, #10B981 0%, #34D399 100%); }
-
         /* Enhanced Forms */
         .input-group { margin-bottom: 20px; }
 
@@ -777,8 +773,7 @@ COMMON_STYLES = """
             transform: scale(1.1);
             box-shadow: 0 0 20px rgba(239, 68, 68, 0.4);
         }
-
-        /* Enhanced Loading Overlay */
+                /* Enhanced Loading Overlay */
         #loading-overlay { 
             display: none;
             position: fixed; 
@@ -864,7 +859,6 @@ COMMON_STYLES = """
             opacity: 0;
             animation: checkmark-anim 0.4s 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
         }
-
         /* Fail Cross Animation */
         .fail-container { 
             display: none; 
@@ -944,7 +938,7 @@ COMMON_STYLES = """
             50% { opacity: 1; }
         }
 
-        /* Tooltip */
+        /* Tooltip - UPDATED */
         .tooltip {
             position: relative;
         }
@@ -952,7 +946,7 @@ COMMON_STYLES = """
         .tooltip::after {
             content: attr(data-tooltip);
             position: absolute;
-            top: 125%;
+            top: 125%; /* Move to bottom */
             left: 50%;
             transform: translateX(-50%);
             background: var(--bg-card);
@@ -1046,173 +1040,64 @@ COMMON_STYLES = """
             font-weight: 600;
         }
 
-        /* ============================================
-           ENHANCED FLASH MESSAGES - ULTRA PROFESSIONAL
-           ============================================ */
+        /* Flash Messages - UPDATED POSITION */
         #flash-container {
             position: fixed;
-            top: 30px;
-            right: 30px;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
             z-index: 10001;
             width: auto;
-            max-width: 420px;
+            min-width: 320px;
+            max-width: 90%;
             display: flex;
             flex-direction: column;
-            gap: 12px;
+            align-items: center;
         }
 
         .flash-message {
-            padding: 18px 25px;
-            border-radius: 16px;
-            font-size: 14px;
+            margin-bottom: 10px;
+            padding: 16px 25px;
+            border-radius: 50px;
+            font-size: 15px;
             font-weight: 600;
-            display: flex;
+            display: inline-flex;
             align-items: center;
-            gap: 14px;
-            animation: flashSlideIn 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-            box-shadow: 0 15px 50px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.1);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .flash-message::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 4px;
-            height: 100%;
-            border-radius: 4px 0 0 4px;
-        }
-
-        .flash-message::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            height: 3px;
-            background: rgba(255,255,255,0.3);
-            animation: flashProgress 4s linear forwards;
-        }
-
-        @keyframes flashProgress {
-            from { width: 100%; }
-            to { width: 0%; }
+            justify-content: center;
+            gap: 12px;
+            animation: flashSlideIn 0.4s ease-out;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            white-space: nowrap;
         }
 
         @keyframes flashSlideIn {
-            0% { 
+            from { 
                 opacity: 0;
-                transform: translateX(100px) scale(0.8);
+                transform: translateY(-20px);
             }
-            100% { 
+            to { 
                 opacity: 1;
-                transform: translateX(0) scale(1);
+                transform: translateY(0);
             }
         }
 
-        .flash-message.flash-out {
-            animation: flashSlideOut 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
-        }
-
-        @keyframes flashSlideOut {
-            0% { 
-                opacity: 1;
-                transform: translateX(0) scale(1);
-            }
-            100% { 
-                opacity: 0;
-                transform: translateX(100px) scale(0.8);
-            }
-        }
-
-        .flash-message .flash-icon {
-            width: 44px;
-            height: 44px;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 20px;
-            flex-shrink: 0;
-            animation: iconPop 0.5s 0.2s cubic-bezier(0.68, -0.55, 0.265, 1.55) backwards;
-        }
-
-        @keyframes iconPop {
-            0% { transform: scale(0) rotate(-180deg); }
-            100% { transform: scale(1) rotate(0deg); }
-        }
-
-        .flash-message .flash-content {
-            flex: 1;
-        }
-
-        .flash-message .flash-title {
-            font-size: 15px;
-            font-weight: 700;
-            margin-bottom: 2px;
-        }
-
-        .flash-message .flash-text {
-            font-size: 13px;
-            opacity: 0.9;
-            font-weight: 500;
-        }
-
-        .flash-message .flash-close {
-            background: rgba(255,255,255,0.1);
-            border: none;
-            color: inherit;
-            width: 28px;
-            height: 28px;
-            border-radius: 8px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 14px;
-            transition: all 0.3s;
-            flex-shrink: 0;
-        }
-
-        .flash-message .flash-close:hover {
-            background: rgba(255,255,255,0.2);
-            transform: rotate(90deg);
-        }
-
-        /* Success Flash */
-        .flash-success {
-            background: linear-gradient(135deg, rgba(16, 185, 129, 0.95) 0%, rgba(5, 150, 105, 0.95) 100%);
-            color: white;
-        }
-        .flash-success::before { background: #34D399; }
-        .flash-success .flash-icon { background: rgba(255,255,255,0.2); }
-
-        /* Error Flash */
         .flash-error {
-            background: linear-gradient(135deg, rgba(239, 68, 68, 0.95) 0%, rgba(220, 38, 38, 0.95) 100%);
+            background: rgba(239, 68, 68, 0.95);
+            border: 1px solid rgba(239, 68, 68, 0.4);
             color: white;
         }
-        .flash-error::before { background: #F87171; }
-        .flash-error .flash-icon { background: rgba(255,255,255,0.2); }
 
-        /* Info Flash */
+        .flash-success {
+            background: rgba(16, 185, 129, 0.95);
+            border: 1px solid rgba(16, 185, 129, 0.4);
+            color: white;
+        }
+
         .flash-info {
-            background: linear-gradient(135deg, rgba(59, 130, 246, 0.95) 0%, rgba(37, 99, 235, 0.95) 100%);
+            background: rgba(59, 130, 246, 0.95);
+            border: 1px solid rgba(59, 130, 246, 0.4);
             color: white;
         }
-        .flash-info::before { background: #60A5FA; }
-        .flash-info .flash-icon { background: rgba(255,255,255,0.2); }
-
-        /* Warning Flash */
-        .flash-warning {
-            background: linear-gradient(135deg, rgba(245, 158, 11, 0.95) 0%, rgba(217, 119, 6, 0.95) 100%);
-            color: white;
-        }
-        .flash-warning::before { background: #FBBF24; }
-        .flash-warning .flash-icon { background: rgba(255,255,255,0.2); }
         
         /* Ripple Effect */
         .ripple {
@@ -1235,8 +1120,7 @@ COMMON_STYLES = """
                 opacity: 0;
             }
         }
-
-        /* Mobile */
+                /* Mobile */
         .mobile-toggle { 
             display: none; 
             position: fixed; 
@@ -1280,11 +1164,6 @@ COMMON_STYLES = """
             .header-section {
                 flex-direction: column;
                 gap: 15px;
-            }
-            #flash-container {
-                right: 15px;
-                left: 15px;
-                max-width: none;
             }
         }
 
@@ -1477,46 +1356,8 @@ COMMON_STYLES = """
         .time-badge i {
             color: var(--accent-orange);
         }
-
-        /* Search Box for History */
-        .history-search-box {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            padding: 10px 16px;
-            margin-bottom: 20px;
-            transition: var(--transition-smooth);
-        }
-
-        .history-search-box:focus-within {
-            border-color: var(--accent-orange);
-            box-shadow: 0 0 0 3px var(--accent-orange-glow);
-        }
-
-        .history-search-box i {
-            color: var(--text-secondary);
-            font-size: 16px;
-        }
-
-        .history-search-box input {
-            background: transparent;
-            border: none;
-            outline: none;
-            color: white;
-            font-size: 14px;
-            flex: 1;
-            padding: 0;
-        }
-
-        .history-search-box input::placeholder {
-            color: var(--text-secondary);
-            opacity: 0.6;
-        }
         
-        /* History Card Styles */
+        /* History Card Styles - NEW ADDED */
         .history-section {
             margin-top: 25px;
             padding-top: 25px;
@@ -1680,11 +1521,6 @@ COMMON_STYLES = """
             margin-bottom: 10px;
             display: block;
         }
-
-        /* Type Badge Colors */
-        .type-closing { background: rgba(255, 122, 0, 0.15); color: var(--accent-orange); }
-        .type-po { background: rgba(16, 185, 129, 0.15); color: var(--accent-green); }
-        .type-accessories { background: rgba(139, 92, 246, 0.15); color: var(--accent-purple); }
     </style>
 """
 # ==============================================================================
@@ -1769,27 +1605,6 @@ def update_po_stats(username, file_count, booking_ref="N/A"):
         data['downloads'] = data['downloads'][:3000]
     save_stats(data)
 
-def update_accessories_stats(ref_no, username, qty, line_no):
-    """Accessories Challan এর জন্য stats আপডেট"""
-    data = load_stats()
-    now = get_bd_time()
-    new_record = {
-        "ref": ref_no,
-        "user": username,
-        "date": now.strftime('%d-%m-%Y'),
-        "time": now.strftime('%I:%M %p'),
-        "type": "Accessories",
-        "qty": qty,
-        "line": line_no,
-        "iso_time": now.isoformat()
-    }
-    if 'downloads' not in data:
-        data['downloads'] = []
-    data['downloads'].insert(0, new_record)
-    if len(data['downloads']) > 3000:
-        data['downloads'] = data['downloads'][:3000]
-    save_stats(data)
-
 def load_accessories_db():
     record = accessories_col.find_one({"_id": "accessories_data"})
     if record:
@@ -1826,11 +1641,12 @@ def get_all_accessories_bookings():
             'last_updated': data.get('last_api_call', 'N/A')
         })
     
+    # Sort by ref, assuming ref is a string that can be sorted naturally
     bookings = sorted(bookings, key=lambda x: x['ref'], reverse=True)
     return bookings
 
 # ==============================================================================
-# ড্যাশবোর্ড সামারি ফাংশন - ২৪ ঘন্টার হিস্ট্রি সহ
+# ড্যাশবোর্ড সামারি ফাংশন
 # ==============================================================================
 
 def get_dashboard_summary_v2():
@@ -1840,9 +1656,6 @@ def get_dashboard_summary_v2():
     
     now = get_bd_time()
     today_str = now.strftime('%d-%m-%Y')
-    
-    # ২৪ ঘন্টা আগের সময়
-    time_24h_ago = now - timedelta(hours=24)
     
     user_details = []
     for u, d in users_data.items():
@@ -1884,32 +1697,13 @@ def get_dashboard_summary_v2():
     closing_list = []
     po_list = []
     
-    # ২৪ ঘন্টার হিস্ট্রি ফিল্টার
-    history_24h = []
-    
     history = stats_data.get('downloads', [])
     for item in history:
         item_date = item.get('date', '')
-        
-        # ২৪ ঘন্টার মধ্যে কিনা চেক
-        try:
-            if 'iso_time' in item:
-                item_time = datetime.fromisoformat(item['iso_time'])
-                if item_time.tzinfo is None:
-                    item_time = bd_tz.localize(item_time)
-                if item_time >= time_24h_ago:
-                    history_24h.append(item)
-        except:
-            # iso_time না থাকলে আজকের তারিখ চেক করো
-            if item_date == today_str:
-                history_24h.append(item)
-        
         if item.get('type') == 'PO Sheet':
             po_lifetime_count += 1
             if item_date == today_str: 
                 po_list.append(item)
-        elif item.get('type') == 'Accessories':
-            pass  # Already counted above
         else:
             closing_lifetime_count += 1
             if item_date == today_str:
@@ -1921,8 +1715,6 @@ def get_dashboard_summary_v2():
             
             if item.get('type') == 'PO Sheet':
                 daily_data[sort_key]['po'] += 1
-            elif item.get('type') == 'Accessories':
-                daily_data[sort_key]['acc'] += 1
             else: 
                 daily_data[sort_key]['closing'] += 1
             daily_data[sort_key]['label'] = dt_obj.strftime('%d-%b')
@@ -1965,36 +1757,24 @@ def get_dashboard_summary_v2():
             "po": chart_po,
             "acc": chart_acc
         },
-        "history": history,
-        "history_24h": history_24h  # ২৪ ঘন্টার হিস্ট্রি
+        "history": history
     }
 
 # ==============================================================================
-# লজিক পার্ট: PURCHASE ORDER SHEET PARSER (PDF) - তোমার দেওয়া লজিক
+# লজিক পার্ট: PURCHASE ORDER SHEET PARSER (PDF) - UPDATED LOGIC (FIXED)
 # ==============================================================================
 
 def is_potential_size(header):
-    """Check if a header string is potentially a size value"""
     h = header.strip().upper()
-    # Exclude known non-size headers
     if h in ["COLO", "SIZE", "TOTAL", "QUANTITY", "PRICE", "AMOUNT", "CURRENCY", "ORDER NO", "P.O NO"]:
         return False
-    # Pure numeric (like 36, 38, 40)
-    if re.match(r'^\d+$', h): 
-        return True
-    # Numeric with suffix (like 3M, 12M, 5A)
-    if re.match(r'^\d+[AMYT]$', h): 
-        return True
-    # Standard letter sizes
-    if re.match(r'^(XXS|XS|S|M|L|XL|XXL|XXXL|TU|ONE\s*SIZE)$', h): 
-        return True
-    # If it looks like a product code, it's not a size
-    if re.match(r'^[A-Z]\d{2,}$', h): 
-        return False
+    if re.match(r'^\d+$', h): return True
+    if re.match(r'^\d+[AMYT]$', h): return True
+    if re.match(r'^(XXS|XS|S|M|L|XL|XXL|XXXL|TU|ONE\s*SIZE)$', h): return True
+    if re.match(r'^[A-Z]\d{2,}$', h): return False
     return False
 
 def sort_sizes(size_list):
-    """Sort sizes in a logical order"""
     STANDARD_ORDER = [
         '0M', '1M', '3M', '6M', '9M', '12M', '18M', '24M', '36M',
         '2A', '3A', '4A', '5A', '6A', '8A', '10A', '12A', '14A', '16A', '18A',
@@ -2003,80 +1783,55 @@ def sort_sizes(size_list):
     ]
     def sort_key(s):
         s = s.strip()
-        if s in STANDARD_ORDER: 
-            return (0, STANDARD_ORDER.index(s))
-        if s.isdigit(): 
-            return (1, int(s))
+        if s in STANDARD_ORDER: return (0, STANDARD_ORDER.index(s))
+        if s.isdigit(): return (1, int(s))
         match = re.match(r'^(\d+)([A-Z]+)$', s)
-        if match: 
-            return (2, int(match.group(1)), match.group(2))
+        if match: return (2, int(match.group(1)), match.group(2))
         return (3, s)
     return sorted(size_list, key=sort_key)
 
 def extract_metadata(first_page_text):
-    """Extract metadata from the first page of a PDF"""
     meta = {
-        'buyer': 'N/A', 
-        'booking': 'N/A', 
-        'style': 'N/A', 
-        'season': 'N/A', 
-        'dept': 'N/A', 
-        'item': 'N/A'
+        'buyer': 'N/A', 'booking': 'N/A', 'style': 'N/A', 
+        'season': 'N/A', 'dept': 'N/A', 'item': 'N/A'
     }
-    
     if "KIABI" in first_page_text.upper():
         meta['buyer'] = "KIABI"
     else:
         buyer_match = re.search(r"Buyer.*?Name[\s\S]*?([\w\s&]+)(?:\n|$)", first_page_text)
-        if buyer_match: 
-            meta['buyer'] = buyer_match.group(1).strip()
+        if buyer_match: meta['buyer'] = buyer_match.group(1).strip()
 
     booking_block_match = re.search(r"(?:Internal )?Booking NO\. ?[:\s]*([\s\S]*?)(?:System NO|Control No|Buyer)", first_page_text, re.IGNORECASE)
     if booking_block_match:
         raw_booking = booking_block_match.group(1).strip()
         clean_booking = raw_booking.replace('\n', '').replace('\r', '').replace(' ', '')
-        if "System" in clean_booking: 
-            clean_booking = clean_booking.split("System")[0]
+        if "System" in clean_booking: clean_booking = clean_booking.split("System")[0]
         meta['booking'] = clean_booking
 
     style_match = re.search(r"Style Ref\. ?[:\s]*([\w-]+)", first_page_text, re.IGNORECASE)
-    if style_match: 
-        meta['style'] = style_match.group(1).strip()
+    if style_match: meta['style'] = style_match.group(1).strip()
     else: 
         style_match = re.search(r"Style Des\.?[\s\S]*?([\w-]+)", first_page_text, re.IGNORECASE)
-        if style_match: 
-            meta['style'] = style_match.group(1).strip()
+        if style_match: meta['style'] = style_match.group(1).strip()
 
     season_match = re.search(r"Season\s*[:\n\"]*([\w\d-]+)", first_page_text, re.IGNORECASE)
-    if season_match: 
-        meta['season'] = season_match.group(1).strip()
-    
+    if season_match: meta['season'] = season_match.group(1).strip()
     dept_match = re.search(r"Dept\. ?[\s\n: ]*([A-Za-z]+)", first_page_text, re.IGNORECASE)
-    if dept_match: 
-        meta['dept'] = dept_match.group(1).strip()
+    if dept_match: meta['dept'] = dept_match.group(1).strip()
 
     item_match = re.search(r"Garments?\s*Item[\s\n: ]*([^\n\r]+)", first_page_text, re.IGNORECASE)
     if item_match: 
         item_text = item_match.group(1).strip()
-        if "Style" in item_text: 
-            item_text = item_text.split("Style")[0].strip()
+        if "Style" in item_text: item_text = item_text.split("Style")[0].strip()
         meta['item'] = item_text
 
     return meta
 
 def extract_data_dynamic(file_path):
-    """
-    Main function to extract PO data from a PDF file.
-    তোমার দেওয়া লজিক হুবহু ব্যবহার করা হয়েছে।
-    """
     extracted_data = []
     metadata = {
-        'buyer': 'N/A', 
-        'booking': 'N/A', 
-        'style': 'N/A', 
-        'season': 'N/A', 
-        'dept': 'N/A', 
-        'item': 'N/A'
+        'buyer': 'N/A', 'booking': 'N/A', 'style': 'N/A', 
+        'season': 'N/A', 'dept': 'N/A', 'item': 'N/A'
     }
     order_no = "Unknown"
     
@@ -2084,23 +1839,18 @@ def extract_data_dynamic(file_path):
         reader = pypdf.PdfReader(file_path)
         first_page_text = reader.pages[0].extract_text()
         
-        # Skip fabric booking sheets
         if "Main Fabric Booking" in first_page_text or "Fabric Booking Sheet" in first_page_text: 
             metadata = extract_metadata(first_page_text)
             return [], metadata
 
-        # Extract order number
         order_match = re.search(r"Order no\D*(\d+)", first_page_text, re.IGNORECASE)
-        if order_match: 
-            order_no = order_match.group(1)
+        if order_match: order_no = order_match.group(1)
         else: 
             alt_match = re.search(r"Order\s*[:\.]?\s*(\d+)", first_page_text, re.IGNORECASE)
-            if alt_match: 
-                order_no = alt_match.group(1)
+            if alt_match: order_no = alt_match.group(1)
         
         order_no = str(order_no).strip()
-        if order_no.endswith("00"): 
-            order_no = order_no[:-2]
+        if order_no.endswith("00"): order_no = order_no[:-2]
         
         metadata = extract_metadata(first_page_text)
 
@@ -2112,10 +1862,8 @@ def extract_data_dynamic(file_path):
             
             for i, line in enumerate(lines):
                 line = line.strip()
-                if not line: 
-                    continue
+                if not line: continue
 
-                # Find the header row with sizes
                 if ("Colo" in line or "Size" in line) and "Total" in line:
                     parts = line.split()
                     try:
@@ -2130,26 +1878,21 @@ def extract_data_dynamic(file_path):
                         else:
                             sizes = []
                             capturing_data = False
-                    except: 
-                        pass
+                    except: pass
                     continue
                 
                 if capturing_data and sizes:
-                    # Stop capturing at total or currency lines
                     if line.startswith("Total") or "currency" in line.lower():
                         capturing_data = False
                         continue
                     
                     clean_line = line.replace("Spec. price", "").replace("Spec", "").strip()
-                    if not re.search(r'[a-zA-Z]', clean_line): 
-                        continue
-                    if re.match(r'^[A-Z]\d+$', clean_line) or "Assortment" in clean_line: 
-                        continue
+                    if not re.search(r'[a-zA-Z]', clean_line): continue
+                    if re.match(r'^[A-Z]\d+$', clean_line) or "Assortment" in clean_line: continue
                     
-                    # Parse color and quantities
-                    parts = re.split(r'\s{2,}', line)
-                    if len(parts) < 2: 
-                        parts = line.split() 
+                    # LOGIC FIX: Handle shifting by strict tokenizing
+                    parts = re.split(r'\s{2,}', line) # Split by double spaces first
+                    if len(parts) < 2: parts = line.split() 
                     
                     color_parts = []
                     qty_values = []
@@ -2173,7 +1916,7 @@ def extract_data_dynamic(file_path):
                     elif len(qty_values) == len(sizes) + 1:
                         final_qtys = qty_values[:-1]
                     elif len(qty_values) < len(sizes):
-                        # Check next line for spillover
+                        # Attempt to check next line for spillover
                         next_line_qtys = []
                         if i + 1 < len(lines):
                             next_line = lines[i+1].strip()
@@ -2184,6 +1927,7 @@ def extract_data_dynamic(file_path):
                         if len(combined) >= len(sizes):
                             final_qtys = combined[:len(sizes)]
                         else:
+                            # Pad with 0 at end to prevent shifting
                             final_qtys = combined + [0] * (len(sizes) - len(combined))
                     else:
                         final_qtys = qty_values[:len(sizes)]
@@ -2196,10 +1940,7 @@ def extract_data_dynamic(file_path):
                                 'Size': size,
                                 'Quantity': final_qtys[idx] if idx < len(final_qtys) else 0
                             })
-                            
-    except Exception as e: 
-        print(f"Error processing file: {e}")
-    
+    except Exception as e: print(f"Error processing file: {e}")
     return extracted_data, metadata
 
 # ==============================================================================
@@ -2207,13 +1948,8 @@ def extract_data_dynamic(file_path):
 # ==============================================================================
 
 def get_authenticated_session(username, password):
-    """ERP সিস্টেমে লগইন করে সেশন রিটার্ন করে"""
     login_url = 'http://180.92.235.190:8022/erp/login.php'
-    login_payload = {
-        'txt_userid': username, 
-        'txt_password': password, 
-        'submit': 'Login'
-    }
+    login_payload = {'txt_userid': username, 'txt_password': password, 'submit': 'Login'}
     session_req = requests.Session()
     session_req.headers.update({
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
@@ -2229,21 +1965,11 @@ def get_authenticated_session(username, password):
         return None
 
 def fetch_closing_report_data(internal_ref_no):
-    """ERP থেকে Closing Report ডাটা ফেচ করে"""
     active_session = get_authenticated_session("input2.clothing-cutting", "123456")
-    if not active_session: 
-        return None
+    if not active_session: return None
 
     report_url = 'http://180.92.235.190:8022/erp/prod_planning/reports/requires/cutting_lay_production_report_controller.php'
-    payload_template = {
-        'action': 'report_generate', 
-        'cbo_wo_company_name': '2', 
-        'cbo_location_name': '2', 
-        'cbo_floor_id': '0', 
-        'cbo_buyer_name': '0', 
-        'txt_internal_ref_no': internal_ref_no, 
-        'report_type': 'item_wise'
-    }
+    payload_template = {'action': 'report_generate', 'cbo_wo_company_name': '2', 'cbo_location_name': '2', 'cbo_floor_id': '0', 'cbo_buyer_name': '0', 'txt_internal_ref_no': internal_ref_no, 'reportType': '3'}
     found_data = None
    
     for year in ['2025', '2024', '2023']: 
@@ -2256,43 +1982,34 @@ def fetch_closing_report_data(internal_ref_no):
                 if response.status_code == 200 and "Data not Found" not in response.text:
                     found_data = response.text
                     break
-            except: 
-                continue
-        if found_data: 
-            break
+            except: continue
+        if found_data: break
     
     if found_data:
         return parse_report_data(found_data)
     return None
 
 def parse_report_data(html_content):
-    """HTML রিপোর্ট পার্স করে ডাটা এক্সট্রাক্ট করে"""
     all_report_data = []
     try:
         soup = BeautifulSoup(html_content, 'lxml')
         header_row = soup.select_one('thead tr:nth-of-type(2)')
-        if not header_row: 
-            return None
+        if not header_row: return None
         all_th = header_row.find_all('th')
         headers = [th.get_text(strip=True) for th in all_th if 'total' not in th.get_text(strip=True).lower()]
         data_rows = soup.select('div#scroll_body table tbody tr')
         item_blocks = []
         current_block = []
-        
         for row in data_rows:
             if row.get('bgcolor') == '#cddcdc':
-                if current_block: 
-                    item_blocks.append(current_block)
+                if current_block: item_blocks.append(current_block)
                 current_block = []
             else:
                 current_block.append(row)
-        if current_block: 
-            item_blocks.append(current_block)
+        if current_block: item_blocks.append(current_block)
         
         for block in item_blocks:  
-            style, color, buyer_name = "N/A", "N/A", "N/A"
-            gmts_qty_data, sewing_input_data, cutting_qc_data = None, None, None
-            
+            style, color, buyer_name, gmts_qty_data, sewing_input_data, cutting_qc_data = "N/A", "N/A", "N/A", None, None, None
             for row in block:
                 cells = row.find_all('td')
                 if len(cells) > 2:
@@ -2300,26 +2017,19 @@ def parse_report_data(html_content):
                     criteria_sub = cells[2].get_text(strip=True)
                     main_lower, sub_lower = criteria_main.lower(), criteria_sub.lower()
                     
-                    if main_lower == "style": 
-                        style = cells[1].get_text(strip=True)
-                    elif main_lower == "color & gmts. item": 
-                        color = cells[1].get_text(strip=True)
-                    elif "buyer" in main_lower: 
-                        buyer_name = cells[1].get_text(strip=True)
+                    if main_lower == "style": style = cells[1].get_text(strip=True)
+                    elif main_lower == "color & gmts. item": color = cells[1].get_text(strip=True)
+                    elif "buyer" in main_lower: buyer_name = cells[1].get_text(strip=True)
                     
-                    if sub_lower == "gmts. color /country qty": 
-                        gmts_qty_data = [cell.get_text(strip=True) for cell in cells[3:len(headers)+3]]
+                    if sub_lower == "gmts. color /country qty": gmts_qty_data = [cell.get_text(strip=True) for cell in cells[3:len(headers)+3]]
                     
-                    if "sewing input" in main_lower: 
-                        sewing_input_data = [cell.get_text(strip=True) for cell in cells[1:len(headers)+1]]
-                    elif "sewing input" in sub_lower: 
-                        sewing_input_data = [cell.get_text(strip=True) for cell in cells[3:len(headers)+3]]
+                    if "sewing input" in main_lower: sewing_input_data = [cell.get_text(strip=True) for cell in cells[1:len(headers)+1]]
+                    elif "sewing input" in sub_lower: sewing_input_data = [cell.get_text(strip=True) for cell in cells[3:len(headers)+3]]
     
                     if "cutting qc" in main_lower and "balance" not in main_lower: 
                         cutting_qc_data = [cell.get_text(strip=True) for cell in cells[1:len(headers)+1]]
                     elif "cutting qc" in sub_lower and "balance" not in sub_lower: 
                         cutting_qc_data = [cell.get_text(strip=True) for cell in cells[3:len(headers)+3]]
-            
             if gmts_qty_data:  
                 plus_3_percent_data = []
                 for value in gmts_qty_data:  
@@ -2328,33 +2038,23 @@ def parse_report_data(html_content):
                         plus_3_percent_data.append(str(new_qty))
                     except (ValueError, TypeError):
                         plus_3_percent_data.append(value)
-                
                 all_report_data.append({
-                    'style': style, 
-                    'buyer': buyer_name, 
-                    'color': color, 
-                    'headers': headers, 
-                    'gmts_qty': gmts_qty_data, 
+                    'style': style, 'buyer': buyer_name, 'color': color, 
+                    'headers': headers, 'gmts_qty': gmts_qty_data, 
                     'plus_3_percent': plus_3_percent_data, 
                     'sewing_input': sewing_input_data if sewing_input_data else [], 
                     'cutting_qc': cutting_qc_data if cutting_qc_data else []
                 })
-        
         return all_report_data
     except Exception as e: 
-        print(f"Parse error: {e}")
         return None
 
 def create_formatted_excel_report(report_data, internal_ref_no=""):
-    """Closing Report এর জন্য ফরম্যাটেড Excel ফাইল তৈরি করে"""
-    if not report_data: 
-        return None
-    
+    if not report_data: return None
     wb = openpyxl.Workbook()
     ws = wb.active
     ws.title = "Closing Report"
     
-    # Styles
     bold_font = Font(bold=True)
     title_font = Font(size=32, bold=True, color="7B261A") 
     white_bold_font = Font(size=16.5, bold=True, color="FFFFFF")
@@ -2364,7 +2064,6 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
     thin_border = Border(left=Side(style='thin'), right=Side(style='thin'), top=Side(style='thin'), bottom=Side(style='thin'))
     medium_border = Border(left=Side(style='medium'), right=Side(style='medium'), top=Side(style='medium'), bottom=Side(style='medium'))
     
-    # Fills
     ir_ib_fill = PatternFill(start_color="7B261A", end_color="7B261A", fill_type="solid") 
     header_row_fill = PatternFill(start_color="DE7465", end_color="DE7465", fill_type="solid") 
     light_brown_fill = PatternFill(start_color="DE7465", end_color="DE7465", fill_type="solid") 
@@ -2373,9 +2072,8 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
     dark_green_fill = PatternFill(start_color="f1f2e8", end_color="f1f2e8", fill_type="solid") 
 
     NUM_COLUMNS, TABLE_START_ROW = 9, 8
-    
-    # Title
     ws.merge_cells(start_row=1, start_column=1, end_row=1, end_column=NUM_COLUMNS)
+    
     ws['A1'].value = "COTTON CLOTHING BD LTD"
     ws['A1'].font = title_font 
     ws['A1'].alignment = center_align
@@ -2389,7 +2087,6 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
     formatted_ref_no = internal_ref_no.upper()
     current_date = get_bd_time().strftime("%d/%m/%Y")
     
-    # Left sub headers
     left_sub_headers = {
         'A4': 'BUYER', 'B4': report_data[0].get('buyer', ''), 
         'A5': 'IR/IB NO', 'B5': formatted_ref_no, 
@@ -2408,17 +2105,9 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
         else:
             cell.fill = dark_green_fill 
 
-    ws.merge_cells('B4:G4')
-    ws.merge_cells('B5:G5')
-    ws.merge_cells('B6:G6')
+    ws.merge_cells('B4:G4'); ws.merge_cells('B5:G5'); ws.merge_cells('B6:G6')
     
-    # Right sub headers
-    right_sub_headers = {
-        'H4': 'CLOSING DATE', 'I4': current_date, 
-        'H5': 'SHIPMENT', 'I5': 'ALL', 
-        'H6': 'PO NO', 'I6': 'ALL'
-    }
-    
+    right_sub_headers = {'H4': 'CLOSING DATE', 'I4': current_date, 'H5': 'SHIPMENT', 'I5': 'ALL', 'H6': 'PO NO', 'I6': 'ALL'}
     for cell_ref, value in right_sub_headers.items():
         cell = ws[cell_ref]
         cell.value = value
@@ -2433,7 +2122,6 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
             cell.border = thin_border
        
     current_row = TABLE_START_ROW
-    
     for block in report_data:
         table_headers = ["COLOUR NAME", "SIZE", "ORDER QTY 3%", "ACTUAL QTY", "CUTTING QC", "INPUT QTY", "BALANCE", "SHORT/PLUS QTY", "Percentage %"]
         for col_idx, header in enumerate(table_headers, 1):
@@ -2469,15 +2157,11 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
                 cell.border = medium_border if col_idx == 2 else thin_border
                 cell.alignment = center_align
     
-                if col_idx in [1, 2, 3, 6, 9]: 
-                    cell.font = bold_font
+                if col_idx in [1, 2, 3, 6, 9]: cell.font = bold_font
                 
-                if col_idx == 3: 
-                    cell.fill = light_blue_fill      
-                elif col_idx == 6: 
-                    cell.fill = light_green_fill   
-                else: 
-                    cell.fill = dark_green_fill 
+                if col_idx == 3: cell.fill = light_blue_fill      
+                elif col_idx == 6: cell.fill = light_green_fill   
+                else: cell.fill = dark_green_fill 
 
                 if col_idx == 9:  
                     cell.number_format = '0.00%' 
@@ -2488,8 +2172,7 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
             ws.merge_cells(start_row=start_merge_row, start_column=1, end_row=end_merge_row, end_column=1)
             merged_cell = ws.cell(row=start_merge_row, column=1)
             merged_cell.alignment = color_align
-            if not merged_cell.font.bold: 
-                merged_cell.font = bold_font
+            if not merged_cell.font.bold: merged_cell.font = bold_font
         
         total_row_str = str(current_row)
         ws.merge_cells(start_row=current_row, start_column=1, end_row=current_row, end_column=2)
@@ -2550,27 +2233,16 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
     signature_cell.font = Font(bold=True, size=15)
     signature_cell.alignment = Alignment(horizontal='center', vertical='center')
 
-    # Apply font size to data cells
     last_data_row = current_row - 2
     for row in ws.iter_rows(min_row=4, max_row=last_data_row):
         for cell in row:  
-            if cell.coordinate == 'B5': 
-                continue
+            if cell.coordinate == 'B5': continue
             if cell.font:  
                 existing_font = cell.font
                 if cell.row != 1:  
-                    new_font = Font(
-                        name=existing_font.name, 
-                        size=16.5, 
-                        bold=existing_font.bold, 
-                        italic=existing_font.italic, 
-                        vertAlign=existing_font.vertAlign, 
-                        underline=existing_font.underline, 
-                        color=existing_font.color
-                    )
+                    new_font = Font(name=existing_font.name, size=16.5, bold=existing_font.bold, italic=existing_font.italic, vertAlign=existing_font.vertAlign, underline=existing_font.underline, strike=existing_font.strike, color=existing_font.color)
                     cell.font = new_font
     
-    # Column widths
     ws.column_dimensions['A'].width = 23
     ws.column_dimensions['B'].width = 8.5
     ws.column_dimensions['C'].width = 20
@@ -2581,7 +2253,6 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
     ws.column_dimensions['H'].width = 23
     ws.column_dimensions['I'].width = 18
    
-    # Page setup
     ws.page_setup.orientation = ws.ORIENTATION_PORTRAIT
     ws.page_setup.fitToPage = True
     ws.page_setup.fitToWidth = 1
@@ -2599,8 +2270,9 @@ def create_formatted_excel_report(report_data, internal_ref_no=""):
     wb.save(file_stream)
     file_stream.seek(0)
     return file_stream
-    # ==============================================================================
-# HTML TEMPLATES: LOGIN PAGE (ENHANCED FLASH MESSAGE)
+
+# ==============================================================================
+# HTML TEMPLATES: LOGIN PAGE (WELCOME POPUP REMOVED, FLASH ADDED)
 # ==============================================================================
 
 LOGIN_TEMPLATE = f"""
@@ -2796,6 +2468,26 @@ LOGIN_TEMPLATE = f"""
             transform: translateX(5px);
         }}
         
+        .error-box {{
+            margin-top: 20px;
+            padding: 14px 18px;
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            border-radius: 10px;
+            color: #F87171;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            animation: errorShake 0.5s ease-out;
+        }}
+        
+        @keyframes errorShake {{
+            0%, 100% {{ transform: translateX(0); }}
+            20%, 60% {{ transform: translateX(-5px); }}
+            40%, 80% {{ transform: translateX(5px); }}
+        }}
+        
         .footer-credit {{
             text-align: center;
             margin-top: 25px;
@@ -2870,35 +2562,12 @@ LOGIN_TEMPLATE = f"""
     <div class="bg-orb orb-2"></div>
     <div class="bg-orb orb-3"></div>
     
-    <!-- Enhanced Flash Messages -->
     <div id="flash-container">
         {{% with messages = get_flashed_messages(with_categories=true) %}}
             {{% if messages %}}
                 {{% for category, message in messages %}}
-                    <div class="flash-message flash-{{{{ category if category != 'message' else 'info' }}}}" role="alert">
-                        <div class="flash-icon">
-                            {{% if category == 'success' %}}
-                                <i class="fas fa-check"></i>
-                            {{% elif category == 'error' %}}
-                                <i class="fas fa-times"></i>
-                            {{% elif category == 'warning' %}}
-                                <i class="fas fa-exclamation"></i>
-                            {{% else %}}
-                                <i class="fas fa-info"></i>
-                            {{% endif %}}
-                        </div>
-                        <div class="flash-content">
-                            <div class="flash-title">
-                                {{% if category == 'success' %}}Success!
-                                {{% elif category == 'error' %}}Error!
-                                {{% elif category == 'warning' %}}Warning!
-                                {{% else %}}Info{{% endif %}}
-                            </div>
-                            <div class="flash-text">{{{{ message }}}}</div>
-                        </div>
-                        <button class="flash-close" onclick="this.parentElement.classList.add('flash-out'); setTimeout(() => this.parentElement.remove(), 400);">
-                            <i class="fas fa-times"></i>
-                        </button>
+                    <div class="flash-message flash-{{{{ category if category != 'message' else 'info' }}}}">
+                        <i class="fas fa-info-circle"></i> {{{{ message }}}}
                     </div>
                 {{% endfor %}}
             {{% endif %}}
@@ -2936,7 +2605,6 @@ LOGIN_TEMPLATE = f"""
     </div>
     
     <script>
-        // Ripple effect on button
         document.querySelector('.login-btn').addEventListener('click', function(e) {{
             const ripple = document.createElement('span');
             ripple.classList.add('ripple-effect');
@@ -2947,12 +2615,12 @@ LOGIN_TEMPLATE = f"""
             setTimeout(() => ripple.remove(), 600);
         }});
 
-        // Auto-hide flash messages after 4 seconds
+        // Auto-hide flash messages
         setTimeout(function() {{
             let flashMessages = document.querySelectorAll('.flash-message');
             flashMessages.forEach(function(msg) {{
-                msg.classList.add('flash-out');
-                setTimeout(function() {{ msg.remove(); }}, 400);
+                msg.style.opacity = '0';
+                setTimeout(function() {{ msg.style.display = 'none'; }}, 500);
             }});
         }}, 4000);
     </script>
@@ -2961,7 +2629,7 @@ LOGIN_TEMPLATE = f"""
 """
 
 # ==============================================================================
-# ADMIN DASHBOARD TEMPLATE - ২৪ ঘন্টার History, Search, Accessories History সহ
+# ADMIN DASHBOARD TEMPLATE - (STORE REMOVED, WELCOME POPUP REMOVED)
 # ==============================================================================
 
 ADMIN_DASHBOARD_TEMPLATE = f"""
@@ -2997,35 +2665,19 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
         <div class="loading-text" id="loading-text">Processing Request...</div>
     </div>
 
-    <!-- Enhanced Flash Messages -->
     <div id="flash-container">
         {{% with messages = get_flashed_messages(with_categories=true) %}}
             {{% if messages %}}
                 {{% for category, message in messages %}}
                     <div class="flash-message flash-{{{{ category if category != 'message' else 'info' }}}}" role="alert">
-                        <div class="flash-icon">
-                            {{% if category == 'success' %}}
-                                <i class="fas fa-check"></i>
-                            {{% elif category == 'error' %}}
-                                <i class="fas fa-times"></i>
-                            {{% elif category == 'warning' %}}
-                                <i class="fas fa-exclamation"></i>
-                            {{% else %}}
-                                <i class="fas fa-info"></i>
-                            {{% endif %}}
-                        </div>
-                        <div class="flash-content">
-                            <div class="flash-title">
-                                {{% if category == 'success' %}}Success!
-                                {{% elif category == 'error' %}}Error!
-                                {{% elif category == 'warning' %}}Warning!
-                                {{% else %}}Info{{% endif %}}
-                            </div>
-                            <div class="flash-text">{{{{ message }}}}</div>
-                        </div>
-                        <button class="flash-close" onclick="this.parentElement.classList.add('flash-out'); setTimeout(() => this.parentElement.remove(), 400);">
-                            <i class="fas fa-times"></i>
-                        </button>
+                        {{% if category == 'success' %}}
+                            <i class="fas fa-check-circle"></i>
+                        {{% elif category == 'error' %}}
+                            <i class="fas fa-exclamation-triangle"></i>
+                        {{% else %}}
+                             <i class="fas fa-info-circle"></i>
+                        {{% endif %}}
+                        <span>{{{{ message }}}}</span>
                     </div>
                 {{% endfor %}}
             {{% endif %}}
@@ -3069,7 +2721,6 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
 
     <div class="main-content">
         
-        <!-- ===== DASHBOARD SECTION ===== -->
         <div id="section-dashboard">
             <div class="header-section">
                 <div>
@@ -3170,33 +2821,24 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
                 </div>
             </div>
 
-            <!-- ===== ২৪ ঘন্টার HISTORY WITH SEARCH ===== -->
             <div class="card">
                 <div class="section-header">
-                    <span><i class="fas fa-history" style="margin-right: 10px; color: var(--accent-orange);"></i>Last 24 Hours Activity</span>
-                    <span class="table-badge" style="background: var(--accent-orange); color: white;">{{{{ stats.history_24h|length }}}} Records</span>
+                    <span>Recent Activity Log</span>
+                    <i class="fas fa-history" style="color: var(--text-secondary);"></i>
                 </div>
-                
-                <!-- Search Box -->
-                <div class="history-search-box">
-                    <i class="fas fa-search"></i>
-                    <input type="text" id="historySearch" placeholder="Search by user, reference, type..." onkeyup="filterHistory()">
-                </div>
-                
-                <div style="overflow-x: auto; max-height: 450px; overflow-y: auto;">
-                    <table class="dark-table" id="historyTable">
-                        <thead style="position: sticky; top: 0; background: var(--bg-card); z-index: 10;">
+                <div style="overflow-x: auto;">
+                    <table class="dark-table">
+                        <thead>
                             <tr>
                                 <th>Time</th>
                                 <th>User</th>
                                 <th>Action</th>
                                 <th>Reference</th>
-                                <th>Details</th>
                             </tr>
                         </thead>
-                        <tbody id="historyTableBody">
-                            {{% for log in stats.history_24h %}}
-                            <tr class="history-row" style="animation: fadeInUp 0.5s ease-out {{{{ loop.index * 0.03 }}}}s backwards;">
+                        <tbody>
+                            {{% for log in stats.history[:10] %}}
+                            <tr style="animation: fadeInUp 0.5s ease-out {{{{ loop.index * 0.05 }}}}s backwards;">
                                 <td>
                                     <div class="time-badge">
                                         <i class="far fa-clock"></i>
@@ -3205,38 +2847,23 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
                                 </td>
                                 <td style="font-weight: 600; color: white;">{{{{ log.user }}}}</td>
                                 <td>
-                                    {{% if log.type == 'Closing Report' %}}
-                                    <span class="table-badge type-closing">
-                                        <i class="fas fa-file-export" style="margin-right: 5px;"></i>Closing
-                                    </span>
-                                    {{% elif log.type == 'PO Sheet' %}}
-                                    <span class="table-badge type-po">
-                                        <i class="fas fa-file-pdf" style="margin-right: 5px;"></i>PO Sheet
-                                    </span>
-                                    {{% elif log.type == 'Accessories' %}}
-                                    <span class="table-badge type-accessories">
-                                        <i class="fas fa-boxes" style="margin-right: 5px;"></i>Accessories
-                                    </span>
-                                    {{% else %}}
-                                    <span class="table-badge">{{{{ log.type }}}}</span>
-                                    {{% endif %}}
+                                    <span class="table-badge" style="
+                                        {{% if log.type == 'Closing Report' %}}
+                                        background: rgba(255, 122, 0, 0.1); color: var(--accent-orange);
+                                        {{% elif log.type == 'PO Sheet' %}}
+                                        background: rgba(16, 185, 129, 0.1); color: var(--accent-green);
+                                        {{% else %}}
+                                        background: rgba(139, 92, 246, 0.1); color: var(--accent-purple);
+                                        {{% endif %}}
+                                    ">{{{{ log.type }}}}</span>
                                 </td>
-                                <td style="color: var(--accent-orange); font-weight: 600;">{{{{ log.ref if log.ref else '-' }}}}</td>
-                                <td style="color: var(--text-secondary); font-size: 12px;">
-                                    {{% if log.type == 'Accessories' %}}
-                                        Line: {{{{ log.line if log.line else 'N/A' }}}} | Qty: {{{{ log.qty if log.qty else 'N/A' }}}}
-                                    {{% elif log.type == 'PO Sheet' %}}
-                                        Files: {{{{ log.file_count if log.file_count else '1' }}}}
-                                    {{% else %}}
-                                        -
-                                    {{% endif %}}
-                                </td>
+                                <td style="color: var(--text-secondary);">{{{{ log.ref if log.ref else '-' }}}}</td>
                             </tr>
                             {{% else %}}
                             <tr>
-                                <td colspan="5" style="text-align: center; padding: 50px; color: var(--text-secondary);">
+                                <td colspan="4" style="text-align: center; padding: 40px; color: var(--text-secondary);">
                                     <i class="fas fa-inbox" style="font-size: 40px; opacity: 0.3; margin-bottom: 15px; display: block;"></i>
-                                    No activity in last 24 hours.
+                                    No activity recorded yet.
                                 </td>
                             </tr>
                             {{% endfor %}}
@@ -3246,7 +2873,6 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
             </div>
         </div>
 
-        <!-- ===== CLOSING REPORT SECTION ===== -->
         <div id="section-analytics" style="display: none;">
             <div class="header-section">
                 <div>
@@ -3270,7 +2896,6 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
             </div>
         </div>
 
-        <!-- ===== PO GENERATOR SECTION ===== -->
         <div id="section-help" style="display: none;">
             <div class="header-section">
                 <div>
@@ -3299,7 +2924,6 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
             </div>
         </div>
 
-        <!-- ===== USER MANAGEMENT SECTION ===== -->
         <div id="section-settings" style="display:none;">
             <div class="header-section">
                 <div>
@@ -3362,7 +2986,6 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
             </div>
         </div>
     </div>
-
     <script>
         // ===== SECTION NAVIGATION =====
         function showSection(id, element) {{
@@ -3378,22 +3001,6 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
             
             if (id === 'settings') loadUsers();
             if (window.innerWidth < 1024) document.querySelector('.sidebar').classList.remove('active');
-        }}
-        
-        // ===== HISTORY SEARCH FILTER =====
-        function filterHistory() {{
-            const searchTerm = document.getElementById('historySearch').value.toLowerCase();
-            const rows = document.querySelectorAll('.history-row');
-            
-            rows.forEach(row => {{
-                const text = row.textContent.toLowerCase();
-                if (text.includes(searchTerm)) {{
-                    row.style.display = '';
-                    row.style.animation = 'fadeInUp 0.3s ease-out';
-                }} else {{
-                    row.style.display = 'none';
-                }}
-            }});
         }}
         
         // ===== FILE UPLOAD HANDLER =====
@@ -3422,7 +3029,7 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
             }});
         }}
         
-        // ===== DAILY ACTIVITY CHART =====
+        // ===== DEW STYLE DAILY CHART =====
         const ctx = document.getElementById('mainChart').getContext('2d');
         const gradientOrange = ctx.createLinearGradient(0, 0, 0, 300);
         gradientOrange.addColorStop(0, 'rgba(255, 122, 0, 0.5)');
@@ -3433,7 +3040,6 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
         const gradientGreen = ctx.createLinearGradient(0, 0, 0, 300);
         gradientGreen.addColorStop(0, 'rgba(16, 185, 129, 0.5)');
         gradientGreen.addColorStop(1, 'rgba(16, 185, 129, 0.0)');
-        
         new Chart(ctx, {{
             type: 'line',
             data: {{
@@ -3610,6 +3216,8 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
                     let html = '<table class="dark-table"><thead><tr><th>User</th><th>Last Seen</th><th style="text-align:right;">Actions</th></tr></thead><tbody>';
                     
                     for (const [u, d] of Object.entries(data)) {{
+                        const roleClass = d.role === 'admin' ? 'background: rgba(255, 122, 0, 0.1); color: var(--accent-orange);' : 'background: rgba(139, 92, 246, 0.1); color: var(--accent-purple);';
+                        
                         html += `<tr>
                             <td style="font-weight: 600;">${{u}} <br><small style="color:var(--text-secondary);font-weight:400;">(${{d.role}})</small></td>
                             <td><span class="table-badge">${{d.last_login}}</span></td>
@@ -3715,8 +3323,8 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
         setTimeout(function() {{
             let flashMessages = document.querySelectorAll('.flash-message');
             flashMessages.forEach(function(msg) {{
-                msg.classList.add('flash-out');
-                setTimeout(function() {{ msg.remove(); }}, 400);
+                msg.style.opacity = '0';
+                setTimeout(function() {{ msg.style.display = 'none'; }}, 500);
             }});
         }}, 5000);
         
@@ -3733,8 +3341,9 @@ ADMIN_DASHBOARD_TEMPLATE = f"""
 </body>
 </html>
 """
+
 # ==============================================================================
-# USER DASHBOARD TEMPLATE (মূল কোড হুবহু - শুধু Flash Enhanced)
+# USER DASHBOARD TEMPLATE (STORE REMOVED, WELCOME POPUP REMOVED)
 # ==============================================================================
 
 USER_DASHBOARD_TEMPLATE = f"""
@@ -3757,35 +3366,19 @@ USER_DASHBOARD_TEMPLATE = f"""
         <div class="loading-text">Processing...</div>
     </div>
     
-    <!-- Enhanced Flash Messages -->
     <div id="flash-container">
         {{% with messages = get_flashed_messages(with_categories=true) %}}
             {{% if messages %}}
                 {{% for category, message in messages %}}
                     <div class="flash-message flash-{{{{ category if category != 'message' else 'info' }}}}" role="alert">
-                        <div class="flash-icon">
-                            {{% if category == 'success' %}}
-                                <i class="fas fa-check"></i>
-                            {{% elif category == 'error' %}}
-                                <i class="fas fa-times"></i>
-                            {{% elif category == 'warning' %}}
-                                <i class="fas fa-exclamation"></i>
-                            {{% else %}}
-                                <i class="fas fa-info"></i>
-                            {{% endif %}}
-                        </div>
-                        <div class="flash-content">
-                            <div class="flash-title">
-                                {{% if category == 'success' %}}Success!
-                                {{% elif category == 'error' %}}Error!
-                                {{% elif category == 'warning' %}}Warning!
-                                {{% else %}}Info{{% endif %}}
-                            </div>
-                            <div class="flash-text">{{{{ message }}}}</div>
-                        </div>
-                        <button class="flash-close" onclick="this.parentElement.classList.add('flash-out'); setTimeout(() => this.parentElement.remove(), 400);">
-                            <i class="fas fa-times"></i>
-                        </button>
+                        {{% if category == 'success' %}}
+                            <i class="fas fa-check-circle"></i>
+                        {{% elif category == 'error' %}}
+                            <i class="fas fa-exclamation-triangle"></i>
+                        {{% else %}}
+                             <i class="fas fa-info-circle"></i>
+                        {{% endif %}}
+                        <span>{{{{ message }}}}</span>
                     </div>
                 {{% endfor %}}
             {{% endif %}}
@@ -3891,8 +3484,8 @@ USER_DASHBOARD_TEMPLATE = f"""
         setTimeout(function() {{
             let flashMessages = document.querySelectorAll('.flash-message');
             flashMessages.forEach(function(msg) {{
-                msg.classList.add('flash-out');
-                setTimeout(function() {{ msg.remove(); }}, 400);
+                msg.style.opacity = '0';
+                setTimeout(function() {{ msg.style.display = 'none'; }}, 500);
             }});
         }}, 5000);
 
@@ -3910,7 +3503,7 @@ USER_DASHBOARD_TEMPLATE = f"""
 """
 
 # ==============================================================================
-# ACCESSORIES SEARCH TEMPLATE (মূল কোড হুবহু - শুধু Flash Enhanced)
+# ACCESSORIES SEARCH TEMPLATE (FLASH ADDED)
 # ==============================================================================
 
 ACCESSORIES_SEARCH_TEMPLATE = f"""
@@ -4023,35 +3616,19 @@ ACCESSORIES_SEARCH_TEMPLATE = f"""
 <body>
     <div class="animated-bg"></div>
     
-    <!-- Enhanced Flash Messages -->
     <div id="flash-container">
         {{% with messages = get_flashed_messages(with_categories=true) %}}
             {{% if messages %}}
                 {{% for category, message in messages %}}
                     <div class="flash-message flash-{{{{ category if category != 'message' else 'info' }}}}" role="alert">
-                        <div class="flash-icon">
-                            {{% if category == 'success' %}}
-                                <i class="fas fa-check"></i>
-                            {{% elif category == 'error' %}}
-                                <i class="fas fa-times"></i>
-                            {{% elif category == 'warning' %}}
-                                <i class="fas fa-exclamation"></i>
-                            {{% else %}}
-                                <i class="fas fa-info"></i>
-                            {{% endif %}}
-                        </div>
-                        <div class="flash-content">
-                            <div class="flash-title">
-                                {{% if category == 'success' %}}Success!
-                                {{% elif category == 'error' %}}Error!
-                                {{% elif category == 'warning' %}}Warning!
-                                {{% else %}}Info{{% endif %}}
-                            </div>
-                            <div class="flash-text">{{{{ message }}}}</div>
-                        </div>
-                        <button class="flash-close" onclick="this.parentElement.classList.add('flash-out'); setTimeout(() => this.parentElement.remove(), 400);">
-                            <i class="fas fa-times"></i>
-                        </button>
+                        {{% if category == 'success' %}}
+                            <i class="fas fa-check-circle"></i>
+                        {{% elif category == 'error' %}}
+                            <i class="fas fa-exclamation-triangle"></i>
+                        {{% else %}}
+                             <i class="fas fa-info-circle"></i>
+                        {{% endif %}}
+                        <span>{{{{ message }}}}</span>
                     </div>
                 {{% endfor %}}
             {{% endif %}}
@@ -4146,8 +3723,8 @@ ACCESSORIES_SEARCH_TEMPLATE = f"""
         setTimeout(function() {{
             let flashMessages = document.querySelectorAll('.flash-message');
             flashMessages.forEach(function(msg) {{
-                msg.classList.add('flash-out');
-                setTimeout(function() {{ msg.remove(); }}, 400);
+                msg.style.opacity = '0';
+                setTimeout(function() {{ msg.style.display = 'none'; }}, 500);
             }});
         }}, 5000);
     </script>
@@ -4156,7 +3733,7 @@ ACCESSORIES_SEARCH_TEMPLATE = f"""
 """
 
 # ==============================================================================
-# ACCESSORIES INPUT TEMPLATE (মূল কোড হুবহু - শুধু Flash Enhanced)
+# ACCESSORIES INPUT TEMPLATE - (UPDATED TOOLTIPS & FLASH)
 # ==============================================================================
 
 ACCESSORIES_INPUT_TEMPLATE = f"""
@@ -4309,35 +3886,19 @@ ACCESSORIES_INPUT_TEMPLATE = f"""
         <div class="loading-text" id="loading-text">Saving Entry...</div>
     </div>
 
-    <!-- Enhanced Flash Messages -->
     <div id="flash-container">
         {{% with messages = get_flashed_messages(with_categories=true) %}}
             {{% if messages %}}
                 {{% for category, message in messages %}}
                     <div class="flash-message flash-{{{{ category if category != 'message' else 'info' }}}}" role="alert">
-                        <div class="flash-icon">
-                            {{% if category == 'success' %}}
-                                <i class="fas fa-check"></i>
-                            {{% elif category == 'error' %}}
-                                <i class="fas fa-times"></i>
-                            {{% elif category == 'warning' %}}
-                                <i class="fas fa-exclamation"></i>
-                            {{% else %}}
-                                <i class="fas fa-info"></i>
-                            {{% endif %}}
-                        </div>
-                        <div class="flash-content">
-                            <div class="flash-title">
-                                {{% if category == 'success' %}}Success!
-                                {{% elif category == 'error' %}}Error!
-                                {{% elif category == 'warning' %}}Warning!
-                                {{% else %}}Info{{% endif %}}
-                            </div>
-                            <div class="flash-text">{{{{ message }}}}</div>
-                        </div>
-                        <button class="flash-close" onclick="this.parentElement.classList.add('flash-out'); setTimeout(() => this.parentElement.remove(), 400);">
-                            <i class="fas fa-times"></i>
-                        </button>
+                        {{% if category == 'success' %}}
+                            <i class="fas fa-check-circle"></i>
+                        {{% elif category == 'error' %}}
+                            <i class="fas fa-exclamation-triangle"></i>
+                        {{% else %}}
+                             <i class="fas fa-info-circle"></i>
+                        {{% endif %}}
+                        <span>{{{{ message }}}}</span>
                     </div>
                 {{% endfor %}}
             {{% endif %}}
@@ -4498,8 +4059,8 @@ ACCESSORIES_INPUT_TEMPLATE = f"""
         setTimeout(function() {{
             let flashMessages = document.querySelectorAll('.flash-message');
             flashMessages.forEach(function(msg) {{
-                msg.classList.add('flash-out');
-                setTimeout(function() {{ msg.remove(); }}, 400);
+                msg.style.opacity = '0';
+                setTimeout(function() {{ msg.style.display = 'none'; }}, 500);
             }});
         }}, 5000);
 
@@ -4517,7 +4078,7 @@ ACCESSORIES_INPUT_TEMPLATE = f"""
 """
 
 # ==============================================================================
-# ACCESSORIES EDIT TEMPLATE (মূল কোড হুবহু)
+# ACCESSORIES EDIT TEMPLATE (হুবহু তোমার মূল কোড)
 # ==============================================================================
 
 ACCESSORIES_EDIT_TEMPLATE = f"""
@@ -4645,8 +4206,9 @@ ACCESSORIES_EDIT_TEMPLATE = f"""
 </body>
 </html>
 """
+
 # ==============================================================================
-# CLOSING REPORT PREVIEW TEMPLATE (মূল কোড হুবহু)
+# CLOSING REPORT PREVIEW TEMPLATE (হুবহু তোমার মূল কোড)
 # ==============================================================================
 
 CLOSING_REPORT_PREVIEW_TEMPLATE = """
@@ -4670,7 +4232,7 @@ CLOSING_REPORT_PREVIEW_TEMPLATE = """
         .info-item { font-size: 1.2rem; font-weight: 600; color: #444; }
         .info-label { font-weight: 800; color: #444; width: 90px; display: inline-block; }
         .info-value { font-weight: 800; color: #000; }
-        .booking-box { background: #2c3e50; color: white; padding: 10px 20px; border-radius: 5px; text-align: right; box-shadow: 0 4px 10px rgba(44, 62, 80, 0.3); display: flex; flex-direction: column; justify-content: center; }
+        .booking-box { background: #2c3e50; color: white; padding: 10px 20px; border-radius: 5px; text-align: right; box-shadow: 0 4px 10px rgba(44, 62, 80, 0.3); display: flex; flex-direction: column; justify-content: center; min-width: 200px; }
         .booking-label { font-size: 1.1rem; opacity: 0.9; text-transform: uppercase; letter-spacing: 1px; font-weight: 700; }
         .booking-value { font-size: 1.8rem; font-weight: 800; line-height: 1.1; }
         .table-card { background: white; border-radius: 0; margin-bottom: 30px; border: none; }
@@ -4809,7 +4371,7 @@ CLOSING_REPORT_PREVIEW_TEMPLATE = """
 """
 
 # ==============================================================================
-# ACCESSORIES REPORT TEMPLATE (মূল কোড হুবহু)
+# ACCESSORIES REPORT TEMPLATE (হুবহু তোমার মূল কোড)
 # ==============================================================================
 
 ACCESSORIES_REPORT_TEMPLATE = """
@@ -4841,7 +4403,7 @@ ACCESSORIES_REPORT_TEMPLATE = """
         .summary-table { width: 100%; font-size: 13px; font-weight: 700; }
         .summary-table td { padding: 2px 5px; }
         .main-table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 14px; }
-        .main-table th { background: #2c3e50 !important; color: white !important; padding: 10px; border: 1px solid #000; font-size: 14px; text-transform: uppercase; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        .main-table th { background: #2c3e50 !important; color: white !important; padding: 10px; border: 1px solid #000; font-size: 14px; text-transform: uppercase; -webkit-print-color-adjust: exact; }
         .main-table td { border: 1px solid #000; padding: 6px; text-align: center; vertical-align: middle; color: #000; font-weight: 600; }
         .line-card { display: inline-block; padding: 4px 10px; border: 2px solid #000; font-size: 16px; font-weight: 900; border-radius: 4px; box-shadow: 2px 2px 0 #000; background: #fff; }
         .line-text-bold { font-size: 14px; font-weight: 800; opacity: 0.7; }
@@ -4962,7 +4524,7 @@ ACCESSORIES_REPORT_TEMPLATE = """
 """
 
 # ==============================================================================
-# PO REPORT TEMPLATE (তোমার দেওয়া নতুন লজিক অনুযায়ী - Enhanced Print Preview)
+# PO REPORT TEMPLATE (হুবহু তোমার মূল কোড)
 # ==============================================================================
 
 PO_REPORT_TEMPLATE = """
@@ -4982,7 +4544,7 @@ PO_REPORT_TEMPLATE = """
         .report-title { font-size: 1.1rem; color: #555; font-weight: 600; text-transform: uppercase; margin-top: 5px; }
         .date-section { font-size: 1.2rem; font-weight: 800; color: #000; margin-top: 5px; }
         .info-container { display: flex; justify-content: space-between; margin-bottom: 15px; gap: 15px; }
-        .info-box { background: white; border: 1px solid #ddd; border-left: 5px solid #2c3e50; padding: 10px 15px; border-radius: 5px; flex: 2; box-shadow: 0 2px 5px rgba(0,0,0,0.05); display: grid; grid-template-columns: 1fr 1fr; gap: 5px; }
+        .info-box { background: white; border: 1px solid #ddd; border-left: 5px solid #2c3e50; padding: 10px 15px; border-radius: 5px; flex: 2; box-shadow: 0 2px 5px rgba(0,0,0,0.05); display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
         .total-box { background: #2c3e50; color: white; padding: 10px 15px; border-radius: 5px; width: 240px; text-align: right; display: flex; flex-direction: column; justify-content: center; box-shadow: 0 4px 10px rgba(44, 62, 80, 0.3); }
         .info-item { margin-bottom: 6px; font-size: 1.3rem; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .info-label { font-weight: 800; color: #444; width: 90px; display: inline-block; }
@@ -4999,7 +4561,7 @@ PO_REPORT_TEMPLATE = """
         .order-col { font-weight: 900 !important; text-align: center !important; background-color: #fdfdfd; white-space: nowrap; width: 1%; }
         .total-col { font-weight: 900; background-color: #e8f6f3 !important; color: #16a085; border-left: 2px solid #1abc9c !important; }
         .total-col-header { background-color: #e8f6f3 !important; color: #000 !important; font-weight: 900 !important; border: 1px solid #34495e !important; }
-        .table-striped tbody tr.summary-row, .table-striped tbody tr.summary-row td { background-color: #d1ecff !important; --bs-table-accent-bg: #d1ecff !important; color: #000 !important; font-weight: 900 !important; font-size: 1.2rem; }
+        .table-striped tbody tr.summary-row, .table-striped tbody tr.summary-row td { background-color: #d1ecff !important; --bs-table-accent-bg: #d1ecff !important; color: #000 !important; font-weight: 900 !important; border-top: 2px solid #aaa !important; font-size: 1.2rem !important; }
         .summary-label { text-align: right !important; padding-right: 15px !important; color: #000 !important; }
         .action-bar { margin-bottom: 20px; display: flex; justify-content: flex-end; gap: 10px; }
         .btn-print { background-color: #e74c3c; color: white; border-radius: 50px; padding: 8px 30px; font-weight: 600; border: none; }
@@ -5079,7 +4641,7 @@ PO_REPORT_TEMPLATE = """
 </html>
 """
 # ==============================================================================
-# FLASK ROUTES (CONTROLLER LOGIC)
+# FLASK ROUTES (CONTROLLER LOGIC) - (STORE ROUTE REMOVED)
 # ==============================================================================
 
 @app.route('/')
@@ -5142,12 +4704,8 @@ def logout():
             pass
 
     session.clear()
-    flash('Session terminated successfully.', 'info')
+    flash('Session terminated.', 'info')
     return redirect(url_for('index'))
-
-# ==============================================================================
-# ADMIN USER MANAGEMENT ROUTES
-# ==============================================================================
 
 @app.route('/admin/get-users', methods=['GET'])
 def get_users():
@@ -5208,10 +4766,6 @@ def delete_user():
         return jsonify({'status': 'success', 'message': 'User deleted!'})
     
     return jsonify({'status': 'error', 'message': 'User not found'})
-
-# ==============================================================================
-# CLOSING REPORT ROUTES
-# ==============================================================================
 
 @app.route('/generate-report', methods=['POST'])
 def generate_report():
@@ -5442,7 +4996,7 @@ def accessories_delete_booking():
     if ref_no in db_acc:
         del db_acc[ref_no]
         save_accessories_db(db_acc)
-        flash(f"Booking '{ref_no}' deleted successfully.", "success")
+        flash(f"Booking '{ref_no}' deleted.", "success")
     else:
         flash(f"Booking '{ref_no}' not found.", "error")
 
@@ -5454,34 +5008,25 @@ def accessories_save():
         return redirect(url_for('index'))
     
     ref = request.form.get('ref').strip().upper()
-    line_no = request.form.get('line_no')
-    color = request.form.get('color')
-    size = request.form.get('size')
-    qty = request.form.get('qty')
-    
     db_acc = load_accessories_db()
     
     if ref in db_acc:
         if request.form.get('item_type'):
             db_acc[ref]['item_type'] = request.form.get('item_type')
         
-        # আগের সব চালানে স্ট্যাটাস মার্ক করো
         for item in db_acc[ref]['challans']:
             item['status'] = "✔"
         
         new_entry = {
             "date": get_bd_date_str(),
-            "line": line_no,
-            "color": color,
-            "size": size,
-            "qty": qty,
+            "line": request.form.get('line_no'),
+            "color": request.form.get('color'),
+            "size": request.form.get('size'),
+            "qty": request.form.get('qty'),
             "status": ""
         }
         db_acc[ref]['challans'].append(new_entry)
         save_accessories_db(db_acc)
-        
-        # ===== Accessories Stats Update (নতুন যোগ করা) =====
-        update_accessories_stats(ref, session.get('user', 'Unknown'), qty, line_no)
     
     return redirect(url_for('accessories_print_view', ref=ref))
 
@@ -5554,7 +5099,6 @@ def accessories_update():
         db_acc[ref]['challans'][index]['size'] = request.form.get('size')
         db_acc[ref]['challans'][index]['qty'] = request.form.get('qty')
         save_accessories_db(db_acc)
-        flash("Entry updated successfully!", "success")
     
     return redirect(url_for('accessories_input_direct', ref=ref))
 
@@ -5570,11 +5114,11 @@ def accessories_delete():
     if ref in db_acc and 0 <= index < len(db_acc[ref]['challans']):
         del db_acc[ref]['challans'][index]
         save_accessories_db(db_acc)
-        flash("Entry deleted successfully!", "success")
     
     return redirect(url_for('accessories_input_direct', ref=ref))
-    # ==============================================================================
-# PO REPORT ROUTE - তোমার দেওয়া নতুন লজিক হুবহু
+
+# ==============================================================================
+# PO REPORT ROUTE - (UPDATED WITH LOGIC FIX)
 # ==============================================================================
 
 @app.route('/generate-po-report', methods=['POST'])
@@ -5582,7 +5126,6 @@ def generate_po_report():
     if not session.get('logged_in'):
         return redirect(url_for('index'))
 
-    # আগের আপলোড ফোল্ডার ক্লিয়ার করো
     if os.path.exists(UPLOAD_FOLDER):
         shutil.rmtree(UPLOAD_FOLDER)
     os.makedirs(UPLOAD_FOLDER)
@@ -5611,7 +5154,6 @@ def generate_po_report():
                 all_data.extend(data)
         
         if not all_data:
-            flash("No PO data found in uploaded files.", "error")
             return render_template_string(PO_REPORT_TEMPLATE, tables=None, message="No PO data found in uploaded files.")
 
         booking_ref = final_meta.get('booking', 'N/A')
@@ -5636,18 +5178,15 @@ def generate_po_report():
             )
             pivot.columns.name = None
             
-            # সাইজ সর্ট করো
             try:
                 sorted_cols = sort_sizes(pivot.columns.tolist())
                 pivot = pivot[sorted_cols]
             except:
                 pass
             
-            # টোটাল কলাম যোগ করো
             pivot['Total'] = pivot.sum(axis=1)
             grand_total_qty += pivot['Total'].sum()
 
-            # সামারি রো তৈরি করো
             actual_qty = pivot.sum()
             actual_qty.name = 'Actual Qty'
             qty_plus_3 = (actual_qty * 1.03).round().astype(int)
@@ -5657,7 +5196,6 @@ def generate_po_report():
             pivot_final = pivot_final.reset_index()
             pivot_final = pivot_final.rename(columns={'index': 'P.O NO'})
             
-            # HTML টেবিল তৈরি করো
             pd.set_option('colheader_justify', 'center')
             html_table = pivot_final.to_html(
                 classes='table table-bordered table-striped',
@@ -5665,7 +5203,6 @@ def generate_po_report():
                 border=0
             )
             
-            # CSS ক্লাস যোগ করো
             html_table = re.sub(r'<tr>\s*<td>', '<tr><td class="order-col">', html_table)
             html_table = html_table.replace('<th>Total</th>', '<th class="total-col-header">Total</th>')
             html_table = html_table.replace('<td>Total</td>', '<td class="total-col">Total</td>')
@@ -5697,3 +5234,4 @@ def generate_po_report():
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))
     app.run(host='0.0.0.0', port=port, debug=True)
+
