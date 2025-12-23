@@ -2344,10 +2344,22 @@ def get_authenticated_session(username, password):
 
 def fetch_closing_report_data(internal_ref_no):
     active_session = get_authenticated_session("input2.clothing-cutting", "123456")
-    if not active_session: return None
+    if not active_session: 
+        print("Failed to authenticate with ERP server")
+        return None
 
     report_url = 'http://180.92.235.190:8022/erp/prod_planning/reports/requires/cutting_lay_production_report_controller.php'
-    payload_template = {'action': 'report_generate', 'cbo_wo_company_name': '2', 'cbo_location_name': '2', 'cbo_floor_id': '0', 'cbo_buyer_name': '0', 'txt_internal_ref_no': internal_ref_no, 'report_type': 'details'}
+    
+    payload_template = {
+        'action': 'report_generate', 
+        'cbo_wo_company_name': '2', 
+        'cbo_location_name': '2', 
+        'cbo_floor_id': '0', 
+        'cbo_buyer_name': '0', 
+        'txt_internal_ref_no': internal_ref_no, 
+        'report_type': 'details'
+    }
+    
     found_data = None
    
     for year in ['2025', '2024', '2023']: 
@@ -2360,8 +2372,11 @@ def fetch_closing_report_data(internal_ref_no):
                 if response.status_code == 200 and "Data not Found" not in response.text:
                     found_data = response.text
                     break
-            except: continue
-        if found_data: break
+            except Exception as e:
+                print(f"Error fetching data: {e}")
+                continue
+        if found_data: 
+            break
     
     if found_data:
         return parse_report_data(found_data)
@@ -6235,3 +6250,4 @@ if __name__ == "__main__":
     print("=" * 60)
     
     app.run(host='0.0.0.0', port=5000, debug=False)
+
